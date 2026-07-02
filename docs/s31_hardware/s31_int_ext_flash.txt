@@ -1,0 +1,27 @@
+4.1.3.1 Internal Memory
+The internal memory of ESP32-S31 refers to the memory integrated on the chip die or in the chip package,
+including ROM, SRAM, eFuse, and flash.
+Feature List
+• 320 KBof ROMfor booting and core functions
+• 512 KB of SRAM for data and instructions
+
+• 32KBof low-power SRAM (LP SRAM) that can be accessed by HP CPU or LP CPU. It can retain data in
+Deep-sleep mode
+• 4Kbit of eFuse memory, with 1536 bits available for users.
+4.1.3.2 External Memory
+ESP32-S31 supports SPI, Dual SPI, Quad SPI, and QPI interfaces that allow connection to the external flash
+and PSRAM.
+CPU’s instruction memory space and read-only data memory space can map into the external flash and
+PSRAM of ESP32-S31. External flash supports up to 256 MB, while PSRAM supports up to 64 MB. ESP32-S31
+supports hardware encryption/decryption based on XTS-AES to protect developers’ programs and data in the
+external flash and PSRAM.
+Feature List
+• The 256 MBflash instruction space is mapped to external flash in 256 KB blocks, while the 64 MB
+PSRAM instruction space is mapped to external PSRAM in 64 KB blocks. Both support 32-bit instruction
+fetch.
+• The 256 MBflash data space is mapped to external flash in 256 KB blocks, while the 64 MB PSRAM data
+space is mapped to external PSRAM in 64 KB blocks. External flash supports 8-bit, 16-bit, and 32-bit
+reads, while PSRAM supports 8-bit, 16-bit, and 32-bit read and write operations.
+Note:
+After ESP32-S31 is initialized, software can customize the mapping of external flash and PSRAM into the CPU address
+space

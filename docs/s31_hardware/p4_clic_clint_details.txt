@@ -1,0 +1,631 @@
+Note that P4 and S31's CLIC and CLINT base addresses and reg layout differ!
+S31 override from bootloader probes (2026-06-28): do not apply the P4
+"Only machine mode interrupts are supported" / fixed-RO clicintattr.MODE text
+below directly to S31.  On tested ESP32-S31, mcliccfg WARL readback gives
+NMBITS=1, and implemented M CLIC slots accept MODE=0b00, MODE=0b01, and
+MODE=0b11 through word accesses.  End-to-end non-M interrupt delivery is still
+not proven.
+======================================================================
+=== Page 111 ===
+======================================================================
+
+1.9
+Interrupt Controller
+1.9.1
+Overview
+Each HP core uses the CLIC + CLINT scheme for implementing and supporting interrupts.
+CLINT stands for core-local interrupts, which are sources local to the HP core subsystem for generating timer
+and software interrupts for each HP core.
+CLIC stands for core-local interrupt controller, which provides low-latency, vectored, pre-emptive interrupts for
+each HP core. Each HP core CLIC unit supports 32 external interrupts and 2 CLINT interrupts.
+1.9.2
+CLIC
+1.9.2.1
+Overview
+The HP core CLIC implementation follows the proposal: Core-Local Interrupt Controller (CLIC) RISC-V
+Privileged Architecture Extensions, by RISC-V International. At the time of writing this section, the official
+proposal was yet to be ratified, hence, the following specifications may differ from the ratified version.
+Only the CLIC mode of operation is supported by the HP core, i.e. mtvec.MODE is hardwired to 0x3. Hence,
+the basic RISC-V interrupt handling scheme and the associated CSRs (such as mie, mip, mideleg, uie, and
+uip) are unavailable.
+Only machine mode interrupts are supported.
+1.9.2.2
+CLIC CSRs
+The following machine mode CSRs are relevant for interrupt handling in the CLIC scheme:
+• mstatus
+• mscratch
+• mnxti
+• mscratchcsw
+• mtvec
+• mepc
+• mintstatus
+• mscratchcswl
+• mtvt
+• mcause
+• mclicbase
+As mentioned earlier, the CLIC mode is decided by the mtvec.MODE field. In each HP core, these bits are
+hardwired to 0x3, indicating that only the CLIC mode is supported.
+In CLIC mode, the global interrupt enable for machine mode is still dictated by the mstatus.MIE bit.
+Each interrupt can be either vectored or non-vectored depending on the clicintattr[i].SHV bit.
+For a non-vectored interrupt, the HP core jumps to the trap handler base address as configured in mtvec.BASE
+field.
+The base address of the vector table is configured in mtvt. For a vectored interrupt, the HP core jumps to the
+32-bit word address stored at the corresponding index in the vector table. For example, for the ”i”th machine
+mode interrupt, first the 32-bit address stored at the memory location ”mtvt + 4*i” will be loaded, after which
+the HP core will treat the loaded data as an address and jump to it.
+Upon taking an interrupt, the HP core will store the address of the instruction that was interrupted in mepc.
+Also, the HP core will update the value of mcause based on the interrupt’s ID.
+
+======================================================================
+=== Page 112 ===
+======================================================================
+
+1.9.2.3
+Interrupt Mapping
+CLIC in each HP core supports 32 external interrupts and 2 core-local interrupts.
+The IDs 16-47 are mapped to the external interrupts, while IDs 15 and below are reserved for the core-local
+interrupts.
+Table 1.9-1. CLIC Interrupt Mapping
+ID
+Description
+0-2
+NA (Reserved)
+CLINT M mode software interrupt
+4-6
+NA (Reserved)
+CLINT M mode timer interrupt
+8-15
+NA (Reserved)
+External interrupt 0
+External interrupt 1
+External interrupt 2
+...
+...
+External interrupt 29
+External interrupt 30
+External interrupt 31
+For detailed description of the core-local interrupt sources, please refer to Section 1.9.3.
+The mapping of the 32 external interrupts to the interrupt sources in SoC is managed using the Interrupt
+Matrix. Please refer to Chapter 12 Interrupt Matrix for details on how to configure and map to SoC interrupts to
+CLIC interrupts for each HP core.
+1.9.2.4
+CLIC Parameters
+The available features of a CLIC implementation can be discovered using the registers mclicbase and
+clicinfo:
+• mclicbase is a read-only CSR which holds the base address of the CLIC memory-mapped registers for
+machine mode.
+• clicinfo is a memory-mapped read-only register. It consists of the following fields:
+– NUM_INTERRUPTS: Represents the number of interrupts supported by the current CLIC
+implementation
+– CLICINTCTLBITS: Represents the number of programmable higher bits in clicintctl[i] and
+mintthresh.TH for encoding the level and priority of each interrupt
+• Once the value of the mclicbase is known, the full address of the clicinfo can be computed by adding
+the corresponding address offset of 0x0004 (shown in Section 1.9.2.6) to the mclicbase value.
+1.9.2.5
+Interrupt Level and Priority Encoding
+Table 1.9-2 shows the possible ways that level and priority can be specified for CLIC interrupts, based on the
+configured values of mcliccfg.MNLBITS and clicintctl[i] registers, and the fixed value of the CLICINTCTLBITS
+
+======================================================================
+=== Page 113 ===
+======================================================================
+ Note that P4 and S31's CLIC and CLINT base addresses and reg layout differ! Check S31's IDF register implementation
+parameter (0x3 for this CLIC implementation).
+Table 1.9-2. CLIC Level and Priority Encoding with CLICINTCTLBITS=3
+mnlbits[3:0]
+clicintctl[i][7:0]
+Interrupt Levels
+Interrupt Priorities
+ppp.....
+31, 63, 95, 127, 159, 191, 223, 255
+lpp.....
+127, 255
+31, 63, 95, 127
+llp.....
+63, 127, 191, 255
+31, 63
+3-8
+lll.....
+31, 63, 95, 127, 159, 191, 223, 255
+mcliccfg.MNLBITS decides the number of higher bits in the clicintctl[i] registers which are to be used to
+encode the level (indicated as ’l’ in the above table), while the remaining lower bits are used to encode the
+priority (indicated as ’p’ in the above table). Since only the higher bits of clicintctl[i] are writeable as per the
+CLICINTCTLBITS) parameter, hence the remaining lower bits are tied to 1 (indicated as ’.’ in the above
+table).
+Level and priority are both used to give preference to one interrupt over the other. A higher level interrupt can
+preempt a lower level interrupt (assuming that mstatus.MIE is manually enabled inside an interrupt handler for
+allowing nesting), but in the case of two interrupts with same level and different priorities, the higher priority
+interrupt cannot preempt the lower priority interrupt while it is being serviced by the CPU. Thus, priority is only
+used as a tie-breaker to decide between two pending interrupts with the same level. Finally, if both level and
+priority are same for two interrupts, the one with the higher ID value is given preference.
+The CPU internally uses the effective interrupt level threshold, which is defined as the maximum of
+mintstatus.MIL and mintthresh.TH, to decide if a new pending machine mode interrupt will be allowed to
+preempt the execution of an ongoing machine mode interrupt handler.
+1.9.2.6
+CLIC Memory-Mapped Register Summary
+Listed below are all the CLIC machine mode memory-mapped registers. The address of each register is
+specified as an offset to the value of mclicbase, as well as the absolute address.
+Note that the clicintip[i], clicintie[i], clicintattr[i] and clicintctl[i] registers are all byte sized. Still word and
+half-word aligned accesses to these registers will be performed atomically.
+Machine Mode CLIC Registers
+Name
+Description
+MCLICBASE Offset
+Absolute Address
+Access
+mcliccfg
+CLIC machine mode global configuration register
+0x0000
+0x20800000
+R/W
+clicinfo
+CLIC information register
+0x0004
+0x20800004
+RO
+mintthresh
+CLIC machine mode interrupt threshold register
+0x0008
+0x20800008
+R/W
+clicintip[3]
+Pending register for CLINT software interrupts
+0x100C
+0x2080100C
+R/W
+clicintie[3]
+Enable register for CLINT software interrupts
+0x100D
+0x2080100D
+R/W
+clicintattr[3]
+Attribute register for CLINT software interrupts
+0x100E
+0x2080100E
+R/W
+clicintctl[3]
+Level control register for CLINT software inter-
+0x100F
+0x2080100F
+R/W
+rupts
+clicintip[7]
+Pending register for CLINT timer interrupts
+0x101C
+0x2080101C
+R/W
+clicintie[7]
+Enable register for CLINT timer interrupts
+0x101D
+0x2080101D
+R/W
+clicintattr[7]
+Attribute register for CLINT timer interrupts
+0x101E
+0x2080101E
+R/W
+
+======================================================================
+=== Page 114 ===
+======================================================================
+ Note that P4 and S31's CLIC and CLINT base addresses and reg layout differ! Check S31's IDF register implementation
+Name
+Description
+MCLICBASE Offset
+Absolute Address
+Access
+clicintctl[7]
+Level control register for CLINT timer interrupts
+0x101F
+0x2080101F
+R/W
+clicintip[16]
+Pending register for external interrupt 0
+0x1040
+0x20801040
+R/W
+clicintie[16]
+Enable register for external interrupt 0
+0x1041
+0x20801041
+R/W
+clicintattr[16]
+Attribute register for external interrupt 0
+0x1042
+0x20801042
+R/W
+clicintctl[16]
+Level control register for external interrupt 0
+0x1043
+0x20801043
+R/W
+clicintip[17]
+Pending register for external interrupt 1
+0x1044
+0x20801044
+R/W
+clicintie[17]
+Enable register for external interrupt 1
+0x1045
+0x20801045
+R/W
+clicintattr[17]
+Attribute register for external interrupt 1
+0x1046
+0x20801046
+R/W
+clicintctl[17]
+Level control register for external interrupt 1
+0x1047
+0x20801047
+R/W
+...
+...
+...
+...
+...
+clicintip[n]
+Pending register for nth external interrupt ⁴
+0x1040 + 4*n
+0x20801040 + 4*n
+R/W
+clicintie[n]
+Enable register for nth external interrupt ⁴
+0x1041 + 4*n
+0x20801041 + 4*n
+R/W
+clicintattr[n]
+Attribute register for nth external interrupt ⁴
+0x1042 + 4*n
+0x20801042 + 4*n
+R/W
+clicintctl[n]
+Level control register for nth external interrupt ⁴
+0x1043 + 4*n
+0x20801043 + 4*n
+R/W
+....
+....
+....
+....
+....
+clicintip[46]
+Pending register for external interrupt 30
+0x10B8
+0x208010B8
+R/W
+clicintie[46]
+Enable register for external interrupt 30
+0x10B9
+0x208010B9
+R/W
+clicintattr[46] Attribute register for external interrupt 30
+0x10BA
+0x208010BA
+R/W
+clicintctl[46]
+Level control register for external interrupt 30
+0x10BB
+0x208010BB
+R/W
+clicintip[47]
+Pending register for external interrupt 31
+0x10BC
+0x208010BC
+R/W
+clicintie[47]
+Enable register for external interrupt 31
+0x10BD
+0x208010BD
+R/W
+clicintattr[47] Attribute register for external interrupt 31
+0x10BE
+0x208010BE
+R/W
+clicintctl[47]
+Level control register for external interrupt 31
+0x10BF
+0x208010BF
+R/W
+⁴It must be noted that the external interrupts are assigned to CLIC interrupt IDs 16 and onwards. Thus, the MCLICBASE offset can also
+be written as 0x1000 + 4*i, where ”i” represents the CLIC ID, and n = i + 16. On the other hand, the descriptions of these registers use the
+CLIC index ”i” to specify the offset instead of the external interrupt index ”n”, which is used here just for a matter of convenience.
+
+======================================================================
+=== Page 115 ===
+======================================================================
+ Note that P4 and S31's CLIC and CLINT base addresses and reg layout differ! Check S31's IDF register implementation
+1.9.2.7
+CLIC Memory-Mapped Register Description
+Register 1.82. mcliccfg (0x20800000)
+(reserved)
+(reserved)
+MNLBITS
+NMBITS
+0x00000
+0x0
+0x0
+Reset
+MNLBITS Configures the number of upper bits that are used globally (for each HP core) to encode
+the interrupt level in all the 8-bit clicintctl[i] registers for each machine mode interrupt.
+The only allowed values are in the range 0-8. Any higher value will be clamped to 8.
+(R/W)
+NMBITS Configures the number of bits in clicintattr[i].MODE to be used globally (for each HP core)
+to represent the mode of an interrupt. For systems with machine mode only, this is hardwired to
+0. This indicates that the clicintattr[i].MODE field is hardwired to 0x3 and therefore all interrupts
+are in machine mode only. (RO)
+Register 1.83. clicinfo (0x20800004)
+NUM_INTERRUPTS
+CLICINTCTLBITS
+(reserved)
+(reserved)
+0x00
+0x3
+0x00
+0x0030
+Reset
+NUM_INTERRUPTS Represents the number of interrupts supported by this implementation of CLIC.
+Hardwired to 48. (RO)
+CLICINTCTLBITS Represents the number of higher bits which are actually programmable in the 8-bit
+clicintctl[i] registers. Hardwired to 0x3. (RO)
+
+======================================================================
+=== Page 116 ===
+======================================================================
+ Note that P4 and S31's CLIC and CLINT base addresses and reg layout differ! Check S31's IDF register implementation
+Register 1.84. mintthresh (0x20800008)
+(reserved)
+TH
+0x0
+0x000000
+Reset
+TH Configures the 8-bit level threshold of machine mode interrupts.
+Note that the effective threshold level for machine mode interrupts is the maximum of mint-
+thresh.TH and mintstatus.MIL. All machine mode pending interrupts with levels less than or equal
+to the effective threshold level are not allowed to preempt the execution.
+(R/W)
+Register 1.85. clicintip[i] (0x20801000 + 4*i)
+(reserved)
+IP[i]
+0x00
+Reset
+IP[i] Represents the pending state for ith CLIC machine mode interrupt.
+0: ith interrupt is not pending
+1: ith interrupt is pending
+• When the ith interrupt is configured as level type using clicintattr[i].TRIG, this bit is read-only,
+and to clear it the interrupt must be cleared from source.
+• When the ith interrupt is configured as edge triggered using clicintattr[i].TRIG, this bit is R/W,
+and thus it is to be cleared by writing 0 to this register.
+(R/W)
+Register 1.86. clicintie[i] (0x20801001 + 4*i)
+(reserved)
+IE[i]
+0x00
+Reset
+IE[i] Configures whether to enable the ith CLIC machine mode interrupt.
+0: Disable
+1: Enabled
+(R/W)
+
+======================================================================
+=== Page 117 ===
+======================================================================
+ Note that P4 and S31's CLIC and CLINT base addresses and reg layout differ! Check S31's IDF register implementation
+Register 1.87. clicintattr[i] (0x20801002 + 4*i)
+(reserved)
+MODE
+TRIG
+SHV
+0x3
+0x0
+0x0
+0x0
+Reset
+SHV Configures hardware vectoring for the ith CLIC machine mode interrupt.
+0: ith interrupt is not hardware vectored. It means that upon taking this interrupt, the CPU will
+jump to the address configured in mtvec.
+1: ith interrupt is hardware vectored. It means that upon taking this interrupt, the CPU will jump
+to the word address stored at (mtvt + 4*i) relative to the base address configured in mtvt.
+(R/W)
+TRIG Configures the trigger type and polarity of the ith CLIC machine mode interrupt.
+0x0: interrupt is positive level-triggered
+0x1: interrupt is positive edge-triggered
+0x2: interrupt is negative level-triggered
+0x3: interrupt is negative edge-triggered
+(R/W)
+MODE Configures the privilege mode of the ith CLIC interrupt.
+This is hardwired to 0x3 as user mode interrupts are not supported.
+(RO)
+Register 1.88. clicintctl[i] (0x20801003 + 4*i)
+(reserved)
+CTL[i]
+0x0
+0x1f
+Reset
+CTL[i] Configures the level and priority of the ith CLIC machine mode interrupt.
+• Since the CLICINTCTLBITS parameter is 3 in this implementation of CLIC, therefore the
+actual number of bits implemented in clicintctl[i] is the same, and thus the lower 5 bits of
+this register are hardwired to 1.
+• The configured value of mcliccfg.MNLBITS determines the number of higher bits in
+clicintctl[i] which encode the level of the interrupt, while the remaining lower bits encode
+the priority.
+(R/W)
+
+======================================================================
+=== Page 118 ===
+======================================================================
+ Note that P4 and S31's CLIC and CLINT base addresses and reg layout differ! Check S31's IDF register implementation
+1.9.3
+Core-Local Interrupts (CLINT)
+1.9.3.1
+Overview
+CLINT is the core-local interrupt (CLINT) block that includes software and timer interrupts and corresponding
+configuration registers. CLINT interrupt sources with IDs as shown below:
+Table 1.9-4. Core-Local Interrupt Sources
+ID
+Description
+M mode software interrupt
+M mode timer interrupt
+1.9.3.2
+Features
+• Two local level-type machine mode interrupt sources with programmable priorities
+• Memory-mapped configuration and status registers
+• 64-bit timer with interrupt functionality, overflow flags, and three sampling modes
+• Software interrupt
+1.9.3.3
+Software Interrupt
+An M mode software interrupt is controlled by setting or clearing the memory-mapped register MSIP.
+The register bit clicintie[3] must be set for enabling the software interrupt at the core level.
+Pending state of this interrupt can be checked by reading the corresponding bit of clicintip register of interrupt
+3 in CLIC, that is clicintip[3] bit.
+1.9.3.4
+Timer Counter and Interrupt
+The timer counter can be enabled by setting the mtime_EN bit in mtimectl. mtimecmplo and mtimecmphi
+registers are set to the value for comparison with system timer with lower and higher 32 bits respectively. The
+CPU provides two local memory-mapped 32-bit wide registers mtimeloadlo and mtimeloadhi, which has both
+read/write access, to load the system timer with a specific value.
+Interrupt for M mode is asserted when 64-bit value of system timer value exceeds the 64-bit combined value
+of mtimecmplo and mtimecmphi.
+Pending state of timer interrupt is reflected as IP bit of clicintip register of interrupt 7 in CLIC.
+For de-asserting the pending timer interrupt in M mode, either IE bit of clicintie register of interrupt 7 in CLIC
+has to be cleared or the value of the mtimecmplo and mtimecmphi register needs to be updated.
+1.9.3.5
+Register Summary
+The addresses in this section are relative to CPU sub-system base address provided in Figure 7.3-1 in Chapter
+7 System and Memory.
+
+======================================================================
+=== Page 119 ===
+======================================================================
+ Note that P4 and S31's CLIC and CLINT base addresses and reg layout differ! Check S31's IDF register implementation
+Name
+Description
+Address
+Access
+msip
+Core-local machine software interrupt pending register
+0x0000
+R/W
+mtimecmplo
+Lower 32 bits of the core-local machine timer compare
+0x4000
+R/W
+value
+mtimecmphi
+Higher 32-bit core-local machine timer compare value
+0x4004
+R/W
+mtimeloadlo
+Lower 32 bits of core-local machine timer load value
+0x4008
+R/W
+mtimeloadhi
+Higher 32 bits of core-local machine timer load value
+0x400C
+R/W
+mtimectl
+Core-local machine timer interrupt control/status regis-
+0x4010
+R/W
+ter
+mtimelo
+Lower 32 bits of core-local timer counter value
+0xBFF8
+RO
+mtimehi
+Higher 32 bits core-local timer counter value
+0xBFFC
+RO
+1.9.3.6
+Register Description
+The addresses in this section are relative to CPU sub-system base address provided in Figure 7.3-1 in Chapter
+7 System and Memory.
+Register 1.89. msip (0x0000)
+reserved
+MSIP
+0x00000000
+Reset
+MSIP Configures the pending status of the machine software interrupt.
+0: Not pending
+1: Pending
+(R/W)
+Register 1.90. mtimecmplo (0x4000)
+MTIMECMPLO
+0xFFFFFFFF
+Reset
+MTIMECMPLO Represents the value to compare with the lower 32 bits of the system counter. (R/W)
+
+======================================================================
+=== Page 120 ===
+======================================================================
+ Note that P4 and S31's CLIC and CLINT base addresses and reg layout differ! Check S31's IDF register implementation
+Register 1.91. mtimecmphi (0x4004)
+MTIMECMPHI
+0xFFFFFFFF
+Reset
+MTIMECMPHI Represents the value to compare with the higher 32 bits of the system counter. (R/W)
+Register 1.92. mtimeloadlo (0x4008)
+MTIMELOADLO
+0x00000000
+Reset
+MTIME_LOADLO Represents the lower 32 bits to be loaded to the system counter. (R/W)
+Register 1.93. mtimeloadhi (0x400C)
+MTIMELOADHI
+0x00000000
+Reset
+MTIME_LOADHI Represents the higher 32 bits to be loaded to the system counter. (R/W)
+
+======================================================================
+=== Page 121 ===
+======================================================================
+
+Register 1.94. mtimectl (0x4010)
+MTIME_SAM
+MTIME_OVF
+MTIME_EN
+reserved
+0x0000000
+0x0
+0x0
+0x1
+Reset
+MTIME_EN Configures whether to enable the system counter.
+1: Enable
+0: Disable
+This bit is implemented only in Core 0 MTIMERCTL register. Writing the corresponding bit of
+Core 1’s MTIMERCTL has no effect on the system timer. Since Core 1 can access Core 0’s CLINT
+registers, it can run or pause the timer from MTIMERCTL register of Core 0.
+(R/W)
+MTIME_OVF Configures the overflow bit of the system counter.
+1: Represents that system counter value is maximum, that is 0xFFFFFFFFFFFFFFFF
+0: Otherwise
+When the counter value is 0xFFFFFFFFFFFFFFFF, which is the maximum value, then this bit is
+set as 1 by hardware. Software can clear this bit by writing 0 to it. Writing 1 has no effect. (R/W)
+MTIME_SAM Configures the sampling mode of MTIMELO and MTIMEHI registers to allow accurate
+reading of the 64-bit system count. For the 64-bit system count, only one half of the read can
+be performed atomically. Therefore, the sampling mode allows the value of the other half to be
+sampled and stored in a buffer, and upon the next read of the other half, the sampled value from
+this buffer is retrieved instead of the actual counter.
+0x0: No sampling (Default)
+0x1: Sample upper half of the system count on reading MTIMELO
+0x2: Sample lower half of the system count on reading MTIMEHI
+0x3: Sample the other half of the system count on reading MTIMELO or MTIMEHI
+(R/W)
+Register 1.95. mtimelo (0xBFF8)
+MTIMELO
+0x00000000
+Reset
+MTIMELO Represents the current value of the lower 32 bits of the system counter. (RO)
+
+======================================================================
+=== Page 122 ===
+======================================================================
+ Note that P4 and S31's CLIC and CLINT base addresses and reg layout differ! Check S31's IDF register implementation
+Register 1.96. mtimehi (0xBFFC)
+MTIMEHI
+0x00000000
+Reset
+MTIMEHI Represents the current value of the higher 32 bits of the system counter. (RO)
+Espressif Systems
+Submit Documentation Feedback
+ESP32-P4 Chip Revision v1.3 TRM

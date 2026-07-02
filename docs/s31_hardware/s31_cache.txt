@@ -1,0 +1,18 @@
+4.1.3.4 Cache
+The ESP32-S31 adopts a cache architecture in which each CPU (Core0 and Core1) has a private instruction
+cache, while both CPUs share a unified data cache.
+Feature List
+• 32KBL1 instruction cache, 64 B block size, two-way set associative
+• 64KBL1 data cache, 64 B block size, two-way set associative, supporting write-through and write-back
+policies
+• Cacheable and non-cacheable access
+• Pre-load function
+• Lock function
+• Critical word first and early restart
+
+Cached regions (0x40000000–0x4FFFFFFF for flash, 0x50000000–0x53FFFFFF for PSRAM)
+  require explicit manual cache invalidation and write-back when mixing cached and
+  uncached accesses or when handing off between boot stages.  OpenSBI and early
+  Linux bootstrap code should therefore use only uncached regions
+  (PSRAM direct: 0xC0000000+) until the respective
+  MMU / cache maintenance routines are fully operational. Flash is read only therefore cached is okay.

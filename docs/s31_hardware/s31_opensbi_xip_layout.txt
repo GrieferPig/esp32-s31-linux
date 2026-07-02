@@ -1,0 +1,83 @@
+ESP32-S31 OpenSBI Flash XIP layout
+
+Goal:
+- Keep OpenSBI text/rodata in flash and execute through the flash MMU window.
+- Keep OpenSBI writable data, BSS, scratch, stack, and heap in HP SRAM.
+- Keep the OpenSBI partition size fixed at 512KB.
+
+Address contract:
+- Bootloader maps the opensbi partition for instruction access at 0x40030000.
+- OpenSBI must be linked with FW_TEXT_START=0x40030000.
+- OpenSBI writable sections are linked with FW_RW_START=0x2F040000.
+- The bootloader verifies that the mmap pointer equals 0x40030000 before mret.
+
+Partition image format:
+- Offset 0: raw OpenSBI fw_jump.bin.
+- Next byte after fw_jump.bin: OpenSBI FDT blob.
+- Padding: zero bytes up to partition_size - 4.
+- Last 4 bytes of the 512KB partition: little-endian uint32 file offset of the FDT blob.
+
+Bootloader handoff:
+- The bootloader reads the last 4 bytes of the opensbi partition.
+- It computes fdt_addr = mapped_opensbi_base + fdt_offset.
+- Before mret, the bootloader disables HP_APM, HP_MEM_APM, and CPU_APM
+  function filters through their FUNC_CTRL registers.
+- Before mret, the bootloader clears mstatus.MPRV and clears pmpcfg0..3 plus
+  pmpaddr0..15. Any locked PMP entries will remain visible in the logged cfg
+  values.
+- Before mret, the bootloader writes mie=0 and leaves mstatus.MIE/MPIE clear.
+  OpenSBI enters M-mode with global interrupts disabled; it must enable and
+  route interrupts itself after replacing the bootloader/IDF state.
+- Before mret, the bootloader runs quick probes:
+  - HP SRAM read/write/execute.
+  - Flash XIP read/execute. Direct mapped flash write is skipped because XIP
+    flash is expected read-only.
+  - PSRAM read/write/execute using the uncached write alias and cached execute
+    alias near the top of mapped PSRAM.
+  - OpenSBI early access path:
+    - .data copy source LMA in the mapped flash XIP image.
+    - .data VMA at FW_RW_START in HP SRAM.
+    - .bss and initial stack area in HP SRAM.
+    - One AMO operation against FW_RW_START.
+- Before mret, the bootloader installs a temporary mtvec trap logger. If
+  OpenSBI traps before replacing mtvec, the logger prints mcause, mepc, mtval,
+  mstatus, mtvec, and mscratch, then restarts.
+- OpenSBI's early _start_hang path also writes a trap mailbox at 0x2F07E000:
+  - word 0: magic 0x53335450
+  - word 1: mcause
+  - word 2: mepc
+  - word 3: mtval
+  - word 4: mstatus
+  - word 5: mtvec
+  - word 6: mscratch
+  - word 7: mhartid
+  The bootloader checks and clears this mailbox at the start of app_main, so a
+  reset after OpenSBI's temporary mtvec=_start_hang path can still reveal the
+  original OpenSBI fault PC.
+- It jumps to mapped_opensbi_base in M-mode with:
+  - a0 = 0
+  - a1 = fdt_addr
+
+Build-time checks:
+- The generated fw_payload.bin must be exactly 512KB.
+- OpenSBI + FDT must fit in the first 512KB - 4 bytes.
+- Link-time assertions require FW_TEXT_START=0x40030000 and FW_RW_START in HP SRAM.
+
+OpenSBI XIP relocation rule:
+- fw_base.S copies .data from flash LMA to FW_RW_START before the boot lottery.
+- The R_RISCV_RELATIVE relocation loop then patches pointers inside .data, for
+  example platform.ops at platform + 0x60.
+- Do not copy .data a second time after relocation. Doing so restores the raw
+  flash image, zeros relocated pointers, and can fault on a null load in
+  sbi_platform_ops().
+
+Early fault note:
+- OpenSBI's first instructions copy .data from flash LMA to FW_RW_START.
+- A store/AMO access fault before the OpenSBI banner usually points at handoff
+  protection state, not the FDT offset. Check APM FUNC_CTRL, PMP, MPRV, and
+  the pre-handoff probe log.
+- If the OpenSBI early access probe passes but the temporary mtvec logger
+  reports a fault, decode the logged mepc against fw_jump.elf. If the CPU still
+  lockups without the temporary trap log, check the next boot for the
+  "previous OpenSBI early trap" mailbox print. Decode that mepc against
+  fw_jump.elf.

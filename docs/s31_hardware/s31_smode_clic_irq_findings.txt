@@ -1,0 +1,144 @@
+ESP32-S31 S-mode CLIC interrupt findings
+Date: 2026-06-27
+Cleaned/updated: 2026-06-28
+Ground truth: docs/s_mode_clic_interrupt.md
+
+Scope
+-----
+This file keeps only the current, non-obsolete findings for configuring
+ESP32-S31 CLIC interrupts to S-mode.  Older negative tests that were caused by
+missing CLIC multi-privilege configuration, PASS_LEVEL-only routing attempts,
+or S/U CLIC-base mirror confusion have been removed.
+
+Current model
+-------------
+- ESP32-S31 HP core is a pure CLIC-mode core.  mtvec.MODE and stvec.MODE read
+  back as CLIC mode 0x3.
+- The standard RISC-V interrupt path is not available for this bring-up:
+  mie/mip/mideleg/uie/uip are unavailable or hardwired, and CSR sie (0x104)
+  is illegal from both M-mode and S-mode.
+- mideleg is hardwired to 0.  In CLIC mode, interrupt target privilege is
+  selected by each implemented CLIC slot's clicintattr[i].MODE field after
+  mcliccfg.NMBITS has been configured.
+- mcause contains implementation status bits in the upper bits on traps.
+  Always parse the cause/interrupt ID with:
+      cause_code = mcause & 0xfff
+- S-mode can clear IP bits directly using the S-mode CLIC base address.
+  On S31, the non-standard S-mode CLIC base is available at CSR 0x150 (`sclicbase`),
+  which evaluates to `0x10A00000`. S-mode must write to `sclicbase + 0x1000 + 4*i`
+  to clear the pending bit. CPU_APM must be configured by M-mode to permit S-mode
+  peripheral access.
+
+CLIC bases and IDs
+------------------
+- M CLIC base:
+      mclicbase CSR 0x350 = 0x10800000
+- Per-interrupt register block:
+      0x10801000 + 4 * raw_clic_id
+      byte +0: clicintip
+      byte +1: clicintie
+      byte +2: clicintattr
+      byte +3: clicintctl
+- External raw CLIC IDs are 16..47.  When writing interrupt matrix SOURCE_MAP
+  registers directly, write the raw CLIC ID, not an ESP-IDF allocator interrupt
+  number.
+- Implemented CLIC slots observed in scans:
+      local/system: 1, 3, 5, 7, 11
+      external:     16..47
+  Other raw IDs in 0..47 read as unimplemented/reserved in the CLIC attr scan.
+
+Required S-mode CLIC configuration
+----------------------------------
+1. Enable multi-privilege CLIC mode in mcliccfg.
+
+   The relevant field is NMBITS[6:5].  Configure effective NMBITS=1 before
+   relying on clicintattr.MODE for M/S/U routing.
+
+   Example:
+       volatile uint32_t *mcliccfg = (volatile uint32_t *)0x10800000;
+       *mcliccfg = (*mcliccfg & ~(3U << 5)) | (1U << 5);
+
+2. Configure the target CLIC slot through the M CLIC per-interrupt word.
+
+   Example for raw CLIC ID 1, commonly used as Supervisor Software Interrupt:
+
+       volatile uint32_t *clicint_1 =
+           (volatile uint32_t *)(0x10801000 + 4 * 1);
+
+       /*
+        * Write ATTR before IP to ensure hardware recognizes edge-triggering!
+        * byte 2: clicintattr = 0x42   MODE=1 (S), TRIG=1, SHV=0
+        * byte 3: clicintctl  = 0xff   highest level/priority
+        * byte 1: clicintie   = 0x01   enable
+        * byte 0: clicintip   = 0x01   trigger pending
+        */
+       volatile uint8_t *c = (volatile uint8_t *)clicint_1;
+       c[2] = 0x42;
+       c[3] = 0xff;
+       c[1] = 0x01;
+       c[0] = 0x01;
+
+   ESP-IDF privilege encodings used for MODE:
+       PRV_U = 0
+       PRV_S = 1
+       PRV_M = 3
+
+3. Configure stvec for S-mode CLIC trap entry.
+
+       csrw stvec, ((handler_base & ~0x3f) | 3)
+
+   The base must be 64-byte aligned.  stvec.MODE reads back as 3.
+
+4. Enable S-mode interrupt state before mret to S-mode.
+
+       mstatus.SIE  = 1
+       mstatus.SPIE = 1
+
+   Do not use CSR sie; it is illegal on S31.
+
+5. If the interrupt is an external peripheral source, connect that peripheral
+   source to the selected raw CLIC ID through the interrupt matrix SOURCE_MAP.
+   The CLIC slot's MODE controls the delivery privilege.  Do not treat
+   interrupt matrix PASS_LEVEL alone as sufficient S-mode delivery.
+
+6. In the S-mode handler, read sclicbase to clear the pending bit directly.
+
+       static void __attribute__((interrupt("supervisor"), aligned(64)))
+       test_s_clic_handler(void)
+       {
+           uint32_t sclicbase;
+           __asm__ volatile ("csrr %0, 0x150" : "=r"(sclicbase));
+           
+           volatile uint8_t *ip = (volatile uint8_t *)(sclicbase + 0x1000 + 4 * 1);
+           *ip = 0;          /* clear clicintip for the relevant ID */
+       }
+
+7. PMP and APM Requirements for S-mode:
+   - M-mode must configure PMP (e.g. pmpaddr0=-1, pmpcfg0=0x1F) to allow S-mode
+     instruction fetch and data access.
+   - M-mode must configure CPU_APM (Access Permission Monitor) to allow S-mode
+     (REE_MODE 1) to access the peripheral memory space, otherwise accessing
+     sclicbase will cause a Store/Load access fault.
+   - mintthresh (0x347) and sintthresh (0x147) must be cleared to 0.
+
+8. Triggering Interrupts via Software:
+   - Only edge-triggered interrupts (ATTR bit 1 = 1) can have their IP bit written
+     by software.
+   - You must write the ATTR register byte FIRST to configure it as edge-triggered,
+     BEFORE attempting to write 1 to the IP byte. Writing them simultaneously via
+     a 32-bit word write will fail to latch the IP bit.
+
+Confirmed useful observations
+-----------------------------
+- mcliccfg WARL writeback can expose effective NMBITS=1:
+      writing 0x00000063 while preserving existing low fields read back
+      0x00000023 in the observed scan.
+- clicintattr.MODE is writable on implemented M CLIC slots after NMBITS is
+  configured.  Observed readbacks accepted MODE=0, MODE=1, and MODE=3.
+- clicintctl has 3 effective high bits on the tested S31.  The low 5 bits are
+  hardware-forced to 1.  For example:
+      write 0x2a -> read 0x3f
+  This is normal CLIC control-bit WARL behavior and is not a privilege selector.
+- stvec, sscratch, sepc, scause, stval, sstatus, and satp are usable S-mode
+  trap/MMU CSRs for OpenSBI-to-S-mode handoff.  stvec mode bits are forced
+  to 3 with a writable, 64-byte-aligned base.

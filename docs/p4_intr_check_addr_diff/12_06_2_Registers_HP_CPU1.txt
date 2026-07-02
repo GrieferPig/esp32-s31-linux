@@ -1,0 +1,279 @@
+12.6.2
+HP CPU1 Interrupt Matrix Registers
+Register 12.144. CORE1_LP_RTC_INT_MAP_REG (0x0000)
+Register 12.145. CORE1_LP_WDT_INT_MAP_REG (0x0004)
+Register 12.146. CORE1_LP_TIMER_REG_0_INT_MAP_REG (0x0008)
+Register 12.147. CORE1_LP_TIMER_REG_1_INT_MAP_REG (0x000C)
+Register 12.148. CORE1_MB_HP_INT_MAP_REG (0x0010)
+Register 12.149. CORE1_MB_LP_INT_MAP_REG (0x0014)
+Register 12.150. CORE1_PMU_REG_0_INT_MAP_REG (0x0018)
+Register 12.151. CORE1_PMU_REG_1_INT_MAP_REG (0x001C)
+Register 12.152. CORE1_LP_ANAPERI_INT_MAP_REG (0x0020)
+Register 12.153. CORE1_LP_ADC_INT_MAP_REG (0x0024)
+Register 12.154. CORE1_LP_GPIO_INT_MAP_REG (0x0028)
+Register 12.155. CORE1_LP_I2C_INT_MAP_REG (0x002C)
+Register 12.156. CORE1_LP_I2S_INT_MAP_REG (0x0030)
+Register 12.157. CORE1_LP_SPI_INT_MAP_REG (0x0034)
+Register 12.158. CORE1_LP_TOUCH_INT_MAP_REG (0x0038)
+Register 12.159. CORE1_LP_TSENS_INT_MAP_REG (0x003C)
+Register 12.160. CORE1_LP_UART_INT_MAP_REG (0x0040)
+Register 12.161. CORE1_LP_EFUSE_INT_MAP_REG (0x0044)
+Register 12.162. CORE1_LP_SW_INT_MAP_REG (0x0048)
+Register 12.163. CORE1_LP_SYSREG_INT_MAP_REG (0x004C)
+Register 12.164. CORE1_LP_HUK_INT_MAP_REG (0x0050)
+Register 12.165. CORE1_SYS_ICM_INT_MAP_REG (0x0054)
+Register 12.166. CORE1_USB_DEVICE_INT_MAP_REG (0x0058)
+
+Chapter 12 Interrupt Matrix
+Register 12.167. CORE1_SDIO_HOST_INT_MAP_REG (0x005C)
+Register 12.168. CORE1_GDMA_INT_MAP_REG (0x0060)
+Register 12.169. CORE1_SPI2_INT_MAP_REG (0x0064)
+Register 12.170. CORE1_SPI3_INT_MAP_REG (0x0068)
+Register 12.171. CORE1_I2S0_INT_MAP_REG (0x006C)
+Register 12.172. CORE1_I2S1_INT_MAP_REG (0x0070)
+Register 12.173. CORE1_I2S2_INT_MAP_REG (0x0074)
+Register 12.174. CORE1_UHCI0_INT_MAP_REG (0x0078)
+Register 12.175. CORE1_UART0_INT_MAP_REG (0x007C)
+Register 12.176. CORE1_UART1_INT_MAP_REG (0x0080)
+Register 12.177. CORE1_UART2_INT_MAP_REG (0x0084)
+Register 12.178. CORE1_UART3_INT_MAP_REG (0x0088)
+Register 12.179. CORE1_UART4_INT_MAP_REG (0x008C)
+Register 12.180. CORE1_LCD_CAM_INT_MAP_REG (0x0090)
+Register 12.181. CORE1_ADC_INT_MAP_REG (0x0094)
+Register 12.182. CORE1_PWM0_INT_MAP_REG (0x0098)
+Register 12.183. CORE1_PWM1_INT_MAP_REG (0x009C)
+Register 12.184. CORE1_TWAI0_INT_MAP_REG (0x00A0)
+Register 12.185. CORE1_TWAI1_INT_MAP_REG (0x00A4)
+Register 12.186. CORE1_TWAI2_INT_MAP_REG (0x00A8)
+Register 12.187. CORE1_RMT_INT_MAP_REG (0x00AC)
+Register 12.188. CORE1_I2C0_INT_MAP_REG (0x00B0)
+Register 12.189. CORE1_I2C1_INT_MAP_REG (0x00B4)
+Register 12.190. CORE1_TIMERGRP0_T0_INT_MAP_REG (0x00B8)
+Register 12.191. CORE1_TIMERGRP0_T1_INT_MAP_REG (0x00BC)
+Register 12.192. CORE1_TIMERGRP0_WDT_INT_MAP_REG (0x00C0)
+Register 12.193. CORE1_TIMERGRP1_T0_INT_MAP_REG (0x00C4)
+Register 12.194. CORE1_TIMERGRP1_T1_INT_MAP_REG (0x00C8)
+Register 12.195. CORE1_TIMERGRP1_WDT_INT_MAP_REG (0x00CC)
+Register 12.196. CORE1_LEDC_INT_MAP_REG (0x00D0)
+Register 12.197. CORE1_SYSTIMER_TARGET0_INT_MAP_REG (0x00D4)
+Register 12.198. CORE1_SYSTIMER_TARGET1_INT_MAP_REG (0x00D8)
+Register 12.199. CORE1_SYSTIMER_TARGET2_INT_MAP_REG (0x00DC)
+Register 12.200. CORE1_AHB_PDMA_IN_CH0_INT_MAP_REG (0x00E0)
+Register 12.201. CORE1_AHB_PDMA_IN_CH1_INT_MAP_REG (0x00E4)
+
+Chapter 12 Interrupt Matrix
+Register 12.202. CORE1_AHB_PDMA_IN_CH2_INT_MAP_REG (0x00E8)
+Register 12.203. CORE1_AHB_PDMA_OUT_CH0_INT_MAP_REG (0x00EC)
+Register 12.204. CORE1_AHB_PDMA_OUT_CH1_INT_MAP_REG (0x00F0)
+Register 12.205. CORE1_AHB_PDMA_OUT_CH2_INT_MAP_REG (0x00F4)
+Register 12.206. CORE1_AXI_PDMA_IN_CH0_INT_MAP_REG (0x00F8)
+Register 12.207. CORE1_AXI_PDMA_IN_CH1_INT_MAP_REG (0x00FC)
+Register 12.208. CORE1_AXI_PDMA_IN_CH2_INT_MAP_REG (0x0100)
+Register 12.209. CORE1_AXI_PDMA_OUT_CH0_INT_MAP_REG (0x0104)
+Register 12.210. CORE1_AXI_PDMA_OUT_CH1_INT_MAP_REG (0x0108)
+Register 12.211. CORE1_AXI_PDMA_OUT_CH2_INT_MAP_REG (0x010C)
+Register 12.212. CORE1_RSA_INT_MAP_REG (0x0110)
+Register 12.213. CORE1_AES_INT_MAP_REG (0x0114)
+Register 12.214. CORE1_SHA_INT_MAP_REG (0x0118)
+Register 12.215. CORE1_ECC_INT_MAP_REG (0x011C)
+Register 12.216. CORE1_ECDSA_INT_MAP_REG (0x0120)
+Register 12.217. CORE1_KM_INT_MAP_REG (0x0124)
+Register 12.218. CORE1_GPIO_INT0_MAP_REG (0x0128)
+Register 12.219. CORE1_GPIO_INT1_MAP_REG (0x012C)
+Register 12.220. CORE1_GPIO_INT2_MAP_REG (0x0130)
+Register 12.221. CORE1_GPIO_INT3_MAP_REG (0x0134)
+Register 12.222. CORE1_GPIO_PAD_COMP_INT_MAP_REG (0x0138)
+Register 12.223. CORE1_CPU_INT_FROM_CPU_0_MAP_REG (0x013C)
+Register 12.224. CORE1_CPU_INT_FROM_CPU_1_MAP_REG (0x0140)
+Register 12.225. CORE1_CPU_INT_FROM_CPU_2_MAP_REG (0x0144)
+Register 12.226. CORE1_CPU_INT_FROM_CPU_3_MAP_REG (0x0148)
+Register 12.227. CORE1_FLASH_MSPI_INT_MAP_REG (0x0150)
+Register 12.228. CORE1_CSI_BRIDGE_INT_MAP_REG (0x0154)
+Register 12.229. CORE1_DSI_BRIDGE_INT_MAP_REG (0x0158)
+Register 12.230. CORE1_CSI_INT_MAP_REG (0x015C)
+Register 12.231. CORE1_DSI_INT_MAP_REG (0x0160)
+Register 12.232. CORE1_GMII_PHY_INT_MAP_REG (0x0164)
+Register 12.233. CORE1_LPI_INT_MAP_REG (0x0168)
+Register 12.234. CORE1_PMT_INT_MAP_REG (0x016C)
+Register 12.235. CORE1_ETH_MAC_INT_MAP_REG (0x0170)
+Register 12.236. CORE1_USB_OTG_INT_MAP_REG (0x0174)
+
+Chapter 12 Interrupt Matrix
+Register 12.237. CORE1_USB_OTG_ENDP_MULTI_PROC_INT_MAP_REG (0x0178)
+Register 12.238. CORE1_JPEG_INT_MAP_REG (0x017C)
+Register 12.239. CORE1_PPA_INT_MAP_REG (0x0180)
+Register 12.240. CORE1_CORE0_TRACE_INT_MAP_REG (0x0184)
+Register 12.241. CORE1_CORE1_TRACE_INT_MAP_REG (0x0188)
+Register 12.242. CORE1_ISP_INT_MAP_REG (0x0190)
+Register 12.243. CORE1_I3C_MST_INT_MAP_REG (0x0194)
+Register 12.244. CORE1_I3C_SLV_INT_MAP_REG (0x0198)
+Register 12.245. CORE1_USB_OTG11_INT_MAP_REG (0x019C)
+Register 12.246. CORE1_DMA2D_IN_CH0_INT_MAP_REG (0x01A0)
+Register 12.247. CORE1_DMA2D_IN_CH1_INT_MAP_REG (0x01A4)
+Register 12.248. CORE1_DMA2D_OUT_CH0_INT_MAP_REG (0x01A8)
+Register 12.249. CORE1_DMA2D_OUT_CH1_INT_MAP_REG (0x01AC)
+Register 12.250. CORE1_DMA2D_OUT_CH2_INT_MAP_REG (0x01B0)
+Register 12.251. CORE1_PSRAM_MSPI_INT_MAP_REG (0x01B4)
+Register 12.252. CORE1_HP_SYSREG_INT_MAP_REG (0x01B8)
+Register 12.253. CORE1_PCNT_INT_MAP_REG (0x01BC)
+Register 12.254. CORE1_HP_PAU_INT_MAP_REG (0x01C0)
+Register 12.255. CORE1_HP_PARLIO_RX_INT_MAP_REG (0x01C4)
+Register 12.256. CORE1_HP_PARLIO_TX_INT_MAP_REG (0x01C8)
+Register 12.257. CORE1_H264_DMA2D_OUT_CH0_INT_MAP_REG (0x01CC)
+Register 12.258. CORE1_H264_DMA2D_OUT_CH1_INT_MAP_REG (0x01D0)
+Register 12.259. CORE1_H264_DMA2D_OUT_CH2_INT_MAP_REG (0x01D4)
+Register 12.260. CORE1_H264_DMA2D_OUT_CH3_INT_MAP_REG (0x01D8)
+Register 12.261. CORE1_H264_DMA2D_OUT_CH4_INT_MAP_REG (0x01DC)
+Register 12.262. CORE1_H264_DMA2D_IN_CH0_INT_MAP_REG (0x01E0)
+Register 12.263. CORE1_H264_DMA2D_IN_CH1_INT_MAP_REG (0x01E4)
+Register 12.264. CORE1_H264_DMA2D_IN_CH2_INT_MAP_REG (0x01E8)
+Register 12.265. CORE1_H264_DMA2D_IN_CH3_INT_MAP_REG (0x01EC)
+Register 12.266. CORE1_H264_DMA2D_IN_CH4_INT_MAP_REG (0x01F0)
+Register 12.267. CORE1_H264_DMA2D_IN_CH5_INT_MAP_REG (0x01F4)
+Register 12.268. CORE1_H264_REG_INT_MAP_REG (0x01F8)
+Register 12.269. CORE1_ASSIST_DEBUG_INT_MAP_REG (0x01FC)
+Register 12.270. CORE1_DMA2D_IN_CH2_INT_MAP_REG (0x0214)
+Register 12.271. CORE1_DMA2D_OUT_CH3_INT_MAP_REG (0x0218)
+
+Chapter 12 Interrupt Matrix
+Register 12.272. CORE1_AXI_PERF_MON_INT_MAP_REG (0x021C)
+Register 12.273. CORE1_SOURCE_MAP_REG (0x0000 - 0x01FC, 0x0214 - 0x021C)
+(reserved)
+CORE1_SOURCE_SRC_IN_SEC_FLAG
+CORE1_SOURCE_SRC_PASS_IN_SEC
+CORE1_SOURCE_MAP
+Reset
+CORE1_SOURCE_MAP When CORE1_SOURCE_SRC_IN_SEC_FLAG is set to 1, this register can only
+be written by CPU while in Machine Mode.
+Configures this register to map the interrupt signal from the peripheral interrupt sources Source
+to one of CPU1’s peripheral interrupts. The valid configuration range is 16 ~ 47.
+When set to 0 ~ 15, the corresponding peripheral interrupt source is disabled (recommended
+value: 0).
+Other values are invalid.
+For the list of interrupt sources Source, see Table 12.4-1. (R/W)
+CORE1_SOURCE_SRC_PASS_IN_SEC Write 1 to allow the interrupt signal from interrupt source
+Source to be delegated to CPU1’s Machine Mode interrupt. Writable only by the CPU in Ma-
+chine Mode. (R/W)
+CORE1_SOURCE_SRC_IN_SEC_FLAG Write 1 to configure the interrupt signal from interrupt source
+Source as a secure interrupt source (that is, its interrupt mapping can be configured only by the
+CPU running in Machine Mode). Writable only by the CPU in Machine Mode. (R/W)
+Register 12.274. CORE1_INTR_STATUS_REG_0_REG (0x0200)
+CORE1_INTR_STATUS_0
+0x000000
+Reset
+CORE1_INTR_STATUS_0 Represents the status of the interrupt sources from 0 ~ 31. Each bit cor-
+responds to one interrupt source. (RO)
+
+Chapter 12 Interrupt Matrix
+Register 12.275. CORE1_INTR_STATUS_REG_1_REG (0x0204)
+CORE1_INTR_STATUS_1
+0x000000
+Reset
+CORE1_INTR_STATUS_1 Represents the status of the interrupt sources from 32 ~ 63. Each bit
+corresponds to one interrupt source. (RO)
+Register 12.276. CORE1_INTR_STATUS_REG_2_REG (0x0208)
+CORE1_INTR_STATUS_2
+0x000000
+Reset
+CORE1_INTR_STATUS_2 Represents the status register for interrupt sources from 64 ~ 95. Each
+bit corresponds to one interrupt source. (RO)
+Register 12.277. CORE1_INTR_STATUS_REG_3_REG (0x020C)
+CORE1_INTR_STATUS_3
+0x000000
+Reset
+CORE1_INTR_STATUS_3 Represents the status of the interrupt sources from 96 ~ 127. Each bit
+corresponds to one interrupt source. (RO)
+
+Chapter 12 Interrupt Matrix
+Register 12.278. CORE1_CLOCK_GATE_REG (0x0210)
+(reserved)
+CORE1_REG_CLK_EN
+Reset
+CORE1_REG_CLK_EN Configures whether to force interrupt register clock-gate on.
+0: No effect
+1: Force interrupt register clock-gate on
+(R/W)
+Register 12.279. CORE1_INTR_STATUS_REG_4_REG (0x0220)
+CORE1_INTR_STATUS_4
+0x000000
+Reset
+CORE1_INTR_STATUS_4 Represents the status of the interrupt sources from 128 ~ 130. Each bit
+corresponds to one interrupt source. (RO)
+Register 12.280. CORE1_INTR_SIG_IDX_ASSERT_IN_SEC_REG (0x0228)
+(reserved)
+CORE1_INTR_SIG_IDX_ASSERT_IN_SEC
+0x000000
+Reset
+CORE1_INTR_SIG_IDX_ASSERT_IN_SEC Configures which peripheral machine mode interrupt of
+CPU1 is used as the target for the interrupt delegation function. Valid values range from 16
+~ 47. (R/W)
+
+Chapter 12 Interrupt Matrix
+Register 12.281. CORE1_INTR_SEC_STATUS_REG (0x022C)
+CORE1_INTR_SEC_STATUS
+0x000000
+Reset
+CORE1_INTR_SEC_STATUS Represents status of the user mode interrupt signals that have been
+delegated to the machine mode interrupt when CORE1 is in machine mode. (RO)
+Register 12.282. CORE1_INTR_SRC_PASS_IN_SEC_STATUS_0_REG (0x0230)
+CORE1_INTR_SRC_PASS_IN_SEC_STATUS_0
+0x000000
+Reset
+CORE1_INTR_SRC_PASS_IN_SEC_STATUS_0 Represents whether interrupt source 0 ~ 31 has en-
+abled the interrupt delegation function. Each bit corresponds to the enable status of one inter-
+rupt source.
+0: Corresponding interrupt source has not enabled the interrupt delegation function.
+1: Corresponding interrupt source has enabled the interrupt delegation function.
+(RO)
+
+Chapter 12 Interrupt Matrix
+Register 12.283. CORE1_INTR_SRC_PASS_IN_SEC_STATUS_1_REG (0x0234)
+CORE1_INTR_SRC_PASS_IN_SEC_STATUS_1
+0x000000
+Reset
+CORE1_INTR_SRC_PASS_IN_SEC_STATUS_1 Represents whether interrupt source 32 ~ 63 has en-
+abled the interrupt delegation function. Each bit corresponds to the enable status of one inter-
+rupt source.
+0: Corresponding interrupt source has not enabled the interrupt delegation function.
+1: Corresponding interrupt source has enabled the interrupt delegation function.
+(RO)
+Register 12.284. CORE1_INTR_SRC_PASS_IN_SEC_STATUS_2_REG (0x0238)
+CORE1_INTR_SRC_PASS_IN_SEC_STATUS_2
+0x000000
+Reset
+CORE1_INTR_SRC_PASS_IN_SEC_STATUS_2 Represents whether interrupt source 64 ~ 95 has en-
+abled the interrupt delegation function. Each bit corresponds to the enable status of one inter-
+rupt source.
+0: Corresponding interrupt source has not enabled the interrupt delegation function.
+1: Corresponding interrupt source has enabled the interrupt delegation function.
+(RO)
+
+Chapter 12 Interrupt Matrix
+Register 12.285. CORE1_INTR_SRC_PASS_IN_SEC_STATUS_3_REG (0x023C)
+CORE1_INTR_SRC_PASS_IN_SEC_STATUS_3
+0x000000
+Reset
+CORE1_INTR_SRC_PASS_IN_SEC_STATUS_3 Represents whether interrupt source 96 ~ 127 has
+enabled the interrupt delegation function. Each bit corresponds to the enable status of one
+interrupt source.
+0: Corresponding interrupt source has not enabled the interrupt delegation function.
+1: Corresponding interrupt source has enabled the interrupt delegation function.
+(RO)
+Register 12.286. CORE1_INTR_SRC_PASS_IN_SEC_STATUS_4_REG (0x0240)
+CORE1_INTR_SRC_PASS_IN_SEC_STATUS_4
+0x000000
+Reset
+CORE1_INTR_SRC_PASS_IN_SEC_STATUS_4 Represents whether interrupt source 128 ~ 130 has
+enabled the interrupt delegation function. Each bit corresponds to the enable status of one
+interrupt source.
+0: Corresponding interrupt source has not enabled the interrupt delegation function.
+1: Corresponding interrupt source has enabled the interrupt delegation function.
+(RO)
+
+Chapter 12 Interrupt Matrix
+Register 12.287. CORE1_INTERRUPT_REG_DATE_REG (0x03FC)
+(reserved)
+CORE1_INTERRUPT_REG_DATE
+0x2003020
+Reset
+CORE1_INTERRUPT_REG_DATE Version control register. (R/W)

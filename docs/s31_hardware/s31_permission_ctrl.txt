@@ -1,0 +1,10 @@
+4.1.4.11 Permission Control (PMS)
+The Permission Control module in ESP32-S31 is responsible for managing access permissions to memory and
+peripheral registers. It consists of two parts: PMP (Physical Memory Protection) and APM (Access Permission
+Management).
+Feature List
+• access permission management for ROM, HP memory, HP peripheral, and LP peripheral address spaces
+• APM supports each master (such as DMA) to select one of the four security modes
+• access permission configuration for up to 32 address ranges
+• individual permission configuration for each register
+• Interrupt function and exception information record

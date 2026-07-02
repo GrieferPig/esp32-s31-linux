@@ -1,0 +1,11 @@
+RTC WDG not used in start code
+Enabled protection for unmapped memory regions
+Support for external PSRAM on, OPI, 250MHZ, SPIRAM_XIP_FROM_PSRAM not on (NEED TO BE MANUALLY CONFIGURED IN BOOTLOADER)
+PSRAM hardware initialized on startup
+SPIRAM_PRE_CONFIGURE_MEMORY_PROTECTION not on (MANUALLY CONFIGURE IN BOOTLOADER)
+SPI RAM access method: Integrate to memory map only
+ESP_SYSTEM_MEMPROT off
+ESP_INT_WDT off
+ESP_TASK_WDT_EN off
+FREERTOS_UNICORE on
+FREERTOS_CHECK_STACKOVERFLOW: no checking

@@ -1,0 +1,6 @@
+Two MMUs:
+- One Espressif proprietary, used for mapping Flash/PSRAM
+- One Sv32 MMU
+
+CSR:
+SATP: writable

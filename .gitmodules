@@ -1,0 +1,12 @@
+[submodule "busybox"]
+	path = busybox
+	url = ../busybox
+[submodule "bootloader"]
+	path = bootloader
+	url = ../bootloader
+[submodule "opensbi"]
+	path = opensbi
+	url = ../opensbi
+[submodule "linux-6.12"]
+	path = linux-6.12
+	url = ../linux-6.12

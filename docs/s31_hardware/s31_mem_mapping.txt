@@ -1,0 +1,63 @@
+      Based on the "Address Mapping Structure" graph in the Memory Organization
+section, the memory address space is unified for both the High-Performance (HP)
+CPUs (Core 0 and Core 1) and the Low-Power (LP) CPU, but with specific access
+restrictions.
+
+Here is the relationship between the address ranges and their mapped targets:
+
+1. Shared Address Space (Accessible by both HP CPUs and LP CPU)
+
+The following memory and peripheral regions can be accessed by any of the CPUs:
+
+- CPU Sub-system: Mapped to 0x0000_0000 – 0x1FFF_FFFF.
+- HP & LP Peripherals: Mapped across multiple fragmented address ranges:
+  - 0x2000_0000 – 0x200F_FFFF
+  - 0x2020_0000 – 0x202F_FFFF
+  - 0x2040_0000 – 0x204F_FFFF
+  - 0x2060_0000 – 0x206F_FFFF
+  - 0x2070_0000 – 0x2071_FFFF
+  - 0x2080_0000 – 0x2081_FFFF
+- CPU Peripherals: Mapped to 0x2C00_0000 – 0x2C01_FFFF.
+- Debug Peripherals: Mapped to 0x2D00_0000 – 0x2D00_7FFF.
+- LP Memory (32KB): Mapped to 0x2E00_0000 – 0x2E00_7FFF.
+- HP Memory (512KB): Mapped to 0x2F00_0000 – 0x2F07_FFFF.
+
+2. HP CPU Exclusive Space (Inaccessible by the LP CPU)
+
+The following targets are restricted solely to the HP CPUs and cannot be
+accessed by the LP CPU:
+
+- Cache Data Memory: Mapped to 0x2C04_0000 – 0x2C07_FFFF.
+- ROM (320KB): Mapped to 0x2F80_0000 – 0x2F84_FFFF and accessed through the
+    ROM Cache.
+- External FLASH (256MB MAX, 16MB onboard):
+  - Cached Access: Mapped to 0x4000_0000 – 0x4FFF_FFFF and routed through
+        the 32KB Cache and FLASH MMU.
+  - Direct Access: Mapped to 0xA000_0000 – 0xAFFF_FFFF and routed directly
+        to the FLASH MMU (bypassing the cache).
+- External PSRAM (64MB MAX, 16MB onboard):
+  - Cached Access: Mapped to 0x5000_0000 – 0x53FF_FFFF and routed through
+        the 32KB Cache and PSRAM MMU. (don't use for opensbi/linux bring up, use uncached)
+  - Direct Access: Mapped to 0xC000_0000 – 0xC3FF_FFFF and routed directly
+        to the PSRAM MMU (bypassing the cache).
+
+3. Unavailable Address Space
+
+The following address ranges are strictly reserved and are not available for use
+by any of the CPUs:
+
+- 0x2000_0000 – 0x202F_FFFF
+- 0x2040_0000 – 0x204F_FFFF
+- 0x2060_0000 – 0x206F_FFFF
+- 0x2072_0000 – 0x207F_FFFF
+- 0x2082_0000 – 0x2BFF_FFFF
+- 0x2C02_0000 – 0x2C03_FFFF
+- 0x2C08_0000 – 0x2CFF_FFFF
+- 0x2D00_8000 – 0x2DFF_FFFF
+- 0x2E00_8000 – 0x2EFF_FFFF
+- 0x2F08_0000 – 0x2F7F_FFFF
+- 0x2F85_0000 – 0x2FFF_FFFF
+- 0x3000_0000 – 0x3FFF_FFFF
+- 0x5400_0000 – 0x9FFF_FFFF
+- 0xB000_0000 – 0xBFFF_FFFF
+- 0xC400_0000 – 0xFFFF_FFFF

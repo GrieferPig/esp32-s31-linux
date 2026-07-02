@@ -1,0 +1,112 @@
+ESP32-S31 CLIC/CLINT reference
+Cleaned/updated: 2026-06-28
+Ground truth: docs/s_mode_clic_interrupt.md
+
+Overview
+--------
+- ESP32-S31 HP core is CLIC-only.  mtvec.MODE and stvec.MODE are CLIC mode
+  0x3.
+- The basic RISC-V interrupt CSR path is not used:
+      mie, mip, mideleg, uie, uip: unavailable or hardwired
+      sie (CSR 0x104): illegal
+- mideleg is hardwired to 0.  CLIC interrupt delivery privilege is selected by
+  clicintattr[i].MODE once mcliccfg.NMBITS is configured.
+- mcause upper bits contain implementation state on traps.  Always decode the
+  trap cause / interrupt ID with:
+      mcause_code = mcause & 0xfff
+
+CLIC base and register layout
+-----------------------------
+- M CLIC base:
+      mclicbase CSR 0x350 = 0x10800000
+- Global config register:
+      mcliccfg at 0x10800000
+- Per-interrupt registers:
+      0x10801000 + 4 * raw_clic_id
+
+      byte +0: clicintip
+      byte +1: clicintie
+      byte +2: clicintattr
+      byte +3: clicintctl
+
+- External peripheral interrupt targets use raw CLIC IDs 16..47.  When
+  programming interrupt matrix SOURCE_MAP registers by hand, write the raw CLIC
+  ID.  Do not use an ESP-IDF allocator interrupt number unless going through
+  the ESP-IDF helper that performs the translation.
+
+S-mode CLIC setup
+-----------------
+1. Enable multi-privilege CLIC interpretation:
+
+       volatile uint32_t *mcliccfg = (volatile uint32_t *)0x10800000;
+       *mcliccfg = (*mcliccfg & ~(3U << 5)) | (1U << 5);
+
+   This sets effective NMBITS=1 in bits [6:5].
+
+2. Program the target CLIC slot.
+
+   Example for raw CLIC ID 1:
+
+       volatile uint32_t *clicint_1 =
+           (volatile uint32_t *)(0x10801000 + 4 * 1);
+
+       *clicint_1 = (0xffU << 24) |   /* clicintctl */
+                    (0x42U << 16) |   /* clicintattr: MODE=S, TRIG=edge, SHV=0 */
+                    (1U    << 8)  |   /* clicintie */
+                    0U;               /* clicintip */
+
+   MODE encodings used by ESP-IDF:
+       PRV_U = 0
+       PRV_S = 1
+       PRV_M = 3
+
+3. Configure stvec:
+
+       csrw stvec, ((handler_base & ~0x3f) | 3)
+
+   stvec.BASE is writable with 64-byte alignment; MODE is forced to 3.
+
+4. Before mret into S-mode, enable S interrupt state through mstatus:
+
+       mstatus.SIE  = 1
+       mstatus.SPIE = 1
+
+   Do not access CSR sie.
+
+5. For external peripheral interrupts, route the peripheral source through
+   Espressif's interrupt matrix/INTR frontend to the selected raw CLIC ID.
+   The target privilege still comes from clicintattr[i].MODE.
+
+6. S-mode can clear clicintip directly by reading the S-mode specific `sclicbase` (CSR 0x150) and writing to the IP bit at `sclicbase + 0x1000 + 4*i`. M-mode must configure CPU_APM to allow S-mode access to peripheral regions to prevent Store access faults.
+
+S-mode trap/MMU CSRs
+--------------------
+Observed useful S-mode CSRs:
+- stvec: CLIC mode forced; BASE writable and normalized to a 64-byte-aligned
+  value plus mode 3.
+- sscratch: ordinary R/W.
+- sepc: bit 0 forced to 0.
+- scause: writable/WARL; mask with 0xfff when decoding causes from trap state.
+- stval: ordinary R/W.
+- sstatus: WARL; reflects visible status state.
+- satp: writable in the halted-DMI probe, including Sv32 mode bit and PPN bits.
+
+DO NOT USE standard S-mode interrupt CSRs such as sie/sip for this chip.
+
+CLIC slot implementation notes
+------------------------------
+- Implemented slots observed:
+      local/system: raw IDs 1, 3, 5, 7, 11
+      external:     raw IDs 16..47
+- Unimplemented/reserved raw IDs in 0..47 ignore MODE/TRIG/SHV writes and read
+  those fields as zero.
+- clicintctl exposes 3 effective high bits; low 5 bits read as 1.
+- S/U CLIC-base windows are not required for the working S-mode configuration.
+  Configure CLIC slots through the M CLIC base from M-mode/OpenSBI.
+
+CLINT/timer note
+----------------
+The HP core's timer/software interrupt sources are routed through the CLIC
+interrupt mechanism.  Do not assume a standard memory-mapped RISC-V CLINT at
+common CLINT base addresses.  For Linux bring-up, expose timer functionality via
+OpenSBI/M-mode until the final timer interrupt path is implemented.

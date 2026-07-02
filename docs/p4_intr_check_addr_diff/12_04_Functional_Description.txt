@@ -1,0 +1,534 @@
+12.4
+Functional Description
+12.4.1
+Peripheral Interrupt Sources
+ESP32-P4 has 128 peripheral interrupt sources in total. Table 12.4-1 lists all these sources and their
+mapping/status registers.
+• Column “No.”: Peripheral interrupt source number, which can be 0 ~ 82, 84 ~ 98, 100 ~ 111, 113 ~ 130
+(83, 99 and 112 are reserved).
+• Column “Chapter”: The chapter in which the interrupt source is described in detail.
+• Column “Interrupt Source”: Name of the peripheral interrupt source.
+• Column “Interrupt Source Mapping Register”: Registers used for routing the peripheral interrupt sources
+to HP CPU peripheral interrupts.
+• Column “Interrupt Status Register”: Registers used for indicating the interrupt status of peripheral
+interrupt sources.
+– Column “Interrupt Status Register - Bit”: Bit position in status register, indicating the interrupt status.
+– Column “Interrupt Status Register - Name”: Name of status registers.
+The registers in column “Interrupt Source Mapping Register” and column “Interrupt Status Register”
+correspond to the peripheral interrupt source in column “Interrupt Source”. For example, the interrupt source
+
+Chapter 12 Interrupt Matrix
+mapping register for interrupt source RMT_INTR is COREx_RMT_INT_MAP_REG, and its status register is
+COREx_INTR_STATUS_REG_1_REG.
+Note that COREx in the table can be CORE0 (HP CPU0) or CORE1 (HP CPU1).
+
+Chapter 12 Interrupt Matrix
+Table 12.4-1. CPU Peripheral Interrupt Source Mapping/Status Registers and Peripheral Interrupt Sources
+Interrupt Status Register
+No.
+Chapter
+Interrupt Source
+Interrupt Source Mapping Register
+Bit
+Name
+RTC Timer
+LP_RTC_INTR
+COREx LP_RTC_INT_MAP_REG
+COREx_INTR_STATUS_REG_0_REG
+Watchdog Timers (WDT)
+LP_WDT_INTR
+COREx_LP_WDT_INT_MAP_REG
+RTC Timer
+LP_TIMER_REG_0_INTR
+COREx_LP_TIMER_REG_0_INT_MAP_REG
+RTC Timer
+LP_TIMER_REG_1_INTR
+COREx_LP_TIMER_REG_1_INT_MAP_REG
+LP Mailbox
+MB_LP_INTR
+COREx_MB_LP_INT_MAP_REG
+LP Mailbox
+MB_HP_INTR
+COREx_MB_LP_INT_MAP_REG
+Low-Power Management
+PMU_REG_0_INTR
+COREx_PMU_REG_0_INT_MAP_REG
+Low-Power Management
+PMU_REG_1_INTR
+COREx_PMU_REG_1_INT_MAP_REG
+Brown-out Detector
+LP_ANAPERI_INTR
+COREx_PMU_REG_0_INT_MAP_REG
+ADC Controller (ADC)
+LP_ADC_INTR
+COREx_PMU_REG_0_INT_MAP_REG
+GPIO Matrix and IO MUX
+LP_GPIO_INTR
+COREx_LP_GPIO_INT_MAP_REG
+I2C Controller (I2C)
+LP_I2C_INTR
+COREx_LP_I2C_INT_MAP_REG
+I2S Controller (I2S)
+LP_I2S_INTR
+COREx_LP_I2S_INT_MAP_REG
+SPI Controller (SPI)
+LP_SPI_INTR
+COREx_LP_SPI_INT_MAP_REG
+Touch Sensor (TOUCH)
+LP_TOUCH_INTR
+COREx_LP_TOUCH_INT_MAP_REG
+Temperature Sensor (TSENS)
+LP_TSENS_INTR
+COREx_LP_TSENS_INT_MAP_REG
+UART Controller (UART)
+LP_UART_INTR
+COREx_LP_UART_INT_MAP_REG
+eFuse Controller (EFUSE)
+LP_EFUSE_INTR
+COREx_LP_EFUSE_INT_MAP_REG
+Low-Power CPU
+LP_SW_INTR
+COREx_LP_SW_INT_MAP_REG
+System Registers (SYSREG)
+LP_SYSREG_INTR
+COREx_LP_SYSREG_INT_MAP_REG
+Key Manager
+LP_HUK_INTR
+COREx_LP_HUK_INT_MAP_REG
+System Registers (SYSREG)
+SYS_ICM_INTR
+COREx_SYS_ICM_INT_MAP_REG
+USB Serial/JTAG Controller (USB_SERIAL_JTAG)
+USB_DEVICE_INTR
+COREx_USB_DEVICE_INT_MAP_REG
+SD/MMC Host Controller (SDHOST)
+SDIO_HOST_INTR
+COREx_SDIO_HOST_INT_MAP_REG
+GDMA Controller (GDMA-AHB, GDMA-AXI)
+GDMA_INTR
+COREx_GDMA_INT_MAP_REG
+SPI Controller (SPI)
+SPI2_INTR
+COREx_SPI2_INT_MAP_REG
+SPI Controller (SPI)
+SPI3_INTR
+COREx_SPI3_INT_MAP_REG
+I2S Controller (I2S)
+I2S0_INTR
+COREx_I2S0_INT_MAP_REG
+I2S Controller (I2S)
+I2S1_INTR
+COREx_I2S1_INT_MAP_REG
+I2S Controller (I2S)
+I2S2_INTR_0
+COREx_I2S2_INT_MAP_REG
+UART Controller (UART)
+UHCI0_INTR
+COREx_UHCI0_INT_MAP_REG
+UART Controller (UART)
+UART0_INTR
+COREx_UART0_INT_MAP_REG
+
+Chapter 12 Interrupt Matrix
+Interrupt Status Register
+No.
+Chapter
+Interrupt Source
+Interrupt Source Mapping Register
+Bit
+Name
+UART Controller (UART)
+UART1_INTR
+COREx_UART1_INT_MAP_REG
+COREx_INTR_STATUS_REG_1_REG
+UART Controller (UART)
+UART2_INTR
+COREx_UART2_INT_MAP_REG
+UART Controller (UART)
+UART3_INTR
+COREx_UART3_INT_MAP_REG
+UART Controller (UART)
+UART4_INTR
+COREx_UART4_INT_MAP_REG
+LCD and Camera Controller (LCD_CAM)
+LCD_CAM_INTR
+COREx_LCD_CAM_INT_MAP_REG
+ADC Controller (ADC)
+ADC_INTR
+COREx_ADC_INT_MAP_REG
+Motor Control PWM (MCPWM)
+PWM0_INTR
+COREx_PWM0_INT_MAP_REG
+Motor Control PWM (MCPWM)
+PWM1_INTR
+COREx_PWM1_INT_MAP_REG
+Two-Wire Automotive Interface (TWAI)
+TWAI0_INTR
+COREx_TWAI0_INT_MAP_REG
+Two-Wire Automotive Interface (TWAI)
+TWAI1_INTR
+COREx_TWAI1_INT_MAP_REG
+Two-Wire Automotive Interface (TWAI)
+TWAI2_INTR
+COREx_TWAI2_INT_MAP_REG
+Remote Control Peripheral (RMT)
+RMT_INTR
+COREx_RMT_INT_MAP_REG
+I2C Controller (I2C)
+I2C0_INTR
+COREx_I2C0_INT_MAP_REG
+I2C Controller (I2C)
+I2C1_INTR
+COREx_I2C1_INT_MAP_REG
+Timer Group (TIMG)
+TIMERGRP0_T0_INTR
+COREx_TIMERTGRP0_T0_INT_MAP_REG
+Timer Group (TIMG)
+TIMERGRP0_T1_INTR
+COREx_TIMERGRP0_T1_INT_MAP_REG
+Timer Group (TIMG)
+TIMERGRP0_WDT_INTR
+COREx_TIMERGRP0_WDT_INT_MAP_REG
+Timer Group (TIMG)
+TIMERGRP1_T0_INTR
+COREx_TIMRTGRP1_T0_INT_MAP_REG
+Timer Group (TIMG)
+TIMERGRP1_T1_INTR
+COREx_TIMERGRP1_T1_INT_MAP_REG
+Timer Group (TIMG)
+TIMERGRP1_WDT_INTR
+COREx_TIMERGRP1_WDT_INT_MAP_REG
+LED PWM Controller (LEDC)
+LEDC_INTR
+COREx_LEDC_INT_MAP_REG
+System Timer
+SYSTIMER_TARGET0_INTR
+COREx_SYSTIMER_TARGET0_INT_MAP_REG
+System Timer
+SYSTIMER_TARGET1_INTR
+COREx_SYSTIMER_TARGET1_INT_MAP_REG
+System Timer
+SYSTIMER_TARGET2_INTR
+COREx_SYSTIMER_TARGET2_INT_MAP_REG
+GDMA Controller (GDMA-AHB, GDMA-AXI)
+AHB_PDMA_IN_CH0_INTR
+COREx_AHB_PDMA_IN_CH0_INT_MAP_REG
+GDMA Controller (GDMA-AHB, GDMA-AXI)
+AHB_PDMA_IN_CH1_INTR
+COREx_AHB_PDMA_IN_CH1_INT_MAP_REG
+GDMA Controller (GDMA-AHB, GDMA-AXI)
+AHB_PDMA_IN_CH2_INTR
+COREx_AHB_PDMA_IN_CH2_INT_MAP_REG
+GDMA Controller (GDMA-AHB, GDMA-AXI)
+AHB_PDMA_OUT_CH0_INTR
+COREx_AHB_PDMA_OUT_CH0_INT_MAP_REG
+GDMA Controller (GDMA-AHB, GDMA-AXI)
+AHB_PDMA_OUT_CH1_INTR
+COREx_AHB_PDMA_OUT_CH1_INT_MAP_REG
+GDMA Controller (GDMA-AHB, GDMA-AXI)
+AHB_PDMA_OUT_CH2_INTR
+COREx_AHB_PDMA_OUT_CH2_INT_MAP_REG
+GDMA Controller (GDMA-AHB, GDMA-AXI)
+AXI_PDMA_IN_CH0_INTR
+COREx_AXI_PDMA_IN_CH0_INT_MAP_REG
+GDMA Controller (GDMA-AHB, GDMA-AXI)
+AXI_PDMA_IN_CH1_INTR
+COREx_AXI_PDMA_IN_CH1_INT_MAP_REG
+
+Chapter 12 Interrupt Matrix
+Interrupt Status Register
+No.
+Chapter
+Interrupt Source
+Interrupt Source Mapping Register
+Bit
+Name
+GDMA Controller (GDMA-AHB, GDMA-AXI)
+AXI_PDMA_IN_CH2_INTR
+COREx_AXI_PDMA_IN_CH2_INT_MAP_REG
+COREx_INTR_STATUS_REG_2_REG
+GDMA Controller (GDMA-AHB, GDMA-AXI)
+AXI_PDMA_OUT_CH0_INTR
+COREx_AXI_PDMA_OUT_CH0_INT_MAP_REG
+GDMA Controller (GDMA-AHB, GDMA-AXI)
+AXI_PDMA_OUT_CH1_INTR
+COREx_AXI_PDMA_OUT_CH1_INT_MAP_REG
+GDMA Controller (GDMA-AHB, GDMA-AXI)
+AXI_PDMA_OUT_CH2_INTR
+COREx_AXI_PDMA_OUT_CH2_INT_MAP_REG
+RSA Accelerator (RSA)
+RSA_INTR
+COREx_RSA_INT_MAP_REG
+AES Accelerator (AES)
+AES_INTR
+COREx_AES_INT_MAP_REG
+SHA Accelerator (SHA)
+SHA_INTR
+COREx_SHA_INT_MAP_REG
+SHA Accelerator (SHA)
+ECC_INTR
+COREx_ECC_INT_MAP_REG
+ECDSA Digital Signature Peripheral (ECDSA_DS)
+ECDSA_INTR
+COREx_ECDSA_INT_MAP_REG
+Key Manager
+KM_INTR
+COREx_KM_INT_MAP_REG
+GPIO Matrix and IO MUX
+GPIO_INTR0
+COREx_GPIO_INTR0_MAP_REG
+GPIO Matrix and IO MUX
+GPIO_INTR1
+COREx_GPIO_INTR1_MAP_REG
+GPIO Matrix and IO MUX
+GPIO_INTR2
+COREx_GPIO_INTR2_MAP_REG
+GPIO Matrix and IO MUX
+GPIO_INTR3
+COREx_GPIO_INTR3_MAP_REG
+GPIO Matrix and IO MUX
+GPIO_PAD_COMP_INTR
+COREx_GPIO_PAD_COMP_INT_MAP_REG
+System Registers (SYSREG)
+CPU_INTR_FROM_CPU_0
+COREx_CPU_INTR_FROM_CPU_0_MAP_REG
+System Registers (SYSREG)
+CPU_INTR_FROM_CPU_1
+COREx_CPU_INTR_FROM_CPU_1_MAP_REG
+System Registers (SYSREG)
+CPU_INTR_FROM_CPU_2
+COREx_CPU_INTR_FROM_CPU_2_MAP_REG
+System Registers (SYSREG)
+CPU_INTR_FROM_CPU_3
+COREx_CPU_INTR_FROM_CPU_3_MAP_REG
+n/a
+reserved
+reserved
+SPI Controller (SPI)
+FLASH_MSPI_INTR
+COREx_FLASH_MSPI_INT_MAP_REG
+MIPI CSI
+CSI_BRIDGE_INTR
+COREx_CSI_BRIDGE_INT_MAP_REG
+MIPI DSI [to be added later]
+DSI_BRIDGE_INTR
+COREx_DSI_BRIDGE_INT_MAP_REG
+MIPI CSI
+CSI_INTR
+COREx_CSI_INT_MAP_REG
+MIPI DSI [to be added later]
+DSI_INTR
+COREx_DSI_INT_MAP_REG
+Ethernet Media Access Controller (EMAC)
+GMII_PHY_INTR
+COREx_GMII_PHY_INT_MAP_REG
+Ethernet Media Access Controller (EMAC)
+LPI_INTR
+COREx_LPI_INT_MAP_REG
+Ethernet Media Access Controller (EMAC)
+PMT_INTR
+COREx_PMT_INT_MAP_REG
+Ethernet Media Access Controller (EMAC)
+ETH_MAC_INTR
+COREx_ETH_MAC_INT_MAP_REG
+USB 2.0 High-Speed OTG
+USB_OTG_INTR
+COREx_USB_OTG_INT_MAP_REG
+USB 2.0 High-Speed OTG
+USB_OTG_ENDP_MULTI_PROC_INTR
+COREx_USB_OTG_ENDP_MULTI_PROC_INT_MAP_REG
+JPEG Codec
+JPEG_INTR
+COREx_JPEG_INT_MAP_REG
+
+Chapter 12 Interrupt Matrix
+Interrupt Status Register
+No.
+Chapter
+Interrupt Source
+Interrupt Source Mapping Register
+Bit
+Name
+Pixel-Processing Accelerator (PPA)
+PPA_INTR
+COREx_PPA_INT_MAP_REG
+COREx_INTR_STATUS_REG_3_REG
+RISC-V Trace Encoder (TRACE)
+CORE0_TRACE_INTR
+COREx_CORE0_TRACE_INT_MAP_REG
+RISC-V Trace Encoder (TRACE)
+CORE1_TRACE_INTR
+COREx_CORE1_TRACE_INT_MAP_REG
+n/a
+reserved
+reserved
+Image Signal Processor (ISP)
+ISP_INTR
+COREx_ISP_INT_MAP_REG
+I3C Controller [to be added later]
+I3C_MST_INTR
+COREx_I3C_MST_INT_MAP_REG
+I3C Controller [to be added later]
+I3C_SLV_INTR
+COREx_I3C_SLV_INT_MAP_REG
+USB 2.0 Full-Speed OTG
+USB_OTG11_INTR
+COREx_USB_OTG11_INT_MAP_REG
+2D-DMA Controller (2D-DMA)
+DMA2D_IN_CH0_INTR
+COREx_DMA2D_IN_CH0_INT_MAP_REG
+2D-DMA Controller (2D-DMA)
+DMA2D_IN_CH1_INTR
+COREx_DMA2D_IN_CH1_INT_MAP_REG
+2D-DMA Controller (2D-DMA)
+DMA2D_OUT_CH0_INTR
+COREx_DMA2D_OUT_CH0_INT_MAP_REG
+2D-DMA Controller (2D-DMA)
+DMA2D_OUT_CH1_INTR
+COREx_DMA2D_OUT_CH1_INT_MAP_REG
+2D-DMA Controller (2D-DMA)
+DMA2D_OUT_CH2_INTR
+COREx_DMA2D_OUT_CH2_INT_MAP_REG
+SPI Controller (SPI)
+PSRAM_MSPI_INTR
+COREx_PSRAM_MSPI_INT_MAP_REG
+System Registers (SYSREG)
+HP_SYSREG_INTR
+COREx_HP_SYSREG_INT_MAP_REG
+Pulse Count Controller (PCNT)
+PCNT_INTR
+COREx_PCNT_INT_MAP_REG
+n/a
+reserved
+reserved
+Parallel IO Controller (PARLIO)
+HP_PARLIO_RX_INTR
+COREx_HP_PARLIO_RX_INT_MAP_REG
+Parallel IO Controller (PARLIO)
+HP_PARLIO_TX_INTR
+COREx_HP_PARLIO_TX_INT_MAP_REG
+H264 Encoder
+H264_DMA_OUT_CH0_INTR
+COREx_H264_DMA_OUT_CH0_INT_MAP_REG
+H264 Encoder
+H264_DMA_OUT_CH1_INTR
+COREx_H264_DMA_OUT_CH1_INT_MAP_REG
+H264 Encoder
+H264_DMA_OUT_CH2_INTR
+COREx_H264_DMA_OUT_CH2_INT_MAP_REG
+H264 Encoder
+H264_DMA_OUT_CH3_INTR
+COREx_H264_DMA_OUT_CH3_INT_MAP_REG
+H264 Encoder
+H264_DMA_OUT_CH4_INTR
+COREx_H264_DMA_OUT_CH4_INT_MAP_REG
+H264 Encoder
+H264_DMA_IN_CH0_INTR
+COREx_H264_DMA_IN_CH0_INT_MAP_REG
+H264 Encoder
+H264_DMA_IN_CH1_INTR
+COREx_H264_DMA_IN_CH1_INT_MAP_REG
+H264 Encoder
+H264_DMA_IN_CH2_INTR
+COREx_H264_DMA_IN_CH2_INT_MAP_REG
+H264 Encoder
+H264_DMA_IN_CH3_INTR
+COREx_H264_DMA_IN_CH3_INT_MAP_REG
+H264 Encoder
+H264_DMA_IN_CH4_INTR
+COREx_H264_DMA_IN_CH4_INT_MAP_REG
+H264 Encoder
+H264_DMA_IN_CH5_INTR
+COREx_H264_DMA_IN_CH5_INT_MAP_REG
+H264 Encoder
+H264_REG_INTR
+COREx_H264_REG_INT_MAP_REG
+Debug Assistant
+ASSIST_DEBUG_INTR
+COREx_ASSIST_DEBUG_INT_MAP_REG
+
+Chapter 12 Interrupt Matrix
+Interrupt Status Register
+No.
+Chapter
+Interrupt Source
+Interrupt Source Mapping Register
+Bit
+Name
+2D-DMA Controller (2D-DMA)
+DMA2D_IN_CH2_INTR
+COREx_DMA2D_IN_CH2_INT_MAP_REG
+COREx_INTR_STATUS_REG_4_REG
+2D-DMA Controller (2D-DMA)
+DMA2D_OUT_CH3_INTR
+COREx_DMA2D_OUT_CH3_INT_MAP_REG
+AXI Performance Monitor [to be added later]
+AXI_PERF_MON_INTR
+COREx_AXI_PERF_MON_INT_MAP_REG
+
+Chapter 12 Interrupt Matrix
+12.4.2
+Assign Peripheral Interrupt Source to HP CPU Interrupt
+In this section, the following terms are used to describe the operation of the interrupt matrix.
+• SOURCE: Stands for a peripheral interrupt source in Table 12.4-1.
+• COREx_SOURCE_MAP: Stands for an interrupt source mapping register for the peripheral interrupt
+source (SOURCE) of HP CPUx.
+• Num_P: The index of HP CPU interrupts, which can be 16 ~ 47.
+• Interrupt_P: Stands for the HP CPU interrupt numbered as Num_P.
+12.4.2.1
+Assign One Peripheral Interrupt Source (SOURCE) to HP CPUx
+Setting the corresponding source mapping register COREx_SOURCE_MAP of SOURCE to Num_P assigns this
+interrupt source to Interrupt_P of HP CPUx.
+12.4.2.2
+Assign Multiple Peripheral Interrupt Sources (SOURCE) to HP CPUx
+Setting the corresponding source mapping register COREx_SOURCE_MAP of each interrupt source to the
+same Num_P assigns multiple sources to the same Interrupt_P of HP CPUx. Any of these sources can trigger
+CPU Interrupt_P of HP CPUx. In other words, the CPU Interrupt_P will be shared between these interrupt
+sources. When an interrupt signal is generated, HP CPUx should check the interrupt status registers to
+determine which peripheral generated the interrupt. For more information, see Chapter 1 High-Performance
+CPU.
+12.4.2.3
+Disable HP CPUx Peripheral Interrupt Source (SOURCE)
+Writing 0 to the COREx_SOURCE_MAP register disables the corresponding interrupt source.
+12.4.3
+Query Current Interrupt Status of HP CPUx Peripheral Interrupt Source
+After enabling peripheral interrupt sources, users can query the current interrupt status of HP CPUx peripheral
+interrupt sources by reading the bit value in COREx_INTR_STATUS_n (read only). For the mapping between
+COREx_INTR_STATUS_n and peripheral interrupt sources, please refer to Table 12.4-1.
+12.4.4
+Interrupt Remapping
+The RISC-V HP CPUx (x can be 0 or 1) of ESP32-P4 supports Machine Mode and User Mode.
+HP CPUx provides a total of 32 peripheral interrupts. Each peripheral interrupt can be delegated by HP CPUx
+as either a Machine-mode interrupt or a User-mode interrupt.
+Under normal conditions, when HP CPUx is running in Machine Mode, it can respond only to Machine-mode
+interrupts and cannot respond to User-mode interrupts. When HP CPUx is running in User Mode, it can
+respond to both Machine-mode and User-mode interrupts.
+To allow HP CPUx to indirectly respond to User-mode interrupts while operating in Machine Mode, the system
+introduces the Interrupt Remap mechanism.
+
+Chapter 12 Interrupt Matrix
+Interrupt remapping allows software to redirect HP CPUx interrupts originally assigned to User Mode to a single
+specified Machine-mode interrupt. In this way, HP CPUx can indirectly respond to User-mode interrupts while
+running in Machine Mode.
+Interrupt remapping features:
+• Enable interrupt remapping: Each peripheral interrupt source can be independently configured to
+participate in interrupt remapping. For example, setting COREx_SOURCE_SRC_PASS_IN_SEC to 1
+enables interrupt remapping for interrupt matrix source SOURCE.
+• Specify the target Machine-mode interrupt: All remapped User-mode interrupt signals are uniformly
+mapped to the same specified Machine-mode interrupt. For example, writing a value n to
+COREx_INTR_SIG_IDX_ASSERT_IN_SEC_REG selects the Machine-mode interrupt with interrupt number
+n as the remapping target.
+• Access restrictions for remapping-related registers: the following registers and fields related to interrupt
+remapping are writable only when HP CPUx is operating in Machine Mode:
+– COREx_INTR_SIG_IDX_ASSERT_IN_SEC_REG
+– COREx_SOURCE_SRC_PASS_IN_SEC
+– COREx_SOURCE_SRC_IN_SEC_FLAG
+– When COREx_SOURCE_SRC_IN_SEC_FLAG is set to 1, COREx_SOURCE_MAP is also writable only
+in Machine Mode.
+When interrupt source SOURCE has been mapped to the peripheral interrupt signal n of COREx, interrupt
+remapping for source SOURCE occurs only when all of the following conditions are met:
+• COREx_SOURCE_SRC_PASS_IN_SEC is set to 1
+• COREx is currently operating in Machine Mode
+• The peripheral interrupt signal n of COREx is internally delegated to User Mode by the CPU
+• The target interrupt signal specified by COREx_INTR_SIG_IDX_ASSERT_IN_SEC_REG is internally
+delegated to Machine Mode by the CPU

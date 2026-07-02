@@ -1,0 +1,17 @@
+Chapter 12
+Interrupt Matrix
+12.1
+Overview
+The interrupt matrix embedded in ESP32-P4 independently routes peripheral interrupt sources to the
+ESP-RISC-V CPU’s peripheral interrupts to timely inform HP CPU0 or HP CPU1 to process the coming
+interrupts.
+Peripheral interrupt sources must be routed to HP CPU0 or HP CPU1 through the interrupt matrix for the
+following reasons:
+• Each HP CPU has 32 interrupt inputs, but the ESP32-P4 provides 128 peripheral interrupt sources. To
+connect all sources to the CPUs, the interrupt matrix is required.
+• The interrupt matrix allows a single peripheral interrupt source to be mapped to any HP CPU0 or HP CPU1
+interrupt input, depending on application requirements.
+Note:
+This chapter focuses on how to map peripheral interrupt sources to HP CPU0/HP CPU1 interrupts. For more details
+about interrupt configuration, interrupt vectors, and interrupt handling operations recommended by the ISA, please
+refer to Chapter 1 High-Performance CPU.
