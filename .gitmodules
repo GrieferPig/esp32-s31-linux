@@ -1,12 +1,12 @@
 [submodule "busybox"]
 	path = busybox
-	url = ../busybox
+	url = https://github.com/GrieferPig/busybox.git
 [submodule "bootloader"]
 	path = bootloader
-	url = ../bootloader
+	url = https://github.com/GrieferPig/bootloader.git
 [submodule "opensbi"]
 	path = opensbi
-	url = ../opensbi
+	url = https://github.com/GrieferPig/opensbi.git
 [submodule "linux-6.12"]
 	path = linux-6.12
-	url = ../linux-6.12
+	url = https://github.com/GrieferPig/linux-6.12.git
