@@ -1,0 +1,12 @@
+build/
+build-staging/
+linux/
+linux
+sdkconfig.old
+
+initramfs/*.bak
+initramfs/*.log
+initramfs/busybox
+initramfs/initramfs.list
+initramfs/rootfs/
+initramfs/test_shell.py
