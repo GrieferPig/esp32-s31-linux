@@ -20,7 +20,7 @@ BUSYBOX_CONFIG="${BUSYBOX_CONFIG:-${TARGET_DIR}/initramfs/busybox_s31.config}"
 BUSYBOX_BUILD_SCRIPT="${BUSYBOX_BUILD_SCRIPT:-${TARGET_DIR}/build_busybox_s31.sh}"
 
 ARCH="riscv"
-CROSS_COMPILE="${CROSS_COMPILE:-riscv64-unknown-elf-}"
+CROSS_COMPILE="${CROSS_COMPILE:-riscv64-linux-gnu-}"
 DEFCONFIG="${DEFCONFIG:-esp32s31_xip_defconfig}"
 # XIP kernel: raw RISC-V xipImage target, flashed to the linux partition.
 TARGET="${TARGET:-xipImage}"
