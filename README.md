@@ -12,12 +12,12 @@ Module tested: ESP32-S31-WROOM-3 E1H16R16V (ESP32-S31 Core Board).
 - [x] USB UART I/O
 
 Everything else not listed are **not** working (for now).
-Also check out [these command outputs](#stats-for-nerds).
+Also check out [these command outputs](#appendix).
 
 ## Todo
 
-- [] PSRAM cache
-- [] Flash driver(?)
+- [ ] Cache driver 
+- [ ] Flash driver
 
 Todo: add more todos
 
@@ -33,19 +33,19 @@ S31 uses CLIC and CLINT similar to P4. Linux expects PLIC. Therefore a custom CL
 
 Also, standard RISC-V interrupt CSRs are not usable, presumably because, from P4's TRM, CLINT interrupts are routed to CLIC and `mtvec.MODE` is hardwired to `0x3` (CLIC mode). Patches needed to make OpenSBI interrupts work.
 
-### *S(henanigan)* mode
+### S mode
 
-S31's supervisor mode is not standard and has absolutely no usage in ESP-IDF so a lot of these CSR uses were mostly guessed from either P4's TRM or CSR probing (see `docs/`). What is `sclicbase`? `sie` is illegal instr but `mie` is not, but hardwired? 
+S31's supervisor mode is not standard and has absolutely no usage in ESP-IDF so a lot of these CSR uses were mostly guessed from either P4's TRM or CSR probing (see `docs/`). For example, the use of `sclicbase(?)` and the lack of `sie`.
 
-S31 implemented [SCLIC (Supervisor CLIC?)](https://esp32.com/viewtopic.php?t=48188) which is confusing to say at least. According to all laws of esp-idf, `mcliccfg.NMBITS` is not writable. ***IT IS NOT!*** And setting it to `0b01` enables writes to the `clicintattr[i].MODE` field and thus enabling the use of S-mode interrupts.
+S31 implemented [SCLIC (Supervisor CLIC?)](https://esp32.com/viewtopic.php?t=48188) which is confusing since there is no known standardization; According to all laws of esp-idf, `mcliccfg.NMBITS` is not writable. ***IT IS WRITABLE!*** And setting it to `0b01` enables writes to the `clicintattr[i].MODE` field and thus enabling the use of S-mode interrupts.
 
 ### OpenSBI and Linux XIP
 
-To save the *precious* 16MB PSRAM memory, OpenSBI was modified to use XIP in flash and internal SRAM (hence the `3915901 KB` firmware size (obviously wrong) in OpenSBI banner).
+To save the *precious* 16MB PSRAM memory, OpenSBI was modified to use XIP in flash and internal SRAM (hence the `3915901 KB` firmware size in OpenSBI banner, since flash and SRAM mappings are not continuous).
 
 In mainline linux, XIP support on RISC-V was removed, so 6.12 was used instead which has proper XIP support. 
 
-## Stats for nerds
+## Appendix
 
 (as of 7/3/26)
 
@@ -72,19 +72,6 @@ Linux (none) 6.12.0-00036-gdccf9c1b2c4f-dirty #30 Thu Jul  2 23:48:23 CST 2026 r
               total        used        free      shared  buff/cache   available
 Mem:          15004        1892       12784           0         328       12108
 Swap:             0           0           0
-```
-
-```
-# cat /proc/cpuinfo
-processor       : 0
-hart            : 0
-isa             : rv32imafc_zicntr_zicsr_zifencei_zca_zcf_zbb
-mmu             : sv32
-uarch           : espressif,esp32s31
-mvendorid       : 0x612
-marchid         : 0x80000003
-mimpid          : 0x1
-hart isa        : rv32imafc_zicntr_zicsr_zifencei_zca_zcf_zbb
 ```
 
 ```
