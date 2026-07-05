@@ -6,10 +6,13 @@ Goal:
 - Keep the OpenSBI partition size fixed at 512KB.
 
 Address contract:
-- Bootloader maps the opensbi partition for instruction access at 0x40030000.
+- The ESP-IDF second-stage bootloader override maps the opensbi partition for
+  instruction access at 0x40030000.
 - OpenSBI must be linked with FW_TEXT_START=0x40030000.
 - OpenSBI writable sections are linked with FW_RW_START=0x2F040000.
-- The bootloader verifies that the mmap pointer equals 0x40030000 before mret.
+- The second-stage bootloader maps OpenSBI and Linux directly with
+  mmu_hal_map_region(); it does not rely on bootloader_mmap() returning the
+  final XIP virtual address.
 
 Partition image format:
 - Offset 0: raw OpenSBI fw_jump.bin.
@@ -18,42 +21,26 @@ Partition image format:
 - Last 4 bytes of the 512KB partition: little-endian uint32 file offset of the FDT blob.
 
 Bootloader handoff:
-- The bootloader reads the last 4 bytes of the opensbi partition.
+- The factory app is intentionally empty. All Linux handoff work happens inside
+  bootloader/bootloader_components/main, which overrides ESP-IDF's default
+  second-stage bootloader main component.
+- The second-stage bootloader reads the last 4 bytes of the opensbi partition.
 - It computes fdt_addr = mapped_opensbi_base + fdt_offset.
-- Before mret, the bootloader disables HP_APM, HP_MEM_APM, and CPU_APM
-  function filters through their FUNC_CTRL registers.
-- Before mret, the bootloader clears mstatus.MPRV and clears pmpcfg0..3 plus
-  pmpaddr0..15. Any locked PMP entries will remain visible in the logged cfg
-  values.
-- Before mret, the bootloader writes mie=0 and leaves mstatus.MIE/MPIE clear.
+- Before mret, the second-stage bootloader initializes PSRAM with the ESP-IDF
+  S31 PSRAM device driver path, maps PSRAM through the MMU, and copies the
+  initramfs partition to the 0xC0800000 non-cache PSRAM alias.
+- Before mret, the second-stage bootloader programs permissive CPU_APM, HP_APM, and
+  HP_MEM_APM regions and enables the corresponding function control paths so
+  OpenSBI can access SRAM, peripherals, flash, and PSRAM through the existing
+  IDF setup.
+- Before mret, the second-stage bootloader clears mstatus.MPRV and installs a single
+  full-space locked PMP entry in pmpcfg0/pmpaddr0, while clearing pmpcfg1..3
+  and pmpaddr1..15.
+- Before mret, the second-stage bootloader writes mie=0 and leaves mstatus.MIE/MPIE clear.
   OpenSBI enters M-mode with global interrupts disabled; it must enable and
   route interrupts itself after replacing the bootloader/IDF state.
-- Before mret, the bootloader runs quick probes:
-  - HP SRAM read/write/execute.
-  - Flash XIP read/execute. Direct mapped flash write is skipped because XIP
-    flash is expected read-only.
-  - PSRAM read/write/execute using the uncached write alias and cached execute
-    alias near the top of mapped PSRAM.
-  - OpenSBI early access path:
-    - .data copy source LMA in the mapped flash XIP image.
-    - .data VMA at FW_RW_START in HP SRAM.
-    - .bss and initial stack area in HP SRAM.
-    - One AMO operation against FW_RW_START.
-- Before mret, the bootloader installs a temporary mtvec trap logger. If
-  OpenSBI traps before replacing mtvec, the logger prints mcause, mepc, mtval,
-  mstatus, mtvec, and mscratch, then restarts.
-- OpenSBI's early _start_hang path also writes a trap mailbox at 0x2F07E000:
-  - word 0: magic 0x53335450
-  - word 1: mcause
-  - word 2: mepc
-  - word 3: mtval
-  - word 4: mstatus
-  - word 5: mtvec
-  - word 6: mscratch
-  - word 7: mhartid
-  The bootloader checks and clears this mailbox at the start of app_main, so a
-  reset after OpenSBI's temporary mtvec=_start_hang path can still reveal the
-  original OpenSBI fault PC.
+- The second-stage bootloader does not run pre-handoff test probes or install a temporary
+  trap logger; OpenSBI must replace the inherited boot state itself.
 - It jumps to mapped_opensbi_base in M-mode with:
   - a0 = 0
   - a1 = fdt_addr
@@ -74,10 +61,4 @@ OpenSBI XIP relocation rule:
 Early fault note:
 - OpenSBI's first instructions copy .data from flash LMA to FW_RW_START.
 - A store/AMO access fault before the OpenSBI banner usually points at handoff
-  protection state, not the FDT offset. Check APM FUNC_CTRL, PMP, MPRV, and
-  the pre-handoff probe log.
-- If the OpenSBI early access probe passes but the temporary mtvec logger
-  reports a fault, decode the logged mepc against fw_jump.elf. If the CPU still
-  lockups without the temporary trap log, check the next boot for the
-  "previous OpenSBI early trap" mailbox print. Decode that mepc against
-  fw_jump.elf.
+  protection state, not the FDT offset. Check APM FUNC_CTRL, PMP, and MPRV.
