@@ -2,17 +2,21 @@ ESP32-S31 OpenSBI Flash XIP layout
 
 Goal:
 - Keep OpenSBI text/rodata in flash and execute through the flash MMU window.
-- Keep OpenSBI writable data, BSS, scratch, stack, and heap in HP SRAM.
+- Keep OpenSBI writable data, BSS, scratch, stack, and heap in reserved uncached
+  PSRAM so the core 0 factory app can keep HP SRAM.
 - Keep the OpenSBI partition size fixed at 512KB.
+- Boot OpenSBI/Linux on HP core 1. Core 0 boots the ESP-IDF factory app in
+  single-core mode and then parks after releasing core 1.
 
 Address contract:
-- The ESP-IDF second-stage bootloader override maps the opensbi partition for
-  instruction access at 0x40030000.
+- The factory app maps the opensbi partition for instruction access at 0x40030000.
 - OpenSBI must be linked with FW_TEXT_START=0x40030000.
-- OpenSBI writable sections are linked with FW_RW_START=0x2F040000.
-- The second-stage bootloader maps OpenSBI and Linux directly with
-  mmu_hal_map_region(); it does not rely on bootloader_mmap() returning the
-  final XIP virtual address.
+- OpenSBI writable sections are linked with FW_RW_START=0xC0F00000.
+- The top 1MB of the 16MB uncached PSRAM window is reserved for OpenSBI RW:
+  0xC0F00000..0xC1000000.
+- Linux receives only the lower 15MB of uncached PSRAM in its DT memory node:
+  0xC0000000..0xC0F00000.
+- Linux xipImage is mapped at 0x400B0000.
 
 Partition image format:
 - Offset 0: raw OpenSBI fw_jump.bin.
@@ -20,35 +24,32 @@ Partition image format:
 - Padding: zero bytes up to partition_size - 4.
 - Last 4 bytes of the 512KB partition: little-endian uint32 file offset of the FDT blob.
 
-Bootloader handoff:
-- The factory app is intentionally empty. All Linux handoff work happens inside
-  bootloader/bootloader_components/main, which overrides ESP-IDF's default
-  second-stage bootloader main component.
-- The second-stage bootloader reads the last 4 bytes of the opensbi partition.
-- It computes fdt_addr = mapped_opensbi_base + fdt_offset.
-- Before mret, the second-stage bootloader initializes PSRAM with the ESP-IDF
-  S31 PSRAM device driver path, maps PSRAM through the MMU, and copies the
-  initramfs partition to the 0xC0800000 non-cache PSRAM alias.
-- Before mret, the second-stage bootloader programs permissive CPU_APM, HP_APM, and
-  HP_MEM_APM regions and enables the corresponding function control paths so
-  OpenSBI can access SRAM, peripherals, flash, and PSRAM through the existing
-  IDF setup.
-- Before mret, the second-stage bootloader clears mstatus.MPRV and installs a single
-  full-space locked PMP entry in pmpcfg0/pmpaddr0, while clearing pmpcfg1..3
-  and pmpaddr1..15.
-- Before mret, the second-stage bootloader writes mie=0 and leaves mstatus.MIE/MPIE clear.
-  OpenSBI enters M-mode with global interrupts disabled; it must enable and
-  route interrupts itself after replacing the bootloader/IDF state.
-- The second-stage bootloader does not run pre-handoff test probes or install a temporary
-  trap logger; OpenSBI must replace the inherited boot state itself.
-- It jumps to mapped_opensbi_base in M-mode with:
-  - a0 = 0
+Boot flow:
+- The ESP-IDF second-stage bootloader uses the normal IDF partition selection
+  and boots the factory app on core 0.
+- The factory app is built with CONFIG_FREERTOS_UNICORE=y and
+  CONFIG_ESP_SYSTEM_SINGLE_CORE_MODE=y, so IDF does not start core 1.
+- The factory app verifies PSRAM, maps OpenSBI/Linux with esp_mmu_map_virt(),
+  copies initramfs to 0xC0800000, configures permissive APM, and writes the
+  core 1 boot address.
+- Core 1 starts in a small IRAM trampoline. The trampoline clears interrupt
+  state, installs a full-space PMP entry for hart 1, and jumps to OpenSBI with:
+  - a0 = 1
   - a1 = fdt_addr
+- Core 0 parks after releasing core 1 to avoid IDF timer/interrupt activity
+  racing OpenSBI/Linux during bring-up.
+
+OpenSBI requirements:
+- fw_jump.S must report boot hart 1.
+- fw_base.S must allow hart 1 through the early entry check.
+- The OpenSBI/Linux FDT CPU node must describe cpu@1/reg=<1> for the single
+  Linux hart.
 
 Build-time checks:
 - The generated fw_payload.bin must be exactly 512KB.
 - OpenSBI + FDT must fit in the first 512KB - 4 bytes.
-- Link-time assertions require FW_TEXT_START=0x40030000 and FW_RW_START in HP SRAM.
+- Link-time assertions require FW_TEXT_START=0x40030000 and FW_RW_START in the
+  reserved PSRAM range.
 
 OpenSBI XIP relocation rule:
 - fw_base.S copies .data from flash LMA to FW_RW_START before the boot lottery.
@@ -61,4 +62,4 @@ OpenSBI XIP relocation rule:
 Early fault note:
 - OpenSBI's first instructions copy .data from flash LMA to FW_RW_START.
 - A store/AMO access fault before the OpenSBI banner usually points at handoff
-  protection state, not the FDT offset. Check APM FUNC_CTRL, PMP, and MPRV.
+  protection state, PSRAM mapping, or PMP/APM state, not the FDT offset.

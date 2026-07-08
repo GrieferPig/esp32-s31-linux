@@ -1,9 +1,8 @@
-[submodule "busybox"]
-	path = busybox
-	url = https://github.com/GrieferPig/busybox.git
-[submodule "opensbi"]
-	path = opensbi
-	url = https://github.com/GrieferPig/opensbi.git
-[submodule "linux-6.12"]
-	path = linux-6.12
-	url = https://github.com/GrieferPig/linux-6.12.git
+[submodule "linux-esp32-s31"]
+	path = linux-esp32-s31
+	url = https://github.com/GrieferPig/linux-esp32-s31.git
+	branch = v6.12-esp32-s31
+[submodule "opensbi-esp32-s31"]
+	path = opensbi-esp32-s31
+	url = https://github.com/GrieferPig/opensbi-esp32-s31
+	branch = v1.9-esp32-s31

@@ -5,9 +5,9 @@
 # and jumps to the Linux xipImage entry in flash with an S-mode DTB.
 set -euo pipefail
 
-OPENSBI_DIR="${HOME}/s31linux/opensbi"
-LINUX_DIR="${LINUX_DIR:-${HOME}/s31linux/linux-6.12}"
-FDT_SRC="${FDT_SRC:-${LINUX_DIR}/arch/riscv/boot/dts/espressif/esp32s31_smode_generic.dts}"
+OPENSBI_DIR="${HOME}/s31linux/opensbi-esp32-s31"
+LINUX_DIR="${LINUX_DIR:-${HOME}/s31linux/linux-esp32-s31}"
+FDT_SRC="${FDT_SRC:-${LINUX_DIR}/arch/riscv/boot/dts/espressif/esp32s31_generic.dts}"
 TARGET_DIR="$(cd "$(dirname "$0")" && pwd)"
 CROSS_COMPILE="${CROSS_COMPILE:-riscv64-linux-gnu-}"
 JOBS="${JOBS:-$(nproc)}"
@@ -116,5 +116,5 @@ echo "  FDT src:  ${FDT_SRC}"
 echo "  Next PC:  ${FW_JUMP_ADDR}"
 echo "  Bring-up: ${OPENSBI_BRINGUP_ONLY}"
 echo "  Flash at:  ${OPENSBI_FLASH_OFFSET} (opensbi partition)"
-echo "  Example:   esptool.py write_flash ${OPENSBI_FLASH_OFFSET} ${FINAL_BIN}"
+echo "  Flash using:   esptool -b 2000000 write_flash ${OPENSBI_FLASH_OFFSET} ${FINAL_BIN}"
 rm -f "${STAGED_FW_JUMP_BIN}" "${OFFSET_BIN}"

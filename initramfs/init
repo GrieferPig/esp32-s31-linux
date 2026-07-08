@@ -15,8 +15,4 @@ mount -t sysfs sysfs /sys 2>/dev/null || true
 mount -t tmpfs tmpfs /tmp 2>/dev/null || true
 mount -t devpts devpts /dev/pts 2>/dev/null || true
 
-echo
-echo "=== ESP32-S31 BusyBox initramfs ==="
-echo "Type 'help' for BusyBox applets."
-
 exec /bin/cttyhack /bin/sh -i
