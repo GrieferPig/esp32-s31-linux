@@ -28,7 +28,9 @@ FW_PAYLOAD := $(BUILD_DIR)/fw_payload.bin
 XIP_IMAGE := $(BUILD_DIR)/xipImage
 INITRAMFS_CPIO := $(BUILD_DIR)/initramfs.cpio
 
-.PHONY: all download opensbi linux busybox initramfs clean fullclean flash-opensbi flash-linux flash-initramfs
+IDF_EXPORT := $(shell find $(HOME) -maxdepth 5 -type f -name export.sh 2>/dev/null | grep esp-idf | head -n 1)
+
+.PHONY: all download opensbi linux busybox initramfs clean fullclean flash-opensbi flash-linux flash-initramfs bootloader flash-bootloader erase
 
 all: download opensbi linux busybox initramfs
 
@@ -135,3 +137,20 @@ flash-linux:
 
 flash-initramfs:
 	esptool -p /dev/ttyUSB0 -b 2000000 write-flash $(INITRAMFS_OFFSET) $(INITRAMFS_CPIO)
+
+bootloader:
+	@if [ -z "$(IDF_EXPORT)" ]; then echo "ERROR: ESP-IDF export.sh not found under $(HOME)"; exit 1; fi
+	@echo "--- Build Bootloader ---"
+	@echo "Using ESP-IDF from $(IDF_EXPORT)"
+	bash -c "source $(IDF_EXPORT) && cd $(CURDIR)/bootloader && idf.py build"
+
+flash-bootloader:
+	@if [ -z "$(IDF_EXPORT)" ]; then echo "ERROR: ESP-IDF export.sh not found under $(HOME)"; exit 1; fi
+	@echo "--- Flash Bootloader ---"
+	@echo "Using ESP-IDF from $(IDF_EXPORT)"
+	bash -c "source $(IDF_EXPORT) && cd $(CURDIR)/bootloader && idf.py flash -p /dev/ttyUSB0 -b 2000000"
+
+flash-all: flash-opensbi flash-linux flash-initramfs flash-bootloader
+
+erase:
+	esptool -p /dev/ttyUSB0 -b 2000000 erase-flash

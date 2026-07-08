@@ -6,6 +6,10 @@ Module tested: ESP32-S31-WROOM-3 E1H16R16V (ESP32-S31 Core Board).
 
 [Example boot log](docs/example_boot_log.txt)
 
+## Build/Flash Instructions
+
+Refer to the [Build Instructions](docs/build.md).
+
 ## Porting progress
 
 - [x] Busybox init
