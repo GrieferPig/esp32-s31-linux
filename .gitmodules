@@ -6,3 +6,6 @@
 	path = opensbi-esp32-s31
 	url = https://github.com/GrieferPig/opensbi-esp32-s31
 	branch = v1.9-esp32-s31
+[submodule "busybox"]
+	path = busybox
+	url = https://github.com/mirror/busybox.git
