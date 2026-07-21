@@ -11,12 +11,14 @@ BUILD_DIR := $(CURDIR)/build
 OPENSBI_DIR := $(CURDIR)/opensbi-esp32-s31
 LINUX_DIR := $(CURDIR)/linux-esp32-s31
 BUSYBOX_DIR := $(CURDIR)/busybox
+COREMARK_DIR := $(CURDIR)/coremark
 INITRAMFS_DIR := $(CURDIR)/initramfs
 
 # Out-of-tree build dirs
 OPENSBI_OUT := $(BUILD_DIR)/opensbi
 LINUX_OUT := $(BUILD_DIR)/linux
 BUSYBOX_OUT := $(BUILD_DIR)/busybox
+COREMARK_OUT := $(BUILD_DIR)/coremark
 INITRAMFS_OUT := $(BUILD_DIR)/initramfs-tools
 
 PARTITIONS_CSV := $(CURDIR)/bootloader/partitions.csv
@@ -30,11 +32,11 @@ INITRAMFS_CPIO := $(BUILD_DIR)/initramfs.cpio
 
 IDF_EXPORT := $(shell find $(HOME) -maxdepth 5 -type f -name export.sh 2>/dev/null | grep esp-idf | head -n 1)
 
-.PHONY: all download opensbi linux busybox initramfs clean fullclean flash-opensbi flash-linux flash-initramfs bootloader flash-bootloader erase
+.PHONY: all download opensbi linux busybox coremark initramfs clean fullclean flash-opensbi flash-linux flash-initramfs bootloader flash-bootloader erase
 
 all: download opensbi linux busybox initramfs
 
-$(BUILD_DIR) $(OPENSBI_OUT) $(LINUX_OUT) $(BUSYBOX_OUT) $(INITRAMFS_OUT):
+$(BUILD_DIR) $(OPENSBI_OUT) $(LINUX_OUT) $(BUSYBOX_OUT) $(COREMARK_OUT) $(INITRAMFS_OUT):
 	mkdir -p $@
 
 download:
@@ -49,7 +51,7 @@ download:
 	fi
 
 FW_TEXT_START ?= 0x40030000
-FW_RW_START ?= 0x2F040000
+FW_RW_START ?= 0x50F00000
 LINUX_XIP_ADDR ?= 0x400B0000
 FW_JUMP_ADDR ?= $(LINUX_XIP_ADDR)
 OPENSBI_PARTITION_SIZE ?= 524288
@@ -77,8 +79,8 @@ opensbi: | $(OPENSBI_OUT)
 		FW_JUMP_ADDR=$(FW_JUMP_ADDR) \
 		-j$(JOBS)
 	@cp $(OPENSBI_FW_JUMP_BIN) $(BUILD_DIR)/staged_fw_jump.bin
-	@FDT_OFFSET=$$(stat -c%s $(BUILD_DIR)/staged_fw_jump.bin); \
-	if [ $$((FDT_OFFSET % 4)) -ne 0 ]; then echo "ERROR: FDT offset not aligned"; exit 1; fi; \
+	@truncate -s 262144 $(BUILD_DIR)/staged_fw_jump.bin
+	@FDT_OFFSET=262144; \
 	cat $(BUILD_DIR)/staged_fw_jump.bin $(FDT_DTB) > $(FW_PAYLOAD); \
 	PAYLOAD_SIZE=$$(stat -c%s $(FW_PAYLOAD)); \
 	MAX_PAYLOAD_SIZE=$$(( $(OPENSBI_PARTITION_SIZE) - 4 )); \
@@ -107,14 +109,23 @@ busybox: | $(BUSYBOX_OUT)
 	@yes "" | $(MAKE) -C $(BUSYBOX_DIR) O=$(BUSYBOX_OUT) oldconfig >/dev/null
 	$(MAKE) -C $(BUSYBOX_DIR) O=$(BUSYBOX_OUT) -j$(JOBS)
 
+COREMARK_BIN := $(COREMARK_OUT)/coremark.exe
+
+coremark: | $(COREMARK_OUT)
+	@echo "--- CoreMark ---"
+	$(MAKE) -C $(COREMARK_DIR) PORT_DIR=linux OPATH="$(COREMARK_OUT)/" \
+		CC="$(CC)" NO_LIBRT=1 ITERATIONS=0 REBUILD=1 \
+		XCFLAGS="-static -march=rv32imac_zicsr_zifencei -mabi=ilp32" compile
+
 INITRAMFS_ROOT := $(BUILD_DIR)/s31-initramfs-root
 INITRAMFS_PARTITION_SIZE ?= 6160384
 
-initramfs: busybox | $(INITRAMFS_OUT)
+initramfs: busybox coremark | $(INITRAMFS_OUT)
 	@echo "--- Initramfs ---"
 	rm -rf $(INITRAMFS_ROOT)
 	$(MAKE) -C $(BUSYBOX_DIR) O=$(BUSYBOX_OUT) CONFIG_PREFIX="$(INITRAMFS_ROOT)" install
 	$(MAKE) -C $(INITRAMFS_DIR) OUT_DIR="$(INITRAMFS_OUT)" CROSS_COMPILE="$(CROSS_COMPILE)" DESTDIR="$(INITRAMFS_ROOT)" all install
+	install -Dm755 $(COREMARK_BIN) $(INITRAMFS_ROOT)/sbin/coremark
 	install -Dm755 $(INITRAMFS_DIR)/init $(INITRAMFS_ROOT)/init
 	mkdir -p $(INITRAMFS_ROOT)/dev $(INITRAMFS_ROOT)/proc $(INITRAMFS_ROOT)/sys $(INITRAMFS_ROOT)/tmp $(INITRAMFS_ROOT)/run $(INITRAMFS_ROOT)/etc
 	chmod 1777 $(INITRAMFS_ROOT)/tmp

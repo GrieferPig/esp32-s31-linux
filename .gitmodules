@@ -9,3 +9,6 @@
 [submodule "busybox"]
 	path = busybox
 	url = https://github.com/mirror/busybox.git
+[submodule "coremark"]
+	path = coremark
+	url = https://github.com/eembc/coremark.git

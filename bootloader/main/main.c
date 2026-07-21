@@ -1,14 +1,14 @@
 /*
- * ESP32-P4 NOMMU Linux - Factory App Loader
+ * ESP32-S31 MMU Linux - Factory App Loader
  *
  * The second-stage bootloader stays minimal. This factory app runs with the
- * normal app startup path, maps OpenSBI for flash XIP, finds the appended FDT,
- * then jumps into OpenSBI in M-mode.
+ * normal app startup path so ESP-IDF initializes PSRAM, maps OpenSBI and Linux
+ * for flash XIP, maps the initramfs flash window, then jumps into OpenSBI in
+ * M-mode.
  */
 
 #include <stdbool.h>
 #include <stdint.h>
-#include <string.h>
 #include <inttypes.h>
 #include "sdkconfig.h"
 #include "esp_log.h"
@@ -37,14 +37,13 @@
 #include "hal/mmu_types.h"
 #include "freertos/FreeRTOS.h"
 
-#define PSRAM_BASE    ((uintptr_t)0xC0000000U) // must be uncached
-
 #define OPENSBI_XIP_ADDR              0x40030000U
+#define LINUX_XIP_ADDR                0x400B0000U
+#define INITRAMFS_FLASH_ADDR          0x40A20000U
 #define OPENSBI_FDT_OFFSET_SLOT_SIZE  4U
 #define FDT_MAGIC_LE                  0xEDFE0DD0U
-#define INITRAMFS_LOAD_ADDR           0xC0800000U
-#define INITRAMFS_PARTITION_SIZE      0x00200000U
-#define INITRAMFS_NEWC_MAGIC0         0x37303730U /* "0707" */
+#define INITRAMFS_PARTITION_SIZE      0x005E0000U
+#define ESP32S31_PSRAM_SIZE           0x01000000U
 #define PMP_FULL_SPACE_NAPOT_ADDR     0x3FFFFFFFU
 #define PMP_ENTRY_RWX_LOCK_NAPOT      0x9FU
 
@@ -187,60 +186,25 @@ static void clear_mstatus_mprv(void)
     RV_CLEAR_CSR(mstatus, MSTATUS_MPRV);
 }
 
-static bool load_initramfs_partition(void)
+static bool map_flash_range(uint32_t vaddr, uint32_t paddr, uint32_t size)
 {
-    const esp_partition_t *initramfs_part = esp_partition_find_first(
-        ESP_PARTITION_TYPE_DATA, 0x40, "initramfs");
-    if (!initramfs_part) {
-        ESP_LOGE(TAG, "initramfs partition not found");
+    if (((vaddr | paddr | size) & (SOC_MMU_PAGE_SIZE - 1)) != 0) {
+        ESP_LOGE(TAG, "unaligned flash MMU range: vaddr=0x%08" PRIx32
+                      " paddr=0x%08" PRIx32 " size=0x%08" PRIx32,
+                 vaddr, paddr, size);
         return false;
     }
 
-    if (initramfs_part->size != INITRAMFS_PARTITION_SIZE) {
-        ESP_LOGE(TAG, "initramfs partition size 0x%08" PRIx32
-                      " != expected 0x%08" PRIx32,
-                 initramfs_part->size, (uint32_t)INITRAMFS_PARTITION_SIZE);
-        return false;
+    for (uint32_t offset = 0; offset < size; offset += SOC_MMU_PAGE_SIZE) {
+        uint32_t entry_id = mmu_ll_get_entry_id(MMU_LL_FLASH_MMU_ID,
+                                                vaddr + offset);
+        mmu_ll_write_entry(MMU_LL_FLASH_MMU_ID, entry_id,
+                           (paddr + offset) / SOC_MMU_PAGE_SIZE,
+                           MMU_TARGET_FLASH0);
     }
 
-    if (!esp_psram_is_initialized()) {
-        ESP_LOGE(TAG, "cannot load initramfs before PSRAM init");
-        return false;
-    }
-
-    size_t psram_size = esp_psram_get_size();
-    if (INITRAMFS_LOAD_ADDR < PSRAM_BASE ||
-        INITRAMFS_LOAD_ADDR + initramfs_part->size > PSRAM_BASE + psram_size) {
-        ESP_LOGE(TAG, "initramfs load range [0x%08" PRIx32 "..0x%08" PRIx32
-                      ") outside PSRAM size 0x%08x",
-                 (uint32_t)INITRAMFS_LOAD_ADDR,
-                 (uint32_t)(INITRAMFS_LOAD_ADDR + initramfs_part->size),
-                 (unsigned)psram_size);
-        return false;
-    }
-
-    esp_err_t err = esp_partition_read(initramfs_part, 0,
-                                       (void *)INITRAMFS_LOAD_ADDR,
-                                       initramfs_part->size);
-    if (err != ESP_OK) {
-        ESP_LOGE(TAG, "reading initramfs partition failed: %s",
-                 esp_err_to_name(err));
-        return false;
-    }
-
-    uint32_t magic0 = *(const volatile uint32_t *)INITRAMFS_LOAD_ADDR;
-    if (magic0 != INITRAMFS_NEWC_MAGIC0) {
-        ESP_LOGE(TAG, "initramfs magic 0x%08" PRIx32
-                      " != expected newc prefix 0x%08" PRIx32,
-                 magic0, (uint32_t)INITRAMFS_NEWC_MAGIC0);
-        return false;
-    }
-
-    ESP_LOGI(TAG, "initramfs copied: flash=0x%08" PRIx32
-                  " size=0x%08" PRIx32 " psram=[0x%08" PRIx32 "..0x%08" PRIx32 ")",
-             initramfs_part->address, initramfs_part->size,
-             (uint32_t)INITRAMFS_LOAD_ADDR,
-             (uint32_t)(INITRAMFS_LOAD_ADDR + initramfs_part->size));
+    cache_bus_mask_t bus = cache_ll_l1_get_bus(0, vaddr, size);
+    cache_ll_l1_enable_bus(0, bus);
     return true;
 }
 
@@ -258,12 +222,18 @@ static void disable_stack_protector(void)
 
 void app_main(void)
 {
+    if (!esp_psram_is_initialized() ||
+        esp_psram_get_size() < ESP32S31_PSRAM_SIZE) {
+        ESP_LOGE(TAG, "16 MiB PSRAM was not initialized");
+        esp_restart();
+    }
+
     disable_apm();
     disable_watchdogs();
     clear_mstatus_mprv();
     install_global_pmp();
 
-    /* --- Find and mmap OpenSBI partition for Flash XIP --- */
+    /* Map OpenSBI at its linked Flash XIP address. */
     const esp_partition_t *part = esp_partition_find_first(
         ESP_PARTITION_TYPE_DATA, 0x40, "opensbi");
     if (!part) {
@@ -338,14 +308,29 @@ void app_main(void)
     }
     ESP_LOGI(TAG, "Linux mmap INST at %p (size %" PRIu32 ")", linux_ptr, linux_part->size);
 
-    if (!load_initramfs_partition()) {
-        ESP_LOGE(TAG, "initramfs load failed");
+    if ((uintptr_t)linux_ptr != LINUX_XIP_ADDR) {
+        ESP_LOGE(TAG, "Linux mmap address %p != expected 0x%08" PRIx32,
+                 linux_ptr, (uint32_t)LINUX_XIP_ADDR);
         esp_restart();
     }
 
-    /* Jump to OpenSBI in M-mode.  a1 carries the FDT address which OpenSBI
-     * may relocate (or ignore when a1 == 0). */
-    uint32_t entry = (uint32_t)opensbi_ptr;
+    const esp_partition_t *initramfs_part = esp_partition_find_first(
+        ESP_PARTITION_TYPE_DATA, 0x40, "initramfs");
+    if (!initramfs_part ||
+        initramfs_part->size != INITRAMFS_PARTITION_SIZE ||
+        !map_flash_range(INITRAMFS_FLASH_ADDR, initramfs_part->address,
+                         initramfs_part->size)) {
+        ESP_LOGE(TAG, "failed to map 0x%08" PRIx32 "-byte initramfs",
+                 (uint32_t)INITRAMFS_PARTITION_SIZE);
+        esp_restart();
+    }
+
+    ESP_LOGI(TAG, "initramfs mapped: flash=0x%08" PRIx32
+                  " size=0x%08" PRIx32 " vaddr=0x%08" PRIx32,
+             initramfs_part->address, initramfs_part->size,
+             (uint32_t)INITRAMFS_FLASH_ADDR);
+
+    uint32_t entry = (uint32_t)(uintptr_t)opensbi_ptr;
 
     disable_stack_protector();
     flush_l1_cache_before_handoff();

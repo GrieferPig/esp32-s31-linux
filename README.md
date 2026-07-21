@@ -14,14 +14,16 @@ Refer to the [Build Instructions](docs/build.md).
 
 - [x] Busybox init
 - [x] USB UART I/O
+- [x] Cache driver 
 
 Everything else not listed are **not** working (for now).
 Also check out [these command outputs](#appendix).
 
 ## Todo
 
-- [ ] Cache driver 
 - [ ] Flash driver
+- [ ] Wireless thru ESP-Hosted
+- [ ] Device Drivers
 
 Todo: add more todos
 
@@ -51,7 +53,28 @@ In mainline linux, XIP support on RISC-V was removed, so 6.12 was used instead w
 
 ## Appendix
 
-(as of 7/3/26)
+(as of 7/21/26)
+
+```
+~ # coremark
+2K performance run parameters for coremark.
+CoreMark Size    : 666
+Total ticks      : 11580
+Total time (secs): 11.580000
+Iterations/Sec   : 949.913644
+Iterations       : 11000
+Compiler version : GCC16.1.0
+Compiler flags   : -O2 -static -march=rv32imac_zicsr_zifencei -mabi=ilp32  
+Memory location  : Please put data memory location here
+                        (e.g. code in flash, data on heap etc)
+seedcrc          : 0xe9f5
+[0]crclist       : 0xe714
+[0]crcmatrix     : 0x1fd7
+[0]crcstate      : 0x8e3a
+[0]crcfinal      : 0x33ff
+Correct operation validated. See README.md for run and reporting rules.
+CoreMark 1.0 : 949.913644 / GCC16.1.0 -O2 -static -march=rv32imac_zicsr_zifencei -mabi=ilp32   / Heap
+```
 
 ```
 # cat /proc/cpuinfo

@@ -2,7 +2,7 @@ ESP32-S31 OpenSBI Flash XIP layout
 
 Goal:
 - Keep OpenSBI text/rodata in flash and execute through the flash MMU window.
-- Keep OpenSBI writable data, BSS, scratch, stack, and heap in reserved uncached
+- Keep OpenSBI writable data, BSS, scratch, stack, and heap in reserved cached
   PSRAM so the core 0 factory app can keep HP SRAM.
 - Keep the OpenSBI partition size fixed at 512KB.
 - Boot OpenSBI/Linux on HP core 1. Core 0 boots the ESP-IDF factory app in
@@ -11,11 +11,11 @@ Goal:
 Address contract:
 - The factory app maps the opensbi partition for instruction access at 0x40030000.
 - OpenSBI must be linked with FW_TEXT_START=0x40030000.
-- OpenSBI writable sections are linked with FW_RW_START=0xC0F00000.
-- The top 1MB of the 16MB uncached PSRAM window is reserved for OpenSBI RW:
-  0xC0F00000..0xC1000000.
-- Linux receives only the lower 15MB of uncached PSRAM in its DT memory node:
-  0xC0000000..0xC0F00000.
+- OpenSBI writable sections are linked with FW_RW_START=0x50F00000.
+- The top 1MB of the 16MB cached PSRAM window is reserved for OpenSBI RW:
+  0x50F00000..0x51000000.
+- Linux receives only the lower 15MB of cached PSRAM in its DT memory node:
+  0x50000000..0x50F00000.
 - Linux xipImage is mapped at 0x400B0000.
 
 Partition image format:
