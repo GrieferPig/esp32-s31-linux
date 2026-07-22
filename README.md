@@ -12,20 +12,47 @@ Refer to the [Build Instructions](docs/build.md).
 
 ## Porting progress
 
-- [x] Busybox init
-- [x] USB UART I/O
-- [x] Cache driver 
+### General
 
-Everything else not listed are **not** working (for now).
+| Feature | Status |
+|---|---|
+| Busybox init | 🟡 Untested |
+| Wireless (ESP-Hosted) | 🔴 Not implemented |
+| Dual hart SMP | ⚫ Maybe? |
+
+### Peripheral Drivers
+| Feature | Status |
+|---|---|
+| AXI GDMA | 🟡 Untested |
+| Cache driver | 🟡 Untested |
+| CLIC/CLINT interrupt driver | 🟡 Untested |
+| PMP/APM | 🔴 Not implemented (properly) |
+| Timers | 🔴 Not implemented |
+| Flash block dev driver | 🔴 Not implemented |
+| Security accelerators | 🔴 Not implemented |
+| LP subsystem & IPC | 🔴 Not implemented |
+| AHB GDMA | 🔴 Not implemented |
+
+
+### Connectivity Drivers
+| Feature | Status |
+|---|---|
+| UART | 🟡 Untested  |
+| USB HS | 🟡 Untested |
+| GPIO | 🔴 Not implemented |
+| pinctrl/GPIO Matrix | 🔴 Not implemented |
+| I2C | 🔴 Not implemented |
+| I2S | 🔴 Not implemented |
+| SPI | 🔴 Not implemented |
+| RMT | 🔴 Not implemented |
+| EMAC | 🔴 Not implemented |
+| SDIO | 🔴 Not implemented |
+| USB Serial/JTAG | 🔴 Not implemented |
+
+
+> 🟢 **Stable** — Fully tested and working | 🟡 **Untested** — Implemented but not verified 
+
 Also check out [these command outputs](#appendix).
-
-## Todo
-
-- [ ] Flash driver
-- [ ] Wireless thru ESP-Hosted
-- [ ] Device Drivers
-
-Todo: add more todos
 
 ## S31 Quirks
 
