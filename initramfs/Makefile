@@ -6,7 +6,7 @@ STRIP := $(CROSS_COMPILE)strip
 CFLAGS ?= -march=rv32imac_zicsr_zifencei -mabi=ilp32 -static -O2
 DESTDIR ?= ../build/s31-initramfs-root
 
-PROGRAMS := $(OUT_DIR)/segfault $(OUT_DIR)/forktest
+PROGRAMS := $(OUT_DIR)/segfault $(OUT_DIR)/forktest $(OUT_DIR)/membench
 
 .PHONY: all clean install
 
@@ -22,10 +22,16 @@ $(OUT_DIR)/forktest: forktest.c
 	$(CC) $(CFLAGS) $< -o $@
 	-$(STRIP) $@
 
+$(OUT_DIR)/membench: membench.c
+	@mkdir -p $(OUT_DIR)
+	$(CC) $(CFLAGS) $< -o $@
+	-$(STRIP) $@
+
 install: all
 	install -d $(DESTDIR)/sbin
 	install -m 755 $(OUT_DIR)/segfault $(DESTDIR)/sbin/segfault
 	install -m 755 $(OUT_DIR)/forktest $(DESTDIR)/sbin/forktest
+	install -m 755 $(OUT_DIR)/membench $(DESTDIR)/sbin/membench
 
 clean:
 	rm -f $(PROGRAMS)

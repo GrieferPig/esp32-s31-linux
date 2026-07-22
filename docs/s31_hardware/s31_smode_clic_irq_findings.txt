@@ -1,6 +1,6 @@
 ESP32-S31 S-mode CLIC interrupt findings
 Date: 2026-06-27
-Cleaned/updated: 2026-06-28
+Cleaned/updated: 2026-07-22
 Ground truth: docs/s_mode_clic_interrupt.md
 
 Scope
@@ -142,3 +142,82 @@ Confirmed useful observations
 - stvec, sscratch, sepc, scause, stval, sstatus, and satp are usable S-mode
   trap/MMU CSRs for OpenSBI-to-S-mode handoff.  stvec mode bits are forced
   to 3 with a writable, 64-byte-aligned base.
+
+Linux/OpenSBI CLIC return and timer forwarding (2026-07-22)
+------------------------------------------------------------
+- ESP-IDF is explicit about the architectural requirement.  In
+  components/riscv/vectors.S, the CLIC interrupt return path restores the
+  saved mcause before mstatus and mret because mcause contains the former CPU
+  priority that xret copies back into mintstatus.
+- A temporary bootloader S-mode probe confirmed that the same rule applies to
+  scause on S31.  The measured sequence was:
+      phase=3 outer=98000021 synthetic=98ff0021
+      restored=98000021 after_sret=88000021 second=98000021
+  scause is writable, the complete saved value reads back correctly, and sret
+  consumes the saved cause/priority state.  The probe was removed after the
+  result was captured.
+- Linux therefore restores the complete saved scause, then sstatus and sepc,
+  and executes exactly one sret for each hardware interrupt.  A temporary
+  design that used an early synthetic sret plus the final sret was invalid:
+  it popped the CLIC return state twice.
+- OpenSBI applies the corresponding mcause-before-mstatus restore order to its
+  M-mode trap return.
+
+Timer forwarding race and final fix
+-----------------------------------
+- OpenSBI receives hardware M-timer ID7 and forwards it by setting S-timer ID5
+  pending.  If it injects ID5 while an S-mode CLIC level is still active, S31
+  can accept the pending timer on the same boundary as the outer sret and save
+  SPIL=0xff.  The failure then blocks all later S interrupts.
+- The useful stuck signature is a cause ending in 0x00ff0005 (observed as
+  0x98ff0005 in the Linux trace and 0x88ff0005 in a JTAG CSR snapshot), with
+  sintstatus.SIL=0xff and completed GDMA/UART/timer slots still IP=1 and IE=1.
+  Normal non-nested entries have SPIL=0, for example 0x98000005.
+- The final fix is in the OpenSBI forwarding source, not the AXI GDMA driver.
+  Before injecting ID5, OpenSBI reads sintstatus.  If SIL is non-zero, it
+  rearms the M timer for a 100 us retry; it injects ID5 only after the S-mode
+  CLIC level has been unwound.  The restart-list dequeue must use restart_list,
+  not event_list.
+- Forwarded S-timer ID5 uses clicintctl=0x3f, matching the default Linux
+  external interrupt level.  Driver-level timer masking and deferred CLIC
+  unmasking are not required and are not present in the AXI GDMA driver.
+
+AXI GDMA validation
+-------------------
+- All three AXI GDMA channel pairs are exposed through raw CLIC IDs 33, 34 and
+  35, backed by interrupt-matrix sources 48, 49 and 50.
+- dmatest configuration: one thread per channel, three channels, 128 KiB test
+  buffers, fixed 64 KiB copies, norandom=Y.
+- Stress result: 1000 copies per channel, 0 failures on all channels, about
+  19.1 iops and 1222-1225 KiB/s per channel.  IRQ counts increased exactly by
+  1000 for each channel.
+- Final trace-free image regression: 200 copies per channel, 0 failures,
+  19.64-19.73 iops and 1257-1263 KiB/s; IRQ counts were exactly 200/200/200.
+
+AXI GDMA dmaengine expansion and performance (2026-07-22)
+----------------------------------------------------------
+- A 3-channel x 200-copy comparison used 64 KiB fixed transfers.  A 32-byte
+  AXI burst averaged about 19.75 iops while 128-byte burst averaged about
+  19.88 iops, both with zero failures.  The driver therefore uses 128-byte
+  bursts.  The small difference is expected because this dmatest setup is
+  dominated by non-coherent cache synchronization.
+- TX interrupt-matrix sources 51, 52 and 53 are routed to raw CLIC IDs 36, 37
+  and 38.  RX remains on source 48-50 / raw ID 33-35.
+- The dmaengine implementation now supports memcpy, memset, slave SG, cyclic,
+  residue reporting, TX descriptor-error IRQ, hardware LINK_RESTART append,
+  contiguous allocations from the internal descriptor pool, and IDF-style
+  64-byte RX head/tail stash recovery through the uncached PSRAM alias.
+- Random source/destination offsets exercised the stash path: 200 memcpy tests
+  per channel and 200 memset tests per channel completed with zero failures.
+  Four threads per channel (1200 total memcpy operations) completed with zero
+  failures and exercised multiple outstanding descriptors/hardware append.
+- A userspace cached-memory memcpy benchmark moved 128 MiB per case and measured
+  51.78 MiB/s for 64 KiB blocks and 55.07 MiB/s for 512 KiB blocks.
+- A temporary kernel benchmark mapped buffers once and then repeatedly submitted
+  DMA copies.  It measured 20.92 MiB/s with 64 KiB transactions and 95.78 MiB/s
+  with 512 KiB transactions.  The temporary benchmark hook was removed.  This
+  shows that small DMA transactions are dominated by descriptor/IRQ overhead,
+  while large transfers outperform cached software memcpy by about 1.74x.
+- Normal dmatest (about 1.2 MiB/s as reported against the requested copy size)
+  maps and synchronizes the full test buffers on every iteration, so it is an
+  end-to-end DMA API result and must not be interpreted as raw AXI bandwidth.
