@@ -26,9 +26,9 @@ Refer to the [Build Instructions](docs/build.md).
 | AXI GDMA | 🟡 Untested |
 | Cache driver | 🟡 Untested |
 | CLIC/CLINT interrupt driver | 🟡 Untested |
+| Flash MTD driver | 🟡 Untested |
 | PMP/APM | 🔴 Not implemented (properly) |
 | Timers | 🔴 Not implemented |
-| Flash block dev driver | 🔴 Not implemented |
 | Security accelerators | 🔴 Not implemented |
 | LP subsystem & IPC | 🔴 Not implemented |
 | AHB GDMA | 🔴 Not implemented |

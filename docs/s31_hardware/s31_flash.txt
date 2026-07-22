@@ -1,0 +1,7 @@
+Flash on S31
+
+When erasing or writing to SPI flash, by default the contents on the flash cannot be read simutaneously.
+
+Fortunately, for the specific SPI flash model on the S31 module, it supports auto-suspend, which allows reads to interrupt writing.
+
+Since erasing and writing to flash requires more complex operations than mapping to MMU, a flash proxy helper is added in OpenSBI to run the ROM-provided flash functions in M-mode.

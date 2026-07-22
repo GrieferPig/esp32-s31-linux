@@ -1425,8 +1425,6 @@ CONFIG_ESP_ERR_TO_NAME_LOOKUP=y
 # default:
 # CONFIG_UHCI_ISR_HANDLER_IN_IRAM is not set
 # default:
-# CONFIG_UHCI_ISR_CACHE_SAFE is not set
-# default:
 # CONFIG_UHCI_ENABLE_DEBUG_LOG is not set
 # end of ESP-Driver:UHCI Configurations
 
@@ -1440,8 +1438,6 @@ CONFIG_USJ_ENABLE_USB_SERIAL_JTAG=y
 #
 # Hardware Settings
 #
-# default:
-CONFIG_ESP_HW_SUPPORT_FUNC_IN_IRAM=y
 
 #
 # Chip revision
@@ -2069,6 +2065,8 @@ CONFIG_FREERTOS_SYSTICK_USES_SYSTIMER=y
 # default:
 # CONFIG_FREERTOS_IN_IRAM is not set
 # default:
+# CONFIG_FREERTOS_PLACE_ISR_FUNCTIONS_INTO_FLASH is not set
+# default:
 # CONFIG_FREERTOS_CHECK_PORT_CRITICAL_COMPLIANCE is not set
 # end of Port
 
@@ -2654,7 +2652,7 @@ CONFIG_SPI_FLASH_BROWNOUT_RESET=y
 # Features here require specific hardware (READ DOCS FIRST!)
 #
 # default:
-# CONFIG_SPI_FLASH_AUTO_SUSPEND is not set
+CONFIG_SPI_FLASH_AUTO_SUSPEND=y
 # default:
 CONFIG_SPI_FLASH_SUSPEND_TSUS_VAL_US=50
 # default:
@@ -2663,6 +2661,10 @@ CONFIG_SPI_FLASH_SUSPEND_TRS_VAL_US=50
 # CONFIG_SPI_FLASH_FORCE_ENABLE_XMC_C_SUSPEND is not set
 # default:
 # CONFIG_SPI_FLASH_FORCE_ENABLE_C6_H2_SUSPEND is not set
+# default:
+# CONFIG_SPI_FLASH_DISABLE_SCHEDULER_IN_SUSPEND is not set
+# default:
+# CONFIG_SPI_FLASH_AUTO_CHECK_SUSPEND_STATUS is not set
 # default:
 CONFIG_SPI_FLASH_PLACE_FUNCTIONS_IN_IRAM=y
 # end of Optional and Experimental Features (READ DOCS FIRST)
