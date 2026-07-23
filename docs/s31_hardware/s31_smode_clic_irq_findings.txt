@@ -163,24 +163,54 @@ Linux/OpenSBI CLIC return and timer forwarding (2026-07-22)
 - OpenSBI applies the corresponding mcause-before-mstatus restore order to its
   M-mode trap return.
 
-Timer forwarding race and final fix
------------------------------------
-- OpenSBI receives hardware M-timer ID7 and forwards it by setting S-timer ID5
-  pending.  If it injects ID5 while an S-mode CLIC level is still active, S31
-  can accept the pending timer on the same boundary as the outer sret and save
-  SPIL=0xff.  The failure then blocks all later S interrupts.
-- The useful stuck signature is a cause ending in 0x00ff0005 (observed as
-  0x98ff0005 in the Linux trace and 0x88ff0005 in a JTAG CSR snapshot), with
-  sintstatus.SIL=0xff and completed GDMA/UART/timer slots still IP=1 and IE=1.
-  Normal non-nested entries have SPIL=0, for example 0x98000005.
-- The final fix is in the OpenSBI forwarding source, not the AXI GDMA driver.
-  Before injecting ID5, OpenSBI reads sintstatus.  If SIL is non-zero, it
-  rearms the M timer for a 100 us retry; it injects ID5 only after the S-mode
-  CLIC level has been unwound.  The restart-list dequeue must use restart_list,
-  not event_list.
-- Forwarded S-timer ID5 uses clicintctl=0x3f, matching the default Linux
-  external interrupt level.  Driver-level timer masking and deferred CLIC
-  unmasking are not required and are not present in the AXI GDMA driver.
+Timer cross-privilege race and final fix
+----------------------------------------
+- S31 rejects medeleg.bit8 (U-mode ECALL); OpenSBI's requested delegation reads
+  back as medeleg=0x0000b000.  Linux user syscalls therefore arrive first as
+  raw M-mode mcause=0x08000008 and are redirected to S-mode.  Timer SBI calls
+  similarly arrive as raw mcause=0x08000009.
+- Copying the raw M cause to scause, or restoring its complete CLIC metadata on
+  mret for a synchronous exception, leaks the cross-privilege 0xff sentinel
+  into S-mode SIL.  The stuck signature is timer/peripheral clicintip=1 and
+  clicintie=1 while the CPU remains in arch_cpu_idle; DMI readback showed
+  mintstatus=0x0000ff00.
+- Complete xcause restoration is mandatory only for CLIC interrupts, whose
+  cause contains a real previous interrupt level.  For synchronous M traps,
+  OpenSBI now restores only `mcause & 0xfff`.  M-to-S exception redirect also
+  writes only `trap->cause & 0xfff` to scause.  SIL itself remains read-only;
+  it is restored by xret from the correctly constructed writable xcause.
+- The hardware compare is delivered directly to S-mode as raw local ID7 at
+  clicintctl=0x3f.  Linux translates ID7 to architectural timer IRQ5 for the
+  generic RISC-V timer handler.  The obsolete synthetic-ID5 generator,
+  sintstatus.SIL retry workaround, ID5 setup, and Linux SPIL=0xff sanitizer
+  are not used and have been removed.  The timer device itself now owns ID7
+  enable and pending-latch handling instead of the generic timer core.
+- Validation after this fix: 128 MiB SD write/read plus active GMAC completed,
+  with 69,175 timer interrupts, 573 GMAC interrupts and no interrupt lockout.
+
+Cross-privilege SIL=0xff bootloader probe (2026-07-24)
+------------------------------------------------------
+- A temporary bootloader probe entered an outer S interrupt (raw ID16,
+  clicintctl=0x5f), used an S-mode ecall to arm M timer ID7, and injected
+  S timer ID5 from the M timer handler.  The probe was removed after capture.
+- With M timer clicintctl=0xff, its trap captured:
+      mcause=0x98000007
+      mintstatus=0xff00ff00  (MIL=0xff, saved S-level field=0xff)
+- With M timer clicintctl=0x3f, its trap captured:
+      mcause=0x98000007
+      mintstatus=0x3f00ff00  (MIL=0x3f, saved S-level field=0xff)
+- Therefore the saved S-level value 0xff is independent of both the active
+  M interrupt level (tested 0x3f and 0xff) and the outer S interrupt's
+  clicintctl (0x5f).  It is an S31 hardware sentinel/state produced when an
+  M-mode CLIC interrupt preempts S-mode, not inheritance of another mode's
+  MIL, SIL, or SPIL value.
+- In this controlled sequence, ID5 later entered with
+      scause=0x98000005 (SPIL=0)
+      sintstatus.SIL=0xff
+  showing that the cross-privilege 0xff first appears in the active/saved
+  S-level state.  Whether it is copied into a later S trap's SPIL depends on
+  the exact acceptance/xRET boundary; the Linux race captured that copy as
+  scause=0x98ff0005.
 
 AXI GDMA validation
 -------------------
@@ -221,3 +251,26 @@ AXI GDMA dmaengine expansion and performance (2026-07-22)
 - Normal dmatest (about 1.2 MiB/s as reported against the requested copy size)
   maps and synchronizes the full test buffers on every iteration, so it is an
   end-to-end DMA API result and must not be interpreted as raw AXI bandwidth.
+
+SDMMC IDMAC and GMAC validation (2026-07-24)
+---------------------------------------------
+- The test card is a 32 GB SDHC card on a 1-bit CLK/CMD/D0 Dupont-wire bus.
+  The stable setting is max-frequency=12 MHz (actual 10.416 MHz).
+- Sv32 cannot express the S31 uncached PTE memory type.  DW-MSHC descriptor
+  rings therefore use a streaming DMA mapping with explicit CPU/device sync.
+  SDIO_HOST remains edge-triggered; a request-scoped 500 us hrtimer drains
+  MINTSTS/RINTSTS/IDSTS if the interrupt-matrix edge is lost.
+- Raw-card benchmark outside the partitions, at 1 GiB offset:
+      write 128 MiB, conv=fsync: 115.60 s, 1.1 MB/s
+      read 128 MiB + md5sum:    107.63 s, about 1.2 MB/s
+      MD5: fde9e0818281836e4fc0edfede2b8762
+  The write and read commands both returned zero.
+- GMAC uses interrupt-matrix source 98 on raw CLIC ID17.  Descriptor rings use
+  the uncached 0xc0000000 direct PSRAM alias while retaining the cached
+  allocation for DMA mapping/free bookkeeping.
+- YT8531 negotiated 1 Gbps/full duplex with rgmii-id and 1950 ps RX/TX delay.
+  DHCP produced no lease, but RX advanced to 208 packets with rx_errors=0.
+  Static broadcast-neighbour UDP transmitted 12,926,098 bytes in 9,229 packets
+  with tx_errors=0.  The 8.4 MB standalone portion took 7.38 s (~1.14 MB/s).
+- Concurrent 4.2 MB UDP TX plus 32 MiB SD read completed; SD retained 1.2 MB/s
+  (27.01 s).  Final IRQ counts were timer=69,175, GMAC=573 and SDMMC=36.

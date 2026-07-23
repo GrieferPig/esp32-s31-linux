@@ -111,7 +111,12 @@ static void prepare_sdmmc_for_linux(void)
         return;
     }
 
-    slot.width = 4;
+    /*
+     * The bring-up board is wired as a 1-bit SD bus (CLK/CMD/D0 only).
+     * Advertising four data lines makes the SD core switch the card to
+     * 4-bit mode even though D1-D3 are not connected.
+     */
+    slot.width = 1;
     slot.flags = SDMMC_SLOT_FLAG_INTERNAL_PULLUP;
     err = sdmmc_host_init_slot(SDMMC_HOST_SLOT_0, &slot);
     if (err != ESP_OK) {
@@ -122,7 +127,7 @@ static void prepare_sdmmc_for_linux(void)
     /* Use the same safe initial card clock as IDF's SDMMC host. */
     log_prepare_error("SDMMC initial clock setup failed",
                       sdmmc_host_set_card_clk(SDMMC_HOST_SLOT_0, 20000));
-    ESP_LOGI(TAG, "SDMMC prepared: slot0 GPIO20-25, CIU=MPLL/8 (62.5 MHz)");
+    ESP_LOGI(TAG, "SDMMC prepared: slot0 1-bit GPIO20/24/25, CIU=MPLL/8 (62.5 MHz)");
 }
 
 static void emac_rgmii_iomux_output(gpio_num_t gpio, int func)
