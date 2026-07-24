@@ -28,7 +28,7 @@ INITRAMFS_OFFSET := $(shell awk -F, '/initramfs/ {gsub(/ /, "", $$4); print $$4}
 
 FW_PAYLOAD := $(BUILD_DIR)/fw_payload.bin
 XIP_IMAGE := $(BUILD_DIR)/xipImage
-INITRAMFS_CPIO := $(BUILD_DIR)/initramfs.cpio
+INITRAMFS_IMG := $(BUILD_DIR)/rootfs.sqfs
 
 IDF_EXPORT := $(shell find $(HOME) -maxdepth 5 -type f -name export.sh 2>/dev/null | grep esp-idf | head -n 1)
 
@@ -130,10 +130,11 @@ initramfs: busybox coremark | $(INITRAMFS_OUT)
 	install -Dm755 $(INITRAMFS_DIR)/default.script $(INITRAMFS_ROOT)/usr/share/udhcpc/default.script
 	mkdir -p $(INITRAMFS_ROOT)/dev $(INITRAMFS_ROOT)/proc $(INITRAMFS_ROOT)/sys $(INITRAMFS_ROOT)/tmp $(INITRAMFS_ROOT)/run $(INITRAMFS_ROOT)/etc
 	chmod 1777 $(INITRAMFS_ROOT)/tmp
-	@cd $(INITRAMFS_ROOT) && find . -print0 | cpio --null -o -H newc --owner=0:0 > $(INITRAMFS_CPIO)
-	@INITRAMFS_SIZE=$$(stat -c%s $(INITRAMFS_CPIO)); \
+	@rm -f $(INITRAMFS_IMG)
+	@mksquashfs $(INITRAMFS_ROOT) $(INITRAMFS_IMG) -comp xz -b 64K -always-use-fragments
+	@INITRAMFS_SIZE=$$(stat -c%s $(INITRAMFS_IMG)); \
 	if [ $$INITRAMFS_SIZE -gt $(INITRAMFS_PARTITION_SIZE) ]; then echo "ERROR: initramfs too large"; exit 1; fi; \
-	truncate -s $(INITRAMFS_PARTITION_SIZE) $(INITRAMFS_CPIO)
+	truncate -s $(INITRAMFS_PARTITION_SIZE) $(INITRAMFS_IMG)
 
 clean:
 	rm -rf $(BUILD_DIR)
@@ -148,7 +149,7 @@ flash-linux:
 	esptool -p /dev/ttyUSB0 -b 2000000 write-flash $(LINUX_OFFSET) $(XIP_IMAGE)
 
 flash-initramfs:
-	esptool -p /dev/ttyUSB0 -b 2000000 write-flash $(INITRAMFS_OFFSET) $(INITRAMFS_CPIO)
+	esptool -p /dev/ttyUSB0 -b 2000000 write-flash $(INITRAMFS_OFFSET) $(INITRAMFS_IMG)
 
 bootloader:
 	@if [ -z "$(IDF_EXPORT)" ]; then echo "ERROR: ESP-IDF export.sh not found under $(HOME)"; exit 1; fi
