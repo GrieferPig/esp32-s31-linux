@@ -127,6 +127,7 @@ initramfs: busybox coremark | $(INITRAMFS_OUT)
 	$(MAKE) -C $(INITRAMFS_DIR) OUT_DIR="$(INITRAMFS_OUT)" CROSS_COMPILE="$(CROSS_COMPILE)" DESTDIR="$(INITRAMFS_ROOT)" all install
 	install -Dm755 $(COREMARK_BIN) $(INITRAMFS_ROOT)/sbin/coremark
 	install -Dm755 $(INITRAMFS_DIR)/init $(INITRAMFS_ROOT)/init
+	install -Dm755 $(INITRAMFS_DIR)/default.script $(INITRAMFS_ROOT)/usr/share/udhcpc/default.script
 	mkdir -p $(INITRAMFS_ROOT)/dev $(INITRAMFS_ROOT)/proc $(INITRAMFS_ROOT)/sys $(INITRAMFS_ROOT)/tmp $(INITRAMFS_ROOT)/run $(INITRAMFS_ROOT)/etc
 	chmod 1777 $(INITRAMFS_ROOT)/tmp
 	@cd $(INITRAMFS_ROOT) && find . -print0 | cpio --null -o -H newc --owner=0:0 > $(INITRAMFS_CPIO)

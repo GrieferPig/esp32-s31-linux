@@ -39,14 +39,14 @@ Refer to the [Build Instructions](docs/build.md).
 |---|---|
 | UART | 🟡 Untested  |
 | USB HS | 🟡 Untested |
+| EMAC | 🟡 Untested |
+| SDIO | 🟡 Untested (1-bit by default) |
 | GPIO | 🔴 Not implemented |
 | pinctrl/GPIO Matrix | 🔴 Not implemented |
 | I2C | 🔴 Not implemented |
 | I2S | 🔴 Not implemented |
 | SPI | 🔴 Not implemented |
 | RMT | 🔴 Not implemented |
-| EMAC | 🔴 Not implemented |
-| SDIO | 🔴 Not implemented |
 | USB Serial/JTAG | 🔴 Not implemented |
 
 

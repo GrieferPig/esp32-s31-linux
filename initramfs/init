@@ -15,4 +15,9 @@ mount -t sysfs sysfs /sys 2>/dev/null || true
 mount -t tmpfs tmpfs /tmp 2>/dev/null || true
 mount -t devpts devpts /dev/pts 2>/dev/null || true
 
-exec /bin/cttyhack /bin/sh -i
+(
+	ifconfig eth0 up 2>/dev/null || true
+	udhcpc -b -i eth0 2>/dev/null || true
+) &
+
+exec setsid /bin/cttyhack /bin/sh
