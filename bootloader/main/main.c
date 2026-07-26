@@ -50,6 +50,7 @@
 #define FDT_MAGIC_LE                  0xEDFE0DD0U
 #define ROOTFS_PARTITION_SIZE         0x005E0000U
 #define ESP32S31_PSRAM_SIZE           0x01000000U
+#define LINUX_PSRAM_START             0x50000000U
 /*
  * Linux owns the highest contiguous part of IDF-usable HP SRAM:
  *   AXI GDMA descriptors: 0x2f072f80..0x2f07af7f (32 KiB)
@@ -61,11 +62,15 @@
  */
 #define LINUX_SRAM_START              0x2F072F80U
 #define LINUX_SRAM_END                0x2F07AFC0U
+#define HART1_EARLY_MAILBOX_ADDR      0x2F07AFA0U
 SOC_RESERVE_MEMORY_REGION(LINUX_SRAM_START, LINUX_SRAM_END, linux_devices);
 
 static const char *TAG = "boot";
 volatile uint32_t g_core1_fdt;
 volatile uint32_t g_core1_trampoline_entered;
+volatile uint32_t g_core1_trap_mcause;
+volatile uint32_t g_core1_trap_mtval;
+volatile uint32_t g_core1_trap_mepc;
 static volatile uint32_t s_freertos_worker_counter;
 
 extern void core1_linux_trampoline(void);
@@ -192,6 +197,49 @@ static bool map_flash_range(uint32_t vaddr, uint32_t paddr, uint32_t size)
     return true;
 }
 
+static bool prepare_core1_cached_psram(void)
+{
+    if (mmu_ll_get_page_size(MMU_LL_PSRAM_MMU_ID) != MMU_PAGE_64KB) {
+        ESP_LOGE(TAG, "unexpected PSRAM MMU page size");
+        return false;
+    }
+
+    /*
+     * The PSRAM MMU and D-cache are shared by both HP harts. IDF maps PSRAM
+     * only for its single-core owner, so make the Linux ownership contract
+     * explicit before releasing hart1.
+     */
+    for (uint32_t offset = 0; offset < ESP32S31_PSRAM_SIZE;
+         offset += SOC_MMU_PAGE_SIZE) {
+        uint32_t entry_id = mmu_ll_get_entry_id(MMU_LL_PSRAM_MMU_ID,
+                                                LINUX_PSRAM_START + offset);
+        mmu_ll_write_entry(MMU_LL_PSRAM_MMU_ID, entry_id,
+                           offset / SOC_MMU_PAGE_SIZE, MMU_TARGET_PSRAM0);
+    }
+
+    /*
+     * FreeRTOS never allocates PSRAM. Flush any lines left by IDF's PSRAM
+     * initialization, then discard them before Linux becomes the sole owner.
+     */
+    if (Cache_WriteBack_Invalidate_Addr(CACHE_MAP_L1_DCACHE,
+                                        LINUX_PSRAM_START,
+                                        ESP32S31_PSRAM_SIZE) != 0) {
+        ESP_LOGE(TAG, "PSRAM D-cache handoff failed");
+        return false;
+    }
+    cache_ll_l1_invalidate_icache_addr(1, LINUX_PSRAM_START,
+                                      ESP32S31_PSRAM_SIZE);
+
+    /*
+     * S31 has a shared D-cache and private I-caches. Clear the PSRAM I-bus
+     * shutdown bit explicitly for hart1; DBUS0 must remain enabled globally.
+     */
+    REG_CLR_BIT(CACHE_L1_ICACHE_CTRL_REG, CACHE_L1_ICACHE_SHUT_IBUS1);
+    REG_CLR_BIT(CACHE_L1_DCACHE_CTRL_REG, CACHE_L1_DCACHE_SHUT_DBUS0);
+    fence_i();
+    return true;
+}
+
 static void enable_core1_external_memory_bus(uint32_t vaddr, uint32_t size)
 {
     cache_bus_mask_t bus = cache_ll_l1_get_bus(1, vaddr, size);
@@ -211,6 +259,11 @@ static void start_linux_on_core1(uint32_t fdt)
 {
     g_core1_fdt = fdt;
     g_core1_trampoline_entered = 0;
+    for (uint32_t addr = HART1_EARLY_MAILBOX_ADDR;
+         addr < LINUX_SRAM_END; addr += sizeof(uint32_t)) {
+        *(volatile uint32_t *)addr = 0;
+    }
+    __asm__ volatile ("fence rw, rw" ::: "memory");
 
     /*
      * Flash MMU entries are shared, but each core has a private I-cache bus.
@@ -220,6 +273,9 @@ static void start_linux_on_core1(uint32_t fdt)
     enable_core1_external_memory_bus(LINUX_XIP_ADDR, ROOTFS_FLASH_ADDR - LINUX_XIP_ADDR);
     enable_core1_external_memory_bus(ROOTFS_FLASH_ADDR, ROOTFS_PARTITION_SIZE);
     enable_core1_external_memory_bus(FLASH_MTD_XIP_ADDR, FLASH_MTD_SIZE);
+    if (!prepare_core1_cached_psram()) {
+        loader_restart("hart1 cached PSRAM setup");
+    }
     disable_core1_stack_protector();
     esp_cpu_stall(1);
     cpu_utility_ll_enable_clock_and_reset_app_cpu();

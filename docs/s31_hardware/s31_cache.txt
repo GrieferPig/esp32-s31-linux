@@ -12,7 +12,18 @@ policies
 
 Cached regions (0x40000000–0x4FFFFFFF for flash, 0x50000000–0x53FFFFFF for PSRAM)
   require explicit manual cache invalidation and write-back when mixing cached and
-  uncached accesses or when handing off between boot stages.  OpenSBI and early
-  Linux bootstrap code should therefore use only uncached regions
-  (PSRAM direct: 0xC0000000+) until the respective
-  MMU / cache maintenance routines are fully operational. Flash is read only therefore cached is okay.
+  uncached accesses or when handing off between boot stages.
+
+For hart1 cached PSRAM boot, all of the following are required:
+  - shared PSRAM MMU entries and shared D-cache DBUS enabled;
+  - hart1 private I-cache IBUS enabled;
+  - CPU/HP/HP-MEM APM and MSPI PMS permissions;
+  - hart-local PMA entry 7 matching ESP-IDF's S31
+    esp_cpu_configure_region_protection() setup.
+The PMA entry covers 0x50000000..0x53FFFFFF as locked RWX NAPOT
+(pmaaddr7=0x147FFFFF, pmacfg7=0xE000001D). Without it, a cached PSRAM access
+from hart1 is reported as a PMP/PMA access fault.
+
+OpenSBI and Linux now use the cached 0x50000000 alias. Linux head.S must write
+back the page-table writes made by setup_vm() before SATP is loaded because the
+S31 Sv32 page-table walker does not snoop the shared write-back D-cache.

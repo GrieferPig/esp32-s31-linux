@@ -15,7 +15,21 @@
 
 core1_linux_trampoline:
     csrw    mie, zero
-    csrw    mtvec, zero
+    la      t0, core1_early_trap
+    csrw    mtvec, t0
+
+    /*
+     * Preserve the first failed handoff. A core-only reset re-enters this
+     * trampoline without clearing HP SRAM, so park instead of overwriting
+     * the OpenSBI/Linux diagnostic mailbox and PMP state.
+     */
+    la      t0, g_core1_trampoline_entered
+    lw      t1, 0(t0)
+    bnez    t1, core1_reentry_park
+    li      t1, 1
+    sw      t1, 0(t0)
+    fence   rw, rw
+
     csrw    0x307, zero             /* mtvt */
     li      t0, (1 << 17)           /* MSTATUS_MPRV */
     csrc    mstatus, t0
@@ -33,31 +47,37 @@ core1_linux_trampoline:
     bnez    t1, 1b
 
     /*
-     * Full RV32 PMP physical address space, RWX NAPOT.
-     * Cached flash/PSRAM accesses are checked after the S31 proprietary MMU
-     * translation. Do not set PMP_L: S31's documented S-mode setup uses
-     * pmpaddr0=-1/pmpcfg0=0x1f, and locking the entry also subjects M-mode
-     * cache/MMU accesses to PMP checks.
+     * PMA is hart-local. Mirror ESP-IDF's ESP32-S31 region-protection setup:
+     * entry 7 covers the full 64 MiB cached PSRAM aperture with RWX NAPOT.
+     * Without this entry hart1 reports a PMP/PMA store fault on 0x50000000,
+     * even though the shared PSRAM MMU, cache bus, MSPI PMS and APM permit it.
+     *
+     * pmaaddr7 = (0x50000000 | ((0x04000000 / 2) - 1)) >> 2
+     * pmacfg7  = PMA_L | PMA_NAPOT | PMA_EN | PMA_R | PMA_W | PMA_X
      */
+    csrw    0xbc7, zero             /* pmacfg7 */
+    csrw    0xbd7, zero             /* pmaaddr7 */
+    li      t0, 0x147fffff
+    csrw    0xbd7, t0
+    li      t0, 0xe000001d
+    csrw    0xbc7, t0
+
+    /* Full RV32 PMP physical space for Linux S-mode, RWX NAPOT. */
     li      t0, -1
     csrw    pmpaddr0, t0
     li      t0, 0x1f
     csrw    pmpcfg0, t0
 
     /*
-     * OpenSBI owns the top 1 MiB PSRAM through its uncached direct alias and
-     * will establish its final stack. Cached PSRAM is unsafe during hart1
-     * bring-up before OpenSBI/Linux have established their memory state.
+     * The loader has completed the shared D-cache ownership handoff and the
+     * hart1 PSRAM I-bus setup. OpenSBI owns the top 1 MiB cached PSRAM.
      */
-    li      sp, 0xc1000000
+    li      sp, 0x51000000
     li      a0, 1
     la      t0, g_core1_fdt
     lw      a1, 0(t0)
     li      a2, 0
 
-    la      t0, g_core1_trampoline_entered
-    li      t1, 1
-    sw      t1, 0(t0)
     fence   rw, rw
     fence.i
 
@@ -65,4 +85,25 @@ core1_linux_trampoline:
     jr      t0
 
     .size core1_linux_trampoline, . - core1_linux_trampoline
+
+core1_reentry_park:
+    wfi
+    j       core1_reentry_park
+
+    .align  2
+core1_early_trap:
+    csrr    t0, mcause
+    la      t1, g_core1_trap_mcause
+    sw      t0, 0(t1)
+    csrr    t0, mtval
+    la      t1, g_core1_trap_mtval
+    sw      t0, 0(t1)
+    csrr    t0, mepc
+    la      t1, g_core1_trap_mepc
+    sw      t0, 0(t1)
+    fence   rw, rw
+1:
+    wfi
+    j       1b
+
     .option pop
