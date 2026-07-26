@@ -14,19 +14,13 @@
 #include "esp_log.h"
 #include "esp_err.h"
 #include "esp_system.h"
-#include "esp_chip_info.h"
-#include "esp_mac.h"
-#include "esp_cpu.h"
 #include "esp_flash.h"
 #include "esp_partition.h"
-#include "esp_cache.h"
 #include "spi_flash_mmap.h"
 #include "esp_psram.h"
-#include "esp_rom_gpio.h"
+#include "esp_rom_caps.h"
+#include "esp_rom_serial_output.h"
 #include "esp_rom_sys.h"
-#include "driver/gpio.h"
-#include "driver/sdmmc_host.h"
-#include "esp_private/gpio.h"
 #include "riscv/csr.h"
 #include "esp32s31/rom/cache.h"
 #include "hal/cache_ll.h"
@@ -34,20 +28,11 @@
 #include "hal/wdt_hal.h"
 #include "soc/soc.h"
 #include "soc/timer_group_struct.h"
-#include "soc/usb_serial_jtag_reg.h"
-#include "soc/usb_serial_jtag_struct.h"
-#include "soc/cnnt_io_mux_struct.h"
-#include "soc/cnnt_sys_struct.h"
-#include "soc/hp_sys_clkrst_struct.h"
-#include "soc/io_mux_reg.h"
-#include "soc/gpio_sig_map.h"
 #include "soc/cpu_apm_reg.h"
 #include "soc/hp_apm_reg.h"
 #include "soc/hp_mem_apm_reg.h"
 #include "hal/mmu_ll.h"
 #include "hal/mmu_types.h"
-#include "hal/emac_hal.h"
-#include "freertos/FreeRTOS.h"
 
 #define OPENSBI_XIP_ADDR              0x40030000U
 #define LINUX_XIP_ADDR                0x400B0000U
@@ -61,233 +46,24 @@
 #define PMP_FULL_SPACE_NAPOT_ADDR     0x3FFFFFFFU
 #define PMP_ENTRY_RWX_LOCK_NAPOT      0x9FU
 
-/*
- * These are the fixed S31 IOMUX routes used by ESP-IDF's default RGMII
- * configuration.  ESP32-S31-Function-CoreBoard-1 routes these signals to its
- * onboard Motorcomm YT8531DC-CA Gigabit PHY.
- */
-#define EMAC_RGMII_MDC_GPIO           5
-#define EMAC_RGMII_MDIO_GPIO          6
-#define EMAC_PHY_RESET_GPIO            7
-#define EMAC_RGMII_TXD0_GPIO          8
-#define EMAC_RGMII_TXD1_GPIO          9
-#define EMAC_RGMII_TXD2_GPIO          10
-#define EMAC_RGMII_TXD3_GPIO          11
-#define EMAC_RGMII_TX_CTL_GPIO        12
-#define EMAC_RGMII_TX_CLK_GPIO        13
-#define EMAC_RGMII_RX_CLK_GPIO        14
-#define EMAC_RGMII_RX_CTL_GPIO        15
-#define EMAC_RGMII_RXD3_GPIO          16
-#define EMAC_RGMII_RXD2_GPIO          17
-#define EMAC_RGMII_RXD1_GPIO          18
-#define EMAC_RGMII_RXD0_GPIO          19
-
 static const char *TAG = "boot";
 
-static void log_prepare_error(const char *what, esp_err_t err)
+/* Keep all loader output on the dedicated USB Serial/JTAG peripheral. */
+static __attribute__((noreturn)) void loader_restart(const char *reason)
 {
-    if (err != ESP_OK) {
-        ESP_LOGE(TAG, "%s: %s", what, esp_err_to_name(err));
-    }
+    static const char prefix[] = "S31 loader failure: ";
+
+    esp_rom_output_set_as_console(ESP_ROM_USB_SERIAL_DEVICE_NUM);
+    for (const char *p = prefix; *p; p++)
+        esp_rom_output_tx_one_char((uint8_t)*p);
+    for (const char *p = reason; *p; p++)
+        esp_rom_output_tx_one_char((uint8_t)*p);
+    esp_rom_output_tx_one_char('\r');
+    esp_rom_output_tx_one_char('\n');
+    esp_rom_output_tx_wait_idle(ESP_ROM_USB_SERIAL_DEVICE_NUM);
+    esp_restart();
 }
 
-/*
- * The Linux dw_mmc driver has no S31 clock/power-domain provider yet.  Keep
- * the controller's MPLL/8 (62.5 MHz) source, its gates, and its SRAM awake
- * across the firmware handoff.  sdmmc_host_init_slot() selects the native
- * IOMUX route: CLK/CMD/D0..D3 = GPIO24/25/20..23.
- */
-static void prepare_sdmmc_for_linux(void)
-{
-    sdmmc_slot_config_t slot = SDMMC_SLOT_CONFIG_DEFAULT();
-    esp_err_t err;
-
-    CNNT_SYS_REG.sys_sdmmc_mem_lp_ctrl.sys_sdmmc_mem_lp_force_ctrl = 1;
-    CNNT_SYS_REG.sys_sdmmc_mem_lp_ctrl.sys_sdmmc_mem_lp_en = 0;
-
-    err = sdmmc_host_init();
-    if (err != ESP_OK && err != ESP_ERR_INVALID_STATE) {
-        log_prepare_error("SDMMC host clock/reset setup failed", err);
-        return;
-    }
-
-    /*
-     * The bring-up board is wired as a 1-bit SD bus (CLK/CMD/D0 only).
-     * Advertising four data lines makes the SD core switch the card to
-     * 4-bit mode even though D1-D3 are not connected.
-     */
-    slot.width = 1;
-    slot.flags = SDMMC_SLOT_FLAG_INTERNAL_PULLUP;
-    err = sdmmc_host_init_slot(SDMMC_HOST_SLOT_0, &slot);
-    if (err != ESP_OK) {
-        log_prepare_error("SDMMC slot0 IOMUX setup failed", err);
-        return;
-    }
-
-    /* Use the same safe initial card clock as IDF's SDMMC host. */
-    log_prepare_error("SDMMC initial clock setup failed",
-                      sdmmc_host_set_card_clk(SDMMC_HOST_SLOT_0, 20000));
-    ESP_LOGI(TAG, "SDMMC prepared: slot0 1-bit GPIO20/24/25, CIU=MPLL/8 (62.5 MHz)");
-}
-
-static void emac_rgmii_iomux_output(gpio_num_t gpio, int func)
-{
-    log_prepare_error("EMAC RGMII output IOMUX failed", gpio_iomux_output(gpio, func));
-}
-
-static void emac_rgmii_iomux_input(gpio_num_t gpio, int func, uint32_t signal)
-{
-    log_prepare_error("EMAC RGMII input IOMUX failed", gpio_iomux_input(gpio, func, signal));
-}
-
-static bool emac_read_phy(emac_hal_context_t *hal, unsigned int phy, unsigned int reg,
-                          uint16_t *value)
-{
-    emac_hal_set_phy_cmd(hal, phy, reg, false);
-    for (unsigned int timeout = 0; timeout < 1000; timeout++) {
-        if (!emac_hal_is_mii_busy(hal)) {
-            *value = emac_hal_get_phy_data(hal);
-            return true;
-        }
-        esp_rom_delay_us(10);
-    }
-    return false;
-}
-
-/*
- * Use IDF's ESP32-S31 default RGMII IOMUX group.  MPLL is programmed to
- * 500 MHz by the IDF clock tree; divide-by-four supplies the initial 125 MHz
- * TX clock.  Linux reprograms the MAC after taking ownership.
- */
-static void prepare_emac_for_linux(void)
-{
-    emac_hal_context_t hal;
-    uint8_t eth_mac[6];
-    uint16_t phy_id1 = UINT16_MAX;
-    uint16_t phy_id2 = UINT16_MAX;
-
-    CNNT_SYS_REG.sys_gmac_mem_lp_ctrl.sys_gmac_mem_lp_force_ctrl = 1;
-    CNNT_SYS_REG.sys_gmac_mem_lp_ctrl.sys_gmac_mem_lp_en = 0;
-    CNNT_SYS_REG.sys_gmac_ctrl0.sys_gmac_mem_clk_force_on = 1;
-    HP_SYS_CLKRST.emac_ctrl0.reg_emac_sys_clk_en = 1;
-    CNNT_SYS_REG.sys_hp_emac_ctrl.sys_emac_rst_en = 1;
-    CNNT_SYS_REG.sys_hp_emac_ctrl.sys_emac_rst_en = 0;
-
-    /*
-     * Function-CoreBoard-1: YT8531 RESET_N is GPIO7.  Hold it low while the
-     * MAC clocks and RGMII pads are prepared, then leave it deasserted for
-     * Linux.  PHYAD[2:0] are strapped low on this board (address 0).
-     */
-    log_prepare_error("YT8531 reset GPIO setup failed",
-                      gpio_reset_pin(EMAC_PHY_RESET_GPIO));
-    log_prepare_error("YT8531 reset GPIO direction failed",
-                      gpio_set_direction(EMAC_PHY_RESET_GPIO, GPIO_MODE_OUTPUT));
-    log_prepare_error("YT8531 reset assert failed",
-                      gpio_set_level(EMAC_PHY_RESET_GPIO, 0));
-
-    /* GPIO13-19 are CNNT pads and need the dedicated GMAC control path. */
-    CNNT_PAD_CTRL.ctrl.gmac_pad_pin_ctrl_ded_sel = 1;
-    emac_rgmii_iomux_output(EMAC_RGMII_TXD0_GPIO, FUNC_GPIO8_GMAC_PHY_TXD0_PAD);
-    emac_rgmii_iomux_output(EMAC_RGMII_TXD1_GPIO, FUNC_GPIO9_GMAC_PHY_TXD1_PAD);
-    emac_rgmii_iomux_output(EMAC_RGMII_TXD2_GPIO, FUNC_GPIO10_GMAC_PHY_TXD2_PAD);
-    emac_rgmii_iomux_output(EMAC_RGMII_TXD3_GPIO, FUNC_GPIO11_GMAC_PHY_TXD3_PAD);
-    emac_rgmii_iomux_output(EMAC_RGMII_TX_CTL_GPIO, FUNC_GPIO12_GMAC_PHY_TXEN_PAD);
-    emac_rgmii_iomux_output(EMAC_RGMII_TX_CLK_GPIO, FUNC_GPIO13_GMAC_RMII_CLK_PAD);
-    emac_rgmii_iomux_input(EMAC_RGMII_RX_CLK_GPIO, FUNC_GPIO14_GMAC_RX_CLK_PAD,
-                           GMAC_RX_CLK_PAD_IN_IDX);
-    emac_rgmii_iomux_input(EMAC_RGMII_RX_CTL_GPIO, FUNC_GPIO15_GMAC_PHY_RXDV_PAD,
-                           GMAC_PHY_RXDV_PAD_IN_IDX);
-    emac_rgmii_iomux_input(EMAC_RGMII_RXD3_GPIO, FUNC_GPIO16_GMAC_PHY_RXD3_PAD,
-                           GMAC_PHY_RXD3_PAD_IN_IDX);
-    emac_rgmii_iomux_input(EMAC_RGMII_RXD2_GPIO, FUNC_GPIO17_GMAC_PHY_RXD2_PAD,
-                           GMAC_PHY_RXD2_PAD_IN_IDX);
-    emac_rgmii_iomux_input(EMAC_RGMII_RXD1_GPIO, FUNC_GPIO18_GMAC_PHY_RXD1_PAD,
-                           GMAC_PHY_RXD1_PAD_IN_IDX);
-    emac_rgmii_iomux_input(EMAC_RGMII_RXD0_GPIO, FUNC_GPIO19_GMAC_PHY_RXD0_PAD,
-                           GMAC_PHY_RXD0_PAD_IN_IDX);
-
-    /*
-     * MDC is output; MDIO is bidirectional and uses the GPIO matrix.  Keep
-     * the MDIO input buffer explicitly enabled: this mirrors IDF's
-     * emac_esp_gpio_init_smi() and is required for GMII_MDI_PAD_IN_IDX to see
-     * the PHY's turnaround/read data.
-     */
-    esp_rom_gpio_connect_out_signal(EMAC_RGMII_MDC_GPIO, GMII_MDC_PAD_OUT_IDX, false, false);
-    esp_rom_gpio_connect_out_signal(EMAC_RGMII_MDIO_GPIO, GMII_MDO_PAD_OUT_IDX, false, false);
-    log_prepare_error("EMAC MDIO input enable failed",
-                      gpio_input_enable(EMAC_RGMII_MDIO_GPIO));
-    esp_rom_gpio_connect_in_signal(EMAC_RGMII_MDIO_GPIO, GMII_MDI_PAD_IN_IDX, false);
-    log_prepare_error("EMAC MDC GPIO pull setup failed",
-                      gpio_set_pull_mode(EMAC_RGMII_MDC_GPIO, GPIO_FLOATING));
-    log_prepare_error("EMAC MDIO GPIO pull setup failed",
-                      gpio_set_pull_mode(EMAC_RGMII_MDIO_GPIO, GPIO_FLOATING));
-    log_prepare_error("EMAC MDC GPIO function setup failed",
-                      gpio_func_sel(EMAC_RGMII_MDC_GPIO, PIN_FUNC_GPIO));
-    log_prepare_error("EMAC MDIO GPIO function setup failed",
-                      gpio_func_sel(EMAC_RGMII_MDIO_GPIO, PIN_FUNC_GPIO));
-
-    /* RGMII, MPLL 500 MHz / 4 = 125 MHz TXC, and 40 MHz PTP reference. */
-    CNNT_SYS_REG.sys_gmac_ctrl0.sys_phy_intf_sel = 1;
-    CNNT_SYS_REG.sys_hp_emac_ref_ctrl.sys_emac_ref_clk_sel = 0;
-    CNNT_SYS_REG.sys_hp_emac_ref_ctrl.sys_emac_ref_clk_div_num = 3;
-    CNNT_SYS_REG.sys_hp_emac_ref_ctrl.sys_emac_ref_clk_en = 1;
-    CNNT_SYS_REG.sys_hp_emac_rmii_pad_ctrl.sys_emac_rmii_pad_clk_en = 0;
-    CNNT_SYS_REG.sys_hp_emac_rmii_ctrl.sys_emac_rmii_clk_en = 0;
-    CNNT_SYS_REG.sys_hp_emac_rmii_ctrl.sys_emac_rmii_pad_out_clk_en = 1;
-    CNNT_SYS_REG.sys_hp_emac_rx_ctrl.sys_emac_rx_pad_clk_en = 1;
-    CNNT_SYS_REG.sys_hp_emac_rx_ctrl.sys_emac_rx_clk_sel = 1;
-    CNNT_SYS_REG.sys_hp_emac_rx_ctrl.sys_emac_rx_180_clk_en = 1;
-    CNNT_SYS_REG.sys_hp_emac_tx_ctrl.sys_emac_tx_180_clk_en = 1;
-    CNNT_SYS_REG.sys_hp_emac_ptp_ctrl.sys_emac_ptp_ref_clk_sel = 0;
-    CNNT_SYS_REG.sys_hp_emac_ptp_ctrl.sys_emac_ptp_ref_clk_en = 1;
-
-    esp_rom_delay_us(10000);
-    log_prepare_error("YT8531 reset release failed",
-                      gpio_set_level(EMAC_PHY_RESET_GPIO, 1));
-    /* Allow the 25 MHz crystal, PLL, and MDIO block to settle before probing. */
-    esp_rom_delay_us(100000);
-    ESP_LOGI(TAG, "YT8531 MDIO idle level after reset: %d",
-             gpio_get_level(EMAC_RGMII_MDIO_GPIO));
-
-    emac_hal_init(&hal);
-    emac_hal_reset(&hal);
-    for (unsigned int timeout = 0; timeout < 100; timeout++) {
-        if (emac_hal_is_reset_done(&hal)) {
-            break;
-        }
-        esp_rom_delay_us(1000);
-    }
-    if (!emac_hal_is_reset_done(&hal)) {
-        ESP_LOGW(TAG, "EMAC software reset did not complete before MDIO probe");
-    }
-    emac_hal_set_csr_clock_range(&hal, 80000000);
-    if (esp_read_mac(eth_mac, ESP_MAC_ETH) == ESP_OK) {
-        /* Leave the unique eFuse-derived ETH MAC for stmmac to discover. */
-        emac_hal_set_address(&hal, eth_mac);
-        ESP_LOGI(TAG, "EMAC MAC from eFuse: %02x:%02x:%02x:%02x:%02x:%02x",
-                 eth_mac[0], eth_mac[1], eth_mac[2], eth_mac[3],
-                 eth_mac[4], eth_mac[5]);
-    } else {
-        ESP_LOGW(TAG, "Unable to read eFuse ETH MAC");
-    }
-    ESP_LOGI(TAG, "EMAC prepared: YT8531@0 reset GPIO7, RGMII GPIO8-19, TXC=125 MHz, PTP=40 MHz");
-
-    for (unsigned int phy = 0; phy < 32; phy++) {
-        bool id1_read = emac_read_phy(&hal, phy, 2, &phy_id1);
-        bool id2_read = emac_read_phy(&hal, phy, 3, &phy_id2);
-
-        if (phy == 0) {
-            ESP_LOGI(TAG, "YT8531 MDIO@0: id1 %s=0x%04x id2 %s=0x%04x",
-                     id1_read ? "ok" : "timeout", phy_id1,
-                     id2_read ? "ok" : "timeout", phy_id2);
-        }
-        if (id1_read && id2_read &&
-            phy_id1 != 0 && phy_id1 != UINT16_MAX &&
-            phy_id2 != 0 && phy_id2 != UINT16_MAX) {
-            ESP_LOGI(TAG, "EMAC PHY addr %u: id 0x%04x 0x%04x", phy, phy_id1, phy_id2);
-        }
-    }
-}
 static void fence_i(void)
 {
     __asm__ volatile ("fence.i" ::: "memory");
@@ -465,20 +241,18 @@ void app_main(void)
     if (!esp_psram_is_initialized() ||
         esp_psram_get_size() < ESP32S31_PSRAM_SIZE) {
         ESP_LOGE(TAG, "16 MiB PSRAM was not initialized");
-        esp_restart();
+        loader_restart("PSRAM initialization");
     }
 
     disable_apm();
     disable_watchdogs();
-    prepare_sdmmc_for_linux();
-    prepare_emac_for_linux();
     clear_mstatus_mprv();
     install_global_pmp();
 
     /* Keep XIP mappings intact and expose the full flash at a second alias. */
     if (!map_flash_range(FLASH_MTD_XIP_ADDR, 0, FLASH_MTD_SIZE)) {
         ESP_LOGE(TAG, "failed to map complete Flash MTD window");
-        esp_restart();
+        loader_restart("Flash MTD mapping");
     }
     ESP_LOGI(TAG, "Flash MTD window mapped: flash=0x00000000 size=0x%08" PRIx32
                   " vaddr=0x%08" PRIx32,
@@ -489,7 +263,7 @@ void app_main(void)
         ESP_PARTITION_TYPE_DATA, 0x40, "opensbi");
     if (!part) {
         ESP_LOGE(TAG, "OpenSBI partition not found");
-        esp_restart();
+        loader_restart("OpenSBI partition lookup");
     }
 
     const void *opensbi_ptr;
@@ -499,7 +273,7 @@ void app_main(void)
                                        &opensbi_ptr, &mmap_handle);
     if (err != ESP_OK) {
         ESP_LOGE(TAG, "esp_partition_mmap failed: %s", esp_err_to_name(err));
-        esp_restart();
+        loader_restart("OpenSBI mmap");
     }
     ESP_LOGI(TAG, "OpenSBI mmap at %p (size %" PRIu32 ")",
              opensbi_ptr, part->size);
@@ -507,12 +281,12 @@ void app_main(void)
     if ((uintptr_t)opensbi_ptr != OPENSBI_XIP_ADDR) {
         ESP_LOGE(TAG, "OpenSBI mmap address %p != linked address 0x%08" PRIx32,
                  opensbi_ptr, (uint32_t)OPENSBI_XIP_ADDR);
-        esp_restart();
+        loader_restart("OpenSBI virtual address");
     }
 
     if (part->size < OPENSBI_FDT_OFFSET_SLOT_SIZE) {
         ESP_LOGE(TAG, "OpenSBI partition too small for FDT offset slot");
-        esp_restart();
+        loader_restart("OpenSBI partition size");
     }
 
     uint32_t fdt_offset = 0;
@@ -521,13 +295,13 @@ void app_main(void)
                          sizeof(fdt_offset));
     if (err != ESP_OK) {
         ESP_LOGE(TAG, "reading FDT offset failed: %s", esp_err_to_name(err));
-        esp_restart();
+        loader_restart("FDT offset read");
     }
 
     if (fdt_offset >= part->size - OPENSBI_FDT_OFFSET_SLOT_SIZE ||
         (fdt_offset & (sizeof(uint32_t) - 1)) != 0) {
         ESP_LOGE(TAG, "invalid FDT offset 0x%08" PRIx32, fdt_offset);
-        esp_restart();
+        loader_restart("FDT offset validation");
     }
 
     uint32_t fdt = (uint32_t)(uintptr_t)opensbi_ptr + fdt_offset;
@@ -535,7 +309,7 @@ void app_main(void)
     if (fdt_magic != FDT_MAGIC_LE) {
         ESP_LOGE(TAG, "invalid FDT magic 0x%08" PRIx32 " at 0x%08" PRIx32,
                  fdt_magic, fdt);
-        esp_restart();
+        loader_restart("FDT magic validation");
     }
 
     ESP_LOGI(TAG, "OpenSBI FDT offset 0x%08" PRIx32 ", addr 0x%08" PRIx32,
@@ -546,7 +320,7 @@ void app_main(void)
         ESP_PARTITION_TYPE_DATA, 0x40, "linux");
     if (!linux_part) {
         ESP_LOGE(TAG, "Linux partition not found");
-        esp_restart();
+        loader_restart("Linux partition lookup");
     }
     const void *linux_ptr;
     esp_partition_mmap_handle_t linux_mmap_handle;
@@ -555,14 +329,14 @@ void app_main(void)
                              &linux_ptr, &linux_mmap_handle);
     if (err != ESP_OK) {
         ESP_LOGE(TAG, "esp_partition_mmap linux failed: %s", esp_err_to_name(err));
-        esp_restart();
+        loader_restart("Linux mmap");
     }
     ESP_LOGI(TAG, "Linux mmap INST at %p (size %" PRIu32 ")", linux_ptr, linux_part->size);
 
     if ((uintptr_t)linux_ptr != LINUX_XIP_ADDR) {
         ESP_LOGE(TAG, "Linux mmap address %p != expected 0x%08" PRIx32,
                  linux_ptr, (uint32_t)LINUX_XIP_ADDR);
-        esp_restart();
+        loader_restart("Linux virtual address");
     }
 
     const esp_partition_t *rootfs_part = esp_partition_find_first(
@@ -573,7 +347,7 @@ void app_main(void)
                          rootfs_part->size)) {
         ESP_LOGE(TAG, "failed to map 0x%08" PRIx32 "-byte rootfs",
                  (uint32_t)ROOTFS_PARTITION_SIZE);
-        esp_restart();
+        loader_restart("rootfs mapping");
     }
 
     ESP_LOGI(TAG, "rootfs mapped: flash=0x%08" PRIx32
