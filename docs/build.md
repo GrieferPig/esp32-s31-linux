@@ -6,7 +6,7 @@ This project uses a unified `Makefile` at the root directory to manage downloadi
 
 ### Default Target
 - **`make all`** (or just **`make`**)
-  The default target. It sequentially executes the following targets: `download`, `opensbi`, `linux`, `busybox`, and `initramfs`. 
+  The default target. It sequentially executes the following targets: `download`, `opensbi`, `linux`, `busybox`, and `rootfs`.
 
 ### Download & Toolchain
 - **`make download`**
@@ -19,12 +19,12 @@ This project uses a unified `Makefile` at the root directory to manage downloadi
   Builds the Linux kernel (`xipImage`) out-of-tree into `build/linux/`. Outputs `xipImage` and the compiled `esp32s31_generic.dtb` directly to the `build/` root.
 - **`make busybox`**
   Configures and compiles Busybox out-of-tree (`build/busybox/`) using `allyesconfig` and a custom configuration fragment.
-- **`make initramfs`**
-  Compiles custom initramfs tools (`segfault`, `forktest`) via `initramfs/Makefile`, merges them into the Busybox installation in `build/s31-initramfs-root/`, creates a `cpio` archive, and pads it to the initramfs partition size limit (`build/initramfs.cpio`).
+- **`make rootfs`**
+  Compiles the custom rootfs tools (`segfault`, `forktest`, `membench`) via `rootfs/Makefile`, merges them into the BusyBox installation in `build/s31-rootfs/`, creates `build/rootfs.sqfs`, and pads it to the rootfs partition size limit.
 
 ### Cleaning
 - **`make clean`**
-  Removes the `build/` directory and all its contents, effectively cleaning all out-of-tree build artifacts for Linux, OpenSBI, Busybox, and the initramfs tools.
+  Removes the `build/` directory and all its contents, effectively cleaning all out-of-tree build artifacts for Linux, OpenSBI, BusyBox, and the rootfs tools.
 - **`make fullclean`**
   Executes the `clean` target and additionally removes the downloaded `toolchain/` directory, reverting the repository to its freshly-cloned state.
 
@@ -34,8 +34,8 @@ This project uses a unified `Makefile` at the root directory to manage downloadi
   Flashes the OpenSBI payload (`fw_payload.bin`) to the ESP32-S31.
 - **`make flash-linux`**
   Flashes the Linux kernel (`xipImage`) to the ESP32-S31.
-- **`make flash-initramfs`**
-  Flashes the padded initramfs `cpio` archive to the ESP32-S31.
+- **`make flash-rootfs`**
+  Flashes `build/rootfs.sqfs` to the ESP32-S31 rootfs partition.
 - **`make bootloader`**
   Dynamically searches for your ESP-IDF installation (looking for `export.sh` up to 5 levels deep in your home folder), sources the environment, and invokes `idf.py build` inside the `bootloader/` directory.
 - **`make flash-bootloader`**
@@ -57,5 +57,5 @@ make bootloader
 make flash-bootloader
 
 # 4. Flash all firmware partitions
-make flash-opensbi flash-linux flash-initramfs
+make flash-opensbi flash-linux flash-rootfs
 ```

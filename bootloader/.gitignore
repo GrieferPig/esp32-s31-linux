@@ -4,9 +4,9 @@ linux/
 linux
 sdkconfig.old
 
-initramfs/*.bak
-initramfs/*.log
-initramfs/busybox
-initramfs/initramfs.list
-initramfs/rootfs/
-initramfs/test_shell.py
+rootfs/*.bak
+rootfs/*.log
+rootfs/busybox
+rootfs/rootfs.list
+rootfs/staging/
+rootfs/test_shell.py

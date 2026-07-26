@@ -12,7 +12,7 @@ xipImage
 *.dtb
 fw_payload.bin
 AGENTS.md
-initramfs.*
+rootfs.*
 s31_rom.bin
 .codewhale
 .agents

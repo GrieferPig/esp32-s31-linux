@@ -1,10 +1,13 @@
 #!/bin/sh
 
-mkdir -p /proc /sys /tmp /run /dev/pts
 mount -t devtmpfs devtmpfs /dev 2>/dev/null || {
 	mknod /dev/console c 5 1 2>/dev/null || true
 	mknod /dev/ttyS0 c 4 64 2>/dev/null || true
 }
+
+mkdir -p /dev/pts /dev/tmp /dev/run/lock /dev/var-log
+chmod 1777 /dev/tmp
+chmod 0755 /dev/run /dev/run/lock /dev/var-log
 
 for tty in /dev/console /dev/ttyS0 /dev/hvc0; do
 	[ -c "$tty" ] && exec <"$tty" >"$tty" 2>&1 && break
@@ -12,7 +15,6 @@ done
 
 mount -t proc proc /proc 2>/dev/null || true
 mount -t sysfs sysfs /sys 2>/dev/null || true
-mount -t tmpfs tmpfs /tmp 2>/dev/null || true
 mount -t devpts devpts /dev/pts 2>/dev/null || true
 
 (

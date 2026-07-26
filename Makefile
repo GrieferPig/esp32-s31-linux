@@ -12,31 +12,31 @@ OPENSBI_DIR := $(CURDIR)/opensbi-esp32-s31
 LINUX_DIR := $(CURDIR)/linux-esp32-s31
 BUSYBOX_DIR := $(CURDIR)/busybox
 COREMARK_DIR := $(CURDIR)/coremark
-INITRAMFS_DIR := $(CURDIR)/initramfs
+ROOTFS_DIR := $(CURDIR)/rootfs
 
 # Out-of-tree build dirs
 OPENSBI_OUT := $(BUILD_DIR)/opensbi
 LINUX_OUT := $(BUILD_DIR)/linux
 BUSYBOX_OUT := $(BUILD_DIR)/busybox
 COREMARK_OUT := $(BUILD_DIR)/coremark
-INITRAMFS_OUT := $(BUILD_DIR)/initramfs-tools
+ROOTFS_OUT := $(BUILD_DIR)/rootfs-tools
 
 PARTITIONS_CSV := $(CURDIR)/bootloader/partitions.csv
 OPENSBI_OFFSET := $(shell awk -F, '/opensbi/ {gsub(/ /, "", $$4); print $$4}' $(PARTITIONS_CSV))
 LINUX_OFFSET := $(shell awk -F, '/linux/ {gsub(/ /, "", $$4); print $$4}' $(PARTITIONS_CSV))
-INITRAMFS_OFFSET := $(shell awk -F, '/initramfs/ {gsub(/ /, "", $$4); print $$4}' $(PARTITIONS_CSV))
+ROOTFS_OFFSET := $(shell awk -F, '/rootfs/ {gsub(/ /, "", $$4); print $$4}' $(PARTITIONS_CSV))
 
 FW_PAYLOAD := $(BUILD_DIR)/fw_payload.bin
 XIP_IMAGE := $(BUILD_DIR)/xipImage
-INITRAMFS_IMG := $(BUILD_DIR)/rootfs.sqfs
+ROOTFS_IMG := $(BUILD_DIR)/rootfs.sqfs
 
 IDF_EXPORT := $(shell find $(HOME) -maxdepth 5 -type f -name export.sh 2>/dev/null | grep esp-idf | head -n 1)
 
-.PHONY: all download opensbi linux busybox coremark initramfs clean fullclean flash-opensbi flash-linux flash-initramfs bootloader flash-bootloader erase
+.PHONY: all download opensbi linux busybox coremark rootfs clean fullclean flash-opensbi flash-linux flash-rootfs bootloader flash-bootloader erase
 
-all: download opensbi linux busybox initramfs
+all: download opensbi linux busybox rootfs
 
-$(BUILD_DIR) $(OPENSBI_OUT) $(LINUX_OUT) $(BUSYBOX_OUT) $(COREMARK_OUT) $(INITRAMFS_OUT):
+$(BUILD_DIR) $(OPENSBI_OUT) $(LINUX_OUT) $(BUSYBOX_OUT) $(COREMARK_OUT) $(ROOTFS_OUT):
 	mkdir -p $@
 
 download:
@@ -100,7 +100,7 @@ linux: | $(LINUX_OUT)
 	cp -v $(LINUX_OUT)/arch/riscv/boot/$(LINUX_TARGET) $(XIP_IMAGE)
 	cp -v $(LINUX_OUT)/arch/riscv/boot/dts/espressif/esp32s31_generic.dtb $(BUILD_DIR)/esp32s31_generic.dtb
 
-BUSYBOX_CONFIG := $(INITRAMFS_DIR)/busybox_s31.config
+BUSYBOX_CONFIG := $(ROOTFS_DIR)/busybox_s31.config
 BUSYBOX_DOT_CONFIG := $(BUSYBOX_OUT)/.config
 
 busybox: | $(BUSYBOX_OUT)
@@ -117,24 +117,38 @@ coremark: | $(COREMARK_OUT)
 		CC="$(CC)" NO_LIBRT=1 ITERATIONS=0 REBUILD=1 \
 		XCFLAGS="-static -march=rv32imac_zicsr_zifencei -mabi=ilp32" compile
 
-INITRAMFS_ROOT := $(BUILD_DIR)/s31-initramfs-root
-INITRAMFS_PARTITION_SIZE ?= 6160384
+ROOTFS_ROOT := $(BUILD_DIR)/s31-rootfs
+ROOTFS_PARTITION_SIZE ?= 6160384
 
-initramfs: busybox coremark | $(INITRAMFS_OUT)
-	@echo "--- Initramfs ---"
-	rm -rf $(INITRAMFS_ROOT)
-	$(MAKE) -C $(BUSYBOX_DIR) O=$(BUSYBOX_OUT) CONFIG_PREFIX="$(INITRAMFS_ROOT)" install
-	$(MAKE) -C $(INITRAMFS_DIR) OUT_DIR="$(INITRAMFS_OUT)" CROSS_COMPILE="$(CROSS_COMPILE)" DESTDIR="$(INITRAMFS_ROOT)" all install
-	install -Dm755 $(COREMARK_BIN) $(INITRAMFS_ROOT)/sbin/coremark
-	install -Dm755 $(INITRAMFS_DIR)/init $(INITRAMFS_ROOT)/init
-	install -Dm755 $(INITRAMFS_DIR)/default.script $(INITRAMFS_ROOT)/usr/share/udhcpc/default.script
-	mkdir -p $(INITRAMFS_ROOT)/dev $(INITRAMFS_ROOT)/proc $(INITRAMFS_ROOT)/sys $(INITRAMFS_ROOT)/tmp $(INITRAMFS_ROOT)/run $(INITRAMFS_ROOT)/etc
-	chmod 1777 $(INITRAMFS_ROOT)/tmp
-	@rm -f $(INITRAMFS_IMG)
-	@mksquashfs $(INITRAMFS_ROOT) $(INITRAMFS_IMG) -comp xz -b 64K -always-use-fragments
-	@INITRAMFS_SIZE=$$(stat -c%s $(INITRAMFS_IMG)); \
-	if [ $$INITRAMFS_SIZE -gt $(INITRAMFS_PARTITION_SIZE) ]; then echo "ERROR: initramfs too large"; exit 1; fi; \
-	truncate -s $(INITRAMFS_PARTITION_SIZE) $(INITRAMFS_IMG)
+rootfs: busybox coremark | $(ROOTFS_OUT)
+	@echo "--- Rootfs ---"
+	rm -rf $(ROOTFS_ROOT)
+	$(MAKE) -C $(BUSYBOX_DIR) O=$(BUSYBOX_OUT) CONFIG_PREFIX="$(ROOTFS_ROOT)" install
+	$(MAKE) -C $(ROOTFS_DIR) OUT_DIR="$(ROOTFS_OUT)" CROSS_COMPILE="$(CROSS_COMPILE)" DESTDIR="$(ROOTFS_ROOT)" all install
+	install -Dm755 $(COREMARK_BIN) $(ROOTFS_ROOT)/sbin/coremark
+	install -Dm755 $(ROOTFS_DIR)/init $(ROOTFS_ROOT)/init
+	install -Dm755 $(ROOTFS_DIR)/default.script $(ROOTFS_ROOT)/usr/share/udhcpc/default.script
+	mkdir -p $(ROOTFS_ROOT)/dev $(ROOTFS_ROOT)/proc $(ROOTFS_ROOT)/sys \
+		$(ROOTFS_ROOT)/etc $(ROOTFS_ROOT)/home $(ROOTFS_ROOT)/media \
+		$(ROOTFS_ROOT)/mnt $(ROOTFS_ROOT)/opt $(ROOTFS_ROOT)/root \
+		$(ROOTFS_ROOT)/srv $(ROOTFS_ROOT)/var
+	install -m644 $(ROOTFS_DIR)/etc/* $(ROOTFS_ROOT)/etc/
+	rm -rf $(ROOTFS_ROOT)/tmp $(ROOTFS_ROOT)/run \
+		$(ROOTFS_ROOT)/var/run $(ROOTFS_ROOT)/var/lock \
+		$(ROOTFS_ROOT)/var/log $(ROOTFS_ROOT)/var/tmp
+	ln -sfn /proc/mounts $(ROOTFS_ROOT)/etc/mtab
+	ln -sfn /dev/resolv.conf $(ROOTFS_ROOT)/etc/resolv.conf
+	ln -sfn /dev/tmp $(ROOTFS_ROOT)/tmp
+	ln -sfn /dev/run $(ROOTFS_ROOT)/run
+	ln -sfn /run $(ROOTFS_ROOT)/var/run
+	ln -sfn /run/lock $(ROOTFS_ROOT)/var/lock
+	ln -sfn /dev/var-log $(ROOTFS_ROOT)/var/log
+	ln -sfn /tmp $(ROOTFS_ROOT)/var/tmp
+	@rm -f $(ROOTFS_IMG)
+	@mksquashfs $(ROOTFS_ROOT) $(ROOTFS_IMG) -comp xz -b 64K -always-use-fragments -all-root
+	@ROOTFS_SIZE=$$(stat -c%s $(ROOTFS_IMG)); \
+	if [ $$ROOTFS_SIZE -gt $(ROOTFS_PARTITION_SIZE) ]; then echo "ERROR: rootfs too large"; exit 1; fi; \
+	truncate -s $(ROOTFS_PARTITION_SIZE) $(ROOTFS_IMG)
 
 clean:
 	rm -rf $(BUILD_DIR)
@@ -148,8 +162,8 @@ flash-opensbi:
 flash-linux:
 	esptool -p /dev/ttyUSB0 -b 2000000 write-flash $(LINUX_OFFSET) $(XIP_IMAGE)
 
-flash-initramfs:
-	esptool -p /dev/ttyUSB0 -b 2000000 write-flash $(INITRAMFS_OFFSET) $(INITRAMFS_IMG)
+flash-rootfs:
+	esptool -p /dev/ttyUSB0 -b 2000000 write-flash $(ROOTFS_OFFSET) $(ROOTFS_IMG)
 
 bootloader:
 	@if [ -z "$(IDF_EXPORT)" ]; then echo "ERROR: ESP-IDF export.sh not found under $(HOME)"; exit 1; fi
@@ -163,7 +177,7 @@ flash-bootloader:
 	@echo "Using ESP-IDF from $(IDF_EXPORT)"
 	bash -c "source $(IDF_EXPORT) && cd $(CURDIR)/bootloader && idf.py flash -p /dev/ttyUSB0 -b 2000000"
 
-flash-all: flash-opensbi flash-linux flash-initramfs flash-bootloader
+flash-all: flash-opensbi flash-linux flash-rootfs flash-bootloader
 
 erase:
 	esptool -p /dev/ttyUSB0 -b 2000000 erase-flash

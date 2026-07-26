@@ -24,7 +24,7 @@ I (76) boot:  2 phy_init         RF data          01 01 00019000 00001000
 I (82) boot:  3 factory          factory app      00 00 00020000 00200000
 I (89) boot:  4 opensbi          Unknown data     01 40 00220000 00080000
 I (95) boot:  5 linux            Unknown data     01 40 002a0000 00780000
-I (102) boot:  6 initramfs        Unknown data     01 40 00a20000 005e0000
+I (102) boot:  6 rootfs           Unknown data     01 40 00a20000 005e0000
 I (110) boot: End of partition table
 I (113) boot: Defaulting to factory image
 I (116) esp_image: segment 0: paddr=00020020 vaddr=40020020 size=07ab8h ( 31416) map
@@ -80,7 +80,7 @@ I (821) boot: PMP install: cfg0=0x0000009f cfg1=0x00000000 cfg2=0x00000000 cfg3=
 I (821) boot: OpenSBI mmap at 0x40030000 (size 524288)
 I (821) boot: OpenSBI FDT offset 0x00040000, addr 0x40070000
 I (821) boot: Linux mmap INST at 0x400b0000 (size 7864320)
-I (821) boot: initramfs mapped: flash=0x00a20000 size=0x005e0000 vaddr=0x40a20000
+I (821) boot: rootfs mapped: flash=0x00a20000 size=0x005e0000 vaddr=0x40a20000
 
 OpenSBI v1.9
    ____                    _____ ____ _____
@@ -191,7 +191,7 @@ Boot HART MEDELEG           : 0x0000b000
 [    0.183660] UDP hash table entries: 256 (order: 0, 4096 bytes, linear)
 [    0.189337] UDP-Lite hash table entries: 256 (order: 0, 4096 bytes, linear)
 [    0.197648] NET: Registered PF_UNIX/PF_LOCAL protocol family
-[    0.215305] Unpacking initramfs...
+[    0.215305] Mounting rootfs...
 [    0.229099] workingset: timestamp_bits=30 max_order=12 bucket_order=0
 [    0.230550] io scheduler mq-deadline registered
 [    0.230834] io scheduler kyber registered
@@ -211,4 +211,4 @@ Boot HART MEDELEG           : 0x0000b000
 [    1.253504] This architecture does not have kernel memory protection.
 [    1.254583] Run /init as init process
 /bin/sh: can't access tty; job control turned off
-~ # 
+~ #

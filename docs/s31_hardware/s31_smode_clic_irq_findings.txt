@@ -212,6 +212,95 @@ Cross-privilege SIL=0xff bootloader probe (2026-07-24)
   the exact acceptance/xRET boundary; the Linux race captured that copy as
   scause=0x98ff0005.
 
+M-mode PLIC-style aggregation experiment (2026-07-26)
+------------------------------------------------------
+- A bootloader probe confirmed that S-mode software interrupt ID1 does not
+  nest into an active S handler when SIE is clear.  It remains pending and is
+  accepted after the outer sret, so ID1 alone initially appeared suitable as
+  a single OpenSBI-to-Linux notification interrupt.
+- A full OpenSBI prototype then routed timer ID7 and external IDs16-47 to M
+  mode, queued their IDs per hart, and notified Linux through S ID1.  Linux
+  claimed queued IDs through a private SBI extension and dispatched them
+  through its normal irq domains.
+- The full system still locked out S interrupts once an M interrupt crossed a
+  sensitive S return boundary.  The preserved OpenOCD signature was:
+      OpenSBI pending_lo=0x00000080  (timer ID7 queued)
+      CLIC ID1 word=0x5f420101       (IP=1, IE=1, S edge)
+      CPU PC=arch_cpu_idle
+  Thus the queue and notification were both present, but S could not accept
+  ID1, consistent with the cross-privilege SIL=0xff state above.
+- Restoring a sanitized scause only when saved SPIL was 0xff was also tested.
+  It reproducibly corrupted return to userspace (init instruction-access
+  fault at an invalid PC), while writing scause for normal interrupts was
+  likewise unsafe.  The experiment was reverted.
+- Conclusion: an M-mode PLIC emulation that forwards every interrupt through
+  one S CLIC software interrupt is not a safe workaround on current S31.  It
+  increases the number of M-to-S interrupt crossings that create the 0xff
+  sentinel, and the sentinel cannot be repaired generically by Linux.  Keep
+  hardware interrupts in S mode unless hardware supplies a documented way to
+  preserve/restore the S CLIC level across M-mode preemption.
+
+Single-level CLIC and raw/logical cause separation (2026-07-26)
+----------------------------------------------------------------
+- Linux keeps S31 scause in a private `pt_regs.cause_raw` hardware-return
+  token.  `pt_regs.cause` is independently normalized to the Linux logical
+  form (`CAUSE_IRQ_FLAG | raw_id`) before generic IRQ/exception dispatch.
+  Because this configuration deliberately forbids nesting, the private token
+  clears SPIL[23:16] to the only valid software return level (idle level 0).
+  Both interrupt and synchronous-exception returns write only that private
+  token to scause, immediately before restoring sstatus/sepc and executing
+  sret.  Generic Linux code never reads or modifies the hardware token.
+- OpenSBI follows the same separation: the trap context retains raw mcause for
+  hardware mret state, while a local masked cause is used for dispatch.  The
+  existing synchronous-exception path continues to remove CLIC metadata before
+  redirecting or returning.
+- Every programmable S interrupt (direct timer ID7 and external IDs16..47) is
+  fixed at ctl=0x3f.  Linux's priority API is clamped to that value, so a driver
+  cannot reintroduce priority nesting.  While an S interrupt is active, its
+  current level therefore blocks every other S interrupt until sret.
+- An OpenOCD snapshot from an initial implementation still caught a lockout:
+  CPU in `arch_cpu_idle`, ID7 and peripheral slots pending+enabled.  The same
+  snapshot showed ID21 as `0x3fc00100`; writes proved both its MODE=M and IE=1
+  fields are hardware-fixed.  Thus slot-level programming alone cannot prevent
+  every M-to-S interrupt crossing.
+- ESP-IDF's S31 `soc/interrupt_reg.h` defines `INTTHRESH_STANDARD=1`, so
+  OpenSBI programs machine `mintthresh` (CSR 0x347) to 0x3f and disables the
+  unused single-hart machine software interrupt ID3.  However, two later
+  preserved lockout snapshots proved that `mintthresh` does not remain a
+  usable persistent gate across the Linux privilege-return sequence: it read
+  back as 0x0f in both snapshots.  A halted DMI write of 0x3f read back
+  correctly, so this is later hardware state restoration, not a WARL rejection.
+- Both preserved failures had CPU0 in `arch_cpu_idle`, with ID7, SD ID16 and
+  GMAC ID17 pending+enabled at ctl=0x3f.  CPU0 additionally showed
+      scause=0x08ff0008
+      sintstatus=0x0000ff00
+      mintstatus=0x0000ff00
+      sintthresh=0x0f, mintthresh=0x0f
+  The second snapshot was taken after reasserting mintthresh in final_init and
+  every timer SBI call.  This ruled out a one-time initialization ordering bug
+  and identified restoration of raw SPIL=0xff as the immediate S lockout.
+- Final non-nested-token validation first completed one single CoreMark at
+  951.15 and returned immediately to the shell.  Two complete simultaneous
+  rounds then overlapped five CoreMarks, 32 MiB SD reads, 1000 x 1400-byte GMAC
+  pings, and repeated DWC2 unbind/bind/enumeration attempts.  Round scores were
+  145.37, 144.69, 145.14, 145.74 and 147.49 (sum 728.43), then 121.70, 120.79,
+  123.49, 124.80 and 126.91 (sum 617.70).  Both rounds ended with immediate
+  shell responses.  Final IRQ counters were timer 76317, GMAC 3427, USB 490,
+  and SDMMC 27435.
+- After applying the same SPIL sanitization to the CLIC trampoline path, the
+  final flashed image completed another full simultaneous round at 117.74,
+  118.54, 122.09, 119.14 and 123.51 (sum 601.02), plus 32 MiB SD, 1000 GMAC
+  pings and two DWC2 rebind/enumeration cycles.  `FINAL_ALIVE` returned
+  immediately; that boot recorded GMAC 1141, USB 159 and SDMMC 8425 IRQs.
+- The attached USB mass-storage device itself did not enumerate in these final
+  runs (`device descriptor read/64`, errors -71 and -110), even after controller
+  rebinds.  Therefore USB controller/error-path concurrency was validated, but
+  USB mass-storage data throughput was not; the medium must be unplugged/power
+  cycled before that part can be rerun.  Holding the board in serial RTS reset
+  for 5 seconds did not recover it: Linux still exposed only the USB root hub,
+  recorded 50 DWC2 IRQs, and failed descriptor reads with -71.  Board reset
+  therefore does not remove VBUS from the attached medium.
+
 AXI GDMA validation
 -------------------
 - All three AXI GDMA channel pairs are exposed through raw CLIC IDs 33, 34 and

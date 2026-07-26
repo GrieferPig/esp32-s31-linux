@@ -1,10 +1,11 @@
+# Helper programs installed into the S31 root filesystem.
 OUT_DIR ?= .
 
 CROSS_COMPILE ?= riscv64-linux-gnu-
 CC := $(CROSS_COMPILE)gcc
 STRIP := $(CROSS_COMPILE)strip
 CFLAGS ?= -march=rv32imac_zicsr_zifencei -mabi=ilp32 -static -O2
-DESTDIR ?= ../build/s31-initramfs-root
+DESTDIR ?= ../build/s31-rootfs
 
 PROGRAMS := $(OUT_DIR)/segfault $(OUT_DIR)/forktest $(OUT_DIR)/membench
 

@@ -29,8 +29,8 @@ Boot flow:
   and boots the factory app on core 0.
 - The factory app is built with CONFIG_FREERTOS_UNICORE=y and
   CONFIG_ESP_SYSTEM_SINGLE_CORE_MODE=y, so IDF does not start core 1.
-- The factory app verifies PSRAM, maps OpenSBI/Linux with esp_mmu_map_virt(),
-  copies initramfs to 0xC0800000, configures permissive APM, and writes the
+- The factory app verifies PSRAM, maps OpenSBI/Linux and the rootfs flash
+  window, configures permissive APM, and writes the
   core 1 boot address.
 - Core 1 starts in a small IRAM trampoline. The trampoline clears interrupt
   state, installs a full-space PMP entry for hart 1, and jumps to OpenSBI with:

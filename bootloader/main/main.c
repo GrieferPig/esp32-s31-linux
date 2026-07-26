@@ -3,7 +3,7 @@
  *
  * The second-stage bootloader stays minimal. This factory app runs with the
  * normal app startup path so ESP-IDF initializes PSRAM, maps OpenSBI and Linux
- * for flash XIP, maps the initramfs flash window, then jumps into OpenSBI in
+ * for flash XIP, maps the rootfs flash window, then jumps into OpenSBI in
  * M-mode.
  */
 
@@ -51,12 +51,12 @@
 
 #define OPENSBI_XIP_ADDR              0x40030000U
 #define LINUX_XIP_ADDR                0x400B0000U
-#define INITRAMFS_FLASH_ADDR          0x40A20000U
+#define ROOTFS_FLASH_ADDR             0x40A20000U
 #define FLASH_MTD_XIP_ADDR            0x41000000U
 #define FLASH_MTD_SIZE                0x01000000U
 #define OPENSBI_FDT_OFFSET_SLOT_SIZE  4U
 #define FDT_MAGIC_LE                  0xEDFE0DD0U
-#define INITRAMFS_PARTITION_SIZE      0x005E0000U
+#define ROOTFS_PARTITION_SIZE         0x005E0000U
 #define ESP32S31_PSRAM_SIZE           0x01000000U
 #define PMP_FULL_SPACE_NAPOT_ADDR     0x3FFFFFFFU
 #define PMP_ENTRY_RWX_LOCK_NAPOT      0x9FU
@@ -565,21 +565,21 @@ void app_main(void)
         esp_restart();
     }
 
-    const esp_partition_t *initramfs_part = esp_partition_find_first(
-        ESP_PARTITION_TYPE_DATA, 0x40, "initramfs");
-    if (!initramfs_part ||
-        initramfs_part->size != INITRAMFS_PARTITION_SIZE ||
-        !map_flash_range(INITRAMFS_FLASH_ADDR, initramfs_part->address,
-                         initramfs_part->size)) {
-        ESP_LOGE(TAG, "failed to map 0x%08" PRIx32 "-byte initramfs",
-                 (uint32_t)INITRAMFS_PARTITION_SIZE);
+    const esp_partition_t *rootfs_part = esp_partition_find_first(
+        ESP_PARTITION_TYPE_DATA, 0x40, "rootfs");
+    if (!rootfs_part ||
+        rootfs_part->size != ROOTFS_PARTITION_SIZE ||
+        !map_flash_range(ROOTFS_FLASH_ADDR, rootfs_part->address,
+                         rootfs_part->size)) {
+        ESP_LOGE(TAG, "failed to map 0x%08" PRIx32 "-byte rootfs",
+                 (uint32_t)ROOTFS_PARTITION_SIZE);
         esp_restart();
     }
 
-    ESP_LOGI(TAG, "initramfs mapped: flash=0x%08" PRIx32
+    ESP_LOGI(TAG, "rootfs mapped: flash=0x%08" PRIx32
                   " size=0x%08" PRIx32 " vaddr=0x%08" PRIx32,
-             initramfs_part->address, initramfs_part->size,
-             (uint32_t)INITRAMFS_FLASH_ADDR);
+             rootfs_part->address, rootfs_part->size,
+             (uint32_t)ROOTFS_FLASH_ADDR);
 
     uint32_t entry = (uint32_t)(uintptr_t)opensbi_ptr;
 

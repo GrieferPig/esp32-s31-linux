@@ -1,0 +1,10 @@
+# Minimal service database required by BusyBox networking applets.
+ftp-data 20/tcp
+ftp      21/tcp
+ssh      22/tcp
+telnet   23/tcp
+domain   53/tcp
+domain   53/udp
+http     80/tcp www
+https    443/tcp
+ntp      123/udp
