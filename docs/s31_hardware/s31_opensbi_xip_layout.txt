@@ -2,20 +2,24 @@ ESP32-S31 OpenSBI Flash XIP layout
 
 Goal:
 - Keep OpenSBI text/rodata in flash and execute through the flash MMU window.
-- Keep OpenSBI writable data, BSS, scratch, stack, and heap in reserved cached
-  PSRAM so the core 0 factory app can keep HP SRAM.
+- Keep OpenSBI writable data, BSS, scratch, stack, and heap in the top 1MB of
+  the uncached PSRAM alias so Linux can use the lower 15MB.
 - Keep the OpenSBI partition size fixed at 512KB.
 - Boot OpenSBI/Linux on HP core 1. Core 0 boots the ESP-IDF factory app in
-  single-core mode and then parks after releasing core 1.
+  single-core mode and keeps running the FreeRTOS scheduler.
 
 Address contract:
 - The factory app maps the opensbi partition for instruction access at 0x40030000.
 - OpenSBI must be linked with FW_TEXT_START=0x40030000.
-- OpenSBI writable sections are linked with FW_RW_START=0x50F00000.
-- The top 1MB of the 16MB cached PSRAM window is reserved for OpenSBI RW:
-  0x50F00000..0x51000000.
-- Linux receives only the lower 15MB of cached PSRAM in its DT memory node:
-  0x50000000..0x50F00000.
+- OpenSBI writable sections are linked with FW_RW_START=0xC0F00000.
+- The top 1MB of the 16MB uncached PSRAM alias is reserved for OpenSBI RW:
+  0xC0F00000..0xC1000000.
+- Linux receives only the lower 15MB of the uncached alias in its DT memory
+  node: 0xC0000000..0xC0F00000.
+- ESP-IDF maps PSRAM at the cached 0x50000000 alias, but the factory app uses
+  CONFIG_SPIRAM_USE_MEMMAP and explicitly disables USE_CAPS_ALLOC/USE_MALLOC.
+  IDF's own extram reserved-region entry therefore keeps all PSRAM out of the
+  FreeRTOS heap without a duplicate project reservation.
 - Linux xipImage is mapped at 0x400B0000.
 
 Partition image format:
@@ -36,8 +40,14 @@ Boot flow:
   state, installs a full-space PMP entry for hart 1, and jumps to OpenSBI with:
   - a0 = 1
   - a1 = fdt_addr
-- Core 0 parks after releasing core 1 to avoid IDF timer/interrupt activity
-  racing OpenSBI/Linux during bring-up.
+- Core 0 remains in the FreeRTOS scheduler after releasing core 1. Its worker
+  task and timer interrupts are used to verify concurrent scheduler progress.
+- Linux owns the top contiguous 0x8040 bytes of IDF-usable HP SRAM:
+  0x2F072F80..0x2F07AF80 for AXI-GDMA descriptors and
+  0x2F07AF80..0x2F07AFC0 for USB local SRAM. The factory app registers the
+  combined interval with SOC_RESERVE_MEMORY_REGION before heap creation.
+- The dual-OS baseline leaves AXI-GDMA, SDMMC, Ethernet, and USB OTG disabled:
+  their DMA masters cannot yet translate Linux's uncached PSRAM addresses.
 
 OpenSBI requirements:
 - fw_jump.S must report boot hart 1.
@@ -49,7 +59,7 @@ Build-time checks:
 - The generated fw_payload.bin must be exactly 512KB.
 - OpenSBI + FDT must fit in the first 512KB - 4 bytes.
 - Link-time assertions require FW_TEXT_START=0x40030000 and FW_RW_START in the
-  reserved PSRAM range.
+  reserved uncached PSRAM range.
 
 OpenSBI XIP relocation rule:
 - fw_base.S copies .data from flash LMA to FW_RW_START before the boot lottery.

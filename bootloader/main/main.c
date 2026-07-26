@@ -14,6 +14,7 @@
 #include "esp_log.h"
 #include "esp_err.h"
 #include "esp_system.h"
+#include "esp_cpu.h"
 #include "esp_flash.h"
 #include "esp_partition.h"
 #include "spi_flash_mmap.h"
@@ -21,11 +22,17 @@
 #include "esp_rom_caps.h"
 #include "esp_rom_serial_output.h"
 #include "esp_rom_sys.h"
+#include "esp32s31/rom/ets_sys.h"
 #include "riscv/csr.h"
 #include "esp32s31/rom/cache.h"
 #include "hal/cache_ll.h"
+#include "hal/cpu_utility_ll.h"
 #include "hal/assist_debug_ll.h"
 #include "hal/wdt_hal.h"
+#include "heap_memory_layout.h"
+#include "esp_heap_caps.h"
+#include "freertos/FreeRTOS.h"
+#include "freertos/task.h"
 #include "soc/soc.h"
 #include "soc/timer_group_struct.h"
 #include "soc/cpu_apm_reg.h"
@@ -43,10 +50,25 @@
 #define FDT_MAGIC_LE                  0xEDFE0DD0U
 #define ROOTFS_PARTITION_SIZE         0x005E0000U
 #define ESP32S31_PSRAM_SIZE           0x01000000U
-#define PMP_FULL_SPACE_NAPOT_ADDR     0x3FFFFFFFU
-#define PMP_ENTRY_RWX_LOCK_NAPOT      0x9FU
+/*
+ * Linux owns the highest contiguous part of IDF-usable HP SRAM:
+ *   AXI GDMA descriptors: 0x2f072f80..0x2f07af7f (32 KiB)
+ *   DWC2 status buffer:   0x2f07af80..0x2f07afbf (64 B)
+ *
+ * APP_USABLE_DRAM_END is 0x2f07afc0 on S31. Registering this reservation in
+ * .reserved_memory_address removes it before heap_caps_init() creates the
+ * FreeRTOS heaps. Keep the DTS addresses in sync with these constants.
+ */
+#define LINUX_SRAM_START              0x2F072F80U
+#define LINUX_SRAM_END                0x2F07AFC0U
+SOC_RESERVE_MEMORY_REGION(LINUX_SRAM_START, LINUX_SRAM_END, linux_devices);
 
 static const char *TAG = "boot";
+volatile uint32_t g_core1_fdt;
+volatile uint32_t g_core1_trampoline_entered;
+static volatile uint32_t s_freertos_worker_counter;
+
+extern void core1_linux_trampoline(void);
 
 /* Keep all loader output on the dedicated USB Serial/JTAG peripheral. */
 static __attribute__((noreturn)) void loader_restart(const char *reason)
@@ -67,13 +89,6 @@ static __attribute__((noreturn)) void loader_restart(const char *reason)
 static void fence_i(void)
 {
     __asm__ volatile ("fence.i" ::: "memory");
-}
-
-static void flush_l1_cache_before_handoff(void)
-{
-    cache_ll_writeback_all(CACHE_LL_LEVEL_ALL, CACHE_TYPE_DATA, CACHE_LL_ID_ALL);
-    cache_ll_invalidate_all(CACHE_LL_LEVEL_ALL, CACHE_TYPE_ALL, CACHE_LL_ID_ALL);
-    fence_i();
 }
 
 static void disable_apm(void)
@@ -131,40 +146,6 @@ static void disable_apm(void)
     REG_WRITE(CPU_APM_M3_STATUS_CLR_REG, 1);
 }
 
-static void install_global_pmp(void)
-{
-    RV_WRITE_CSR(pmpaddr1, 0);
-    RV_WRITE_CSR(pmpaddr2, 0);
-    RV_WRITE_CSR(pmpaddr3, 0);
-    RV_WRITE_CSR(pmpaddr4, 0);
-    RV_WRITE_CSR(pmpaddr5, 0);
-    RV_WRITE_CSR(pmpaddr6, 0);
-    RV_WRITE_CSR(pmpaddr7, 0);
-    RV_WRITE_CSR(pmpaddr8, 0);
-    RV_WRITE_CSR(pmpaddr9, 0);
-    RV_WRITE_CSR(pmpaddr10, 0);
-    RV_WRITE_CSR(pmpaddr11, 0);
-    RV_WRITE_CSR(pmpaddr12, 0);
-    RV_WRITE_CSR(pmpaddr13, 0);
-    RV_WRITE_CSR(pmpaddr14, 0);
-    RV_WRITE_CSR(pmpaddr15, 0);
-
-    RV_WRITE_CSR(pmpcfg1, 0);
-    RV_WRITE_CSR(pmpcfg2, 0);
-    RV_WRITE_CSR(pmpcfg3, 0);
-    RV_WRITE_CSR(pmpaddr0, PMP_FULL_SPACE_NAPOT_ADDR);
-    RV_WRITE_CSR(pmpcfg0, PMP_ENTRY_RWX_LOCK_NAPOT);
-
-    uint32_t cfg0 = RV_READ_CSR(pmpcfg0);
-    uint32_t cfg1 = RV_READ_CSR(pmpcfg1);
-    uint32_t cfg2 = RV_READ_CSR(pmpcfg2);
-    uint32_t cfg3 = RV_READ_CSR(pmpcfg3);
-    ESP_LOGI(TAG, "PMP install: cfg0=0x%08" PRIx32 " cfg1=0x%08" PRIx32
-                  " cfg2=0x%08" PRIx32 " cfg3=0x%08" PRIx32
-                  " pmpaddr0=0x%08" PRIx32,
-             cfg0, cfg1, cfg2, cfg3, (uint32_t)RV_READ_CSR(pmpaddr0));
-}
-
 static void disable_watchdogs(void)
 {
     /* Disable TIMG0 and TIMG1 watchdogs so OpenSBI isn't reset.
@@ -186,20 +167,6 @@ static void disable_watchdogs(void)
     wdt_hal_write_protect_disable(&rtc_wdt_ctx);
     wdt_hal_disable(&rtc_wdt_ctx);
 
-    // Disable all CLIC interrupts
-    for (int i = 0; i < 128; i++) {
-        volatile uint8_t *ie = (volatile uint8_t *)(0x10801000 + i*4 + 1);
-        *ie = 0;
-        volatile uint8_t *attr = (volatile uint8_t *)(0x10801000 + i*4 + 2);
-        *attr = 0;
-    }
-
-    asm volatile ("csrw 0x307, zero"); // Clear mtvt
-}
-
-static void clear_mstatus_mprv(void)
-{
-    RV_CLEAR_CSR(mstatus, MSTATUS_MPRV);
 }
 
 static bool map_flash_range(uint32_t vaddr, uint32_t paddr, uint32_t size)
@@ -221,19 +188,80 @@ static bool map_flash_range(uint32_t vaddr, uint32_t paddr, uint32_t size)
 
     cache_bus_mask_t bus = cache_ll_l1_get_bus(0, vaddr, size);
     cache_ll_l1_enable_bus(0, bus);
+    cache_ll_l1_enable_bus(1, bus);
     return true;
 }
 
-static void disable_stack_protector(void)
+static void enable_core1_external_memory_bus(uint32_t vaddr, uint32_t size)
 {
-    assist_debug_ll_sp_spill_monitor_disable(0);
+    cache_bus_mask_t bus = cache_ll_l1_get_bus(1, vaddr, size);
+
+    cache_ll_l1_enable_bus(1, bus);
+}
+
+static void disable_core1_stack_protector(void)
+{
     assist_debug_ll_sp_spill_monitor_disable(1);
-    assist_debug_ll_sp_spill_interrupt_disable(0);
     assist_debug_ll_sp_spill_interrupt_disable(1);
-    assist_debug_ll_sp_spill_set_min(0, 0);
-    assist_debug_ll_sp_spill_set_max(0, 0xffffffff);
     assist_debug_ll_sp_spill_set_min(1, 0);
     assist_debug_ll_sp_spill_set_max(1, 0xffffffff);
+}
+
+static void start_linux_on_core1(uint32_t fdt)
+{
+    g_core1_fdt = fdt;
+    g_core1_trampoline_entered = 0;
+
+    /*
+     * Flash MMU entries are shared, but each core has a private I-cache bus.
+     * The D-cache/PSRAM data bus is shared.
+     */
+    enable_core1_external_memory_bus(OPENSBI_XIP_ADDR, 0x00080000U);
+    enable_core1_external_memory_bus(LINUX_XIP_ADDR, ROOTFS_FLASH_ADDR - LINUX_XIP_ADDR);
+    enable_core1_external_memory_bus(ROOTFS_FLASH_ADDR, ROOTFS_PARTITION_SIZE);
+    enable_core1_external_memory_bus(FLASH_MTD_XIP_ADDR, FLASH_MTD_SIZE);
+    disable_core1_stack_protector();
+    esp_cpu_stall(1);
+    cpu_utility_ll_enable_clock_and_reset_app_cpu();
+    cpu_utility_ll_enable_clock_and_reset_app_cpu_int_matrix();
+    ets_set_appcpu_boot_addr((uint32_t)(uintptr_t)core1_linux_trampoline);
+    fence_i();
+    esp_cpu_reset(1);
+    esp_cpu_unstall(1);
+
+    for (unsigned int i = 0; i < 1000 && !g_core1_trampoline_entered; i++) {
+        esp_rom_delay_us(100);
+    }
+    if (!g_core1_trampoline_entered) {
+        loader_restart("core1 trampoline timeout");
+    }
+}
+
+static void freertos_worker_task(void *arg)
+{
+    (void)arg;
+
+    for (;;) {
+        for (unsigned int i = 0; i < 100000; i++) {
+            s_freertos_worker_counter++;
+        }
+        taskYIELD();
+    }
+}
+
+static void freertos_heartbeat_task(void *arg)
+{
+    (void)arg;
+    TickType_t last = xTaskGetTickCount();
+
+    for (;;) {
+        vTaskDelayUntil(&last, pdMS_TO_TICKS(1000));
+        ESP_LOGI(TAG,
+                 "FreeRTOS alive: tick=%" PRIu32 " worker=%" PRIu32
+                 " internal_free=%u",
+                 (uint32_t)xTaskGetTickCount(), s_freertos_worker_counter,
+                 (unsigned int)heap_caps_get_free_size(MALLOC_CAP_INTERNAL));
+    }
 }
 
 void app_main(void)
@@ -246,8 +274,6 @@ void app_main(void)
 
     disable_apm();
     disable_watchdogs();
-    clear_mstatus_mprv();
-    install_global_pmp();
 
     /* Keep XIP mappings intact and expose the full flash at a second alias. */
     if (!map_flash_range(FLASH_MTD_XIP_ADDR, 0, FLASH_MTD_SIZE)) {
@@ -355,24 +381,18 @@ void app_main(void)
              rootfs_part->address, rootfs_part->size,
              (uint32_t)ROOTFS_FLASH_ADDR);
 
-    uint32_t entry = (uint32_t)(uintptr_t)opensbi_ptr;
+    ESP_LOGI(TAG, "FreeRTOS owns HP SRAM below 0x%08" PRIx32
+                  "; Linux device SRAM is 0x%08" PRIx32 "..0x%08" PRIx32,
+             (uint32_t)LINUX_SRAM_START, (uint32_t)LINUX_SRAM_START,
+             (uint32_t)LINUX_SRAM_END);
 
-    disable_stack_protector();
-    flush_l1_cache_before_handoff();
+    if (xTaskCreatePinnedToCore(freertos_worker_task, "fr_worker", 2048, NULL,
+                                1, NULL, 0) != pdPASS ||
+        xTaskCreatePinnedToCore(freertos_heartbeat_task, "fr_heartbeat", 3072,
+                                NULL, 2, NULL, 0) != pdPASS) {
+        loader_restart("FreeRTOS scheduler test tasks");
+    }
 
-    __asm__ volatile (
-        "csrw  mepc, %0\n\t"
-        "csrw  mie, zero\n\t"
-        "csrr  t0, mstatus\n\t"
-        "li    t1, 0x21888\n\t"
-        "not   t1, t1\n\t"
-        "and   t0, t0, t1\n\t"
-        "li    t1, 0x1800\n\t"
-        "or    t0, t0, t1\n\t"
-        "csrw  mstatus, t0\n\t"
-        "mv    a0, zero\n\t"
-        "mv    a1, %2\n\t"
-        "mret"
-        : : "r"(entry), "r"(0), "r"(fdt) : "a0","a1","t0","t1","memory");
-    __builtin_unreachable();
+    start_linux_on_core1(fdt);
+    ESP_LOGI(TAG, "hart1 released to OpenSBI; hart0 FreeRTOS continues");
 }
