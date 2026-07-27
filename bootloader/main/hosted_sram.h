@@ -1,0 +1,15 @@
+/* SPDX-License-Identifier: Apache-2.0 */
+#pragma once
+
+#include <stddef.h>
+#include <stdint.h>
+#include "esp_err.h"
+
+esp_err_t s31_hosted_sram_start(void);
+esp_err_t s31_hosted_sram_reenable_irq(void);
+int s31_hosted_sram_send(uint8_t if_type, const void *payload, size_t length,
+			 uint8_t hci_packet_type);
+void s31_hosted_sram_set_features(uint32_t features);
+void s31_hosted_sram_set_wifi_state(uint32_t state);
+void s31_hosted_sram_set_sta_mac(const uint8_t mac[6]);
+void s31_hosted_sram_set_bt_mac(const uint8_t mac[6]);

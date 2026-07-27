@@ -40,6 +40,8 @@
 #include "soc/hp_mem_apm_reg.h"
 #include "hal/mmu_ll.h"
 #include "hal/mmu_types.h"
+#include "hosted_sram.h"
+#include "s31_hosted_sram.h"
 
 #define OPENSBI_XIP_ADDR              0x40030000U
 #define LINUX_XIP_ADDR                0x400B0000U
@@ -60,13 +62,23 @@
  * .reserved_memory_address removes it before heap_caps_init() creates the
  * FreeRTOS heaps. Keep the DTS addresses in sync with these constants.
  */
-#define LINUX_SRAM_START              0x2F072F80U
+#define LINUX_SRAM_START              S31_HOSTED_SRAM_BASE
 #define LINUX_SRAM_END                0x2F07AFC0U
 #define HART1_EARLY_MAILBOX_ADDR      0x2F07AFA0U
 SOC_RESERVE_MEMORY_REGION(LINUX_SRAM_START, LINUX_SRAM_END, linux_devices);
 
+extern void _vector_table(void);
+extern void _mtvt_table(void);
+
 static const char *TAG = "boot";
 volatile uint32_t g_core1_fdt;
+
+/* CLIC IDs for hart0 interrupts (hosted transport doorbell + systimer) */
+static const uint32_t s_hart0_tick_intno = 7;
+static const uint32_t s_hart0_tick_attr = 0xC2;   /* MODE=3(M), TRIG=1(edge) */
+static const uint32_t s_hart0_doorbell_intno = 29;
+static const uint32_t s_hart0_doorbell_attr = 0xC2;
+static const uint32_t s_hart0_doorbell_ctl = 0x3F;
 volatile uint32_t g_core1_trampoline_entered;
 volatile uint32_t g_core1_trap_mcause;
 volatile uint32_t g_core1_trap_mtval;
@@ -293,14 +305,55 @@ static void start_linux_on_core1(uint32_t fdt)
     }
 }
 
+static volatile uint8_t *hart0_clic_slot(uint32_t clic_id)
+{
+    return (volatile uint8_t *)CLIC_INT_CTRL_REG(clic_id);
+}
+
+static void restore_hart0_interrupts(void)
+{
+    volatile uint8_t *slot;
+
+    esp_cpu_intr_set_ivt_addr(&_vector_table);
+    esp_cpu_intr_set_mtvt_addr(&_mtvt_table);
+    REG_SET_FIELD(CLIC_INT_CONFIG_REG, CLIC_INT_CONFIG_MNLBITS, NLBITS);
+    slot = hart0_clic_slot(s_hart0_tick_intno);
+    slot[2] = s_hart0_tick_attr;
+    slot[3] = 0x3f;
+    slot[1] = 1;
+    slot[0] = 1;
+
+    /* Restore doorbell CLIC slot */
+    if (s_hart0_doorbell_intno < SOC_CPU_INTR_NUM) {
+        slot = hart0_clic_slot(s_hart0_doorbell_intno);
+        slot[2] = s_hart0_doorbell_attr;
+        slot[3] = s_hart0_doorbell_ctl;
+        slot[1] = 1;
+        slot[0] = 0;
+    }
+    RV_WRITE_CSR(0x347, 0);
+}
+
 static void freertos_worker_task(void *arg)
 {
+    volatile uint32_t *worker_alive =
+        (volatile uint32_t *)(S31_HOSTED_SRAM_BASE + 0x418);
+
     (void)arg;
 
     for (;;) {
         for (unsigned int i = 0; i < 100000; i++) {
             s_freertos_worker_counter++;
         }
+        /* systimer reconf skipped: use hosted_sram START instead */
+        restore_hart0_interrupts();
+        *worker_alive =
+            0xa0000000U |
+            (((RV_READ_CSR(0xfb1) >> 24) & 0xffU) << 16) |
+            ((uint32_t)hart0_clic_slot(s_hart0_tick_intno)[3] << 8) |
+            (RV_READ_CSR(0x347) & 0xffU);
+        Cache_WriteBack_Addr(CACHE_MAP_L1_DCACHE,
+                            (uint32_t)worker_alive & ~63U, 64);
         taskYIELD();
     }
 }
@@ -319,6 +372,23 @@ static void freertos_heartbeat_task(void *arg)
                  (unsigned int)heap_caps_get_free_size(MALLOC_CAP_INTERNAL));
     }
 }
+
+#define OPENSBI_XIP_ADDR              0x40030000U
+#define LINUX_XIP_ADDR                0x400B0000U
+#define ROOTFS_FLASH_ADDR             0x40A20000U
+#define FLASH_MTD_XIP_ADDR            0x41000000U
+#define FLASH_MTD_SIZE                0x01000000U
+#define OPENSBI_FDT_OFFSET_SLOT_SIZE  4U
+#define FDT_MAGIC_LE                  0xEDFE0DD0U
+#define ROOTFS_PARTITION_SIZE         0x005E0000U
+#define ESP32S31_PSRAM_SIZE           0x01000000U
+#define LINUX_PSRAM_START             0x50000000U
+
+static bool map_flash_range(uint32_t vaddr, uint32_t paddr, uint32_t size);
+static bool prepare_core1_cached_psram(void);
+static void enable_core1_external_memory_bus(uint32_t vaddr, uint32_t size);
+static void disable_core1_stack_protector(void);
+static void start_linux_on_core1(uint32_t fdt);
 
 void app_main(void)
 {
@@ -451,4 +521,10 @@ void app_main(void)
 
     start_linux_on_core1(fdt);
     ESP_LOGI(TAG, "hart1 released to OpenSBI; hart0 FreeRTOS continues");
+
+    /* 启动hosted SRAM transport (FreeRTOS ↔ Linux IPC) */
+    if (s31_hosted_sram_start() != ESP_OK)
+        ESP_LOGW(TAG, "hosted SRAM transport failed to start");
+    else
+        ESP_LOGI(TAG, "hosted SRAM transport started");
 }
