@@ -155,6 +155,28 @@ static void send_control(uint8_t type, uint8_t value)
 	(void)s31_hosted_sram_send(S31_HOSTED_PRIV_IF, &msg, sizeof(msg), 0);
 }
 
+void __attribute__((weak)) hosted_wifi_rx_handler(const uint8_t *data,
+							size_t len)
+{
+	/* Weak default: no-op.  Override in WiFi module to forward to esp_wifi. */
+	(void)data;
+	(void)len;
+}
+
+void __attribute__((weak)) hosted_ap_rx_handler(const uint8_t *data,
+						       size_t len)
+{
+	(void)data;
+	(void)len;
+}
+
+void __attribute__((weak)) hosted_hci_rx_handler(const uint8_t *data,
+						       size_t len)
+{
+	(void)data;
+	(void)len;
+}
+
 static void process_h1_frame(const uint8_t *frame, size_t frame_length)
 {
 	const struct s31_esp_payload_header *header = (const void *)frame;
@@ -169,16 +191,54 @@ static void process_h1_frame(const uint8_t *frame, size_t frame_length)
 	if (offset < sizeof(*header) || offset + length > frame_length)
 		return;
 
-	if (header->if_type != S31_HOSTED_PRIV_IF ||
-	    length < sizeof(struct s31_hosted_control_msg))
-		return;
-
-	msg = (const void *)(frame + offset);
-	if (msg->type == S31_HOSTED_CTRL_PING) {
-		ESP_LOGI(TAG, "Linux transport ping generation=%" PRIu32,
-			 msg->generation);
-		send_control(S31_HOSTED_CTRL_PONG, 0);
+	switch (header->if_type) {
+	case S31_HOSTED_PRIV_IF:
+		if (length < sizeof(struct s31_hosted_control_msg))
+			return;
+		msg = (const void *)(frame + offset);
+		switch (msg->type) {
+		case S31_HOSTED_CTRL_PING:
+			ESP_LOGI(TAG, "Linux transport ping generation=%" PRIu32,
+				 msg->generation);
+			send_control(S31_HOSTED_CTRL_PONG, 0);
+			break;
+		case S31_HOSTED_CTRL_LINK:
+			/* Link state change forwarded to upper layers. */
+			ESP_LOGI(TAG, "link state: %s",
+				 msg->value == S31_HOSTED_LINK_UP ?
+				 "up" : "down");
+			break;
+		default:
+			break;
+		}
+		break;
+	case S31_HOSTED_STA_IF:
+		hosted_wifi_rx_handler(frame + offset, length);
+		break;
+	case S31_HOSTED_AP_IF:
+		hosted_ap_rx_handler(frame + offset, length);
+		break;
+	case S31_HOSTED_HCI_IF:
+		hosted_hci_rx_handler(frame + offset, length);
+		break;
+	default:
+		break;
 	}
+}
+
+int s31_hosted_sram_wifi_tx(const void *data, size_t length)
+{
+	return s31_hosted_sram_send(S31_HOSTED_STA_IF, data, length, 0);
+}
+
+int s31_hosted_sram_ap_tx(const void *data, size_t length)
+{
+	return s31_hosted_sram_send(S31_HOSTED_AP_IF, data, length, 0);
+}
+
+int s31_hosted_sram_hci_tx(const void *data, size_t length)
+{
+	return s31_hosted_sram_send(S31_HOSTED_HCI_IF, data, length, 0);
 }
 
 static void drain_h1_ring(void)

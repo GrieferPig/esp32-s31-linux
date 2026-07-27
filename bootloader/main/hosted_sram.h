@@ -9,6 +9,9 @@ esp_err_t s31_hosted_sram_start(void);
 esp_err_t s31_hosted_sram_reenable_irq(void);
 int s31_hosted_sram_send(uint8_t if_type, const void *payload, size_t length,
 			 uint8_t hci_packet_type);
+int s31_hosted_sram_wifi_tx(const void *data, size_t length);
+int s31_hosted_sram_ap_tx(const void *data, size_t length);
+int s31_hosted_sram_hci_tx(const void *data, size_t length);
 void s31_hosted_sram_set_features(uint32_t features);
 void s31_hosted_sram_set_wifi_state(uint32_t state);
 void s31_hosted_sram_set_sta_mac(const uint8_t mac[6]);
