@@ -401,130 +401,44 @@ void app_main(void)
     disable_apm();
     disable_watchdogs();
 
-    /* Keep XIP mappings intact and expose the full flash at a second alias. */
-    if (!map_flash_range(FLASH_MTD_XIP_ADDR, 0, FLASH_MTD_SIZE)) {
-        ESP_LOGE(TAG, "failed to map complete Flash MTD window");
-        loader_restart("Flash MTD mapping");
-    }
-    ESP_LOGI(TAG, "Flash MTD window mapped: flash=0x00000000 size=0x%08" PRIx32
-                  " vaddr=0x%08" PRIx32,
-             (uint32_t)FLASH_MTD_SIZE, (uint32_t)FLASH_MTD_XIP_ADDR);
-
     /* Map OpenSBI at its linked Flash XIP address. */
     const esp_partition_t *part = esp_partition_find_first(
         ESP_PARTITION_TYPE_DATA, 0x40, "opensbi");
-    if (!part) {
-        ESP_LOGE(TAG, "OpenSBI partition not found");
+    if (!part)
         loader_restart("OpenSBI partition lookup");
-    }
 
     const void *opensbi_ptr;
     esp_partition_mmap_handle_t mmap_handle;
     esp_err_t err = esp_partition_mmap(part, 0, part->size,
                                        ESP_PARTITION_MMAP_INST,
                                        &opensbi_ptr, &mmap_handle);
-    if (err != ESP_OK) {
-        ESP_LOGE(TAG, "esp_partition_mmap failed: %s", esp_err_to_name(err));
+    if (err != ESP_OK)
         loader_restart("OpenSBI mmap");
-    }
-    ESP_LOGI(TAG, "OpenSBI mmap at %p (size %" PRIu32 ")",
-             opensbi_ptr, part->size);
-
-    if ((uintptr_t)opensbi_ptr != OPENSBI_XIP_ADDR) {
-        ESP_LOGE(TAG, "OpenSBI mmap address %p != linked address 0x%08" PRIx32,
-                 opensbi_ptr, (uint32_t)OPENSBI_XIP_ADDR);
-        loader_restart("OpenSBI virtual address");
-    }
-
-    if (part->size < OPENSBI_FDT_OFFSET_SLOT_SIZE) {
-        ESP_LOGE(TAG, "OpenSBI partition too small for FDT offset slot");
-        loader_restart("OpenSBI partition size");
-    }
 
     uint32_t fdt_offset = 0;
     err = esp_flash_read(part->flash_chip, &fdt_offset,
                          part->address + part->size - OPENSBI_FDT_OFFSET_SLOT_SIZE,
                          sizeof(fdt_offset));
-    if (err != ESP_OK) {
-        ESP_LOGE(TAG, "reading FDT offset failed: %s", esp_err_to_name(err));
+    if (err != ESP_OK)
         loader_restart("FDT offset read");
-    }
-
-    if (fdt_offset >= part->size - OPENSBI_FDT_OFFSET_SLOT_SIZE ||
-        (fdt_offset & (sizeof(uint32_t) - 1)) != 0) {
-        ESP_LOGE(TAG, "invalid FDT offset 0x%08" PRIx32, fdt_offset);
-        loader_restart("FDT offset validation");
-    }
 
     uint32_t fdt = (uint32_t)(uintptr_t)opensbi_ptr + fdt_offset;
-    uint32_t fdt_magic = *(const volatile uint32_t *)(uintptr_t)fdt;
-    if (fdt_magic != FDT_MAGIC_LE) {
-        ESP_LOGE(TAG, "invalid FDT magic 0x%08" PRIx32 " at 0x%08" PRIx32,
-                 fdt_magic, fdt);
-        loader_restart("FDT magic validation");
-    }
-
-    ESP_LOGI(TAG, "OpenSBI FDT offset 0x%08" PRIx32 ", addr 0x%08" PRIx32,
-             fdt_offset, fdt);
 
     /* --- Find and mmap Linux partition --- */
     const esp_partition_t *linux_part = esp_partition_find_first(
         ESP_PARTITION_TYPE_DATA, 0x40, "linux");
-    if (!linux_part) {
-        ESP_LOGE(TAG, "Linux partition not found");
+    if (!linux_part)
         loader_restart("Linux partition lookup");
-    }
     const void *linux_ptr;
     esp_partition_mmap_handle_t linux_mmap_handle;
     err = esp_partition_mmap(linux_part, 0, linux_part->size,
                              ESP_PARTITION_MMAP_INST,
                              &linux_ptr, &linux_mmap_handle);
-    if (err != ESP_OK) {
-        ESP_LOGE(TAG, "esp_partition_mmap linux failed: %s", esp_err_to_name(err));
+    if (err != ESP_OK)
         loader_restart("Linux mmap");
-    }
-    ESP_LOGI(TAG, "Linux mmap INST at %p (size %" PRIu32 ")", linux_ptr, linux_part->size);
-
-    if ((uintptr_t)linux_ptr != LINUX_XIP_ADDR) {
-        ESP_LOGE(TAG, "Linux mmap address %p != expected 0x%08" PRIx32,
-                 linux_ptr, (uint32_t)LINUX_XIP_ADDR);
-        loader_restart("Linux virtual address");
-    }
-
-    const esp_partition_t *rootfs_part = esp_partition_find_first(
-        ESP_PARTITION_TYPE_DATA, 0x40, "rootfs");
-    if (!rootfs_part ||
-        rootfs_part->size != ROOTFS_PARTITION_SIZE ||
-        !map_flash_range(ROOTFS_FLASH_ADDR, rootfs_part->address,
-                         rootfs_part->size)) {
-        ESP_LOGE(TAG, "failed to map 0x%08" PRIx32 "-byte rootfs",
-                 (uint32_t)ROOTFS_PARTITION_SIZE);
-        loader_restart("rootfs mapping");
-    }
-
-    ESP_LOGI(TAG, "rootfs mapped: flash=0x%08" PRIx32
-                  " size=0x%08" PRIx32 " vaddr=0x%08" PRIx32,
-             rootfs_part->address, rootfs_part->size,
-             (uint32_t)ROOTFS_FLASH_ADDR);
-
-    ESP_LOGI(TAG, "FreeRTOS owns HP SRAM below 0x%08" PRIx32
-                  "; Linux device SRAM is 0x%08" PRIx32 "..0x%08" PRIx32,
-             (uint32_t)LINUX_SRAM_START, (uint32_t)LINUX_SRAM_START,
-             (uint32_t)LINUX_SRAM_END);
-
-    if (xTaskCreatePinnedToCore(freertos_worker_task, "fr_worker", 2048, NULL,
-                                1, NULL, 0) != pdPASS ||
-        xTaskCreatePinnedToCore(freertos_heartbeat_task, "fr_heartbeat", 3072,
-                                NULL, 2, NULL, 0) != pdPASS) {
-        loader_restart("FreeRTOS scheduler test tasks");
-    }
 
     start_linux_on_core1(fdt);
-    ESP_LOGI(TAG, "hart1 released to OpenSBI; hart0 FreeRTOS continues");
 
     /* 启动hosted SRAM transport (FreeRTOS ↔ Linux IPC) */
-    if (s31_hosted_sram_start() != ESP_OK)
-        ESP_LOGW(TAG, "hosted SRAM transport failed to start");
-    else
-        ESP_LOGI(TAG, "hosted SRAM transport started");
+    s31_hosted_sram_start();
 }
