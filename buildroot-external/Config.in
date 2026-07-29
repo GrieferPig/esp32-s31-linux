@@ -1,0 +1,6 @@
+menu "ESP32-S31 packages"
+
+source "$BR2_EXTERNAL_ESP32_S31_PATH/package/coremark-s31/Config.in"
+source "$BR2_EXTERNAL_ESP32_S31_PATH/package/s31-tools/Config.in"
+
+endmenu

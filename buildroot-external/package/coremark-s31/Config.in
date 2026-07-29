@@ -1,0 +1,5 @@
+config BR2_PACKAGE_COREMARK_S31
+	bool "CoreMark benchmark"
+	default y
+	help
+	  Builds EEMBC CoreMark for the ESP32-S31 Linux userspace.

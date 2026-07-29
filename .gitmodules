@@ -6,12 +6,12 @@
 	path = opensbi-esp32-s31
 	url = https://github.com/GrieferPig/opensbi-esp32-s31
 	branch = v1.9-esp32-s31
-[submodule "busybox"]
-	path = busybox
-	url = https://github.com/mirror/busybox.git
 [submodule "coremark"]
 	path = coremark
 	url = https://github.com/eembc/coremark.git
 [submodule "esp-hosted-fg"]
 	path = esp-hosted-fg
 	url = git@github.com:GrieferPig/esp-hosted-s31.git
+[submodule "buildroot"]
+	path = buildroot
+	url = https://gitlab.com/buildroot.org/buildroot.git

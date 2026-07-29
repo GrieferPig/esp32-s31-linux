@@ -5,9 +5,7 @@ mount -t devtmpfs devtmpfs /dev 2>/dev/null || {
 	mknod /dev/ttyS0 c 4 64 2>/dev/null || true
 }
 
-mkdir -p /dev/pts /dev/tmp /dev/run/lock /dev/var-log
-chmod 1777 /dev/tmp
-chmod 0755 /dev/run /dev/run/lock /dev/var-log
+mkdir -p /dev/pts
 
 for tty in /dev/console /dev/ttyS0 /dev/hvc0; do
 	[ -c "$tty" ] && exec <"$tty" >"$tty" 2>&1 && break
@@ -17,9 +15,11 @@ mount -t proc proc /proc 2>/dev/null || true
 mount -t sysfs sysfs /sys 2>/dev/null || true
 mount -t devpts devpts /dev/pts 2>/dev/null || true
 
-(
-	ifconfig eth0 up 2>/dev/null || true
-	udhcpc -b -i eth0 2>/dev/null || true
-) &
+mount -t tmpfs -o mode=0755,nosuid,nodev tmpfs /run
+mount -t tmpfs -o mode=1777,nosuid,nodev tmpfs /tmp
+mount -t tmpfs -o mode=0755,nosuid,nodev tmpfs /var/log
+mkdir -p /run/lock
+mkdir -m 0700 /run/bluetooth
+mkdir -m 0700 /run/seedrng
 
-exec setsid /bin/cttyhack /bin/sh
+exec /sbin/init

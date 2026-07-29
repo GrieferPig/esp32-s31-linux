@@ -6,7 +6,7 @@ This project uses a unified `Makefile` at the root directory to manage downloadi
 
 ### Default Target
 - **`make all`** (or just **`make`**)
-  The default target. It sequentially executes the following targets: `download`, `opensbi`, `linux`, `busybox`, and `rootfs`.
+  The default target. It sequentially executes `download`, `opensbi`, `linux`, and `initramfs`.
 
 ### Download & Toolchain
 - **`make download`**
@@ -17,14 +17,26 @@ This project uses a unified `Makefile` at the root directory to manage downloadi
   Builds OpenSBI and dynamically compiles the device tree (DTB) from the Linux source. The FW_JUMP binary and DTB are concatenated and padded to match the bootloader's partition size limit. Output is placed in `build/fw_payload.bin`.
 - **`make linux`**
   Builds the Linux kernel (`xipImage`) out-of-tree into `build/linux/`. Outputs `xipImage` and the compiled `esp32s31_generic.dtb` directly to the `build/` root.
-- **`make busybox`**
-  Configures and compiles Busybox out-of-tree (`build/busybox/`) using `allyesconfig` and a custom configuration fragment.
 - **`make rootfs`**
-  Compiles the custom rootfs tools (`segfault`, `forktest`, `membench`) via `rootfs/Makefile`, merges them into the BusyBox installation in `build/s31-rootfs/`, creates `build/rootfs.sqfs`, and pads it to the rootfs partition size limit.
+  Uses the pinned Buildroot submodule and the ESP32-S31 br2-external tree to
+  build a complete RV32IMAC/musl userspace. It includes BusyBox, BlueZ tools,
+  Dropbear, iproute2, tcpdump, memtester, CoreMark, and the project
+  diagnostics. The generated SquashFS is copied to `build/rootfs.sqfs` and
+  padded to the rootfs partition size.
+- **`make initramfs`**
+  Compatibility name for `make rootfs`; this is the preferred rootfs build
+  command for this project.
+- **`make buildroot-menuconfig`**
+  Opens Buildroot configuration using the ESP32-S31 defconfig. Persist useful
+  changes by updating `buildroot-external/configs/esp32s31_rootfs_defconfig`.
+- **`make buildroot-clean`**
+  Removes only the Buildroot output tree. Use it after changing toolchain or
+  package selections; downloaded source archives are retained.
 
 ### Cleaning
 - **`make clean`**
-  Removes the `build/` directory and all its contents, effectively cleaning all out-of-tree build artifacts for Linux, OpenSBI, BusyBox, and the rootfs tools.
+  Removes the `build/` directory and all out-of-tree Linux, OpenSBI, CoreMark,
+  and Buildroot artifacts.
 - **`make fullclean`**
   Executes the `clean` target and additionally removes the downloaded `toolchain/` directory, reverting the repository to its freshly-cloned state.
 
