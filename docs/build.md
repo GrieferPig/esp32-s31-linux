@@ -22,7 +22,9 @@ This project uses a unified `Makefile` at the root directory to manage downloadi
   build a complete RV32IMAC/musl userspace. It includes BusyBox, BlueZ tools,
   Dropbear, iproute2, tcpdump, memtester, CoreMark, and the project
   diagnostics. The generated SquashFS is copied to `build/rootfs.sqfs` and
-  padded to the rootfs partition size.
+  padded to the rootfs partition size. BusyBox `wget` supports HTTPS and
+  HTTP-to-HTTPS redirects using its size-optimized internal TLS client; this
+  client encrypts transfers but does not validate CA certificates.
 - **`make initramfs`**
   Compatibility name for `make rootfs`; this is the preferred rootfs build
   command for this project.
