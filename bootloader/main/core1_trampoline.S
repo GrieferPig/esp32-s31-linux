@@ -62,10 +62,27 @@ core1_linux_trampoline:
     li      t0, 0xe000001d
     csrw    0xbc7, t0
 
-    /* Full RV32 PMP physical space for Linux S-mode, RWX NAPOT. */
+    /*
+     * Clear all possible PMP entries first (S31 likely has 4-16 entries).
+     * Then set entry 0 as full RWX NAPOT so Linux S-mode sees all memory.
+     * CPU0 may have APM regions that look like PMP; CPU1 must start clean.
+     */
+    csrw    pmpcfg0, zero
+    csrw    pmpcfg1, zero
+    csrw    pmpcfg2, zero
+    csrw    pmpcfg3, zero
+    csrw    pmpaddr0, zero
+    csrw    pmpaddr1, zero
+    csrw    pmpaddr2, zero
+    csrw    pmpaddr3, zero
+    csrw    pmpaddr4, zero
+    csrw    pmpaddr5, zero
+    csrw    pmpaddr6, zero
+    csrw    pmpaddr7, zero
+
     li      t0, -1
     csrw    pmpaddr0, t0
-    li      t0, 0x1f
+    li      t0, 0x1f                 /* NAPOT, RWX */
     csrw    pmpcfg0, t0
 
     /*

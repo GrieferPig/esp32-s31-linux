@@ -16,3 +16,36 @@ idf_build_set_property(MINIMAL_BUILD ON)
 # virtual window.  The two linker MEMORY aliases intentionally overlap.
 idf_build_set_property(LINK_OPTIONS "-Wl,--no-check-sections" APPEND)
 project(hello_world)
+
+# The IDF application and the Linux payload execute at the same time on the two
+# HP harts.  Keep the IDF XIP image out of the fixed OpenSBI/Linux mappings
+# (0x40030000 and above).  Generate this from IDF's S31 script so that IDF
+# remains the sole source for the rest of the memory layout.
+set(IDF_S31_MEMORY_LD
+    "$ENV{IDF_PATH}/components/esp_system/ld/esp32s31/memory.ld.in")
+file(READ "${IDF_S31_MEMORY_LD}" S31_MEMORY_LD_CONTENT)
+string(REPLACE "org = 0x40000020" "org = 0x42000020"
+       S31_MEMORY_LD_CONTENT "${S31_MEMORY_LD_CONTENT}")
+string(REPLACE "#include \"ld.common\""
+       "#include \"$ENV{IDF_PATH}/components/esp_system/ld/ld.common\""
+       S31_MEMORY_LD_CONTENT "${S31_MEMORY_LD_CONTENT}")
+string(REPLACE "#include \"ld.hp_mem_defs\""
+       "#include \"$ENV{IDF_PATH}/components/esp_system/ld/esp32s31/ld.hp_mem_defs\""
+       S31_MEMORY_LD_CONTENT "${S31_MEMORY_LD_CONTENT}")
+set(S31_MEMORY_LD "${CMAKE_CURRENT_BINARY_DIR}/s31linux.memory.ld.in")
+file(WRITE "${S31_MEMORY_LD}" "${S31_MEMORY_LD_CONTENT}")
+
+idf_component_get_property(ESP_SYSTEM_LIB esp_system COMPONENT_LIB)
+get_target_property(ESP_SYSTEM_LINK_OPTIONS
+                    "${ESP_SYSTEM_LIB}" INTERFACE_LINK_OPTIONS)
+list(REMOVE_ITEM ESP_SYSTEM_LINK_OPTIONS "SHELL:-T memory.ld")
+set_property(TARGET "${ESP_SYSTEM_LIB}" PROPERTY INTERFACE_LINK_OPTIONS
+             "${ESP_SYSTEM_LINK_OPTIONS}")
+target_linker_script("${ESP_SYSTEM_LIB}" INTERFACE "${S31_MEMORY_LD}")
+# MEMORY and REGION_ALIAS declarations must precede IDF's sections.ld.
+get_target_property(ESP_SYSTEM_LINK_OPTIONS
+                    "${ESP_SYSTEM_LIB}" INTERFACE_LINK_OPTIONS)
+list(REMOVE_ITEM ESP_SYSTEM_LINK_OPTIONS "SHELL:-T s31linux.memory.ld")
+list(PREPEND ESP_SYSTEM_LINK_OPTIONS "SHELL:-T s31linux.memory.ld")
+set_property(TARGET "${ESP_SYSTEM_LIB}" PROPERTY INTERFACE_LINK_OPTIONS
+             "${ESP_SYSTEM_LINK_OPTIONS}")

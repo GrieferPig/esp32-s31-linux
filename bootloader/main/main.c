@@ -31,6 +31,9 @@
 #include "hal/wdt_hal.h"
 #include "heap_memory_layout.h"
 #include "esp_heap_caps.h"
+#include "nvs_flash.h"
+#include "esp_hosted_coprocessor.h"
+#include "slave_bt.h"
 #include "freertos/FreeRTOS.h"
 #include "freertos/task.h"
 #include "soc/soc.h"
@@ -67,23 +70,13 @@
 #define HART1_EARLY_MAILBOX_ADDR      0x2F07AFA0U
 SOC_RESERVE_MEMORY_REGION(LINUX_SRAM_START, LINUX_SRAM_END, linux_devices);
 
-extern void _vector_table(void);
-extern void _mtvt_table(void);
-
 static const char *TAG = "boot";
 volatile uint32_t g_core1_fdt;
 
-/* CLIC IDs for hart0 interrupts (hosted transport doorbell + systimer) */
-static const uint32_t s_hart0_tick_intno = 7;
-static const uint32_t s_hart0_tick_attr = 0xC2;   /* MODE=3(M), TRIG=1(edge) */
-static const uint32_t s_hart0_doorbell_intno = 29;
-static const uint32_t s_hart0_doorbell_attr = 0xC2;
-static const uint32_t s_hart0_doorbell_ctl = 0x3F;
 volatile uint32_t g_core1_trampoline_entered;
 volatile uint32_t g_core1_trap_mcause;
 volatile uint32_t g_core1_trap_mtval;
 volatile uint32_t g_core1_trap_mepc;
-static volatile uint32_t s_freertos_worker_counter;
 
 extern void core1_linux_trampoline(void);
 
@@ -305,74 +298,6 @@ static void start_linux_on_core1(uint32_t fdt)
     }
 }
 
-static volatile uint8_t *hart0_clic_slot(uint32_t clic_id)
-{
-    return (volatile uint8_t *)CLIC_INT_CTRL_REG(clic_id);
-}
-
-static void restore_hart0_interrupts(void)
-{
-    volatile uint8_t *slot;
-
-    esp_cpu_intr_set_ivt_addr(&_vector_table);
-    esp_cpu_intr_set_mtvt_addr(&_mtvt_table);
-    REG_SET_FIELD(CLIC_INT_CONFIG_REG, CLIC_INT_CONFIG_MNLBITS, NLBITS);
-    slot = hart0_clic_slot(s_hart0_tick_intno);
-    slot[2] = s_hart0_tick_attr;
-    slot[3] = 0x3f;
-    slot[1] = 1;
-    slot[0] = 1;
-
-    /* Restore doorbell CLIC slot */
-    if (s_hart0_doorbell_intno < SOC_CPU_INTR_NUM) {
-        slot = hart0_clic_slot(s_hart0_doorbell_intno);
-        slot[2] = s_hart0_doorbell_attr;
-        slot[3] = s_hart0_doorbell_ctl;
-        slot[1] = 1;
-        slot[0] = 0;
-    }
-    RV_WRITE_CSR(0x347, 0);
-}
-
-static void freertos_worker_task(void *arg)
-{
-    volatile uint32_t *worker_alive =
-        (volatile uint32_t *)(S31_HOSTED_SRAM_BASE + 0x418);
-
-    (void)arg;
-
-    for (;;) {
-        for (unsigned int i = 0; i < 100000; i++) {
-            s_freertos_worker_counter++;
-        }
-        /* systimer reconf skipped: use hosted_sram START instead */
-        restore_hart0_interrupts();
-        *worker_alive =
-            0xa0000000U |
-            (((RV_READ_CSR(0xfb1) >> 24) & 0xffU) << 16) |
-            ((uint32_t)hart0_clic_slot(s_hart0_tick_intno)[3] << 8) |
-            (RV_READ_CSR(0x347) & 0xffU);
-        Cache_WriteBack_Addr(CACHE_MAP_L1_DCACHE,
-                            (uint32_t)worker_alive & ~63U, 64);
-        taskYIELD();
-    }
-}
-
-static void freertos_heartbeat_task(void *arg)
-{
-    (void)arg;
-    TickType_t last = xTaskGetTickCount();
-
-    for (;;) {
-        vTaskDelayUntil(&last, pdMS_TO_TICKS(1000));
-        ESP_LOGI(TAG,
-                 "FreeRTOS alive: tick=%" PRIu32 " worker=%" PRIu32
-                 " internal_free=%u",
-                 (uint32_t)xTaskGetTickCount(), s_freertos_worker_counter,
-                 (unsigned int)heap_caps_get_free_size(MALLOC_CAP_INTERNAL));
-    }
-}
-
 #define OPENSBI_XIP_ADDR              0x40030000U
 #define LINUX_XIP_ADDR                0x400B0000U
 #define ROOTFS_FLASH_ADDR             0x40A20000U
@@ -401,44 +326,125 @@ void app_main(void)
     disable_apm();
     disable_watchdogs();
 
+    /* Keep XIP mappings intact and expose the full flash at a second alias. */
+    if (!map_flash_range(FLASH_MTD_XIP_ADDR, 0, FLASH_MTD_SIZE)) {
+        ESP_LOGE(TAG, "failed to map complete Flash MTD window");
+        loader_restart("Flash MTD mapping");
+    }
+    ESP_LOGI(TAG, "Flash MTD window mapped: flash=0x00000000 size=0x%08" PRIx32
+                  " vaddr=0x%08" PRIx32,
+             (uint32_t)FLASH_MTD_SIZE, (uint32_t)FLASH_MTD_XIP_ADDR);
+
     /* Map OpenSBI at its linked Flash XIP address. */
     const esp_partition_t *part = esp_partition_find_first(
         ESP_PARTITION_TYPE_DATA, 0x40, "opensbi");
-    if (!part)
+    if (!part) {
+        ESP_LOGE(TAG, "OpenSBI partition not found");
         loader_restart("OpenSBI partition lookup");
+    }
 
-    const void *opensbi_ptr;
-    esp_partition_mmap_handle_t mmap_handle;
-    esp_err_t err = esp_partition_mmap(part, 0, part->size,
-                                       ESP_PARTITION_MMAP_INST,
-                                       &opensbi_ptr, &mmap_handle);
-    if (err != ESP_OK)
-        loader_restart("OpenSBI mmap");
+    if (!map_flash_range(OPENSBI_XIP_ADDR, part->address, part->size)) {
+        ESP_LOGE(TAG, "failed to map OpenSBI at linked address");
+        loader_restart("OpenSBI MMU mapping");
+    }
+    const void *opensbi_ptr = (const void *)(uintptr_t)OPENSBI_XIP_ADDR;
+    ESP_LOGI(TAG, "OpenSBI mapped at %p (size %" PRIu32 ")",
+             opensbi_ptr, part->size);
+
+    if (part->size < OPENSBI_FDT_OFFSET_SLOT_SIZE) {
+        ESP_LOGE(TAG, "OpenSBI partition too small for FDT offset slot");
+        loader_restart("OpenSBI partition size");
+    }
 
     uint32_t fdt_offset = 0;
-    err = esp_flash_read(part->flash_chip, &fdt_offset,
-                         part->address + part->size - OPENSBI_FDT_OFFSET_SLOT_SIZE,
-                         sizeof(fdt_offset));
-    if (err != ESP_OK)
+    esp_err_t err = esp_flash_read(
+        part->flash_chip, &fdt_offset,
+        part->address + part->size - OPENSBI_FDT_OFFSET_SLOT_SIZE,
+        sizeof(fdt_offset));
+    if (err != ESP_OK) {
+        ESP_LOGE(TAG, "reading FDT offset failed: %s", esp_err_to_name(err));
         loader_restart("FDT offset read");
+    }
+
+    if (fdt_offset >= part->size - OPENSBI_FDT_OFFSET_SLOT_SIZE ||
+        (fdt_offset & (sizeof(uint32_t) - 1)) != 0) {
+        ESP_LOGE(TAG, "invalid FDT offset 0x%08" PRIx32, fdt_offset);
+        loader_restart("FDT offset validation");
+    }
 
     uint32_t fdt = (uint32_t)(uintptr_t)opensbi_ptr + fdt_offset;
+    uint32_t fdt_magic = *(const volatile uint32_t *)(uintptr_t)fdt;
+    if (fdt_magic != FDT_MAGIC_LE) {
+        ESP_LOGE(TAG, "invalid FDT magic 0x%08" PRIx32 " at 0x%08" PRIx32,
+                 fdt_magic, fdt);
+        loader_restart("FDT magic validation");
+    }
+
+    ESP_LOGI(TAG, "OpenSBI FDT offset 0x%08" PRIx32 ", addr 0x%08" PRIx32,
+             fdt_offset, fdt);
 
     /* --- Find and mmap Linux partition --- */
     const esp_partition_t *linux_part = esp_partition_find_first(
         ESP_PARTITION_TYPE_DATA, 0x40, "linux");
-    if (!linux_part)
+    if (!linux_part) {
+        ESP_LOGE(TAG, "Linux partition not found");
         loader_restart("Linux partition lookup");
-    const void *linux_ptr;
-    esp_partition_mmap_handle_t linux_mmap_handle;
-    err = esp_partition_mmap(linux_part, 0, linux_part->size,
-                             ESP_PARTITION_MMAP_INST,
-                             &linux_ptr, &linux_mmap_handle);
-    if (err != ESP_OK)
-        loader_restart("Linux mmap");
+    }
+    if (!map_flash_range(LINUX_XIP_ADDR, linux_part->address,
+                         linux_part->size)) {
+        ESP_LOGE(TAG, "failed to map Linux at linked address");
+        loader_restart("Linux MMU mapping");
+    }
+    const void *linux_ptr = (const void *)(uintptr_t)LINUX_XIP_ADDR;
+    ESP_LOGI(TAG, "Linux mapped at %p (size %" PRIu32 ")",
+             linux_ptr, linux_part->size);
+
+    const esp_partition_t *rootfs_part = esp_partition_find_first(
+        ESP_PARTITION_TYPE_DATA, 0x40, "rootfs");
+    if (!rootfs_part ||
+        rootfs_part->size != ROOTFS_PARTITION_SIZE ||
+        !map_flash_range(ROOTFS_FLASH_ADDR, rootfs_part->address,
+                         rootfs_part->size)) {
+        ESP_LOGE(TAG, "failed to map 0x%08" PRIx32 "-byte rootfs",
+                 (uint32_t)ROOTFS_PARTITION_SIZE);
+        loader_restart("rootfs mapping");
+    }
+
+    ESP_LOGI(TAG, "rootfs mapped: flash=0x%08" PRIx32
+                  " size=0x%08" PRIx32 " vaddr=0x%08" PRIx32,
+             rootfs_part->address, rootfs_part->size,
+             (uint32_t)ROOTFS_FLASH_ADDR);
+
+    ESP_LOGI(TAG, "FreeRTOS owns HP SRAM below 0x%08" PRIx32
+                  "; Linux device SRAM is 0x%08" PRIx32 "..0x%08" PRIx32,
+             (uint32_t)LINUX_SRAM_START, (uint32_t)LINUX_SRAM_START,
+             (uint32_t)LINUX_SRAM_END);
+
+    /*
+     * Publish the complete transport before hart1 can touch its rings.
+     * The hart0 receive path polls like hart_ipc_test and therefore has no
+     * interrupt-matrix route that could be lost when hart1 is reset.
+     */
+    if (s31_hosted_sram_start() != ESP_OK)
+        loader_restart("hosted SRAM transport");
+    ESP_LOGI(TAG, "hosted SRAM transport started");
+
+    err = nvs_flash_init();
+    if (err == ESP_ERR_NVS_NO_FREE_PAGES ||
+        err == ESP_ERR_NVS_NEW_VERSION_FOUND) {
+        ESP_ERROR_CHECK(nvs_flash_erase());
+        err = nvs_flash_init();
+    }
+    if (err != ESP_OK || esp_hosted_coprocessor_init() != ESP_OK)
+        loader_restart("ESP-Hosted co-processor");
+    ESP_LOGI(TAG, "ESP-Hosted co-processor started");
+
+#ifdef CONFIG_ESP_HOSTED_CP_BT
+    if (init_bluetooth() != ESP_OK || enable_bluetooth() != ESP_OK)
+        loader_restart("Bluetooth controller");
+    ESP_LOGI(TAG, "Bluetooth controller enabled over Hosted VHCI");
+#endif
 
     start_linux_on_core1(fdt);
-
-    /* 启动hosted SRAM transport (FreeRTOS ↔ Linux IPC) */
-    s31_hosted_sram_start();
+    ESP_LOGI(TAG, "hart1 released to OpenSBI; hart0 FreeRTOS continues");
 }
