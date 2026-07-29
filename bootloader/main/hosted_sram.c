@@ -9,6 +9,8 @@
 #include "esp_attr.h"
 #include "esp_err.h"
 #include "esp_log.h"
+#include "esp_sleep.h"
+#include "esp_system.h"
 #include "freertos/FreeRTOS.h"
 #include "freertos/task.h"
 #include "soc/hp_system_reg.h"
@@ -312,6 +314,21 @@ static void hosted_rx_task(void *arg)
 	(void)arg;
 
 	for (;;) {
+		uint32_t system_request = s_ctrl->h0_h1_doorbell;
+
+		if (system_request) {
+			s_ctrl->h0_h1_doorbell = 0;
+			shared_wmb();
+			if (system_request == S31_HOSTED_CTRL_POWER_OFF) {
+				ESP_LOGI(TAG, "OpenSBI requested system power off");
+				esp_deep_sleep_start();
+			}
+			if (system_request == S31_HOSTED_CTRL_RESTART) {
+				ESP_LOGI(TAG, "OpenSBI requested system restart");
+				esp_restart();
+			}
+		}
+
 		/*
 		 * As in hart_ipc_test, polling is the correctness path.  Do not
 		 * yield here: Linux reconfigures the shared interrupt fabric and

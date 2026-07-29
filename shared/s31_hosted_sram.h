@@ -60,6 +60,10 @@ enum s31_hosted_control_type {
 	S31_HOSTED_CTRL_PONG,
 	S31_HOSTED_CTRL_LINK,
 	S31_HOSTED_CTRL_RADIO_READY,
+	/* OpenSBI asks hart0 to enter IDF's chip-wide deep-sleep path. */
+	S31_HOSTED_CTRL_POWER_OFF,
+	/* OpenSBI asks hart0 to execute IDF's complete restart sequence. */
+	S31_HOSTED_CTRL_RESTART,
 };
 
 enum s31_hosted_link_state {
