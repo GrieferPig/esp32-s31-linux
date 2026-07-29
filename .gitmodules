@@ -12,3 +12,6 @@
 [submodule "coremark"]
 	path = coremark
 	url = https://github.com/eembc/coremark.git
+[submodule "esp-hosted-fg"]
+	path = esp-hosted-fg
+	url = git@github.com:GrieferPig/esp-hosted-s31.git
