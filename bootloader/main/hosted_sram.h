@@ -5,10 +5,17 @@
 #include <stdint.h>
 #include "esp_err.h"
 
+typedef int (*s31_hosted_frame_handler_t)(const uint8_t *frame,
+					 size_t frame_length, void *arg);
+
 esp_err_t s31_hosted_sram_start(void);
-esp_err_t s31_hosted_sram_reenable_irq(void);
 int s31_hosted_sram_send(uint8_t if_type, const void *payload, size_t length,
 			 uint8_t hci_packet_type);
+int s31_hosted_sram_send_meta(uint8_t if_type, uint8_t if_num,
+			      const void *payload, size_t length, uint8_t flags,
+			      uint16_t seq_num, uint8_t packet_type);
+void s31_hosted_sram_set_frame_handler(s31_hosted_frame_handler_t handler,
+				       void *arg);
 int s31_hosted_sram_wifi_tx(const void *data, size_t length);
 int s31_hosted_sram_ap_tx(const void *data, size_t length);
 int s31_hosted_sram_hci_tx(const void *data, size_t length);

@@ -8,15 +8,10 @@
 
 #include "esp_attr.h"
 #include "esp_err.h"
-#include "esp_intr_alloc.h"
 #include "esp_log.h"
-#include "esp32s31/rom/cache.h"
 #include "freertos/FreeRTOS.h"
 #include "freertos/task.h"
 #include "soc/hp_system_reg.h"
-#include "soc/hp_mem_apm_reg.h"
-#include "soc/cpu_apm_reg.h"
-#include "soc/interrupts.h"
 #include "soc/soc.h"
 
 #include "hosted_sram.h"
@@ -30,17 +25,9 @@ static volatile struct s31_hosted_slot *const s_h0_to_h1 =
 static volatile struct s31_hosted_slot *const s_h1_to_h0 =
 	(void *)(S31_HOSTED_SRAM_BASE + S31_HOSTED_H1_TO_H0_OFFSET);
 static portMUX_TYPE s_tx_lock = portMUX_INITIALIZER_UNLOCKED;
-static TaskHandle_t s_rx_task;
-static intr_handle_t s_h1_irq;
 static uint16_t s_tx_sequence;
-
-esp_err_t s31_hosted_sram_reenable_irq(void)
-{
-	if (!s_h1_irq)
-		return ESP_ERR_INVALID_STATE;
-
-	return esp_intr_enable(s_h1_irq);
-}
+static s31_hosted_frame_handler_t s_frame_handler;
+static void *s_frame_handler_arg;
 
 static inline void shared_wmb(void)
 {
@@ -54,27 +41,30 @@ static inline void shared_rmb(void)
 
 static inline void shared_invalidate(const volatile void *address, size_t size)
 {
-	uintptr_t start = (uintptr_t)address & ~(uintptr_t)63;
-	uintptr_t end = ((uintptr_t)address + size + 63) & ~(uintptr_t)63;
-
 	/*
-	 * Use writeback-invalidate instead of plain invalidate: on the
-	 * shared D-cache this is safe against stale dirty lines that a
-	 * pure invalidate would discard without writing back.
+	 * Internal HP SRAM is directly addressed, and both HP harts share the
+	 * unified L1 data cache.  The CACHE_SYNC engine is for cached external
+	 * aliases; applying it to 0x2f... SRAM can discard a peer's publication.
 	 */
-	(void)Cache_WriteBack_Invalidate_Addr(CACHE_MAP_L1_DCACHE, start,
-					      end - start);
+	(void)address;
+	(void)size;
 	shared_rmb();
 }
 
 static inline void shared_writeback(const volatile void *address, size_t size)
 {
-	uintptr_t start = (uintptr_t)address & ~(uintptr_t)63;
-	uintptr_t end = ((uintptr_t)address + size + 63) & ~(uintptr_t)63;
+	(void)address;
+	(void)size;
+	shared_wmb();
+}
 
-	shared_wmb();
-	(void)Cache_WriteBack_Addr(CACHE_MAP_L1_DCACHE, start, end - start);
-	shared_wmb();
+static uint16_t frame_checksum(const uint8_t *frame, size_t length)
+{
+	uint16_t checksum = 0;
+
+	while (length--)
+		checksum += *frame++;
+	return checksum;
 }
 
 static void notify_hart1(void)
@@ -84,21 +74,9 @@ static void notify_hart1(void)
 		  HP_SYSTEM_CPU_INT_FROM_CPU_2);
 }
 
-static void IRAM_ATTR h1_doorbell_isr(void *arg)
-{
-	BaseType_t wake = pdFALSE;
-
-	(void)arg;
-	REG_WRITE(HP_SYSTEM_CPU_INT_FROM_CPU_3_REG, 0);
-	s_ctrl->h0_irq_count++;
-	if (s_rx_task)
-		vTaskNotifyGiveFromISR(s_rx_task, &wake);
-	if (wake)
-		portYIELD_FROM_ISR();
-}
-
-int s31_hosted_sram_send(uint8_t if_type, const void *payload, size_t length,
-			 uint8_t hci_packet_type)
+int s31_hosted_sram_send_meta(uint8_t if_type, uint8_t if_num,
+			      const void *payload, size_t length, uint8_t flags,
+			      uint16_t seq_num, uint8_t packet_type)
 {
 	volatile struct s31_hosted_ring_state *ring = &s_ctrl->h0_to_h1;
 	volatile struct s31_hosted_slot *slot;
@@ -112,12 +90,14 @@ int s31_hosted_sram_send(uint8_t if_type, const void *payload, size_t length,
 		return -1;
 
 	header.if_type = if_type;
+	header.if_num = if_num;
+	header.flags = flags;
 	header.len = length;
 	header.offset = sizeof(header);
-	header.hci_pkt_type = hci_packet_type;
+	header.hci_pkt_type = packet_type;
 
 	portENTER_CRITICAL(&s_tx_lock);
-	header.seq_num = ++s_tx_sequence;
+	header.seq_num = seq_num ? seq_num : ++s_tx_sequence;
 	producer = ring->producer;
 	consumer = ring->consumer;
 	if (producer - consumer >= S31_HOSTED_SLOT_COUNT) {
@@ -130,17 +110,39 @@ int s31_hosted_sram_send(uint8_t if_type, const void *payload, size_t length,
 	slot = &s_h0_to_h1[index];
 	memcpy((void *)slot->data, &header, sizeof(header));
 	memcpy((void *)(slot->data + sizeof(header)), payload, length);
+	((struct s31_esp_payload_header *)(void *)slot->data)->checksum =
+		frame_checksum((const uint8_t *)(const void *)slot->data,
+			       frame_length);
 	slot->length = frame_length;
 	slot->flags = 0;
+	/* Publish sequence last; producer is the final ring commit. */
+	shared_wmb();
 	slot->sequence = producer + 1;
-	shared_writeback(slot, frame_length + offsetof(struct s31_hosted_slot,
-						      data));
+	shared_writeback(slot, offsetof(struct s31_hosted_slot, data) +
+			 frame_length);
 	ring->producer = producer + 1;
 	shared_writeback(&ring->producer, sizeof(ring->producer));
 	portEXIT_CRITICAL(&s_tx_lock);
 
 	notify_hart1();
 	return 0;
+}
+
+int s31_hosted_sram_send(uint8_t if_type, const void *payload, size_t length,
+			 uint8_t hci_packet_type)
+{
+	return s31_hosted_sram_send_meta(if_type, 0, payload, length, 0, 0,
+					 hci_packet_type);
+}
+
+void s31_hosted_sram_set_frame_handler(s31_hosted_frame_handler_t handler,
+				       void *arg)
+{
+	portENTER_CRITICAL(&s_tx_lock);
+	s_frame_handler_arg = arg;
+	shared_wmb();
+	s_frame_handler = handler;
+	portEXIT_CRITICAL(&s_tx_lock);
 }
 
 static void send_control(uint8_t type, uint8_t value)
@@ -179,16 +181,32 @@ void __attribute__((weak)) hosted_hci_rx_handler(const uint8_t *data,
 
 static void process_h1_frame(const uint8_t *frame, size_t frame_length)
 {
-	const struct s31_esp_payload_header *header = (const void *)frame;
+	struct s31_esp_payload_header *header = (void *)frame;
 	const struct s31_hosted_control_msg *msg;
+	uint16_t received_checksum;
 	uint16_t offset;
 	uint16_t length;
 
 	if (frame_length < sizeof(*header))
 		return;
+	received_checksum = header->checksum;
+	header->checksum = 0;
+	if (frame_checksum(frame, frame_length) != received_checksum) {
+		header->checksum = received_checksum;
+		return;
+	}
+	header->checksum = received_checksum;
 	offset = header->offset;
 	length = header->len;
 	if (offset < sizeof(*header) || offset + length > frame_length)
+		return;
+
+	/*
+	 * TEST_IF remains owned by the transport so the Linux probe can validate
+	 * both rings independently of the Hosted control plane.
+	 */
+	if (header->if_type != S31_HOSTED_TEST_IF && s_frame_handler &&
+	    s_frame_handler(frame, frame_length, s_frame_handler_arg))
 		return;
 
 	switch (header->if_type) {
@@ -220,6 +238,11 @@ static void process_h1_frame(const uint8_t *frame, size_t frame_length)
 		break;
 	case S31_HOSTED_HCI_IF:
 		hosted_hci_rx_handler(frame + offset, length);
+		break;
+	case S31_HOSTED_TEST_IF:
+		/* Linux probe uses TEST_IF to exercise both rings at MTU size. */
+		(void)s31_hosted_sram_send(S31_HOSTED_TEST_IF,
+					   frame + offset, length, 0);
 		break;
 	default:
 		break;
@@ -253,80 +276,23 @@ static void drain_h1_ring(void)
 		uint32_t index;
 		uint16_t length;
 
-		/*
-		 * Writeback + invalidate the entire D-cache before reading
-		 * the ring producer.  S31 has a shared 64 KiB D-cache, so
-		 * this is a heavy hammer but it guarantees we see hart1's
-		 * writes even if earlier cache ops silently dropped a line.
-		 */
-		(void)Cache_WriteBack_Invalidate_Addr(CACHE_MAP_L1_DCACHE,
-						      S31_HOSTED_SRAM_BASE,
-						      S31_HOSTED_SRAM_SIZE);
 		shared_rmb();
 		shared_invalidate(&ring->producer, sizeof(ring->producer));
 		producer = ring->producer;
 		s_ctrl->h0_seen_h1_producer = producer;
-		s_ctrl->h0_seen_h1_sequence = s_h1_to_h0[
-			ring->consumer & (S31_HOSTED_SLOT_COUNT - 1)].sequence;
-		/* PMA read-back exported by core1_trampoline.S at +0x400. */
-		s_ctrl->h0_apm_status =
-			*(volatile uint32_t *)(S31_HOSTED_SRAM_BASE + 0x400);
-		s_ctrl->h0_h1_doorbell =
-			*(volatile uint32_t *)(S31_HOSTED_SRAM_BASE + 0x404);
-		/*
-		 * Temporary bring-up diagnostics.  Bit 0..5 are HP_MEM APM
-		 * masters, bit 8..11 are CPU APM masters.  Preserve the first
-		 * reported fault address at +0x40c.
-		 */
-		{
-			volatile uint32_t *apm_mask =
-				(volatile uint32_t *)(S31_HOSTED_SRAM_BASE + 0x408);
-			volatile uint32_t *apm_addr =
-				(volatile uint32_t *)(S31_HOSTED_SRAM_BASE + 0x40c);
-			uint32_t mask = 0;
-
-#define CAPTURE_APM(_bit, _status, _addr) do {		\
-	if (REG_READ(_status) & 3) {			\
-		mask |= BIT(_bit);				\
-		if (!*apm_addr)				\
-			*apm_addr = REG_READ(_addr);		\
-	}							\
-} while (0)
-			CAPTURE_APM(0, HP_MEM_APM_M0_STATUS_REG,
-				    HP_MEM_APM_M0_EXCEPTION_INFO1_REG);
-			CAPTURE_APM(1, HP_MEM_APM_M1_STATUS_REG,
-				    HP_MEM_APM_M1_EXCEPTION_INFO1_REG);
-			CAPTURE_APM(2, HP_MEM_APM_M2_STATUS_REG,
-				    HP_MEM_APM_M2_EXCEPTION_INFO1_REG);
-			CAPTURE_APM(3, HP_MEM_APM_M3_STATUS_REG,
-				    HP_MEM_APM_M3_EXCEPTION_INFO1_REG);
-			CAPTURE_APM(4, HP_MEM_APM_M4_STATUS_REG,
-				    HP_MEM_APM_M4_EXCEPTION_INFO1_REG);
-			CAPTURE_APM(5, HP_MEM_APM_M5_STATUS_REG,
-				    HP_MEM_APM_M5_EXCEPTION_INFO1_REG);
-			CAPTURE_APM(8, CPU_APM_M0_STATUS_REG,
-				    CPU_APM_M0_EXCEPTION_INFO1_REG);
-			CAPTURE_APM(9, CPU_APM_M1_STATUS_REG,
-				    CPU_APM_M1_EXCEPTION_INFO1_REG);
-			CAPTURE_APM(10, CPU_APM_M2_STATUS_REG,
-				    CPU_APM_M2_EXCEPTION_INFO1_REG);
-			CAPTURE_APM(11, CPU_APM_M3_STATUS_REG,
-				    CPU_APM_M3_EXCEPTION_INFO1_REG);
-#undef CAPTURE_APM
-			*apm_mask = mask;
-		}
-		/*
-		 * Keep the bring-up counters observable from hart1.  They share
-		 * the first cache line, so publish them together after sampling
-		 * the inbound producer.
-		 */
-		shared_writeback(s_ctrl, 64);
 		if (consumer == producer)
 			break;
+		if (producer - consumer > S31_HOSTED_SLOT_COUNT) {
+			ring->drops++;
+			ring->consumer = producer;
+			shared_wmb();
+			break;
+		}
 
 		index = consumer & (S31_HOSTED_SLOT_COUNT - 1);
 		slot = &s_h1_to_h0[index];
 		shared_invalidate(slot, sizeof(*slot));
+		s_ctrl->h0_seen_h1_sequence = slot->sequence;
 		length = slot->length;
 		if (slot->sequence == consumer + 1 &&
 		    length && length <= sizeof(frame)) {
@@ -344,21 +310,18 @@ static void drain_h1_ring(void)
 static void hosted_rx_task(void *arg)
 {
 	(void)arg;
-	s_rx_task = xTaskGetCurrentTaskHandle();
 
 	for (;;) {
-		s_ctrl->h0_rx_polls++;
-		shared_writeback(s_ctrl, 64);
-		drain_h1_ring();
 		/*
-		 * Hart1 is released outside IDF's normal SMP startup and can
-		 * temporarily disturb hart0's SysTick while its CLIC state is
-		 * restored.  Keep the transport independently live during that
-		 * window; doorbells still wake higher-priority radio work later.
+		 * As in hart_ipc_test, polling is the correctness path.  Do not
+		 * yield here: Linux reconfigures the shared interrupt fabric and
+		 * the hart0 FreeRTOS tick then stops, so a yielded task may never
+		 * be scheduled again. Higher-priority radio tasks still preempt us.
 		 */
-		for (volatile unsigned int i = 0; i < 10000; i++)
-			__asm__ volatile("nop");
-		taskYIELD();
+		REG_WRITE(HP_SYSTEM_CPU_INT_FROM_CPU_3_REG, 0);
+		s_ctrl->h0_rx_polls++;
+		drain_h1_ring();
+		__asm__ volatile("nop");
 	}
 }
 
@@ -391,7 +354,6 @@ void s31_hosted_sram_set_bt_mac(const uint8_t mac[6])
 esp_err_t s31_hosted_sram_start(void)
 {
 	uint32_t generation = 1;
-	esp_err_t err;
 
 	if (s_ctrl->magic == S31_HOSTED_MAGIC &&
 	    s_ctrl->abi_version == S31_HOSTED_ABI_VERSION)
@@ -401,24 +363,14 @@ esp_err_t s31_hosted_sram_start(void)
 	s_ctrl->abi_version = S31_HOSTED_ABI_VERSION;
 	s_ctrl->generation = generation ? generation : 1;
 	s_ctrl->state = S31_HOSTED_H0_READY;
-	/* Only write back the control block (first 64 B); SRAM is non-cacheable. */
-	shared_writeback(s_ctrl, 64);
+	/* Publish and clean every line dirtied by memset before hart1 starts. */
+	shared_writeback(s_ctrl, S31_HOSTED_SRAM_SIZE);
 
 	REG_WRITE(HP_SYSTEM_CPU_INT_FROM_CPU_2_REG, 0);
 	REG_WRITE(HP_SYSTEM_CPU_INT_FROM_CPU_3_REG, 0);
-	err = esp_intr_alloc(ETS_CPU_INTR_FROM_CPU_3_SOURCE,
-			    ESP_INTR_FLAG_LEVEL1, h1_doorbell_isr, NULL,
-			    &s_h1_irq);
-	if (err != ESP_OK) {
-		ESP_LOGE(TAG, "failed to allocate hart1 doorbell: %s",
-			 esp_err_to_name(err));
-		return err;
-	}
 
-	if (xTaskCreatePinnedToCore(hosted_rx_task, "hosted_rx", 3072, NULL, 1,
+	if (xTaskCreatePinnedToCore(hosted_rx_task, "hosted_rx", 4096, NULL, 1,
 				    NULL, 0) != pdPASS) {
-		esp_intr_free(s_h1_irq);
-		s_h1_irq = NULL;
 		return ESP_ERR_NO_MEM;
 	}
 

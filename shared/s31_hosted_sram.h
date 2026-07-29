@@ -2,9 +2,12 @@
 /*
  * ESP32-S31 in-package ESP-Hosted transport.
  *
- * Both harts access this layout at the same HP SRAM physical address.  Keep
- * every producer/consumer word on its own cache line: S31 has a shared 64-byte
- * D-cache and neither operating system may lock the other one's cache driver.
+ * Both harts access this layout at the same HP SRAM physical address.  Linux
+ * maps it as device memory.  ESP-IDF accesses can remain in the shared L1
+ * D-cache, so hart0 maintains lines when exchanging ownership with Linux.
+ * Producer and consumer words remain 64-byte separated so each side owns a
+ * distinct synchronization line and the ABI stays safe if a cached alias is
+ * introduced later.
  */
 #ifndef S31_HOSTED_SRAM_H
 #define S31_HOSTED_SRAM_H
@@ -128,5 +131,20 @@ struct s31_hosted_slot {
 	volatile s31_u8 reserved;
 	s31_u8 data[S31_HOSTED_SLOT_DATA_SIZE];
 };
+
+_Static_assert(sizeof(struct s31_esp_payload_header) == 12,
+	       "ESP-Hosted payload header ABI changed");
+_Static_assert(sizeof(struct s31_hosted_control_msg) == 24,
+	       "hosted control message ABI changed");
+_Static_assert(sizeof(struct s31_hosted_ring_state) == 192,
+	       "hosted ring state must occupy three cache lines");
+_Static_assert(sizeof(struct s31_hosted_control) == 448,
+	       "hosted control block ABI changed");
+_Static_assert(sizeof(struct s31_hosted_slot) == S31_HOSTED_SLOT_SIZE,
+	       "hosted slot ABI changed");
+_Static_assert(S31_HOSTED_H1_TO_H0_OFFSET +
+	       S31_HOSTED_SLOT_COUNT * S31_HOSTED_SLOT_SIZE ==
+	       S31_HOSTED_SRAM_SIZE,
+	       "hosted SRAM layout does not fill its reservation");
 
 #endif /* S31_HOSTED_SRAM_H */
