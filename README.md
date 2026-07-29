@@ -17,8 +17,8 @@ Refer to the [Build Instructions](docs/build.md).
 | Feature | Status |
 |---|---|
 | Busybox init | 🟡 Untested |
-| Wireless (ESP-Hosted) | 🔴 Not implemented |
-| Dual hart SMP | ⚫ Maybe? |
+| Wireless (ESP-Hosted) | 🟡 Untested |
+| Dual hart SMP | ⚫ Not planned |
 
 ### Peripheral Drivers
 | Feature | Status |
@@ -27,8 +27,8 @@ Refer to the [Build Instructions](docs/build.md).
 | Cache driver | 🟡 Untested |
 | CLIC/CLINT interrupt driver | 🟡 Untested |
 | Flash MTD driver | 🟡 Untested |
+| Timers | 🟡 Untested |
 | PMP/APM | 🔴 Not implemented (properly) |
-| Timers | 🔴 Not implemented |
 | Security accelerators | 🔴 Not implemented |
 | LP subsystem & IPC | 🔴 Not implemented |
 | AHB GDMA | 🔴 Not implemented |
@@ -50,7 +50,7 @@ Refer to the [Build Instructions](docs/build.md).
 | USB Serial/JTAG | 🔴 Not implemented |
 
 
-> 🟢 **Stable** — Fully tested and working | 🟡 **Untested** — Implemented but not verified 
+> 🟢 **Stable** — Fully tested and working | 🟡 **Untested** — Seems working; not throughly tested
 
 Also check out [these command outputs](#appendix).
 

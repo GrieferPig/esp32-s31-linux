@@ -13,6 +13,12 @@ LINUX_DIR := $(CURDIR)/linux-esp32-s31
 BUSYBOX_DIR := $(CURDIR)/busybox
 COREMARK_DIR := $(CURDIR)/coremark
 ROOTFS_DIR := $(CURDIR)/rootfs
+BLUEZ_VERSION := 5.86
+BLUEZ_ARCHIVE = $(BUILD_DIR)/bluez-$(BLUEZ_VERSION).tar.xz
+BLUEZ_SRC = $(BUILD_DIR)/bluez-$(BLUEZ_VERSION)
+BLUEZ_OUT = $(BUILD_DIR)/bluez
+BLUEZ_URL := https://mirrors.edge.kernel.org/pub/linux/bluetooth/bluez-$(BLUEZ_VERSION).tar.xz
+BLUEZ_SHA256 := 99f144540c6070591e4c53bcb977eb42664c62b7b36cb35a29cf72ded339621d
 
 # Out-of-tree build dirs
 OPENSBI_OUT := $(BUILD_DIR)/opensbi
@@ -32,7 +38,7 @@ ROOTFS_IMG := $(BUILD_DIR)/rootfs.sqfs
 
 IDF_EXPORT := $(shell find $(HOME) -maxdepth 5 -type f -name export.sh 2>/dev/null | grep esp-idf | head -n 1)
 
-.PHONY: all download opensbi linux busybox coremark rootfs clean fullclean flash-opensbi flash-linux flash-rootfs bootloader flash-bootloader erase
+.PHONY: all download opensbi linux busybox coremark bluez rootfs initramfs clean fullclean flash-opensbi flash-linux flash-rootfs bootloader flash-bootloader erase
 
 all: download opensbi linux busybox rootfs
 
@@ -117,15 +123,60 @@ coremark: | $(COREMARK_OUT)
 		CC="$(CC)" NO_LIBRT=1 ITERATIONS=0 REBUILD=1 \
 		XCFLAGS="-static -march=rv32imac_zicsr_zifencei -mabi=ilp32" compile
 
+$(BLUEZ_ARCHIVE): | $(BUILD_DIR)
+	wget -c -O $@ $(BLUEZ_URL)
+	echo "$(BLUEZ_SHA256)  $@" | sha256sum -c -
+
+$(BLUEZ_SRC)/configure: $(BLUEZ_ARCHIVE)
+	tar -xf $< -C $(BUILD_DIR)
+	touch $@
+
+$(BLUEZ_OUT)/Makefile: $(BLUEZ_SRC)/configure
+	mkdir -p $(BLUEZ_OUT)
+	cd $(BLUEZ_OUT) && \
+		GLIB_CFLAGS=' ' GLIB_LIBS=' ' DBUS_CFLAGS=' ' DBUS_LIBS=' ' \
+		CC="$(CC)" \
+		CFLAGS="-Os -march=rv32imac_zicsr_zifencei -mabi=ilp32" \
+		$(BLUEZ_SRC)/configure \
+			--host=riscv32-unknown-linux-musl \
+			--disable-shared --enable-static \
+			--with-dbusconfdir=/etc/dbus-1/system.d \
+			--with-dbussystembusdir=/usr/share/dbus-1/system-services \
+			--with-dbussessionbusdir=/usr/share/dbus-1/services \
+			--disable-systemd --disable-udev --disable-cups \
+			--disable-manpages --disable-client --disable-monitor \
+			--disable-obex --disable-a2dp --disable-avrcp \
+			--disable-network --disable-hid --disable-hog \
+			--disable-bap --disable-bass --disable-mcp --disable-ccp \
+			--disable-vcp --disable-micp --disable-csip \
+			--disable-tmap --disable-gmap --disable-asha \
+			--disable-hfp --disable-datafiles --enable-deprecated
+
+bluez: $(BLUEZ_OUT)/Makefile
+	@echo "--- BlueZ $(BLUEZ_VERSION) ---"
+	$(MAKE) -C $(BLUEZ_OUT) -j$(JOBS) tools/hciconfig tools/hcitool
+	$(CC) -static -Wl,--gc-sections \
+		-o $(BLUEZ_OUT)/tools/hciconfig.static \
+		$(BLUEZ_OUT)/tools/hciconfig.o \
+		$(BLUEZ_OUT)/lib/.libs/libbluetooth-internal.a
+	$(CC) -static -Wl,--gc-sections \
+		-o $(BLUEZ_OUT)/tools/hcitool.static \
+		$(BLUEZ_OUT)/tools/hcitool.o $(BLUEZ_OUT)/src/oui.o \
+		$(BLUEZ_OUT)/lib/.libs/libbluetooth-internal.a
+	$(CROSS_COMPILE)strip $(BLUEZ_OUT)/tools/hciconfig.static \
+		$(BLUEZ_OUT)/tools/hcitool.static
+
 ROOTFS_ROOT := $(BUILD_DIR)/s31-rootfs
 ROOTFS_PARTITION_SIZE ?= 6160384
 
-rootfs: busybox coremark | $(ROOTFS_OUT)
+rootfs: busybox coremark bluez | $(ROOTFS_OUT)
 	@echo "--- Rootfs ---"
 	rm -rf $(ROOTFS_ROOT)
 	$(MAKE) -C $(BUSYBOX_DIR) O=$(BUSYBOX_OUT) CONFIG_PREFIX="$(ROOTFS_ROOT)" install
 	$(MAKE) -C $(ROOTFS_DIR) OUT_DIR="$(ROOTFS_OUT)" CROSS_COMPILE="$(CROSS_COMPILE)" DESTDIR="$(ROOTFS_ROOT)" all install
 	install -Dm755 $(COREMARK_BIN) $(ROOTFS_ROOT)/sbin/coremark
+	install -Dm755 $(BLUEZ_OUT)/tools/hciconfig.static $(ROOTFS_ROOT)/usr/bin/hciconfig
+	install -Dm755 $(BLUEZ_OUT)/tools/hcitool.static $(ROOTFS_ROOT)/usr/bin/hcitool
 	install -Dm755 $(ROOTFS_DIR)/init $(ROOTFS_ROOT)/init
 	install -Dm755 $(ROOTFS_DIR)/default.script $(ROOTFS_ROOT)/usr/share/udhcpc/default.script
 	mkdir -p $(ROOTFS_ROOT)/dev $(ROOTFS_ROOT)/proc $(ROOTFS_ROOT)/sys \
@@ -149,6 +200,9 @@ rootfs: busybox coremark | $(ROOTFS_OUT)
 	@ROOTFS_SIZE=$$(stat -c%s $(ROOTFS_IMG)); \
 	if [ $$ROOTFS_SIZE -gt $(ROOTFS_PARTITION_SIZE) ]; then echo "ERROR: rootfs too large"; exit 1; fi; \
 	truncate -s $(ROOTFS_PARTITION_SIZE) $(ROOTFS_IMG)
+
+# Historical/user-facing name for the root filesystem image.
+initramfs: rootfs
 
 clean:
 	rm -rf $(BUILD_DIR)

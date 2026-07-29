@@ -6,7 +6,7 @@ RESOLV_CONF="/etc/resolv.conf"
 [ -n "$1" ] || { echo "Error: should be called from udhcpc"; exit 1; }
 
 NETMASK=""
-if command -v ip >/dev/null; then
+if [ -x /sbin/ip ]; then
 	[ -n "$subnet" ] && NETMASK="/$subnet"
 else
 	[ -n "$subnet" ] && NETMASK="netmask $subnet"
@@ -17,7 +17,7 @@ BROADCAST="broadcast +"
 case "$1" in
 	deconfig)
 		echo "Clearing IP addresses on $interface, upping it"
-		if command -v ip >/dev/null; then
+		if [ -x /sbin/ip ]; then
 			ip -4 addr flush dev $interface
 			ip link set dev $interface up
 		else
@@ -27,7 +27,7 @@ case "$1" in
 
 	renew|bound)
 		echo "Setting IP address $ip on $interface"
-		if command -v ip >/dev/null; then
+		if [ -x /sbin/ip ]; then
 			ip addr add $ip$NETMASK $BROADCAST dev $interface
 		else
 			ifconfig $interface $ip $NETMASK $BROADCAST
