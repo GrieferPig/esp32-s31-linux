@@ -68,7 +68,7 @@ opensbi: | $(OPENSBI_OUT)
 		-I $(dir $(FDT_SRC)) \
 		-I $(LINUX_DIR)/include \
 		-I $(LINUX_DIR)/arch/riscv/boot/dts \
-		$(FDT_SRC) | $(DTC) -O dtb -i $(dir $(FDT_SRC)) -o $(FDT_DTB)
+		$(FDT_SRC) | $(DTC) -@ -O dtb -i $(dir $(FDT_SRC)) -o $(FDT_DTB)
 	$(MAKE) -C $(OPENSBI_DIR) O=$(OPENSBI_OUT) \
 		CROSS_COMPILE="$(CROSS_COMPILE)" \
 		PLATFORM=generic \
@@ -98,9 +98,12 @@ LINUX_TARGET ?= xipImage
 linux: | $(LINUX_OUT)
 	@echo "--- Linux ---"
 	$(MAKE) -C $(LINUX_DIR) O=$(LINUX_OUT) ARCH=riscv CROSS_COMPILE="$(CROSS_COMPILE)" $(DEFCONFIG)
+	$(LINUX_DIR)/scripts/config --file $(LINUX_OUT)/.config \
+		--set-str BUILTIN_DTB_SOURCE "espressif/esp32s31_generic"
+	$(MAKE) -C $(LINUX_DIR) O=$(LINUX_OUT) ARCH=riscv CROSS_COMPILE="$(CROSS_COMPILE)" olddefconfig
 	$(MAKE) -C $(LINUX_DIR) O=$(LINUX_OUT) ARCH=riscv CROSS_COMPILE="$(CROSS_COMPILE)" -j$(JOBS) $(LINUX_TARGET) dtbs
 	cp -v $(LINUX_OUT)/arch/riscv/boot/$(LINUX_TARGET) $(XIP_IMAGE)
-	cp -v $(LINUX_OUT)/arch/riscv/boot/dts/espressif/esp32s31_generic.dtb $(BUILD_DIR)/esp32s31_generic.dtb
+	cp -v $(LINUX_OUT)/arch/riscv/boot/dts/espressif/esp32s31_generic.dtb $(FDT_DTB)
 
 coremark: | $(COREMARK_OUT)
 	@echo "--- CoreMark ---"
@@ -108,13 +111,16 @@ coremark: | $(COREMARK_OUT)
 		CC="$(CC)" NO_LIBRT=1 ITERATIONS=0 REBUILD=1 \
 		XCFLAGS="-static -march=rv32imac_zicsr_zifencei -mabi=ilp32" compile
 
-ROOTFS_PARTITION_SIZE ?= 6160384
+# Keep this decimal because POSIX test(1) and truncate(1) do not accept the
+# partition table's 0x-prefixed value.
+ROOTFS_PARTITION_SIZE ?= 6144000
 BUILDROOT_MAKE = $(MAKE) -C $(BUILDROOT_DIR) O=$(BUILDROOT_OUT) \
 	BR2_EXTERNAL=$(BUILDROOT_EXTERNAL) BR2_DL_DIR=$(BUILDROOT_DL_DIR)
 
 rootfs: | $(BUILDROOT_OUT)
 	@echo "--- Buildroot rootfs ---"
 	$(BUILDROOT_MAKE) esp32s31_rootfs_defconfig
+	$(BUILDROOT_MAKE) s31-tools-rebuild
 	$(BUILDROOT_MAKE)
 	cp -v $(BUILDROOT_OUT)/images/rootfs.squashfs $(ROOTFS_IMG)
 	@ROOTFS_SIZE=$$(stat -c%s $(ROOTFS_IMG)); \
@@ -125,7 +131,7 @@ rootfs: | $(BUILDROOT_OUT)
 	truncate -s $(ROOTFS_PARTITION_SIZE) $(ROOTFS_IMG)
 
 # Historical/user-facing name for the root filesystem image.
-initramfs: rootfs
+initramfs: linux rootfs
 
 buildroot-menuconfig: | $(BUILDROOT_OUT)
 	$(BUILDROOT_MAKE) esp32s31_rootfs_defconfig

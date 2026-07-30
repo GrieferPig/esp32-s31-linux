@@ -53,7 +53,8 @@
 #define FLASH_MTD_SIZE                0x01000000U
 #define OPENSBI_FDT_OFFSET_SLOT_SIZE  4U
 #define FDT_MAGIC_LE                  0xEDFE0DD0U
-#define ROOTFS_PARTITION_SIZE         0x005E0000U
+#define ROOTFS_PARTITION_SIZE         0x005DC000U
+#define ROOTFS_MMU_MAP_SIZE           0x005E0000U
 #define ESP32S31_PSRAM_SIZE           0x01000000U
 #define LINUX_PSRAM_START             0x50000000U
 /*
@@ -276,7 +277,7 @@ static void start_linux_on_core1(uint32_t fdt)
      */
     enable_core1_external_memory_bus(OPENSBI_XIP_ADDR, 0x00080000U);
     enable_core1_external_memory_bus(LINUX_XIP_ADDR, ROOTFS_FLASH_ADDR - LINUX_XIP_ADDR);
-    enable_core1_external_memory_bus(ROOTFS_FLASH_ADDR, ROOTFS_PARTITION_SIZE);
+    enable_core1_external_memory_bus(ROOTFS_FLASH_ADDR, ROOTFS_MMU_MAP_SIZE);
     enable_core1_external_memory_bus(FLASH_MTD_XIP_ADDR, FLASH_MTD_SIZE);
     if (!prepare_core1_cached_psram()) {
         loader_restart("hart1 cached PSRAM setup");
@@ -305,7 +306,8 @@ static void start_linux_on_core1(uint32_t fdt)
 #define FLASH_MTD_SIZE                0x01000000U
 #define OPENSBI_FDT_OFFSET_SLOT_SIZE  4U
 #define FDT_MAGIC_LE                  0xEDFE0DD0U
-#define ROOTFS_PARTITION_SIZE         0x005E0000U
+#define ROOTFS_PARTITION_SIZE         0x005DC000U
+#define ROOTFS_MMU_MAP_SIZE           0x005E0000U
 #define ESP32S31_PSRAM_SIZE           0x01000000U
 #define LINUX_PSRAM_START             0x50000000U
 
@@ -404,7 +406,7 @@ void app_main(void)
     if (!rootfs_part ||
         rootfs_part->size != ROOTFS_PARTITION_SIZE ||
         !map_flash_range(ROOTFS_FLASH_ADDR, rootfs_part->address,
-                         rootfs_part->size)) {
+                         ROOTFS_MMU_MAP_SIZE)) {
         ESP_LOGE(TAG, "failed to map 0x%08" PRIx32 "-byte rootfs",
                  (uint32_t)ROOTFS_PARTITION_SIZE);
         loader_restart("rootfs mapping");

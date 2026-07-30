@@ -1,0 +1,10 @@
+#!/bin/sh
+
+case "$1" in
+start)
+	/usr/sbin/s31-overlay restore ||
+		echo "S31 overlay restore failed; continuing with the safe base DT"
+	;;
+stop)
+	;;
+esac

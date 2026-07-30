@@ -1,0 +1,202 @@
+#!/bin/sh
+
+set -u
+
+pass()
+{
+	echo "PASS: $*"
+}
+
+fail()
+{
+	echo "FAIL: $*"
+	FAILURES=$((FAILURES + 1))
+}
+
+skip()
+{
+	echo "SKIP: $*"
+}
+
+read_counter()
+{
+	cat "$1/count"
+}
+
+has_overlay()
+{
+	echo "$OVERLAYS" | tr ' ' '\n' | grep -qx "$1"
+}
+
+FAILURES=0
+MODEL="$(tr -d '\000' </proc/device-tree/model 2>/dev/null || true)"
+OVERLAYS="${1:-}"
+if [ -z "$OVERLAYS" ] && command -v s31-overlay >/dev/null 2>&1; then
+	OVERLAYS="$(s31-overlay status 2>/dev/null |
+		sed -n 's/^active: \([^ ]*\).*/\1/p' | tr '\n' ' ')"
+fi
+OVERLAYS="${OVERLAYS:-none}"
+
+echo "S31 peripheral test: ${MODEL:-unknown board}; overlays=${OVERLAYS}"
+
+WATCHDOGS="$(find /dev -maxdepth 1 -name 'watchdog[0-9]*' | sort)"
+if [ "$(echo "$WATCHDOGS" | sed '/^$/d' | wc -l)" -eq 3 ]; then
+	for dev in $WATCHDOGS; do
+		(
+			exec 3>"$dev"
+			printf '\0' >&3
+			printf 'V' >&3
+			exec 3>&-
+		) || fail "$dev ping/magic-close"
+	done
+	pass "TIMG0/TIMG1/RTC watchdog nodes and ping/magic-close"
+else
+	fail "expected three watchdog devices"
+fi
+
+if has_overlay timers; then
+	for dev in /sys/bus/counter/devices/counter*; do
+		[ -e "$dev/count0/count" ] || continue
+		case "$(cat "$dev/name")" in
+		*timer*) ;;
+		*) continue ;;
+		esac
+		before="$(read_counter "$dev/count0")"
+		sleep 1
+		after="$(read_counter "$dev/count0")"
+		if [ "$after" -gt "$before" ]; then
+			pass "$(cat "$dev/name") increments ($before -> $after)"
+		else
+			fail "$(cat "$dev/name") did not increment ($before -> $after)"
+		fi
+	done
+fi
+
+if has_overlay pwm-counter; then
+	PWM_COUNT="$(find /sys/class/pwm -maxdepth 1 -name 'pwmchip*' | wc -l)"
+	COUNTER_COUNT="$(grep -l '\.counter' /sys/bus/counter/devices/counter*/name 2>/dev/null | wc -l)"
+	[ "$PWM_COUNT" -eq 7 ] && pass "LEDC0/1, MCPWM0-3 and SDM registered" ||
+		fail "expected 7 PWM chips, got $PWM_COUNT"
+	[ "$COUNTER_COUNT" -eq 2 ] && pass "PCNT0/1 registered" ||
+		fail "expected 2 PCNT devices, got $COUNTER_COUNT"
+
+	for chip in /sys/class/pwm/pwmchip*; do
+		[ -e "$chip/export" ] || continue
+		echo 0 >"$chip/export" 2>/dev/null || true
+		if readlink "$chip/device" | grep -q 20583e00; then
+			period=1000
+			duty=500
+		else
+			period=1000000
+			duty=500000
+		fi
+		if echo "$period" >"$chip/pwm0/period" &&
+		   echo "$duty" >"$chip/pwm0/duty_cycle" &&
+		   echo 1 >"$chip/pwm0/enable" &&
+		   echo 0 >"$chip/pwm0/enable"; then
+			pass "$(basename "$chip") apply period=${period}ns/50%"
+		else
+			fail "$(basename "$chip") PWM apply"
+		fi
+	done
+
+fi
+
+if has_overlay gdma; then
+	if [ -d /sys/module/dmatest ] || modprobe dmatest 2>/dev/null; then
+		echo 65536 >/sys/module/dmatest/parameters/test_buf_size
+		echo 1 >/sys/module/dmatest/parameters/iterations
+		echo 3000 >/sys/module/dmatest/parameters/timeout
+		channel=""
+		for path in /sys/class/dma/dma*; do
+			case "$(readlink "$path")" in
+			*20343000.dma-controller*)
+				channel="$(basename "$path")"
+				break
+				;;
+			esac
+		done
+		if [ -n "$channel" ]; then
+			echo "$channel" >/sys/module/dmatest/parameters/channel
+			echo 1 >/sys/module/dmatest/parameters/run
+			sleep 4
+			echo 0 >/sys/module/dmatest/parameters/run
+			result="$(dmesg | tail -80 | grep 'dmatest:.*tests' | tail -1)"
+			echo "$result"
+			echo "$result" | grep -q '0 failures' &&
+				pass "AHB-GDMA memcpy dmatest" ||
+				fail "AHB-GDMA memcpy dmatest"
+		else
+			fail "AHB-GDMA channel not found"
+		fi
+	else
+		skip "dmatest module unavailable"
+	fi
+fi
+
+if has_overlay analog; then
+	for dev in /sys/bus/iio/devices/iio:device*; do
+		name="$(cat "$dev/name")"
+		case "$name" in
+		esp32s31-adc)
+			raw="$dev/in_voltage0_raw"
+			if value="$(cat "$raw" 2>/dev/null)"; then
+				pass "$name oneshot sample=$value"
+			else
+				fail "$name oneshot sample"
+			fi
+			;;
+		esp32s31-touch)
+			# Use channel 8/GPIO14, which yields a repeatable conversion on
+			# the current board without requiring an external touch electrode.
+			raw="$dev/in_capacitance8_raw"
+			if value="$(cat "$raw" 2>/dev/null)"; then
+				pass "$name sample=$value"
+			else
+				fail "$name sample"
+			fi
+			;;
+		esp32s31-comparator)
+			events="$(find "$dev/events" -maxdepth 1 -name '*_en' 2>/dev/null | wc -l)"
+			[ "$events" -ge 2 ] &&
+				pass "$name rising/falling event controls registered" ||
+				fail "$name event controls"
+			;;
+		esac
+	done
+	temp=""
+	for path in /sys/class/hwmon/hwmon*/temp1_input; do
+		[ -e "$path" ] || continue
+		temp="$path"
+		break
+	done
+	if [ -n "$temp" ] && value="$(cat "$temp" 2>/dev/null)"; then
+		pass "temperature sensor ${value} mC"
+	else
+		fail "temperature sensor sample"
+	fi
+fi
+
+if has_overlay sdmmc0 || has_overlay sdmmc1; then
+	skip "SDMMC was requested as software-only; no card access performed"
+fi
+
+if has_overlay gmac; then
+	[ -d /sys/class/net/eth0 ] && pass "GMAC eth0 registered" ||
+		fail "GMAC eth0 not registered"
+fi
+
+if has_overlay uart1; then
+	[ -c /dev/ttyS1 ] && pass "UART1 /dev/ttyS1 registered" ||
+		fail "UART1 /dev/ttyS1 not registered"
+fi
+if has_overlay uart2; then
+	[ -c /dev/ttyS2 ] && pass "UART2 /dev/ttyS2 registered" ||
+		fail "UART2 /dev/ttyS2 not registered"
+fi
+
+if [ "$FAILURES" -ne 0 ]; then
+	echo "RESULT: $FAILURES failure(s)"
+	exit 1
+fi
+echo "RESULT: all applicable tests passed"

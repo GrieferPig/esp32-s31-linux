@@ -25,3 +25,17 @@ ln -s /run/seedrng "${target_dir}/var/lib/seedrng"
 rm -f "${target_dir}/etc/mtab" "${target_dir}/etc/resolv.conf"
 ln -s /proc/mounts "${target_dir}/etc/mtab"
 ln -s /run/resolv.conf "${target_dir}/etc/resolv.conf"
+
+script_dir="$(CDPATH= cd -- "$(dirname -- "$0")" && pwd)"
+project_dir="$(CDPATH= cd -- "${script_dir}/../../.." && pwd)"
+dtbo_dir="${project_dir}/build/linux/arch/riscv/boot/dts/espressif"
+install_dir="${target_dir}/usr/lib/s31-overlays"
+
+mkdir -p "${install_dir}"
+for dtbo in "${dtbo_dir}"/esp32s31-overlay-*.dtbo; do
+	[ -f "${dtbo}" ] || {
+		echo "Missing S31 DT overlays in ${dtbo_dir}" >&2
+		exit 1
+	}
+	cp "${dtbo}" "${install_dir}/"
+done
