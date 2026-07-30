@@ -4,6 +4,7 @@ BR2_RISCV_ISA_RVM=y
 BR2_RISCV_ISA_RVA=y
 BR2_RISCV_ISA_RVF=y
 BR2_RISCV_ISA_RVC=y
+BR2_RISCV_ISA_EXTRA="zaamo_zalrsc_zba_zbb_zbc_zbs_xesploop_xespv2p2"
 BR2_RISCV_32=y
 BR2_RISCV_USE_MMU=y
 BR2_RISCV_ABI_ILP32=y
@@ -16,7 +17,7 @@ BR2_TOOLCHAIN_EXTERNAL_GCC_15=y
 BR2_TOOLCHAIN_EXTERNAL_HEADERS_6_12=y
 BR2_TOOLCHAIN_EXTERNAL_CUSTOM_MUSL=y
 BR2_TOOLCHAIN_EXTERNAL_CXX=y
-BR2_TARGET_OPTIMIZATION="-Os -march=rv32imafbc_zicsr_zifencei_zaamo_zalrsc_zba_zbb_zbc_zbs_xesploop_xespv -mabi=ilp32 -mtune=esp-base -mespv-spec=2p2"
+BR2_TARGET_OPTIMIZATION="-Os -march=rv32imafbc_zicsr_zifencei_zaamo_zalrsc_zba_zbb_zbc_zbs_xesploop_xespv2p2 -mabi=ilp32 -mtune=esp-base -mespv-spec=2p2"
 BR2_TARGET_GENERIC_HOSTNAME="esp32-s31"
 BR2_TARGET_GENERIC_ISSUE="ESP32-S31 Linux (Buildroot)"
 BR2_SYSTEM_DHCP="eth0"

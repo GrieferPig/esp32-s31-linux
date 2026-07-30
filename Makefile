@@ -14,7 +14,7 @@ JOBS ?= $(shell nproc)
 # integer code-generation extension there, and expose the complete ISA to
 # userspace where Linux saves/restores that state.
 S31_SAFE_ISA := rv32imabc_zicsr_zifencei_zaamo_zalrsc_zba_zbb_zbc_zbs
-S31_USER_ISA := rv32imafbc_zicsr_zifencei_zaamo_zalrsc_zba_zbb_zbc_zbs_xesploop_xespv
+S31_USER_ISA := rv32imafbc_zicsr_zifencei_zaamo_zalrsc_zba_zbb_zbc_zbs_xesploop_xespv2p2
 S31_COMMON_FLAGS := -mabi=ilp32 -mtune=esp-base
 S31_USER_FLAGS := -march=$(S31_USER_ISA) $(S31_COMMON_FLAGS) -mespv-spec=2p2
 
@@ -60,9 +60,9 @@ download:
 toolchain:
 	@test -x "$(CROSSTOOL_NG_DIR)/ct-ng" || { echo "ERROR: configure and build $(CROSSTOOL_NG_DIR) first"; exit 1; }
 	git -C $(CROSSTOOL_NG_DIR) submodule update --init --recursive esp-toolchain-bin-wrappers
-	cp $(CROSSTOOL_CONFIG) $(CROSSTOOL_NG_DIR)/.config
-	$(MAKE) -C $(CROSSTOOL_NG_DIR) olddefconfig
-	$(MAKE) -C $(CROSSTOOL_NG_DIR) build.$(JOBS)
+	$(MAKE) -C $(CROSSTOOL_NG_DIR) -rf $(CROSSTOOL_NG_DIR)/ct-ng \
+		defconfig DEFCONFIG=$(CROSSTOOL_CONFIG)
+	$(MAKE) -C $(CROSSTOOL_NG_DIR) -rf $(CROSSTOOL_NG_DIR)/ct-ng build.$(JOBS)
 
 FW_TEXT_START ?= 0x40030000
 FW_RW_START ?= 0x50F00000
@@ -143,6 +143,8 @@ s31-pie-cases:
 rootfs: s31-pie-cases | $(BUILDROOT_OUT)
 	@echo "--- Buildroot rootfs ---"
 	$(BUILDROOT_MAKE) esp32s31_rootfs_defconfig
+	$(BUILDROOT_MAKE) toolchain-external-custom-rebuild
+	$(BUILDROOT_MAKE) toolchain-external-rebuild
 	$(BUILDROOT_MAKE) s31-tools-rebuild
 	$(BUILDROOT_MAKE)
 	cp -v $(BUILDROOT_OUT)/images/rootfs.squashfs $(ROOTFS_IMG)

@@ -21,6 +21,7 @@ extern void s31_pie_add_u32(const uint32_t *a, const uint32_t *b,
 extern void s31_pie_hold_yield(const uint32_t *in, uint32_t *out);
 extern void s31_pie_hold_signal(const uint32_t *in, uint32_t *out, pid_t pid);
 extern void s31_pie_run_one(unsigned int index, void *scratch);
+extern void s31_bitmanip_all(uint32_t *out);
 
 #define PIE_CASE(opcode, name) name,
 static const char *const pie_case_names[] = {
@@ -198,6 +199,40 @@ static int all_hwloop_instruction_tests(void)
 	return 0;
 }
 
+static uint64_t carryless_product(uint32_t a, uint32_t b)
+{
+	uint64_t product = 0;
+	unsigned int bit;
+
+	for (bit = 0; bit < 32; bit++)
+		if (b & (1U << bit))
+			product ^= (uint64_t)a << bit;
+	return product;
+}
+
+static int bitmanip_tests(void)
+{
+	const uint32_t a = 0x12345678;
+	const uint32_t b = 0x0f0f0f0f;
+	const uint64_t product = carryless_product(a, b);
+	uint32_t out[6];
+
+	s31_bitmanip_all(out);
+	if (out[0] != (a << 1) + b ||
+	    out[1] != (a & ~b) ||
+	    out[2] != (a | (1U << 5)) ||
+	    out[3] != (uint32_t)product ||
+	    out[4] != (uint32_t)(product >> 32) ||
+	    out[5] != (uint32_t)(product >> 31)) {
+		fprintf(stderr,
+			"bitmanip failed: %08x %08x %08x %08x %08x %08x\n",
+			out[0], out[1], out[2], out[3], out[4], out[5]);
+		return -1;
+	}
+	puts("Zba/Zbb/Zbc/Zbs representative instructions PASS");
+	return 0;
+}
+
 static int all_pie_instruction_tests(void)
 {
 	static unsigned char scratch[4096] __attribute__((aligned(4096)));
@@ -301,6 +336,8 @@ int main(void)
 	if (all_fpu_instruction_tests())
 		return 1;
 	if (all_hwloop_instruction_tests())
+		return 1;
+	if (bitmanip_tests())
 		return 1;
 	instruction_failures = all_pie_instruction_tests();
 	if (signal_tests())

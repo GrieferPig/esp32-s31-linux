@@ -249,6 +249,26 @@ s31_hwloop_split_reg:
 	ret
 	.size s31_hwloop_split_reg, .-s31_hwloop_split_reg
 
+	.globl s31_bitmanip_all
+	.type s31_bitmanip_all, @function
+s31_bitmanip_all:
+	li	t0, 0x12345678
+	li	t1, 0x0f0f0f0f
+	sh1add	t2, t0, t1
+	sw	t2, 0(a0)
+	andn	t2, t0, t1
+	sw	t2, 4(a0)
+	bset	t2, t0, 5
+	sw	t2, 8(a0)
+	clmul	t2, t0, t1
+	sw	t2, 12(a0)
+	clmulh	t2, t0, t1
+	sw	t2, 16(a0)
+	clmulr	t2, t0, t1
+	sw	t2, 20(a0)
+	ret
+	.size s31_bitmanip_all, .-s31_bitmanip_all
+
 	/*
 	 * a0 = case index, a1 = start of a 4096-byte aligned scratch buffer.
 	 * Every generated case is exactly one 32-bit PIE instruction plus RET,
