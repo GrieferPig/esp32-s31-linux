@@ -1,11 +1,22 @@
 # Makefile for ESP32-S31 Linux
 
 TOOLCHAIN_DIR := $(CURDIR)/toolchain
-CROSS_COMPILE := $(TOOLCHAIN_DIR)/riscv32imac-musl/bin/riscv32-unknown-linux-musl-
+CROSSTOOL_NG_DIR ?= $(abspath $(CURDIR)/../crosstool-NG)
+CROSSTOOL_CONFIG := $(CURDIR)/configs/riscv32-esp-linux-musl.config
+CROSS_COMPILE := $(TOOLCHAIN_DIR)/riscv32-esp-linux-musl/bin/riscv32-esp-linux-musl-
 CC := $(CROSS_COMPILE)gcc
 CPP := $(CROSS_COMPILE)cpp
 DTC := dtc
 JOBS ?= $(shell nproc)
+
+# S31 supports F and the stateful Espressif HWLoop/PIE extensions, but firmware
+# and kernel C code must not borrow task coprocessor state.  Use every safe
+# integer code-generation extension there, and expose the complete ISA to
+# userspace where Linux saves/restores that state.
+S31_SAFE_ISA := rv32imabc_zicsr_zifencei_zaamo_zalrsc_zba_zbb_zbc_zbs
+S31_USER_ISA := rv32imafbc_zicsr_zifencei_zaamo_zalrsc_zba_zbb_zbc_zbs_xesploop_xespv
+S31_COMMON_FLAGS := -mabi=ilp32 -mtune=esp-base
+S31_USER_FLAGS := -march=$(S31_USER_ISA) $(S31_COMMON_FLAGS) -mespv-spec=2p2
 
 BUILD_DIR := $(CURDIR)/build
 OPENSBI_DIR := $(CURDIR)/opensbi-esp32-s31
@@ -32,7 +43,7 @@ ROOTFS_IMG := $(BUILD_DIR)/rootfs.sqfs
 
 IDF_EXPORT := $(shell find $(HOME) -maxdepth 5 -type f -name export.sh 2>/dev/null | grep esp-idf | head -n 1)
 
-.PHONY: all download opensbi linux coremark rootfs initramfs \
+.PHONY: all download toolchain opensbi linux coremark rootfs initramfs s31-pie-cases \
 	buildroot-menuconfig buildroot-clean clean fullclean flash-opensbi flash-linux \
 	flash-rootfs bootloader flash-bootloader erase
 
@@ -44,13 +55,14 @@ $(BUILD_DIR) $(OPENSBI_OUT) $(LINUX_OUT) $(COREMARK_OUT) $(BUILDROOT_OUT):
 download:
 	@echo "--- Download ---"
 	git submodule update --init --recursive
-	@if [ ! -d "$(TOOLCHAIN_DIR)/riscv32imac-musl" ]; then \
-		echo "Downloading toolchain..."; \
-		mkdir -p $(TOOLCHAIN_DIR); \
-		wget -c -O $(TOOLCHAIN_DIR)/toolchain.tar.gz https://github.com/GrieferPig/esp32-s31-linux/releases/download/toolchain/riscv32imac-musl.tar.gz; \
-		tar -xzf $(TOOLCHAIN_DIR)/toolchain.tar.gz -C $(TOOLCHAIN_DIR); \
-		rm $(TOOLCHAIN_DIR)/toolchain.tar.gz; \
-	fi
+	@test -x "$(CC)" || { echo "ERROR: run 'make toolchain' first"; exit 1; }
+
+toolchain:
+	@test -x "$(CROSSTOOL_NG_DIR)/ct-ng" || { echo "ERROR: configure and build $(CROSSTOOL_NG_DIR) first"; exit 1; }
+	git -C $(CROSSTOOL_NG_DIR) submodule update --init --recursive esp-toolchain-bin-wrappers
+	cp $(CROSSTOOL_CONFIG) $(CROSSTOOL_NG_DIR)/.config
+	$(MAKE) -C $(CROSSTOOL_NG_DIR) olddefconfig
+	$(MAKE) -C $(CROSSTOOL_NG_DIR) build.$(JOBS)
 
 FW_TEXT_START ?= 0x40030000
 FW_RW_START ?= 0x50F00000
@@ -73,7 +85,7 @@ opensbi: | $(OPENSBI_OUT)
 		CROSS_COMPILE="$(CROSS_COMPILE)" \
 		PLATFORM=generic \
 		PLATFORM_RISCV_XLEN=32 \
-		PLATFORM_RISCV_ISA=rv32imac_zicsr_zifencei \
+		PLATFORM_RISCV_ISA=$(S31_SAFE_ISA) \
 		FW_TEXT_START=$(FW_TEXT_START) \
 		FW_RW_START=$(FW_RW_START) \
 		FW_JUMP=y \
@@ -99,9 +111,16 @@ linux: | $(LINUX_OUT)
 	@echo "--- Linux ---"
 	$(MAKE) -C $(LINUX_DIR) O=$(LINUX_OUT) ARCH=riscv CROSS_COMPILE="$(CROSS_COMPILE)" $(DEFCONFIG)
 	$(LINUX_DIR)/scripts/config --file $(LINUX_OUT)/.config \
-		--set-str BUILTIN_DTB_SOURCE "espressif/esp32s31_generic"
+		--set-str BUILTIN_DTB_SOURCE "espressif/esp32s31_generic" \
+		--enable RISCV_ISA_C \
+		--disable RISCV_ISA_V \
+		--disable RISCV_ISA_V_DEFAULT_ENABLE \
+		--enable RISCV_ISA_ZBA \
+		--enable RISCV_ISA_ZBB \
+		--enable RISCV_ISA_ZBC
 	$(MAKE) -C $(LINUX_DIR) O=$(LINUX_OUT) ARCH=riscv CROSS_COMPILE="$(CROSS_COMPILE)" olddefconfig
-	$(MAKE) -C $(LINUX_DIR) O=$(LINUX_OUT) ARCH=riscv CROSS_COMPILE="$(CROSS_COMPILE)" -j$(JOBS) $(LINUX_TARGET) dtbs
+	$(MAKE) -C $(LINUX_DIR) O=$(LINUX_OUT) ARCH=riscv CROSS_COMPILE="$(CROSS_COMPILE)" \
+		KCFLAGS="-march=$(S31_SAFE_ISA) $(S31_COMMON_FLAGS)" -j$(JOBS) $(LINUX_TARGET) dtbs
 	cp -v $(LINUX_OUT)/arch/riscv/boot/$(LINUX_TARGET) $(XIP_IMAGE)
 	cp -v $(LINUX_OUT)/arch/riscv/boot/dts/espressif/esp32s31_generic.dtb $(FDT_DTB)
 
@@ -109,7 +128,7 @@ coremark: | $(COREMARK_OUT)
 	@echo "--- CoreMark ---"
 	$(MAKE) -C $(COREMARK_DIR) PORT_DIR=linux OPATH="$(COREMARK_OUT)/" \
 		CC="$(CC)" NO_LIBRT=1 ITERATIONS=0 REBUILD=1 \
-		XCFLAGS="-static -march=rv32imac_zicsr_zifencei -mabi=ilp32" compile
+		XCFLAGS="-static $(S31_USER_FLAGS)" compile
 
 # Keep this decimal because POSIX test(1) and truncate(1) do not accept the
 # partition table's 0x-prefixed value.
@@ -117,7 +136,11 @@ ROOTFS_PARTITION_SIZE ?= 6144000
 BUILDROOT_MAKE = $(MAKE) -C $(BUILDROOT_DIR) O=$(BUILDROOT_OUT) \
 	BR2_EXTERNAL=$(BUILDROOT_EXTERNAL) BR2_DL_DIR=$(BUILDROOT_DL_DIR)
 
-rootfs: | $(BUILDROOT_OUT)
+s31-pie-cases:
+	@if [ -z "$(IDF_EXPORT)" ]; then echo "ERROR: ESP-IDF export.sh not found under $(HOME)"; exit 1; fi
+	bash -c "source $(IDF_EXPORT) >/dev/null && $(CURDIR)/rootfs/gen_s31_pie_cases.sh $(CURDIR)/rootfs/s31_pie_cases.inc"
+
+rootfs: s31-pie-cases | $(BUILDROOT_OUT)
 	@echo "--- Buildroot rootfs ---"
 	$(BUILDROOT_MAKE) esp32s31_rootfs_defconfig
 	$(BUILDROOT_MAKE) s31-tools-rebuild

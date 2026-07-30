@@ -10,7 +10,13 @@ This project uses a unified `Makefile` at the root directory to manage downloadi
 
 ### Download & Toolchain
 - **`make download`**
-  Updates git submodules recursively, downloads the `riscv32imac-musl` cross-compilation toolchain from GitHub releases (if not already downloaded), and extracts it into the `toolchain/` directory.
+  Updates git submodules recursively and verifies that the S31 toolchain exists.
+- **`make toolchain`**
+  Uses the sibling `../crosstool-NG` checkout and the pinned
+  `configs/riscv32-esp-linux-musl.config` to build the IDF-matched GCC 15.2,
+  binutils 2.45 and musl.
+  The compiler is installed as
+  `toolchain/riscv32-esp-linux-musl/bin/riscv32-esp-linux-musl-gcc`.
 
 ### Components (Out-of-Tree Builds)
 - **`make opensbi`**
@@ -19,7 +25,8 @@ This project uses a unified `Makefile` at the root directory to manage downloadi
   Builds the Linux kernel (`xipImage`) out-of-tree into `build/linux/`. Outputs `xipImage` and the compiled `esp32s31_generic.dtb` directly to the `build/` root.
 - **`make rootfs`**
   Uses the pinned Buildroot submodule and the ESP32-S31 br2-external tree to
-  build a complete RV32IMAC/musl userspace. It includes BusyBox, BlueZ tools,
+  build a complete S31-optimized RV32IMAFBC/musl userspace with HWLoop and PIE
+  assembler support. It includes BusyBox, BlueZ tools,
   Dropbear, iproute2, tcpdump, memtester, CoreMark, and the project
   diagnostics. The generated SquashFS is copied to `build/rootfs.sqfs` and
   padded to the rootfs partition size. BusyBox `wget` supports HTTPS and
@@ -61,6 +68,7 @@ This project uses a unified `Makefile` at the root directory to manage downloadi
 ```bash
 # 1. Clean up and build everything from scratch
 make fullclean
+make toolchain
 make all
 
 # 2. Source your ESP-IDF environment (required for esptool)

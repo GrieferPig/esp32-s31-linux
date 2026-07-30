@@ -6,6 +6,11 @@ target_dir="$1"
 
 chmod 0755 "${target_dir}/init"
 
+# The cross-toolchain includes G++, but this compact image has no C++ target
+# packages. Buildroot installs libstdc++ based on toolchain capability alone;
+# omit that otherwise-unused runtime to keep the squashfs inside its partition.
+rm -f "${target_dir}"/lib/libstdc++.so*
+
 rm -rf \
 	"${target_dir}/tmp" \
 	"${target_dir}/run" \

@@ -34,6 +34,7 @@
 #include "nvs_flash.h"
 #include "esp_hosted_coprocessor.h"
 #include "slave_bt.h"
+#include "driver/uart.h"
 #include "freertos/FreeRTOS.h"
 #include "freertos/task.h"
 #include "soc/soc.h"
@@ -317,8 +318,34 @@ static void enable_core1_external_memory_bus(uint32_t vaddr, uint32_t size);
 static void disable_core1_stack_protector(void);
 static void start_linux_on_core1(uint32_t fdt);
 
+static void prepare_linux_uart0(void)
+{
+    const uart_config_t config = {
+        .baud_rate = 115200,
+        .data_bits = UART_DATA_8_BITS,
+        .parity = UART_PARITY_DISABLE,
+        .stop_bits = UART_STOP_BITS_1,
+        .flow_ctrl = UART_HW_FLOWCTRL_DISABLE,
+        .source_clk = UART_SCLK_DEFAULT,
+    };
+
+    /*
+     * Linux uart0_default uses the S31 native UART0 IOMUX on GPIO58/59.
+     * Configure it before entering OpenSBI so both OpenSBI and Linux
+     * earlycon can use 0x2038a000 before Linux pinctrl is available.
+     */
+    ESP_ERROR_CHECK(uart_param_config(UART_NUM_0, &config));
+    ESP_ERROR_CHECK(uart_set_pin(UART_NUM_0, 58, 59,
+                                 UART_PIN_NO_CHANGE, UART_PIN_NO_CHANGE));
+}
+
 void app_main(void)
 {
+    /* Allow the USB Serial/JTAG device to enumerate before loader output. */
+    vTaskDelay(pdMS_TO_TICKS(5000));
+
+    prepare_linux_uart0();
+
     if (!esp_psram_is_initialized() ||
         esp_psram_get_size() < ESP32S31_PSRAM_SIZE) {
         ESP_LOGE(TAG, "16 MiB PSRAM was not initialized");
