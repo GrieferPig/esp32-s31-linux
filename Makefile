@@ -199,6 +199,7 @@ clean:
 	rm -rf $(BUILD_DIR)
 
 fullclean: clean
+	@test ! -e $(TOOLCHAIN_DIR) || chmod -R u+w $(TOOLCHAIN_DIR)
 	rm -rf $(TOOLCHAIN_DIR)
 
 flash-opensbi:
