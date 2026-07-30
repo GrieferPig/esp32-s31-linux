@@ -3,7 +3,11 @@
 TOOLCHAIN_DIR := $(CURDIR)/toolchain
 CROSSTOOL_NG_DIR ?= $(abspath $(CURDIR)/../crosstool-NG)
 CROSSTOOL_CONFIG := $(CURDIR)/configs/riscv32-esp-linux-musl.config
-CROSS_COMPILE := $(TOOLCHAIN_DIR)/riscv32-esp-linux-musl/bin/riscv32-esp-linux-musl-
+TOOLCHAIN_PREFIX := $(TOOLCHAIN_DIR)/riscv32-esp-linux-musl
+TOOLCHAIN_RELEASE_TAG ?= esp32s31-linux-gcc-15.2.0-1
+TOOLCHAIN_RELEASE_URL ?= https://github.com/GrieferPig/crosstool-NG-s31/releases/download/$(TOOLCHAIN_RELEASE_TAG)/riscv32-esp-linux-musl.tar.xz
+TOOLCHAIN_RELEASE_SHA256 := 3372dfa4a6be239ed4384f7a5c6fd48e5d589d347dc7827d21d3b4bb03ba22f9
+CROSS_COMPILE := $(TOOLCHAIN_PREFIX)/bin/riscv32-esp-linux-musl-
 CC := $(CROSS_COMPILE)gcc
 CPP := $(CROSS_COMPILE)cpp
 DTC := dtc
@@ -31,6 +35,8 @@ LINUX_OUT := $(BUILD_DIR)/linux
 COREMARK_OUT := $(BUILD_DIR)/coremark
 BUILDROOT_OUT := $(BUILD_DIR)/buildroot
 BUILDROOT_DL_DIR := $(BUILD_DIR)/buildroot-dl
+TOOLCHAIN_ARCHIVE := $(BUILD_DIR)/downloads/$(TOOLCHAIN_RELEASE_TAG)-riscv32-esp-linux-musl.tar.xz
+TOOLCHAIN_RELEASE_STAMP := $(TOOLCHAIN_PREFIX)/.release-$(TOOLCHAIN_RELEASE_TAG)
 
 PARTITIONS_CSV := $(CURDIR)/bootloader/partitions.csv
 OPENSBI_OFFSET := $(shell awk -F, '/opensbi/ {gsub(/ /, "", $$4); print $$4}' $(PARTITIONS_CSV))
@@ -43,7 +49,7 @@ ROOTFS_IMG := $(BUILD_DIR)/rootfs.sqfs
 
 IDF_EXPORT := $(shell find $(HOME) -maxdepth 5 -type f -name export.sh 2>/dev/null | grep esp-idf | head -n 1)
 
-.PHONY: all download toolchain opensbi linux coremark rootfs initramfs s31-pie-cases \
+.PHONY: all download toolchain toolchain-source opensbi linux coremark rootfs initramfs s31-pie-cases \
 	buildroot-menuconfig buildroot-clean clean fullclean flash-opensbi flash-linux \
 	flash-rootfs bootloader flash-bootloader erase
 
@@ -57,7 +63,31 @@ download:
 	git submodule update --init --recursive
 	@test -x "$(CC)" || { echo "ERROR: run 'make toolchain' first"; exit 1; }
 
-toolchain:
+toolchain: $(TOOLCHAIN_RELEASE_STAMP)
+
+$(TOOLCHAIN_RELEASE_STAMP): | $(BUILD_DIR)
+	mkdir -p $(dir $(TOOLCHAIN_ARCHIVE)) $(TOOLCHAIN_DIR)
+	curl --fail --location --retry 3 --output $(TOOLCHAIN_ARCHIVE).part $(TOOLCHAIN_RELEASE_URL)
+	echo "$(TOOLCHAIN_RELEASE_SHA256)  $(TOOLCHAIN_ARCHIVE).part" | sha256sum --check -
+	mv $(TOOLCHAIN_ARCHIVE).part $(TOOLCHAIN_ARCHIVE)
+	@set -eu; \
+	staging=$$(mktemp -d "$(TOOLCHAIN_DIR)/.riscv32-esp-linux-musl.XXXXXX"); \
+	trap 'chmod -R u+w "$$staging" 2>/dev/null || true; rm -rf "$$staging"' EXIT; \
+	tar -xJf $(TOOLCHAIN_ARCHIVE) -C "$$staging"; \
+	test -x "$$staging/bin/riscv32-esp-linux-musl-gcc"; \
+	chmod u+w "$$staging"; \
+	printf '%s\n' "$(TOOLCHAIN_RELEASE_TAG)" > "$$staging/.release-$(TOOLCHAIN_RELEASE_TAG)"; \
+	chmod u-w "$$staging"; \
+	if [ -e "$(TOOLCHAIN_PREFIX)" ]; then \
+		backup="$(TOOLCHAIN_PREFIX).previous.$$(date -u +%Y%m%d%H%M%S)"; \
+		mv "$(TOOLCHAIN_PREFIX)" "$$backup"; \
+		echo "Previous toolchain retained at $$backup"; \
+	fi; \
+	mv "$$staging" "$(TOOLCHAIN_PREFIX)"; \
+	trap - EXIT
+	$(CC) --version | head -n 1
+
+toolchain-source:
 	@test -x "$(CROSSTOOL_NG_DIR)/ct-ng" || { echo "ERROR: configure and build $(CROSSTOOL_NG_DIR) first"; exit 1; }
 	git -C $(CROSSTOOL_NG_DIR) submodule update --init --recursive esp-toolchain-bin-wrappers
 	$(MAKE) -C $(CROSSTOOL_NG_DIR) -rf $(CROSSTOOL_NG_DIR)/ct-ng \

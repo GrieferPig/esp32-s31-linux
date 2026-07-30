@@ -94,8 +94,10 @@ their execution-context rules:
 
 ## Linux/musl toolchain and optimized image audit
 
-The sibling Espressif crosstool-NG tree builds the configuration in
-`configs/riscv32-esp-linux-musl.config`.  The resulting tuple and versions are:
+The `GrieferPig/crosstool-NG-s31` workflow builds the configuration in
+`configs/riscv32-esp-linux-musl.config`; `make toolchain` installs its pinned
+release and `make toolchain-source` rebuilds it from a sibling checkout.  The
+resulting tuple and versions are:
 
 ```text
 riscv32-esp-linux-musl

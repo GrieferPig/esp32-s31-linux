@@ -12,11 +12,15 @@ This project uses a unified `Makefile` at the root directory to manage downloadi
 - **`make download`**
   Updates git submodules recursively and verifies that the S31 toolchain exists.
 - **`make toolchain`**
-  Uses the sibling `../crosstool-NG` checkout and the pinned
-  `configs/riscv32-esp-linux-musl.config` to build the IDF-matched GCC 15.2,
-  binutils 2.45 and musl.
-  The compiler is installed as
+  Downloads the pinned ESP32-S31 Linux GCC release from
+  `GrieferPig/crosstool-NG-s31`, verifies its SHA256 checksum, and installs the
+  compiler as
   `toolchain/riscv32-esp-linux-musl/bin/riscv32-esp-linux-musl-gcc`.
+- **`make toolchain-source`**
+  Uses the sibling `../crosstool-NG` checkout and
+  `configs/riscv32-esp-linux-musl.config` to rebuild the same GCC 15.2,
+  binutils 2.45, and musl toolchain from source. This target is intended for
+  toolchain development; normal project builds should use `make toolchain`.
 
 ### Components (Out-of-Tree Builds)
 - **`make opensbi`**
