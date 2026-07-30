@@ -31,6 +31,8 @@ define S31_TOOLS_BUILD_CMDS
 		-fno-builtin-memmove $(@D)/s31_libc_test.c \
 		-o $(@D)/s31-libc-test
 	$(TARGET_CC) $(TARGET_CFLAGS) $(TARGET_LDFLAGS) \
+		$(@D)/s31_mem_compare.c -o $(@D)/s31-mem-compare
+	$(TARGET_CC) $(TARGET_CFLAGS) $(TARGET_LDFLAGS) \
 		-I$(STAGING_DIR)/usr/include \
 		$(@D)/s31_overlay.c -lfdt -o $(@D)/s31-overlay
 	$(TARGET_CC) $(TARGET_CFLAGS) $(TARGET_LDFLAGS) \
@@ -52,6 +54,8 @@ define S31_TOOLS_INSTALL_TARGET_CMDS
 		$(TARGET_DIR)/usr/sbin/s31-ext-test
 	$(INSTALL) -D -m 0755 $(@D)/s31-libc-test \
 		$(TARGET_DIR)/usr/sbin/s31-libc-test
+	$(INSTALL) -D -m 0755 $(@D)/s31-mem-compare \
+		$(TARGET_DIR)/usr/sbin/s31-mem-compare
 	$(INSTALL) -D -m 0755 $(@D)/s31-overlay \
 		$(TARGET_DIR)/usr/sbin/s31-overlay
 	$(INSTALL) -D -m 0755 $(@D)/ble-scan $(TARGET_DIR)/usr/sbin/ble-scan
