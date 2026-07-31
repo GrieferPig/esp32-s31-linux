@@ -21,6 +21,8 @@ define S31_TOOLS_BUILD_CMDS
 		$(@D)/forktest.c -o $(@D)/forktest
 	$(TARGET_CC) $(TARGET_CFLAGS) $(TARGET_LDFLAGS) \
 		$(@D)/membench.c -o $(@D)/membench
+	$(TARGET_CC) $(TARGET_CFLAGS) $(TARGET_LDFLAGS) \
+		$(@D)/s31_crypto_test.c -o $(@D)/s31-crypto-test
 	$(TARGET_CC) $(TARGET_CFLAGS) -c $(@D)/s31_ext_test.S \
 		-o $(@D)/s31_ext_test.o
 	$(TARGET_CC) $(TARGET_CFLAGS) $(TARGET_LDFLAGS) \
@@ -50,6 +52,8 @@ define S31_TOOLS_INSTALL_TARGET_CMDS
 	$(INSTALL) -D -m 0755 $(@D)/segfault $(TARGET_DIR)/usr/sbin/segfault
 	$(INSTALL) -D -m 0755 $(@D)/forktest $(TARGET_DIR)/usr/sbin/forktest
 	$(INSTALL) -D -m 0755 $(@D)/membench $(TARGET_DIR)/usr/sbin/membench
+	$(INSTALL) -D -m 0755 $(@D)/s31-crypto-test \
+		$(TARGET_DIR)/usr/sbin/s31-crypto-test
 	$(INSTALL) -D -m 0755 $(@D)/s31-ext-test \
 		$(TARGET_DIR)/usr/sbin/s31-ext-test
 	$(INSTALL) -D -m 0755 $(@D)/s31-libc-test \
