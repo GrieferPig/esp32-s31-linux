@@ -16,41 +16,48 @@ Refer to the [Build Instructions](docs/build.md).
 
 | Feature | Status |
 |---|---|
-| Busybox init | 🟡 Untested |
+| Buildroot rootfs | 🟡 Untested |
 | Wireless (ESP-Hosted) | 🟡 Untested |
-| Dual hart SMP | ⚫ Not planned |
+| Reboot and poweroff | 🟡 Untested |
+| Dual hart SMP | ⚫ Not Planned (Used by FreeRTOS) |
 
 ### Peripheral Drivers
 | Feature | Status |
 |---|---|
 | AXI GDMA | 🟡 Untested |
+| AHB GDMA | 🟡 Untested |
 | Cache driver | 🟡 Untested |
+| TRNG | 🟡 Untested |
+| eFuse | 🟡 Untested |
+| Watchdog | 🟡 Untested |
+| PWM, counter, analog peripherals | 🟡 Untested |
 | CLIC/CLINT interrupt driver | 🟡 Untested |
 | Flash MTD driver | 🟡 Untested |
-| Timers | 🟡 Untested |
-| PMP/APM | 🔴 Not implemented (properly) |
-| Security accelerators | 🔴 Not implemented |
-| LP subsystem & IPC | 🔴 Not implemented |
-| AHB GDMA | 🔴 Not implemented |
+| Timers | 🟠 WIP |
+| Clock tree | 🟠 WIP |
+| Security accelerators | 🟠 WIP |
+| LP subsystem & IPC | 🔴 Not Implemented |
+| PMP/APM | 🔴 Not Implemented (properly) |
 
 
 ### Connectivity Drivers
 | Feature | Status |
 |---|---|
-| UART | 🟡 Untested  |
-| USB HS | 🟡 Untested |
-| EMAC | 🟡 Untested |
-| SDIO | 🟡 Untested (1-bit by default) |
-| GPIO | 🔴 Not implemented |
-| pinctrl/GPIO Matrix | 🔴 Not implemented |
-| I2C | 🔴 Not implemented |
-| I2S | 🔴 Not implemented |
-| SPI | 🔴 Not implemented |
-| RMT | 🔴 Not implemented |
-| USB Serial/JTAG | 🔴 Not implemented |
+| UART0 console | 🟡 Untested |
+| UART1/2 | 🟡 Untested |
+| GMAC Ethernet | 🟡 Untested |
+| SDMMC | 🟡 Untested |
+| GPIO | 🟡 Untested |
+| pinctrl/GPIO Matrix | 🟡 Untested |
+| USB | 🟠 WIP |
+| I2C | 🔴 Not Implemented |
+| I2S | 🔴 Not Implemented |
+| SPI | 🔴 Not Implemented |
+| RMT | 🔴 Not Implemented |
+| USB Serial/JTAG | ⚫ Not Planned (Used by FreeRTOS) |
 
 
-> 🟢 **Stable** — Fully tested and working | 🟡 **Untested** — Seems working; not throughly tested
+> 🟢 **Stable** — Fully tested and working | 🟡 **Untested** — Seems working; not throughly tested | 🟠 **WIP** - Functions not fully implemented
 
 Also check out [these command outputs](#appendix).
 
@@ -62,7 +69,7 @@ This port was done before S31 TRM is available, therefore these guessworks were 
 
 ### CLIC v. PLIC v. CLINT
 
-S31 uses CLIC and CLINT similar to P4. Linux expects PLIC. Therefore a custom CLIC driver is needed. I referenced [this CLIC patch]() from ***TODO: I forgot where the patch come from*** to get the CLIC working.
+S31 uses CLIC and CLINT similar to P4. Linux expects PLIC. Therefore a custom CLIC driver is needed. I referenced [this CLIC patch](https://github.com/litex-hub/linux-on-litex-vexriscv/pull/438) from [disdi](https://github.com/disdi) to get the CLIC working.
 
 Also, standard RISC-V interrupt CSRs are not usable, presumably because, from P4's TRM, CLINT interrupts are routed to CLIC and `mtvec.MODE` is hardwired to `0x3` (CLIC mode). Patches needed to make OpenSBI interrupts work.
 
