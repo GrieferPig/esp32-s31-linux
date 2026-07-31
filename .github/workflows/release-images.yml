@@ -26,7 +26,7 @@ jobs:
         run: |
           sudo apt-get update
           sudo apt-get install -y \
-            bison bc build-essential ccache cpio flex gperf libffi-dev \
+            bison bc build-essential ccache cpio device-tree-compiler flex gperf libffi-dev \
             libssl-dev ninja-build rsync unzip
 
       - name: Install ESP-IDF
