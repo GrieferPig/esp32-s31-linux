@@ -6,11 +6,14 @@ This project uses a unified `Makefile` at the root directory to manage downloadi
 
 ### Default Target
 - **`make all`** (or just **`make`**)
-  The default target. It sequentially executes `download`, `opensbi`, `linux`, and `initramfs`.
+  The default target. It downloads and verifies the pinned prebuilt toolchain,
+  then executes `download`, `opensbi`, `linux`, and `initramfs`. It never
+  builds the compiler from source.
 
 ### Download & Toolchain
 - **`make download`**
-  Updates git submodules recursively and verifies that the S31 toolchain exists.
+  Updates git submodules recursively. `make all` installs the prebuilt S31
+  toolchain before running this target.
 - **`make toolchain`**
   Downloads the pinned ESP32-S31 Linux GCC release from
   `GrieferPig/crosstool-NG-s31`, verifies its SHA256 checksum, and installs the

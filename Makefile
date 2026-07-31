@@ -53,15 +53,14 @@ IDF_EXPORT := $(shell find $(HOME) -maxdepth 5 -type f -name export.sh 2>/dev/nu
 	buildroot-menuconfig buildroot-clean clean fullclean flash-opensbi flash-linux \
 	flash-rootfs bootloader flash-bootloader erase
 
-all: download opensbi linux initramfs
+all: toolchain download opensbi linux initramfs
 
 $(BUILD_DIR) $(OPENSBI_OUT) $(LINUX_OUT) $(COREMARK_OUT) $(BUILDROOT_OUT):
 	mkdir -p $@
 
-download:
+download: toolchain
 	@echo "--- Download ---"
 	git submodule update --init --recursive
-	@test -x "$(CC)" || { echo "ERROR: run 'make toolchain' first"; exit 1; }
 
 toolchain: $(TOOLCHAIN_RELEASE_STAMP)
 
@@ -104,7 +103,7 @@ FDT_SRC := $(LINUX_DIR)/arch/riscv/boot/dts/espressif/esp32s31_generic.dts
 FDT_DTB := $(BUILD_DIR)/esp32s31_generic.dtb
 OPENSBI_FW_JUMP_BIN := $(OPENSBI_OUT)/platform/generic/firmware/fw_jump.bin
 
-opensbi: | $(OPENSBI_OUT)
+opensbi: toolchain | $(OPENSBI_OUT)
 	@echo "--- OpenSBI ---"
 	$(CPP) -x assembler-with-cpp -nostdinc -undef -D__DTS__ \
 		-I $(dir $(FDT_SRC)) \
@@ -137,7 +136,7 @@ opensbi: | $(OPENSBI_OUT)
 DEFCONFIG ?= esp32s31_defconfig
 LINUX_TARGET ?= xipImage
 
-linux: | $(LINUX_OUT)
+linux: toolchain | $(LINUX_OUT)
 	@echo "--- Linux ---"
 	$(MAKE) -C $(LINUX_DIR) O=$(LINUX_OUT) ARCH=riscv CROSS_COMPILE="$(CROSS_COMPILE)" $(DEFCONFIG)
 	$(LINUX_DIR)/scripts/config --file $(LINUX_OUT)/.config \
@@ -154,7 +153,7 @@ linux: | $(LINUX_OUT)
 	cp -v $(LINUX_OUT)/arch/riscv/boot/$(LINUX_TARGET) $(XIP_IMAGE)
 	cp -v $(LINUX_OUT)/arch/riscv/boot/dts/espressif/esp32s31_generic.dtb $(FDT_DTB)
 
-coremark: | $(COREMARK_OUT)
+coremark: toolchain | $(COREMARK_OUT)
 	@echo "--- CoreMark ---"
 	$(MAKE) -C $(COREMARK_DIR) PORT_DIR=linux OPATH="$(COREMARK_OUT)/" \
 		CC="$(CC)" NO_LIBRT=1 ITERATIONS=0 REBUILD=1 \
@@ -170,7 +169,7 @@ s31-pie-cases:
 	@if [ -z "$(IDF_EXPORT)" ]; then echo "ERROR: ESP-IDF export.sh not found under $(HOME)"; exit 1; fi
 	bash -c "source $(IDF_EXPORT) >/dev/null && $(CURDIR)/rootfs/gen_s31_pie_cases.sh $(CURDIR)/rootfs/s31_pie_cases.inc"
 
-rootfs: s31-pie-cases | $(BUILDROOT_OUT)
+rootfs: toolchain s31-pie-cases | $(BUILDROOT_OUT)
 	@echo "--- Buildroot rootfs ---"
 	$(BUILDROOT_MAKE) esp32s31_rootfs_defconfig
 	$(BUILDROOT_MAKE) toolchain-external-custom-rebuild

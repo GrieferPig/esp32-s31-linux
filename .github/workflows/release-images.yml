@@ -1,0 +1,73 @@
+name: Release S31 Images
+
+on:
+  push:
+    branches: [main]
+
+permissions:
+  contents: write
+
+jobs:
+  build-and-release:
+    if: startsWith(github.event.head_commit.message, 'release:')
+    runs-on: ubuntu-24.04
+    timeout-minutes: 120
+    env:
+      IDF_PATH: ${{ github.workspace }}/.esp-idf
+      ESP_IDF_REF: a602e67b0bf9ee0806dc4e1df7afc9affedf5c33
+
+    steps:
+      - name: Check out source and submodules
+        uses: actions/checkout@v4
+        with:
+          submodules: recursive
+
+      - name: Install build dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y \
+            bison bc build-essential ccache cpio flex gperf libffi-dev \
+            libssl-dev ninja-build rsync unzip
+
+      - name: Install ESP-IDF
+        run: |
+          git clone --filter=blob:none https://github.com/espressif/esp-idf.git "$IDF_PATH"
+          git -C "$IDF_PATH" checkout "$ESP_IDF_REF"
+          "$IDF_PATH/install.sh" esp32s31
+
+      - name: Build all images
+        run: |
+          source "$IDF_PATH/export.sh"
+          make IDF_EXPORT="$IDF_PATH/export.sh" all
+          make coremark
+          make IDF_EXPORT="$IDF_PATH/export.sh" bootloader
+
+      - name: Prepare release metadata
+        id: release
+        env:
+          COMMIT_MESSAGE: ${{ github.event.head_commit.message }}
+        run: |
+          subject="${COMMIT_MESSAGE#release:}"
+          subject="$(printf '%s' "$subject" | tr '\n' ' ' | sed 's/^[[:space:]]*//')"
+          timestamp="$(date -u '+%Y-%m-%d %H:%M:%S UTC')"
+          printf 'tag=ci-%s-%s\n' "${GITHUB_SHA:0:12}" "$GITHUB_RUN_ID" >> "$GITHUB_OUTPUT"
+          printf 'title=%s: %s\n' "$timestamp" "$subject" >> "$GITHUB_OUTPUT"
+
+      - name: Publish images to GitHub Release
+        env:
+          GH_TOKEN: ${{ github.token }}
+          RELEASE_TAG: ${{ steps.release.outputs.tag }}
+          RELEASE_TITLE: ${{ steps.release.outputs.title }}
+          FLASH_COMMAND: esptool -p /dev/ttyUSB0 -b 2000000 write-flash 0x220000 fw_payload.bin 0x2A0000 xipImage
+        run: |
+          gh release create "$RELEASE_TAG" \
+            build/fw_payload.bin \
+            build/xipImage \
+            build/rootfs.sqfs \
+            build/esp32s31_generic.dtb \
+            build/coremark/coremark.exe \
+            bootloader/build/bootloader/bootloader.bin \
+            bootloader/build/partition_table/partition-table.bin \
+            bootloader/build/hello_world.bin \
+            --title "$RELEASE_TITLE" \
+            --notes "$FLASH_COMMAND"
