@@ -12,6 +12,22 @@ set(EXTRA_COMPONENT_DIRS "${CMAKE_CURRENT_LIST_DIR}/components/esp_hosted_slave"
 include($ENV{IDF_PATH}/tools/cmake/project.cmake)
 # "Trim" the build. Include the minimal set of components, main, and anything it depends on.
 idf_build_set_property(MINIMAL_BUILD ON)
+# IDF's unversioned xespv spelling selects mixed 2p1/2p2 assembler variants.
+# Keep every bootloader object and the final link on the S31-validated 2p2 ISA.
+set(S31_XESPV2P2_MARCH
+    "-march=rv32imafc_zicsr_zifencei_zaamo_zalrsc_xesploop_xespv2p2")
+idf_build_set_property(COMPILE_OPTIONS "${S31_XESPV2P2_MARCH}" APPEND)
+idf_build_set_property(LINK_OPTIONS "${S31_XESPV2P2_MARCH}" APPEND)
+idf_build_set_property(COMPILE_OPTIONS "-mespv-spec=2p2" APPEND)
+idf_build_set_property(LINK_OPTIONS "-mespv-spec=2p2" APPEND)
+# IDF's generated project_elf_src file is not a component source, so it only
+# inherits directory options rather than the IDF build properties above.
+add_compile_options("${S31_XESPV2P2_MARCH}" "-mespv-spec=2p2")
+add_link_options("${S31_XESPV2P2_MARCH}" "-mespv-spec=2p2")
+# The second-stage bootloader is an IDF external subproject.  Pass it a local
+# component so it receives the same ISA flags without modifying ESP-IDF.
+idf_build_set_property(BOOTLOADER_EXTRA_COMPONENT_DIRS
+    "${CMAKE_CURRENT_LIST_DIR}/bootloader_components/s31_xespv2p2" APPEND)
 # ESP32-S31 maps instruction and read-only flash through the same unified XIP
 # virtual window.  The two linker MEMORY aliases intentionally overlap.
 idf_build_set_property(LINK_OPTIONS "-Wl,--no-check-sections" APPEND)
