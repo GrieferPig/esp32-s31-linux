@@ -451,7 +451,7 @@ void app_main(void)
 
     /*
      * Publish the complete transport before hart1 can touch its rings.
-     * The hart0 receive path polls like hart_ipc_test and therefore has no
+     * The hart0 receive path polls and therefore has no
      * interrupt-matrix route that could be lost when hart1 is reset.
      */
     if (s31_hosted_sram_start() != ESP_OK)

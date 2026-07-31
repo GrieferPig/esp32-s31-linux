@@ -330,7 +330,7 @@ static void hosted_rx_task(void *arg)
 		}
 
 		/*
-		 * As in hart_ipc_test, polling is the correctness path.  Do not
+		 * Polling is the correctness path.  Do not
 		 * yield here: Linux reconfigures the shared interrupt fabric and
 		 * the hart0 FreeRTOS tick then stops, so a yielded task may never
 		 * be scheduled again. Higher-priority radio tasks still preempt us.

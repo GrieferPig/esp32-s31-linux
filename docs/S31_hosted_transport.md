@@ -33,7 +33,7 @@ The shared ABI is defined only by `shared/s31_hosted_sram.h`.
   67, Linux raw CLIC ID 40, register `0x20586018`.
 - Linux to FreeRTOS: `HP_SYSTEM_CPU_INT_FROM_CPU_3`, register `0x2058601c`.
 - Doorbells are hints and may coalesce. Both consumers recheck their rings.
-  As in `hart_ipc_test`, hart0 uses a polling task instead of installing a
+  Hart0 uses a polling task instead of installing a
   CLIC handler into ESP-IDF's vector table. This task must not call
   `taskYIELD()`: Linux reconfigures the shared interrupt environment and the
   hart0 FreeRTOS tick can stop, leaving a yielded task permanently dormant.

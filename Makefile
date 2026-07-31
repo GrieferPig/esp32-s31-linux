@@ -4,9 +4,11 @@ TOOLCHAIN_DIR := $(CURDIR)/toolchain
 CROSSTOOL_NG_DIR ?= $(abspath $(CURDIR)/../crosstool-NG)
 CROSSTOOL_CONFIG := $(CURDIR)/configs/riscv32-esp-linux-musl.config
 TOOLCHAIN_PREFIX := $(TOOLCHAIN_DIR)/riscv32-esp-linux-musl
-TOOLCHAIN_RELEASE_TAG ?= esp32s31-linux-gcc-15.2.0-1
-TOOLCHAIN_RELEASE_URL ?= https://github.com/GrieferPig/crosstool-NG-s31/releases/download/$(TOOLCHAIN_RELEASE_TAG)/riscv32-esp-linux-musl.tar.xz
-TOOLCHAIN_RELEASE_SHA256 := 3372dfa4a6be239ed4384f7a5c6fd48e5d589d347dc7827d21d3b4bb03ba22f9
+TOOLCHAIN_RELEASE_TAG ?= latest
+TOOLCHAIN_RELEASE_ASSET := riscv32-esp-linux-musl.tar.xz
+TOOLCHAIN_RELEASE_REPOSITORY ?= GrieferPig/crosstool-NG-s31
+TOOLCHAIN_RELEASE_API ?= https://api.github.com/repos/$(TOOLCHAIN_RELEASE_REPOSITORY)/releases/latest
+TOOLCHAIN_RELEASE_DOWNLOAD_BASE ?= https://github.com/$(TOOLCHAIN_RELEASE_REPOSITORY)/releases/download
 CROSS_COMPILE := $(TOOLCHAIN_PREFIX)/bin/riscv32-esp-linux-musl-
 CC := $(CROSS_COMPILE)gcc
 CPP := $(CROSS_COMPILE)cpp
@@ -35,8 +37,7 @@ LINUX_OUT := $(BUILD_DIR)/linux
 COREMARK_OUT := $(BUILD_DIR)/coremark
 BUILDROOT_OUT := $(BUILD_DIR)/buildroot
 BUILDROOT_DL_DIR := $(BUILD_DIR)/buildroot-dl
-TOOLCHAIN_ARCHIVE := $(BUILD_DIR)/downloads/$(TOOLCHAIN_RELEASE_TAG)-riscv32-esp-linux-musl.tar.xz
-TOOLCHAIN_RELEASE_STAMP := $(TOOLCHAIN_PREFIX)/.release-$(TOOLCHAIN_RELEASE_TAG)
+TOOLCHAIN_ARCHIVE := $(BUILD_DIR)/downloads/$(TOOLCHAIN_RELEASE_ASSET)
 
 PARTITIONS_CSV := $(CURDIR)/bootloader/partitions.csv
 OPENSBI_OFFSET := $(shell awk -F, '/opensbi/ {gsub(/ /, "", $$4); print $$4}' $(PARTITIONS_CSV))
@@ -62,20 +63,40 @@ download: toolchain
 	@echo "--- Download ---"
 	git submodule update --init --recursive
 
-toolchain: $(TOOLCHAIN_RELEASE_STAMP)
-
-$(TOOLCHAIN_RELEASE_STAMP): | $(BUILD_DIR)
-	mkdir -p $(dir $(TOOLCHAIN_ARCHIVE)) $(TOOLCHAIN_DIR)
-	curl --fail --location --retry 3 --output $(TOOLCHAIN_ARCHIVE).part $(TOOLCHAIN_RELEASE_URL)
-	echo "$(TOOLCHAIN_RELEASE_SHA256)  $(TOOLCHAIN_ARCHIVE).part" | sha256sum --check -
-	mv $(TOOLCHAIN_ARCHIVE).part $(TOOLCHAIN_ARCHIVE)
+toolchain: | $(BUILD_DIR)
 	@set -eu; \
+	mkdir -p "$(dir $(TOOLCHAIN_ARCHIVE))" "$(TOOLCHAIN_DIR)"; \
+	release_tag="$(TOOLCHAIN_RELEASE_TAG)"; \
+	if [ "$$release_tag" = latest ]; then \
+		release_tag=$$(curl --fail --location --retry 3 --silent --show-error "$(TOOLCHAIN_RELEASE_API)" | sed -n 's/^[[:space:]]*"tag_name":[[:space:]]*"\([^"]*\)".*/\1/p'); \
+	fi; \
+	if [ -z "$$release_tag" ]; then \
+		echo "ERROR: failed to resolve the latest toolchain release tag" >&2; exit 1; \
+	fi; \
+	release_url="$(TOOLCHAIN_RELEASE_DOWNLOAD_BASE)/$$release_tag/$(TOOLCHAIN_RELEASE_ASSET)"; \
+	release_sha256_url="$$release_url.sha256"; \
+	installed_tag=$$(cat "$(TOOLCHAIN_PREFIX)/.release" 2>/dev/null || true); \
+	if [ -z "$$installed_tag" ] && [ -d "$(TOOLCHAIN_PREFIX)" ]; then \
+		installed_tag=$$(find "$(TOOLCHAIN_PREFIX)" -maxdepth 1 -type f -name '.release-*' -printf '%f\n' 2>/dev/null | sed 's/^\.release-//' | head -n 1); \
+	fi; \
+	if [ "$$installed_tag" = "$$release_tag" ]; then \
+		echo "Toolchain release $$release_tag is already installed"; \
+		exit 0; \
+	fi; \
+	echo "Installing toolchain release $$release_tag"; \
+	curl --fail --location --retry 3 --output "$(TOOLCHAIN_ARCHIVE).part" "$$release_url"; \
+	curl --fail --location --retry 3 --output "$(TOOLCHAIN_ARCHIVE).sha256.part" "$$release_sha256_url"; \
+	expected_hash=$$(awk 'NR == 1 { print $$1; exit }' "$(TOOLCHAIN_ARCHIVE).sha256.part"); \
+	printf '%s\n' "$$expected_hash" | grep -Eq '^[0-9a-fA-F]{64}$$' || { echo "ERROR: invalid release checksum" >&2; exit 1; }; \
+	printf '%s  %s\n' "$$expected_hash" "$(TOOLCHAIN_ARCHIVE).part" | sha256sum --check -; \
+	mv "$(TOOLCHAIN_ARCHIVE).part" "$(TOOLCHAIN_ARCHIVE)"; \
+	rm -f "$(TOOLCHAIN_ARCHIVE).sha256.part"; \
 	staging=$$(mktemp -d "$(TOOLCHAIN_DIR)/.riscv32-esp-linux-musl.XXXXXX"); \
 	trap 'chmod -R u+w "$$staging" 2>/dev/null || true; rm -rf "$$staging"' EXIT; \
-	tar -xJf $(TOOLCHAIN_ARCHIVE) -C "$$staging"; \
+	tar -xJf "$(TOOLCHAIN_ARCHIVE)" -C "$$staging"; \
 	test -x "$$staging/bin/riscv32-esp-linux-musl-gcc"; \
-	chmod u+w "$$staging"; \
-	printf '%s\n' "$(TOOLCHAIN_RELEASE_TAG)" > "$$staging/.release-$(TOOLCHAIN_RELEASE_TAG)"; \
+	printf '%s\n' "$$release_tag" > "$$staging/.release"; \
+	printf '%s\n' "$$release_tag" > "$$staging/.release-$$release_tag"; \
 	chmod u-w "$$staging"; \
 	if [ -e "$(TOOLCHAIN_PREFIX)" ]; then \
 		backup="$(TOOLCHAIN_PREFIX).previous.$$(date -u +%Y%m%d%H%M%S)"; \
@@ -83,8 +104,8 @@ $(TOOLCHAIN_RELEASE_STAMP): | $(BUILD_DIR)
 		echo "Previous toolchain retained at $$backup"; \
 	fi; \
 	mv "$$staging" "$(TOOLCHAIN_PREFIX)"; \
-	trap - EXIT
-	$(CC) --version | head -n 1
+	trap - EXIT; \
+	"$(CC)" --version | head -n 1
 
 toolchain-source:
 	@test -x "$(CROSSTOOL_NG_DIR)/ct-ng" || { echo "ERROR: configure and build $(CROSSTOOL_NG_DIR) first"; exit 1; }
