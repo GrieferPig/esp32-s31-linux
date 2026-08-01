@@ -25,13 +25,16 @@ $ pip install esptool
 Then download the binaries in [Release](https://github.com/GrieferPig/esp32-s31-linux/releases), connect your board through USB-UART, and flash the board per the provided command below (change `/dev/ttyUSB0` to your actual serial device):
 
 ```bash
+$ esptool -p /dev/ttyUSB0 -b 2000000 erase-flash
 $ esptool -p /dev/ttyUSB0 -b 2000000 write-flash \
+    --flash-mode dio --flash-freq 80m --flash-size 16MB \
     0x2000 bootloader.bin \
     0x8000 partition-table.bin \
+    0x17000 ota_data_initial.bin \
     0x20000 hello_world.bin \
     0x220000 fw_payload.bin \
     0x2A0000 xipImage \
-    0xA20000 initramfs.cpio
+    0xA20000 rootfs.sqfs
 ```
 
 ## Porting progress
@@ -128,5 +131,4 @@ For this port, think S31 as a reincarnated `Boufallo BL808`.[^1]
 ### TODO
 
 [^1]: I actually liked the BL808 and attempted to use it for a project, but the absurd lack of drivers is REAL BAD and made me appreciate Espressif's software support more
-
 

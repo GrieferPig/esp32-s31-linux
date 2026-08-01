@@ -58,7 +58,7 @@ jobs:
           GH_TOKEN: ${{ github.token }}
           RELEASE_TAG: ${{ steps.release.outputs.tag }}
           RELEASE_TITLE: ${{ steps.release.outputs.title }}
-          FLASH_COMMAND: esptool -p /dev/ttyUSB0 -b 2000000 write-flash 0x220000 fw_payload.bin 0x2A0000 xipImage
+          FLASH_COMMAND: esptool -p /dev/ttyUSB0 -b 2000000 erase-flash && esptool -p /dev/ttyUSB0 -b 2000000 write-flash --flash-mode dio --flash-freq 80m --flash-size 16MB 0x2000 bootloader.bin 0x8000 partition-table.bin 0x17000 ota_data_initial.bin 0x20000 hello_world.bin 0x220000 fw_payload.bin 0x2A0000 xipImage 0xA20000 rootfs.sqfs
         run: |
           gh release create "$RELEASE_TAG" \
             build/fw_payload.bin \
@@ -68,6 +68,7 @@ jobs:
             build/coremark/coremark.exe \
             bootloader/build/bootloader/bootloader.bin \
             bootloader/build/partition_table/partition-table.bin \
+            bootloader/build/ota_data_initial.bin \
             bootloader/build/hello_world.bin \
             --title "$RELEASE_TITLE" \
             --notes "$FLASH_COMMAND"
