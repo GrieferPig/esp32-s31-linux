@@ -93,21 +93,21 @@ In mainline linux, XIP support on RISC-V was removed, so 6.12 was used instead w
 ~ # coremark
 2K performance run parameters for coremark.
 CoreMark Size    : 666
-Total ticks      : 11580
-Total time (secs): 11.580000
-Iterations/Sec   : 949.913644
-Iterations       : 11000
-Compiler version : GCC16.1.0
-Compiler flags   : -O2 -static -march=rv32imac_zicsr_zifencei -mabi=ilp32  
+Total ticks      : 18887
+Total time (secs): 18.887000
+Iterations/Sec   : 1058.929422
+Iterations       : 20000
+Compiler version : GCC15.2.0
+Compiler flags   : -O2 -D_LARGEFILE_SOURCE -D_LARGEFILE64_SOURCE -D_FILE_OFFSET_BITS=64  -O2 -g0
 Memory location  : Please put data memory location here
                         (e.g. code in flash, data on heap etc)
 seedcrc          : 0xe9f5
 [0]crclist       : 0xe714
 [0]crcmatrix     : 0x1fd7
 [0]crcstate      : 0x8e3a
-[0]crcfinal      : 0x33ff
+[0]crcfinal      : 0x382f
 Correct operation validated. See README.md for run and reporting rules.
-CoreMark 1.0 : 949.913644 / GCC16.1.0 -O2 -static -march=rv32imac_zicsr_zifencei -mabi=ilp32   / Heap
+CoreMark 1.0 : 1058.929422 / GCC15.2.0 -O2 -D_LARGEFILE_SOURCE -D_LARGEFILE64_SOURCE -D_FILE_OFFSET_BITS=64  -O2 -g0    / Heap
 ```
 
 ```
