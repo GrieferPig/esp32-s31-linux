@@ -247,6 +247,45 @@ __attribute__((noinline)) void *branch_end(void **items, int count, void **out)
     print("compiler Xesploop control-flow checks passed", flush=True)
 
 
+def verify_libc_xespv(toolchain: Path, work_dir: Path, repo_root: Path) -> None:
+    objdump = toolchain / "bin" / f"{TARGET}-objdump"
+    libc = toolchain / TARGET / "sysroot" / "usr" / "lib" / "libc.so"
+    disassembly_path = work_dir / "libc-disassembly.txt"
+    disassembly = run(
+        [str(objdump), "-d", str(libc)],
+        cwd=repo_root,
+        capture=True,
+        timeout=120,
+    )
+    disassembly_path.write_text(disassembly)
+
+    def function_body(symbol: str) -> str:
+        match = re.search(
+            rf"^[0-9a-f]+ <{re.escape(symbol)}>:\n(.*?)(?=\n[0-9a-f]+ <|\Z)",
+            disassembly,
+            re.M | re.S,
+        )
+        if not match:
+            raise SystemExit(f"Missing libc symbol: {symbol}")
+        return match.group(1)
+
+    memcpy = function_body("memcpy")
+    if "__riscv32_xespv_memcpy64" not in memcpy:
+        raise SystemExit("libc memcpy does not call its XEspV kernel")
+    memcpy_kernel = function_body("__riscv32_xespv_memcpy64")
+    for opcode in ("esp.vld.128.ip", "esp.vst.128.ip"):
+        if opcode not in memcpy_kernel:
+            raise SystemExit(f"libc memcpy XEspV kernel is missing {opcode}")
+    for symbol in ("memchr", "memrchr", "memcmp", "strcmp"):
+        body = function_body(symbol)
+        for opcode in ("esp.vld.128.ip", "esp.vcmp.eq.u8"):
+            if opcode not in body:
+                raise SystemExit(f"libc {symbol} is missing {opcode}")
+    if "esp." in function_body("memset"):
+        raise SystemExit("libc memset unexpectedly contains an XEsp instruction")
+    print("musl XEspV per-function checks passed", flush=True)
+
+
 def scan_rootfs_hwloops(toolchain: Path, repo_root: Path) -> None:
     target = repo_root / "build" / "buildroot" / "target"
     objdump = toolchain / "bin" / f"{TARGET}-objdump"
@@ -292,7 +331,7 @@ def scan_rootfs_hwloops(toolchain: Path, repo_root: Path) -> None:
 
 
 def serial_command(port, command: str, marker: str, timeout: int) -> str:
-    port.reset_input_buffer()
+    started = time.monotonic()
     port.write((command + f"; rc=$?; echo {marker}:$rc\n").encode())
     deadline = time.monotonic() + timeout
     output = bytearray()
@@ -300,6 +339,7 @@ def serial_command(port, command: str, marker: str, timeout: int) -> str:
     while time.monotonic() < deadline:
         chunk = port.read(4096)
         if chunk:
+            chunk = chunk.replace(b"\x00", b"")
             output.extend(chunk)
             sys.stdout.buffer.write(chunk)
             sys.stdout.buffer.flush()
@@ -307,6 +347,8 @@ def serial_command(port, command: str, marker: str, timeout: int) -> str:
             if match:
                 if int(match.group(1)):
                     raise SystemExit(f"Board command failed: {command}")
+                elapsed = time.monotonic() - started
+                print(f"{marker} host elapsed: {elapsed:.3f} s", flush=True)
                 return output.decode(errors="replace")
     raise SystemExit(f"Timed out waiting for board command: {command}")
 
@@ -314,15 +356,24 @@ def serial_command(port, command: str, marker: str, timeout: int) -> str:
 def test_board(serial_device: str, baud: int) -> None:
     import serial
 
-    with serial.Serial(serial_device, baudrate=baud, timeout=0.25) as port:
-        port.dtr = False
-        port.rts = False
+    # Configure modem-control lines before opening the port.  pyserial's
+    # default open-then-configure sequence can pulse DTR/RTS and reset S31,
+    # losing the beginning of the boot log.
+    port = serial.Serial()
+    port.port = serial_device
+    port.baudrate = baud
+    port.timeout = 0.25
+    port.dtr = False
+    port.rts = False
+    port.open()
+    try:
         deadline = time.monotonic() + 120
         output = bytearray()
         port.write(b"\n")
         while time.monotonic() < deadline:
             chunk = port.read(4096)
             if chunk:
+                chunk = chunk.replace(b"\x00", b"")
                 output.extend(chunk)
                 sys.stdout.buffer.write(chunk)
                 sys.stdout.buffer.flush()
@@ -345,9 +396,24 @@ def test_board(serial_device: str, baud: int) -> None:
             120,
         )
         serial_command(port, "s31-libc-test", "__S31_LIBC", 120)
+        core_started = time.monotonic()
         coremark = serial_command(port, "coremark", "__S31_COREMARK", 300)
+        core_host_seconds = time.monotonic() - core_started
         if "CoreMark 1.0" not in coremark or "Correct operation validated" not in coremark:
             raise SystemExit("CoreMark output did not report a validated run")
+        reported = re.search(r"Total time \(secs\):\s*([0-9.]+)", coremark)
+        if reported:
+            core_reported_seconds = float(reported.group(1))
+            difference = core_host_seconds - core_reported_seconds
+            print(
+                "CoreMark timing: "
+                f"reported={core_reported_seconds:.3f}s "
+                f"host={core_host_seconds:.3f}s delta={difference:+.3f}s",
+                flush=True,
+            )
+            tolerance = max(1.0, core_reported_seconds * 0.10)
+            if abs(difference) > tolerance:
+                raise SystemExit("CoreMark reported time disagrees with host monotonic time")
         dmesg = serial_command(
             port,
             "dmesg | tail -n 200",
@@ -356,6 +422,8 @@ def test_board(serial_device: str, baud: int) -> None:
         )
         if re.search(r"dbus-daemon.*(?:segfault|unhandled signal)", dmesg, re.I):
             raise SystemExit("dbus-daemon fault found in dmesg")
+    finally:
+        port.close()
 
 
 def parse_args() -> argparse.Namespace:
@@ -406,6 +474,7 @@ def main() -> int:
             )
         toolchain = install_toolchain(archive, args.release_tag, repo_root)
         verify_compiler(toolchain, work_dir, repo_root)
+        verify_libc_xespv(toolchain, work_dir, repo_root)
 
     run(["make", "clean"], cwd=repo_root)
     run(["make", f"JOBS={args.jobs}", "linux"], cwd=repo_root)

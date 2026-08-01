@@ -226,6 +226,18 @@ def main() -> int:
     if not gcc.is_file():
         raise SystemExit(f"Toolchain build completed without compiler: {gcc}")
     run([str(gcc), "--version"], cwd=work_dir)
+    verification_dir = work_dir / "s31-patch-verification"
+    verification_dir.mkdir(exist_ok=True)
+    from scripts.wait_s31_toolchain_and_test import verify_compiler, verify_libc_xespv
+
+    verify_compiler(prefix, verification_dir, repo_root)
+    verify_libc_xespv(prefix, verification_dir, repo_root)
+
+    shutil.copy2(work_dir / ".config", prefix / "crosstool-ng.config")
+    manifest = prefix / "s31-patch-sha256.txt"
+    with manifest.open("w") as output:
+        for patch in (*required_gcc_patches, required_musl_patch):
+            output.write(f"{hashlib.sha256(patch.read_bytes()).hexdigest()}  {patch.name}\n")
     for hash_file, current_hash in patch_hashes.values():
         hash_file.write_text(current_hash + "\n")
 

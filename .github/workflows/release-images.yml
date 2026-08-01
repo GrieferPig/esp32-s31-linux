@@ -15,6 +15,8 @@ jobs:
     env:
       IDF_PATH: ${{ github.workspace }}/.esp-idf
       ESP_IDF_REF: a602e67b0bf9ee0806dc4e1df7afc9affedf5c33
+      TOOLCHAIN_RELEASE_TAG: esp32s31-linux-gcc-15.2.0-2
+      TOOLCHAIN_BUILD_ID: esp-16.0.0_00000000.30-8c966a5
 
     steps:
       - name: Check out source and submodules
@@ -35,12 +37,63 @@ jobs:
           git -C "$IDF_PATH" checkout "$ESP_IDF_REF"
           "$IDF_PATH/install.sh" esp32s31
 
+      - name: Install and verify pinned toolchain
+        run: |
+          make TOOLCHAIN_RELEASE_TAG="$TOOLCHAIN_RELEASE_TAG" toolchain
+          prefix="$GITHUB_WORKSPACE/toolchain/riscv32-esp-linux-musl"
+          target=riscv32-esp-linux-musl
+          test "$(cat "$prefix/.release")" = "$TOOLCHAIN_RELEASE_TAG"
+          "$prefix/bin/$target-gcc" --version | grep -q "$TOOLCHAIN_BUILD_ID"
+          grep -q '^CT_PATCH_BUNDLED=y$' "$prefix/crosstool-ng.config"
+          grep -q '^CT_PATCH_ORDER="bundled"$' "$prefix/crosstool-ng.config"
+          mkdir -p build/toolchain-verify
+          python3 -c 'from pathlib import Path; from scripts.wait_s31_toolchain_and_test import verify_compiler, verify_libc_xespv; p=Path("toolchain/riscv32-esp-linux-musl"); w=Path("build/toolchain-verify"); verify_compiler(p, w, Path.cwd()); verify_libc_xespv(p, w, Path.cwd())'
+          libc="$prefix/$target/sysroot/usr/lib/libc.so"
+          "$prefix/bin/$target-objdump" -d "$libc" > build/toolchain-verify/libc-disassembly.txt
+          for symbol in memcpy memchr memrchr memcmp strcmp __riscv32_xespv_memcpy64; do
+            grep -q "<${symbol}>:" build/toolchain-verify/libc-disassembly.txt
+          done
+          sed -n '/<memcpy>:/,/^$/p' build/toolchain-verify/libc-disassembly.txt \
+            > build/toolchain-verify/memcpy-disassembly.txt
+          grep -q '__riscv32_xespv_memcpy64' build/toolchain-verify/memcpy-disassembly.txt
+          for symbol in memchr memrchr memcmp strcmp; do
+            sed -n "/<${symbol}>:/,/^$/p" build/toolchain-verify/libc-disassembly.txt \
+              > "build/toolchain-verify/${symbol}-disassembly.txt"
+            grep -q 'esp.vld.128.ip' "build/toolchain-verify/${symbol}-disassembly.txt"
+            grep -q 'esp.vcmp.eq.u8' "build/toolchain-verify/${symbol}-disassembly.txt"
+          done
+          sed -n '/<__riscv32_xespv_memcpy64>:/,/^$/p' \
+            build/toolchain-verify/libc-disassembly.txt \
+            > build/toolchain-verify/memcpy-kernel-disassembly.txt
+          grep -q 'esp.vld.128.ip' build/toolchain-verify/memcpy-kernel-disassembly.txt
+          grep -q 'esp.vst.128.ip' build/toolchain-verify/memcpy-kernel-disassembly.txt
+          sed -n '/<memset>:/,/^$/p' build/toolchain-verify/libc-disassembly.txt \
+            > build/toolchain-verify/memset-disassembly.txt
+          ! grep -q 'esp\.' build/toolchain-verify/memset-disassembly.txt
+
       - name: Build all images
         run: |
           source "$IDF_PATH/export.sh"
-          make IDF_EXPORT="$IDF_PATH/export.sh" all
-          make coremark
-          make IDF_EXPORT="$IDF_PATH/export.sh" bootloader
+          make TOOLCHAIN_RELEASE_TAG="$TOOLCHAIN_RELEASE_TAG" \
+            IDF_EXPORT="$IDF_PATH/export.sh" all
+          make TOOLCHAIN_RELEASE_TAG="$TOOLCHAIN_RELEASE_TAG" coremark
+          make TOOLCHAIN_RELEASE_TAG="$TOOLCHAIN_RELEASE_TAG" \
+            IDF_EXPORT="$IDF_PATH/export.sh" bootloader
+
+      - name: Verify release images
+        run: |
+          source "$IDF_PATH/export.sh"
+          grep -q '^CONFIG_ESPTOOLPY_FLASHMODE_DIO=y$' bootloader/sdkconfig
+          grep -q '^CONFIG_FLASHMODE_DIO=y$' bootloader/sdkconfig
+          esptool --chip esp32s31 image-info \
+            bootloader/build/bootloader/bootloader.bin | grep -q 'Flash mode: DIO'
+          esptool --chip esp32s31 image-info \
+            bootloader/build/hello_world.bin | grep -q 'Flash mode: DIO'
+          test -s bootloader/build/ota_data_initial.bin
+          test -s build/fw_payload.bin
+          test -s build/xipImage
+          test -s build/rootfs.sqfs
+          test -s build/coremark/coremark.exe
 
       - name: Prepare release metadata
         id: release

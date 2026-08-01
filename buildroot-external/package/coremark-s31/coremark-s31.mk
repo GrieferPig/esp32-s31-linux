@@ -15,7 +15,7 @@ define COREMARK_S31_BUILD_CMDS
 	$(TARGET_MAKE_ENV) $(MAKE) -C $(@D) \
 		PORT_DIR=linux OPATH="$(@D)/build/" \
 		CC="$(TARGET_CC)" NO_LIBRT=1 ITERATIONS=0 REBUILD=1 \
-		XCFLAGS="$(TARGET_CFLAGS)" compile
+		XCFLAGS="$(TARGET_CFLAGS) -include $(COREMARK_S31_PKGDIR)/coremark-monotonic.h" compile
 endef
 
 define COREMARK_S31_INSTALL_TARGET_CMDS
