@@ -65,6 +65,10 @@ download: toolchain
 
 toolchain: | $(BUILD_DIR)
 	@set -eu; \
+	if [ -x "$(CC)" ] && { [ -f "$(TOOLCHAIN_PREFIX)/.source-build" ] || [ ! -f "$(TOOLCHAIN_PREFIX)/.release" ]; }; then \
+		echo "Using locally built toolchain at $(TOOLCHAIN_PREFIX)"; \
+		exit 0; \
+	fi; \
 	mkdir -p "$(dir $(TOOLCHAIN_ARCHIVE))" "$(TOOLCHAIN_DIR)"; \
 	release_tag="$(TOOLCHAIN_RELEASE_TAG)"; \
 	if [ "$$release_tag" = latest ]; then \
@@ -108,11 +112,7 @@ toolchain: | $(BUILD_DIR)
 	"$(CC)" --version | head -n 1
 
 toolchain-source:
-	@test -x "$(CROSSTOOL_NG_DIR)/ct-ng" || { echo "ERROR: configure and build $(CROSSTOOL_NG_DIR) first"; exit 1; }
-	git -C $(CROSSTOOL_NG_DIR) submodule update --init --recursive esp-toolchain-bin-wrappers
-	$(MAKE) -C $(CROSSTOOL_NG_DIR) -rf $(CROSSTOOL_NG_DIR)/ct-ng \
-		defconfig DEFCONFIG=$(CROSSTOOL_CONFIG)
-	$(MAKE) -C $(CROSSTOOL_NG_DIR) -rf $(CROSSTOOL_NG_DIR)/ct-ng build.$(JOBS)
+	python3 $(CURDIR)/build_linux_toolchain.py --ct-ng-dir "$(CROSSTOOL_NG_DIR)" --jobs "$(JOBS)" --force
 
 FW_TEXT_START ?= 0x40030000
 FW_RW_START ?= 0x50F00000
