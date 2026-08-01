@@ -28,6 +28,7 @@ BUILD_DIR := $(CURDIR)/build
 OPENSBI_DIR := $(CURDIR)/opensbi-esp32-s31
 LINUX_DIR := $(CURDIR)/linux-esp32-s31
 COREMARK_DIR := $(CURDIR)/coremark
+COREMARK_ITERATIONS ?= 20000
 BUILDROOT_DIR := $(CURDIR)/buildroot
 BUILDROOT_EXTERNAL := $(CURDIR)/buildroot-external
 
@@ -177,7 +178,7 @@ linux: toolchain | $(LINUX_OUT)
 coremark: toolchain | $(COREMARK_OUT)
 	@echo "--- CoreMark ---"
 	$(MAKE) -C $(COREMARK_DIR) PORT_DIR=linux OPATH="$(COREMARK_OUT)/" \
-		CC="$(CC)" NO_LIBRT=1 ITERATIONS=0 REBUILD=1 \
+		CC="$(CC)" NO_LIBRT=1 ITERATIONS=$(COREMARK_ITERATIONS) REBUILD=1 \
 		XCFLAGS="-static $(S31_USER_FLAGS) -include $(BUILDROOT_EXTERNAL)/package/coremark-s31/coremark-monotonic.h" compile
 
 # Keep this decimal because POSIX test(1) and truncate(1) do not accept the

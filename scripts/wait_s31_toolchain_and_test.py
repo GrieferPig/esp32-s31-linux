@@ -157,11 +157,12 @@ def publish_release(
                 "--target",
                 expected_sha,
                 "--title",
-                "ESP32-S31 Linux GCC 15.2.0-2",
+                f"ESP32-S31 Linux toolchain {release_tag}",
                 "--notes",
                 (
                     "S31 Linux toolchain with XEspV musl string operations and "
-                    "control-flow-safe Xesploop hardware-loop generation."
+                    "control-flow-safe Xesploop hardware-loop generation.\n\n"
+                    f"Built from crosstool-NG commit `{expected_sha}`."
                 ),
             ],
             cwd=repo_root,

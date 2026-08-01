@@ -15,8 +15,8 @@ jobs:
     env:
       IDF_PATH: ${{ github.workspace }}/.esp-idf
       ESP_IDF_REF: a602e67b0bf9ee0806dc4e1df7afc9affedf5c33
-      TOOLCHAIN_RELEASE_TAG: esp32s31-linux-gcc-15.2.0-2
-      TOOLCHAIN_BUILD_ID: esp-16.0.0_00000000.30-8c966a5
+      TOOLCHAIN_RELEASE_TAG: esp32s31-linux-gcc-15.2.0-3
+      TOOLCHAIN_BUILD_ID: esp-16.0.0_00000000.31-05710fd
 
     steps:
       - name: Check out source and submodules
@@ -46,6 +46,9 @@ jobs:
           "$prefix/bin/$target-gcc" --version | grep -q "$TOOLCHAIN_BUILD_ID"
           grep -q '^CT_PATCH_BUNDLED=y$' "$prefix/crosstool-ng.config"
           grep -q '^CT_PATCH_ORDER="bundled"$' "$prefix/crosstool-ng.config"
+          grep -q '^7059e060975400cd90418972dc796eecb73e3ccf202ba5b5fba2577f7173ab90  packages/gcc/git-0dbf5849/0001-xesploop.patch$' "$prefix/s31-patch-sha256.txt"
+          grep -q '^41dedfbf3398ab92bfd8bab2a02a7c02bb0b9972b355908f7318e5a524380d03  packages/gcc/git-0dbf5849/0002-riscv-xesploop-reject-early-exit-loops.patch$' "$prefix/s31-patch-sha256.txt"
+          grep -q '^4660f48e98ff0da98171d84d44c8866fe9d8b399f8deccb9c1055837a4efee0e  packages/musl/1.2.5/0002-riscv32-add-xespv-string-operations.patch$' "$prefix/s31-patch-sha256.txt"
           mkdir -p build/toolchain-verify
           python3 -c 'from pathlib import Path; from scripts.wait_s31_toolchain_and_test import verify_compiler, verify_libc_xespv; p=Path("toolchain/riscv32-esp-linux-musl"); w=Path("build/toolchain-verify"); verify_compiler(p, w, Path.cwd()); verify_libc_xespv(p, w, Path.cwd())'
           libc="$prefix/$target/sysroot/usr/lib/libc.so"
