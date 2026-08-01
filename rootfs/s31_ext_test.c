@@ -18,6 +18,8 @@ extern void s31_hwloop_yield(volatile uint32_t *counter);
 extern void s31_hwloop_signal(volatile uint32_t *counter, pid_t pid);
 extern void s31_pie_add_u32(const uint32_t *a, const uint32_t *b,
 			    uint32_t *out);
+extern void s31_pie_cmp_eq_u8(const uint8_t *a, const uint8_t *b,
+			      uint8_t *out);
 extern void s31_pie_hold_yield(const uint32_t *in, uint32_t *out);
 extern void s31_pie_hold_signal(const uint32_t *in, uint32_t *out, pid_t pid);
 extern void s31_pie_run_one(unsigned int index, void *scratch);
@@ -117,6 +119,22 @@ static int basic_tests(void)
 				out[i]);
 			return -1;
 		}
+	}
+
+	{
+		static const uint8_t lhs[16] __attribute__((aligned(16))) = {
+			0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15
+		};
+		static const uint8_t rhs[16] __attribute__((aligned(16))) = {
+			0, 9, 2, 8, 4, 7, 6, 6, 8, 5, 10, 4, 12, 3, 14, 2
+		};
+		uint8_t cmp[16] __attribute__((aligned(16))) = { 0 };
+
+		s31_pie_cmp_eq_u8(lhs, rhs, cmp);
+		printf("XespV vcmp.eq.u8 lanes:");
+		for (i = 0; i < 16; i++)
+			printf(" %02x", cmp[i]);
+		putchar('\n');
 	}
 
 	return 0;

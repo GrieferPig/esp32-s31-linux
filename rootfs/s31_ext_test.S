@@ -91,6 +91,16 @@ s31_pie_add_u32:
 	ret
 	.size s31_pie_add_u32, .-s31_pie_add_u32
 
+	.globl s31_pie_cmp_eq_u8
+	.type s31_pie_cmp_eq_u8, @function
+s31_pie_cmp_eq_u8:
+	.word	0x0311001f	/* esp.vld.128.ip q0,a0,0 */
+	.word	0x0311841f	/* esp.vld.128.ip q1,a1,0 */
+	.word	0x0740011f	/* esp.vcmp.eq.u8 q2,q0,q1 */
+	.word	0x8312081f	/* esp.vst.128.ip q2,a2,0 */
+	ret
+	.size s31_pie_cmp_eq_u8, .-s31_pie_cmp_eq_u8
+
 	.globl s31_pie_hold_yield
 	.type s31_pie_hold_yield, @function
 s31_pie_hold_yield:

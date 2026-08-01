@@ -34,6 +34,11 @@ define S31_TOOLS_BUILD_CMDS
 		-o $(@D)/s31-libc-test
 	$(TARGET_CC) $(TARGET_CFLAGS) $(TARGET_LDFLAGS) \
 		$(@D)/s31_mem_compare.c -o $(@D)/s31-mem-compare
+	$(TARGET_CC) $(TARGET_CFLAGS) -c $(@D)/s31_xespv_memops.S \
+		-o $(@D)/s31_xespv_memops.o
+	$(TARGET_CC) $(TARGET_CFLAGS) $(TARGET_LDFLAGS) -fno-builtin \
+		$(@D)/s31_string_bench.c $(@D)/s31_xespv_memops.o \
+		-o $(@D)/s31-string-bench
 	$(TARGET_CC) $(TARGET_CFLAGS) $(TARGET_LDFLAGS) \
 		-I$(STAGING_DIR)/usr/include \
 		$(@D)/s31_overlay.c -lfdt -o $(@D)/s31-overlay
@@ -60,6 +65,8 @@ define S31_TOOLS_INSTALL_TARGET_CMDS
 		$(TARGET_DIR)/usr/sbin/s31-libc-test
 	$(INSTALL) -D -m 0755 $(@D)/s31-mem-compare \
 		$(TARGET_DIR)/usr/sbin/s31-mem-compare
+	$(INSTALL) -D -m 0755 $(@D)/s31-string-bench \
+		$(TARGET_DIR)/usr/sbin/s31-string-bench
 	$(INSTALL) -D -m 0755 $(@D)/s31-overlay \
 		$(TARGET_DIR)/usr/sbin/s31-overlay
 	$(INSTALL) -D -m 0755 $(@D)/ble-scan $(TARGET_DIR)/usr/sbin/ble-scan
