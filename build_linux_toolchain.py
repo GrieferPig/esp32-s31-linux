@@ -19,7 +19,13 @@ import sys
 
 
 TARGET = "riscv32-esp-linux-musl"
+GCC_PATCH_VERSION = "git-0dbf5849"
+GCC_SOURCE_VERSION = "gcc-git-0dbf5849"
 MUSL_VERSION = "1.2.5"
+REQUIRED_GCC_PATCHES = (
+    "0001-xesploop.patch",
+    "0002-riscv-xesploop-reject-early-exit-loops.patch",
+)
 REQUIRED_MUSL_PATCH = "0002-riscv32-add-xespv-string-operations.patch"
 
 
@@ -83,19 +89,19 @@ def patch_set_hash(patch_dir: Path) -> str:
     return digest.hexdigest()
 
 
-def invalidate_musl_cache(work_dir: Path) -> None:
+def invalidate_source_cache(work_dir: Path, source_version: str) -> None:
     ctng_src = work_dir / ".build" / "src"
     for path in (
-        ctng_src / f"musl-{MUSL_VERSION}",
-        ctng_src / f".musl-{MUSL_VERSION}.extracted",
-        ctng_src / f".musl-{MUSL_VERSION}.patched",
+        ctng_src / source_version,
+        ctng_src / f".{source_version}.extracted",
+        ctng_src / f".{source_version}.patched",
     ):
         if path.is_dir():
-            print(f"Invalidating cached musl source: {path}")
+            print(f"Invalidating cached source: {path}")
             make_tree_writable(path)
             shutil.rmtree(path)
         elif path.exists():
-            print(f"Invalidating cached musl marker: {path}")
+            print(f"Invalidating cached source marker: {path}")
             path.unlink()
 
 
@@ -131,7 +137,9 @@ def main() -> int:
     config_source = repo_root / "configs" / f"{TARGET}.config"
     kernel_dir = repo_root / "linux-esp32-s31"
     wrappers_dir = ctng_dir / "esp-toolchain-bin-wrappers" / "gnu-riscv-binutils"
+    gcc_patch_dir = ctng_dir / "packages" / "gcc" / GCC_PATCH_VERSION
     musl_patch_dir = ctng_dir / "packages" / "musl" / MUSL_VERSION
+    required_gcc_patches = tuple(gcc_patch_dir / name for name in REQUIRED_GCC_PATCHES)
     required_musl_patch = musl_patch_dir / REQUIRED_MUSL_PATCH
     prefix = repo_root / "toolchain" / TARGET
     work_dir = repo_root / "build" / "crosstool-ng"
@@ -142,6 +150,7 @@ def main() -> int:
         (config_source, "S31 crosstool-NG config"),
         (kernel_dir, "S31 kernel source"),
         (wrappers_dir / "Cargo.toml", "Espressif RISC-V binutils wrappers"),
+        *((patch, "bundled S31 GCC patch") for patch in required_gcc_patches),
         (required_musl_patch, "bundled S31 musl patch"),
     ):
         if not path.exists():
@@ -160,15 +169,21 @@ def main() -> int:
     work_dir.mkdir(parents=True, exist_ok=True)
     sources_dir.mkdir(parents=True, exist_ok=True)
 
-    # crosstool-NG caches patched source trees. Tie that cache to the complete
-    # ordered bundled patch set, not merely to the musl version number.
-    patch_hash_file = work_dir / ".musl-patches.sha256"
-    current_patch_hash = patch_set_hash(musl_patch_dir)
-    cached_patch_hash = (
-        patch_hash_file.read_text().strip() if patch_hash_file.exists() else ""
+    # crosstool-NG caches patched source trees. Tie each source cache to its
+    # complete ordered bundled patch set so a changed GCC or musl patch is
+    # always replayed before rebuilding.
+    patch_sets = (
+        ("gcc", gcc_patch_dir, GCC_SOURCE_VERSION),
+        ("musl", musl_patch_dir, f"musl-{MUSL_VERSION}"),
     )
-    if args.force or cached_patch_hash != current_patch_hash:
-        invalidate_musl_cache(work_dir)
+    patch_hashes: dict[str, tuple[Path, str]] = {}
+    for name, patch_dir, source_version in patch_sets:
+        hash_file = work_dir / f".{name}-patches.sha256"
+        current_hash = patch_set_hash(patch_dir)
+        cached_hash = hash_file.read_text().strip() if hash_file.exists() else ""
+        patch_hashes[name] = (hash_file, current_hash)
+        if args.force or cached_hash != current_hash:
+            invalidate_source_cache(work_dir, source_version)
 
     # This is the same local ct-ng bootstrap used by the S31 GitHub workflow.
     run(["./bootstrap"], cwd=ctng_dir)
@@ -211,7 +226,8 @@ def main() -> int:
     if not gcc.is_file():
         raise SystemExit(f"Toolchain build completed without compiler: {gcc}")
     run([str(gcc), "--version"], cwd=work_dir)
-    patch_hash_file.write_text(current_patch_hash + "\n")
+    for hash_file, current_hash in patch_hashes.values():
+        hash_file.write_text(current_hash + "\n")
 
     marker = prefix / ".source-build"
     prefix.chmod(prefix.stat().st_mode | stat.S_IWUSR | stat.S_IXUSR)
