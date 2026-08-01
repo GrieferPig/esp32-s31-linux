@@ -1,7 +1,7 @@
 # Linux 6.12 for ESP32-S31
 
 Linux port with Sv32 virtual memory, Supervisor mode, XIP, and a Buildroot
-userspace, running on an ESP32-S31 microcontroller.
+userspace, running natively on an ESP32-S31 microcontroller.
 
 Module tested: ESP32-S31-WROOM-3 E1H16R16V (ESP32-S31 Core Board/Korvo).
 
@@ -126,7 +126,7 @@ For several reasons:
 - Cache maintenance, IPC, Interrupt routing, etc.
 - I like having an RTOS for other tasks. If you want absolute performance, a low-end MPU (like `Allwinner T113-S3`) would be a far better choice
 
-For this port, think S31 as a reincarnated `Boufallo BL808`.[^1]
+For this port, think S31 as a reincarnated `Bouffallo BL808`.[^1]
 
 ### TODO
 
