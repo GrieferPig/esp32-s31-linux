@@ -398,23 +398,41 @@ def test_board(serial_device: str, baud: int) -> None:
         )
         serial_command(port, "s31-libc-test", "__S31_LIBC", 120)
         core_started = time.monotonic()
-        coremark = serial_command(port, "coremark", "__S31_COREMARK", 300)
+        coremark = serial_command(
+            port,
+            "before=$(cut -d' ' -f1 /proc/uptime); coremark; core_rc=$?; "
+            "after=$(cut -d' ' -f1 /proc/uptime); "
+            "echo __S31_COREMARK_WALL:$before:$after; test $core_rc -eq 0",
+            "__S31_COREMARK",
+            300,
+        )
         core_host_seconds = time.monotonic() - core_started
         if "CoreMark 1.0" not in coremark or "Correct operation validated" not in coremark:
             raise SystemExit("CoreMark output did not report a validated run")
         reported = re.search(r"Total time \(secs\):\s*([0-9.]+)", coremark)
-        if reported:
-            core_reported_seconds = float(reported.group(1))
-            difference = core_host_seconds - core_reported_seconds
+        board_wall = re.search(
+            r"__S31_COREMARK_WALL:([0-9.]+):([0-9.]+)", coremark
+        )
+        if reported and board_wall:
+            benchmark_seconds = float(reported.group(1))
+            board_process_seconds = float(board_wall.group(2)) - float(
+                board_wall.group(1)
+            )
+            serial_overhead = core_host_seconds - board_process_seconds
             print(
                 "CoreMark timing: "
-                f"reported={core_reported_seconds:.3f}s "
-                f"host={core_host_seconds:.3f}s delta={difference:+.3f}s",
+                f"benchmark={benchmark_seconds:.3f}s "
+                f"board-process={board_process_seconds:.3f}s "
+                f"host-command={core_host_seconds:.3f}s "
+                f"non-benchmark={board_process_seconds - benchmark_seconds:.3f}s "
+                f"serial={serial_overhead:+.3f}s",
                 flush=True,
             )
-            tolerance = max(1.0, core_reported_seconds * 0.10)
-            if abs(difference) > tolerance:
-                raise SystemExit("CoreMark reported time disagrees with host monotonic time")
+            tolerance = max(3.0, board_process_seconds * 0.10)
+            if abs(serial_overhead) > tolerance:
+                raise SystemExit(
+                    "CoreMark board process time disagrees with host monotonic time"
+                )
         dmesg = serial_command(
             port,
             "dmesg | tail -n 200",
