@@ -45,21 +45,21 @@ $ esptool -p /dev/ttyUSB0 -b 2000000 write-flash \
 |---|---|
 | Buildroot rootfs | 🟢 Stable |
 | Reboot and poweroff | 🟢 Stable |
-| Wireless (ESP-Hosted) | 🟡 Untested |
+| Wireless (ESP-Hosted) | 🟡 Experimental |
 | Dual hart SMP | ⚫ Not Planned (Used by FreeRTOS; see FAQ) |
 
 ### Peripheral Drivers
 | Feature | Status |
 |---|---|
-| AXI GDMA | 🟡 Untested |
-| AHB GDMA | 🟡 Untested |
-| Cache driver | 🟡 Untested |
-| TRNG | 🟡 Untested |
-| eFuse | 🟡 Untested |
-| Watchdog | 🟡 Untested |
-| PWM, counter, analog peripherals | 🟡 Untested |
-| CLIC/CLINT interrupt driver | 🟡 Untested |
-| Flash MTD driver | 🟡 Untested |
+| AXI GDMA | 🟡 Experimental |
+| AHB GDMA | 🟡 Experimental |
+| Cache driver | 🟡 Experimental |
+| TRNG | 🟡 Experimental |
+| eFuse | 🟡 Experimental |
+| Watchdog | 🟡 Experimental |
+| PWM, counter, analog peripherals | 🟡 Experimental |
+| CLIC/CLINT interrupt driver | 🟡 Experimental |
+| Flash MTD driver | 🟡 Experimental |
 | Timers | 🟠 WIP |
 | Clock tree | 🟠 WIP |
 | Security accelerators | 🟠 WIP |
@@ -71,11 +71,11 @@ $ esptool -p /dev/ttyUSB0 -b 2000000 write-flash \
 | Feature | Status |
 |---|---|
 | UART0 console | 🟢 Stable |
-| UART1/2 | 🟡 Untested |
-| GMAC Ethernet | 🟡 Untested |
-| SDMMC | 🟡 Untested |
-| GPIO | 🟡 Untested |
-| pinctrl/GPIO Matrix | 🟡 Untested |
+| UART1/2 | 🟡 Experimental |
+| GMAC Ethernet | 🟡 Experimental |
+| SDMMC | 🟡 Experimental |
+| GPIO | 🟡 Experimental |
+| pinctrl/GPIO Matrix | 🟡 Experimental |
 | USB | 🟠 WIP |
 | I2C | 🔴 Not Implemented |
 | I2S | 🔴 Not Implemented |
@@ -84,7 +84,7 @@ $ esptool -p /dev/ttyUSB0 -b 2000000 write-flash \
 | USB Serial/JTAG | ⚫ Not Planned (Used by FreeRTOS; see FAQ) |
 
 
-> 🟢 **Stable** — Fully tested and working | 🟡 **Untested** — Seems working; not throughly tested | 🟠 **WIP** - Functions not fully implemented
+> 🟢 **Stable** — Fully tested and working | 🟡 **Experimental** — Seems working; not throughly tested | 🟠 **WIP** - Functions not fully implemented
 
 ## Build/Flash Instructions
 
