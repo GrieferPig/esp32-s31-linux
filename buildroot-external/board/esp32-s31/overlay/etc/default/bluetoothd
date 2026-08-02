@@ -1,0 +1,2 @@
+# The GAP plugin is the only built-in profile required by this LE-only image.
+BLUETOOTHD_ARGS="-n -p gap"

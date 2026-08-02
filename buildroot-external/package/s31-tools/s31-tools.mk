@@ -45,6 +45,11 @@ define S31_TOOLS_BUILD_CMDS
 	$(TARGET_CC) $(TARGET_CFLAGS) $(TARGET_LDFLAGS) \
 		$(@D)/ble_scan.c -o $(@D)/ble-scan
 	$(TARGET_CC) $(TARGET_CFLAGS) $(TARGET_LDFLAGS) \
+		$(@D)/s31_clock_compare.c -o $(@D)/s31-clock-compare
+	$(TARGET_CC) $(TARGET_CFLAGS) $(TARGET_LDFLAGS) \
+		-I$(BR2_EXTERNAL_ESP32_S31_PATH)/../shared \
+		$(@D)/s31_freertos_mem.c -o $(@D)/s31-freertos-mem
+	$(TARGET_CC) $(TARGET_CFLAGS) $(TARGET_LDFLAGS) \
 		-I$(S31_TOOLS_PROTO_DIR) \
 		-I$(S31_TOOLS_PROTOBUF_DIR) \
 		$(@D)/esp_hosted_ctl.c \
@@ -70,6 +75,10 @@ define S31_TOOLS_INSTALL_TARGET_CMDS
 	$(INSTALL) -D -m 0755 $(@D)/s31-overlay \
 		$(TARGET_DIR)/usr/sbin/s31-overlay
 	$(INSTALL) -D -m 0755 $(@D)/ble-scan $(TARGET_DIR)/usr/sbin/ble-scan
+	$(INSTALL) -D -m 0755 $(@D)/s31-clock-compare \
+		$(TARGET_DIR)/usr/sbin/s31-clock-compare
+	$(INSTALL) -D -m 0755 $(@D)/s31-freertos-mem \
+		$(TARGET_DIR)/usr/sbin/s31-freertos-mem
 	$(INSTALL) -D -m 0755 $(@D)/esp-hosted-ctl \
 		$(TARGET_DIR)/usr/sbin/esp-hosted-ctl
 	ln -sfn esp-hosted-ctl $(TARGET_DIR)/usr/sbin/test.out

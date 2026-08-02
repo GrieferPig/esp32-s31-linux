@@ -1,0 +1,79 @@
+From 9fca96b7766df55a26296028f8dc44304f31bdb7 Mon Sep 17 00:00:00 2001
+From: S31 Linux <s31-linux@localhost>
+Date: Sun, 2 Aug 2026 20:00:00 +0800
+Subject: [PATCH] bluetoothd: build only the GAP plugin
+
+The S31 image is Bluetooth LE-only and implements no standard profiles.
+Keep the Generic Access service and omit policy, Classic, device-profile,
+and LE Audio profile plugins to reduce resident memory and page-cache use.
+---
+ Makefile.plugins | 36 ------------------------------------
+ 1 file changed, 36 deletions(-)
+
+diff --git a/Makefile.plugins b/Makefile.plugins
+--- a/Makefile.plugins
++++ b/Makefile.plugins
+@@ -1,16 +1,4 @@
+ # SPDX-License-Identifier: GPL-2.0
+-builtin_modules += hostname
+-builtin_sources += plugins/hostname.c
+-
+-builtin_modules += wiimote
+-builtin_sources += plugins/wiimote.c
+-
+-builtin_modules += autopair
+-builtin_sources += plugins/autopair.c
+-
+-builtin_modules += policy
+-builtin_sources += plugins/policy.c
+-
+ if ADMIN
+ builtin_modules += admin
+ builtin_sources += plugins/admin.c
+@@ -89,12 +77,6 @@ endif
+ builtin_modules += gap
+ builtin_sources += profiles/gap/gas.c
+ 
+-builtin_modules += scanparam
+-builtin_sources += profiles/scanparam/scan.c
+-
+-builtin_modules += deviceinfo
+-builtin_sources += profiles/deviceinfo/deviceinfo.c
+-
+ if MIDI
+ builtin_modules += midi
+ builtin_sources += profiles/midi/midi.c \
+@@ -104,9 +86,6 @@ builtin_cppflags += $(ALSA_CFLAGS)
+ builtin_ldadd += $(ALSA_LIBS)
+ endif
+ 
+-builtin_modules += battery
+-builtin_sources += profiles/battery/battery.c
+-
+ if SIXAXIS
+ builtin_modules += sixaxis
+ builtin_sources += plugins/sixaxis.c
+@@ -133,21 +112,6 @@ builtin_modules += vcp
+ builtin_sources += profiles/audio/vcp.c
+ endif
+ 
+-if MICP
+-builtin_modules += micp
+-builtin_sources += profiles/audio/micp.c
+-endif
+-
+-if CCP
+-builtin_modules += ccp
+-builtin_sources += profiles/audio/ccp.c
+-endif
+-
+-if CSIP
+-builtin_modules += csip
+-builtin_sources += profiles/audio/csip.c
+-endif
+-
+ if ASHA
+ builtin_modules += asha
+ builtin_sources += profiles/audio/asha.h profiles/audio/asha.c
+-- 
+2.43.0

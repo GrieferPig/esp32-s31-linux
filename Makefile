@@ -116,7 +116,7 @@ toolchain-source:
 	python3 $(CURDIR)/build_linux_toolchain.py --ct-ng-dir "$(CROSSTOOL_NG_DIR)" --jobs "$(JOBS)" --force
 
 FW_TEXT_START ?= 0x40030000
-FW_RW_START ?= 0x50F00000
+FW_RW_START ?= 0x2F052000
 LINUX_XIP_ADDR ?= 0x400B0000
 FW_JUMP_ADDR ?= $(LINUX_XIP_ADDR)
 OPENSBI_PARTITION_SIZE ?= 524288

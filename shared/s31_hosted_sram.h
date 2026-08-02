@@ -17,11 +17,13 @@
 typedef u8 s31_u8;
 typedef u16 s31_u16;
 typedef u32 s31_u32;
+typedef u64 s31_u64;
 #else
 #include <stdint.h>
 typedef uint8_t s31_u8;
 typedef uint16_t s31_u16;
 typedef uint32_t s31_u32;
+typedef uint64_t s31_u64;
 #endif
 
 #define S31_HOSTED_SRAM_BASE		0x2f062f80U
@@ -64,6 +66,12 @@ enum s31_hosted_control_type {
 	S31_HOSTED_CTRL_POWER_OFF,
 	/* OpenSBI asks hart0 to execute IDF's complete restart sequence. */
 	S31_HOSTED_CTRL_RESTART,
+	/* Linux and FreeRTOS compare independent clocks over one interval. */
+	S31_HOSTED_CTRL_CLOCK_START,
+	S31_HOSTED_CTRL_CLOCK_STOP,
+	/* Linux requests/retrieves FreeRTOS HP-SRAM heap statistics. */
+	S31_HOSTED_CTRL_MEM_STATS_REQUEST,
+	S31_HOSTED_CTRL_MEM_STATS_RESPONSE,
 };
 
 enum s31_hosted_link_state {
@@ -98,6 +106,31 @@ struct s31_hosted_control_msg {
 	s31_u32 generation;
 	s31_u8 data[16];
 } __attribute__((packed));
+
+/* CLOCK_START/STOP data payload.  All fields use little-endian wire order. */
+struct s31_hosted_clock_stamp {
+	s31_u32 cookie;
+	s31_u32 duration_sec;
+	s31_u64 freertos_us;
+} __attribute__((packed));
+
+/* MEM_STATS_RESPONSE payload. All fields use little-endian wire order. */
+struct s31_hosted_mem_stats {
+	s31_u32 total_bytes;
+	s31_u32 free_bytes;
+	s31_u32 minimum_free_bytes;
+	s31_u32 largest_free_block;
+} __attribute__((packed));
+
+/* Userspace argument for S31_HOSTED_IOC_CLOCK_TEST. */
+struct s31_hosted_clock_test {
+	s31_u32 duration_sec;
+	s31_u32 cookie;
+	s31_u64 linux_start_ns;
+	s31_u64 linux_end_ns;
+	s31_u64 freertos_start_us;
+	s31_u64 freertos_end_us;
+};
 
 struct s31_hosted_ring_state {
 	volatile s31_u32 producer;
@@ -140,6 +173,10 @@ _Static_assert(sizeof(struct s31_esp_payload_header) == 12,
 	       "ESP-Hosted payload header ABI changed");
 _Static_assert(sizeof(struct s31_hosted_control_msg) == 24,
 	       "hosted control message ABI changed");
+_Static_assert(sizeof(struct s31_hosted_clock_stamp) == 16,
+	       "hosted clock stamp ABI changed");
+_Static_assert(sizeof(struct s31_hosted_mem_stats) == 16,
+	       "hosted memory statistics ABI changed");
 _Static_assert(sizeof(struct s31_hosted_ring_state) == 192,
 	       "hosted ring state must occupy three cache lines");
 _Static_assert(sizeof(struct s31_hosted_control) == 448,

@@ -8,9 +8,11 @@
 
 #include "esp_attr.h"
 #include "esp_err.h"
+#include "esp_heap_caps.h"
 #include "esp_log.h"
 #include "esp_sleep.h"
 #include "esp_system.h"
+#include "esp_timer.h"
 #include "freertos/FreeRTOS.h"
 #include "freertos/task.h"
 #include "soc/hp_system_reg.h"
@@ -30,6 +32,10 @@ static portMUX_TYPE s_tx_lock = portMUX_INITIALIZER_UNLOCKED;
 static uint16_t s_tx_sequence;
 static s31_hosted_frame_handler_t s_frame_handler;
 static void *s_frame_handler_arg;
+static bool s_clock_test_active;
+static uint32_t s_clock_test_cookie;
+static uint32_t s_clock_test_duration;
+static int64_t s_clock_test_deadline_us;
 
 static inline void shared_wmb(void)
 {
@@ -159,6 +165,86 @@ static void send_control(uint8_t type, uint8_t value)
 	(void)s31_hosted_sram_send(S31_HOSTED_PRIV_IF, &msg, sizeof(msg), 0);
 }
 
+static int send_clock_stamp(uint8_t type, uint32_t cookie,
+			    uint32_t duration_sec, uint64_t timestamp_us)
+{
+	struct s31_hosted_control_msg msg = {
+		.type = type,
+		.length = sizeof(msg),
+		.generation = s_ctrl->generation,
+	};
+	struct s31_hosted_clock_stamp stamp = {
+		.cookie = cookie,
+		.duration_sec = duration_sec,
+		.freertos_us = timestamp_us,
+	};
+
+	memcpy(msg.data, &stamp, sizeof(stamp));
+	return s31_hosted_sram_send(S31_HOSTED_PRIV_IF, &msg, sizeof(msg), 0);
+}
+
+static void clock_test_poll(void)
+{
+	int64_t now;
+
+	if (!s_clock_test_active)
+		return;
+	now = esp_timer_get_time();
+	if (now < s_clock_test_deadline_us)
+		return;
+	/* Keep retrying if the outbound ring happens to be full at expiry. */
+	if (!send_clock_stamp(S31_HOSTED_CTRL_CLOCK_STOP,
+			      s_clock_test_cookie, s_clock_test_duration, now))
+		s_clock_test_active = false;
+}
+
+static bool process_clock_control(const struct s31_hosted_control_msg *msg)
+{
+	struct s31_hosted_clock_stamp stamp;
+	int64_t now;
+
+	if (msg->type != S31_HOSTED_CTRL_CLOCK_START)
+		return false;
+	memcpy(&stamp, msg->data, sizeof(stamp));
+	if (!stamp.duration_sec || stamp.duration_sec > 600)
+		return true;
+	now = esp_timer_get_time();
+	if (send_clock_stamp(S31_HOSTED_CTRL_CLOCK_START, stamp.cookie,
+			     stamp.duration_sec, now))
+		return true;
+	s_clock_test_cookie = stamp.cookie;
+	s_clock_test_duration = stamp.duration_sec;
+	s_clock_test_deadline_us =
+		now + (int64_t)stamp.duration_sec * 1000000;
+	s_clock_test_active = true;
+	return true;
+}
+
+static bool process_mem_stats_control(const struct s31_hosted_control_msg *msg)
+{
+	const uint32_t caps = MALLOC_CAP_INTERNAL | MALLOC_CAP_DMA |
+			      MALLOC_CAP_8BIT;
+	struct s31_hosted_control_msg response = {
+		.type = S31_HOSTED_CTRL_MEM_STATS_RESPONSE,
+		.length = sizeof(response),
+		.generation = s_ctrl->generation,
+	};
+	struct s31_hosted_mem_stats stats;
+
+	if (msg->type != S31_HOSTED_CTRL_MEM_STATS_REQUEST)
+		return false;
+
+	/* MALLOC_CAP_DMA excludes LP RAM and PSRAM on ESP32-S31. */
+	stats.total_bytes = heap_caps_get_total_size(caps);
+	stats.free_bytes = heap_caps_get_free_size(caps);
+	stats.minimum_free_bytes = heap_caps_get_minimum_free_size(caps);
+	stats.largest_free_block = heap_caps_get_largest_free_block(caps);
+	memcpy(response.data, &stats, sizeof(stats));
+	(void)s31_hosted_sram_send(S31_HOSTED_PRIV_IF, &response,
+				   sizeof(response), 0);
+	return true;
+}
+
 void __attribute__((weak)) hosted_wifi_rx_handler(const uint8_t *data,
 							size_t len)
 {
@@ -202,6 +288,14 @@ static void process_h1_frame(const uint8_t *frame, size_t frame_length)
 	length = header->len;
 	if (offset < sizeof(*header) || offset + length > frame_length)
 		return;
+	if (header->if_type == S31_HOSTED_PRIV_IF &&
+	    length >= sizeof(struct s31_hosted_control_msg)) {
+		msg = (const void *)(frame + offset);
+		if (process_clock_control(msg))
+			return;
+		if (process_mem_stats_control(msg))
+			return;
+	}
 
 	/*
 	 * TEST_IF remains owned by the transport so the Linux probe can validate
@@ -338,6 +432,7 @@ static void hosted_rx_task(void *arg)
 		REG_WRITE(HP_SYSTEM_CPU_INT_FROM_CPU_3_REG, 0);
 		s_ctrl->h0_rx_polls++;
 		drain_h1_ring();
+		clock_test_poll();
 		__asm__ volatile("nop");
 	}
 }
