@@ -18,7 +18,7 @@ import time
 
 
 DEFAULT_REPOSITORY = "GrieferPig/crosstool-NG-s31"
-DEFAULT_RELEASE_TAG = "esp32s31-linux-gcc-15.2.0-2"
+DEFAULT_RELEASE_TAG = "esp32s31-linux-gcc-15.2.0-4"
 TARGET = "riscv32-esp-linux-musl"
 
 
@@ -223,6 +223,13 @@ __attribute__((noinline)) int early_exit(const unsigned char *p)
       return i;
   return -1;
 }
+__attribute__((noinline)) unsigned simple_sum(const unsigned char *p)
+{
+  unsigned sum = 0;
+  for (int i = 0; i < 32; i++)
+    sum += p[i];
+  return sum;
+}
 __attribute__((noinline)) void *branch_end(void **items, int count, void **out)
 {
   void *last = 0;
@@ -240,11 +247,36 @@ __attribute__((noinline)) void *branch_end(void **items, int count, void **out)
     run([str(compiler), "-O2", "-S", str(source), "-o", str(assembly)], cwd=repo_root)
     text = assembly.read_text()
     early = text.split("early_exit:", 1)[1].split(".size\tearly_exit", 1)[0]
+    simple = text.split("simple_sum:", 1)[1].split(".size\tsimple_sum", 1)[0]
     branch = text.split("branch_end:", 1)[1].split(".size\tbranch_end", 1)[0]
     if "esp.lp.setup" in early:
         raise SystemExit("Unsafe HWLP generated for an early-return loop")
-    if "esp.lp.setup" not in branch or not re.search(r"^[.]L\d+:\n\s*nop$", branch, re.M):
-        raise SystemExit("Label-latch HWLP did not materialize its safe nop")
+    if "esp.lp.setup" in branch:
+        raise SystemExit("Unsafe HWLP generated for a loop that can skip its end")
+
+    setup = re.search(r"esp[.]lp[.]setup[^,]*,[^,]*,\s*([^\s]+)", simple)
+    if not setup:
+        raise SystemExit("Safe straight-line loop did not use HWLP")
+    lines = simple.splitlines()
+    try:
+        label_index = next(
+            index for index, line in enumerate(lines) if line.strip() == setup[1] + ":"
+        )
+        end_opcode = next(
+            line.strip().split()[0]
+            for line in lines[label_index + 1 :]
+            if line.strip() and not line.lstrip().startswith(".")
+        )
+    except (StopIteration, IndexError) as error:
+        raise SystemExit("Could not resolve straight-line HWLP end") from error
+    if re.match(r"^(?:b|j)", end_opcode) or end_opcode in {
+        "ret",
+        "call",
+        "tail",
+    }:
+        raise SystemExit(f"Unsafe straight-line HWLP end opcode: {end_opcode}")
+    if end_opcode == "nop":
+        raise SystemExit("Straight-line HWLP still contains synthetic nop padding")
     print("compiler Xesploop control-flow checks passed", flush=True)
 
 
@@ -291,9 +323,7 @@ def scan_rootfs_hwloops(toolchain: Path, repo_root: Path) -> None:
     target = repo_root / "build" / "buildroot" / "target"
     objdump = toolchain / "bin" / f"{TARGET}-objdump"
     setup_re = re.compile(r"\besp[.]lp[.]setup\b.*?#\s*([0-9a-fA-F]+)")
-    instruction_re = re.compile(
-        r"^\s*([0-9a-fA-F]+):\s+(?:[0-9a-fA-F]+\s+)+([.a-zA-Z0-9_]+)"
-    )
+    instruction_re = re.compile(r"^\s*([0-9a-fA-F]+):\s+([.a-zA-Z0-9_]+)")
     unsafe_re = re.compile(r"^(?:b|j)|^(?:ret|call|tail)$")
     elf_count = setup_count = 0
     unsafe: list[str] = []
@@ -304,7 +334,7 @@ def scan_rootfs_hwloops(toolchain: Path, repo_root: Path) -> None:
             if path.read_bytes()[:4] != b"\x7fELF":
                 continue
             disassembly = run(
-                [str(objdump), "-d", str(path)],
+                [str(objdump), "-d", "--no-show-raw-insn", str(path)],
                 cwd=repo_root,
                 capture=True,
                 timeout=120,
@@ -321,7 +351,7 @@ def scan_rootfs_hwloops(toolchain: Path, repo_root: Path) -> None:
             setup_count += 1
             address = int(match.group(1), 16)
             opcode = instructions.get(address, "<missing>")
-            if opcode == "<missing>" or unsafe_re.match(opcode):
+            if opcode in {"<missing>", "nop"} or unsafe_re.match(opcode):
                 unsafe.append(f"{path.relative_to(target)}:{address:x}:{opcode}")
     print(
         f"rootfs HWLP scan: ELFs={elf_count} setups={setup_count} unsafe={len(unsafe)}",

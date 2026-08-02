@@ -233,16 +233,22 @@ def main() -> int:
     verify_compiler(prefix, verification_dir, repo_root)
     verify_libc_xespv(prefix, verification_dir, repo_root)
 
+    # crosstool-NG finalizes the installed tree read-only.  Restore owner
+    # write permission before adding the local-build metadata below.
+    make_tree_writable(prefix)
     shutil.copy2(work_dir / ".config", prefix / "crosstool-ng.config")
     manifest = prefix / "s31-patch-sha256.txt"
     with manifest.open("w") as output:
         for patch in (*required_gcc_patches, required_musl_patch):
-            output.write(f"{hashlib.sha256(patch.read_bytes()).hexdigest()}  {patch.name}\n")
+            relative_patch = patch.relative_to(ctng_dir)
+            output.write(
+                f"{hashlib.sha256(patch.read_bytes()).hexdigest()}  "
+                f"{relative_patch}\n"
+            )
     for hash_file, current_hash in patch_hashes.values():
         hash_file.write_text(current_hash + "\n")
 
     marker = prefix / ".source-build"
-    prefix.chmod(prefix.stat().st_mode | stat.S_IWUSR | stat.S_IXUSR)
     marker.write_text(
         "Built locally by build_linux_toolchain.py\n"
         f"config_sha256={hashlib.sha256(generated_config.read_bytes()).hexdigest()}\n"
