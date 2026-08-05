@@ -58,8 +58,6 @@
 #define ROOTFS_MMU_MAP_SIZE           0x005E0000U
 #define ESP32S31_PSRAM_SIZE           0x01000000U
 #define LINUX_PSRAM_START             0x50000000U
-#define OPENSBI_SRAM_START            0x2F052000U
-#define OPENSBI_SRAM_END              0x2F062000U
 /*
  * Linux owns the highest contiguous part of IDF-usable HP SRAM:
  *   AXI GDMA descriptors: 0x2f072f80..0x2f07af7f (32 KiB)
@@ -72,7 +70,6 @@
 #define LINUX_SRAM_START              S31_HOSTED_SRAM_BASE
 #define LINUX_SRAM_END                0x2F07AFC0U
 #define HART1_EARLY_MAILBOX_ADDR      0x2F07AFA0U
-SOC_RESERVE_MEMORY_REGION(OPENSBI_SRAM_START, OPENSBI_SRAM_END, opensbi);
 SOC_RESERVE_MEMORY_REGION(LINUX_SRAM_START, LINUX_SRAM_END, linux_devices);
 
 static const char *TAG = "boot";
