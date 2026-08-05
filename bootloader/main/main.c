@@ -59,18 +59,18 @@
 #define ESP32S31_PSRAM_SIZE           0x01000000U
 #define LINUX_PSRAM_START             0x50000000U
 /*
- * Linux owns the highest contiguous part of IDF-usable HP SRAM:
- *   AXI GDMA descriptors: 0x2f072f80..0x2f07af7f (32 KiB)
- *   DWC2 status buffer:   0x2f07af80..0x2f07afbf (64 B)
- *
- * APP_USABLE_DRAM_END is 0x2f07afc0 on S31. Registering this reservation in
- * .reserved_memory_address removes it before heap_caps_init() creates the
- * FreeRTOS heaps. Keep the DTS addresses in sync with these constants.
+ * Place the shared ring immediately below the hardware-owned DMA/status
+ * buffers. This leaves one large primary HP SRAM region for FreeRTOS; the
+ * separate ROM-tail region remains available through the IDF heap layout.
  */
 #define LINUX_SRAM_START              S31_HOSTED_SRAM_BASE
+#define LINUX_SRAM_RING_END           (S31_HOSTED_SRAM_BASE + S31_HOSTED_SRAM_SIZE)
+#define LINUX_DMA_START               LINUX_SRAM_RING_END
+#define LINUX_DMA_END                 0x2F07AFC0U
 #define LINUX_SRAM_END                0x2F07AFC0U
 #define HART1_EARLY_MAILBOX_ADDR      0x2F07AFA0U
-SOC_RESERVE_MEMORY_REGION(LINUX_SRAM_START, LINUX_SRAM_END, linux_devices);
+SOC_RESERVE_MEMORY_REGION(LINUX_SRAM_START, LINUX_SRAM_RING_END, hosted_ring);
+SOC_RESERVE_MEMORY_REGION(LINUX_DMA_START, LINUX_DMA_END, linux_devices);
 
 static const char *TAG = "boot";
 volatile uint32_t g_core1_fdt;
@@ -444,10 +444,10 @@ void app_main(void)
              rootfs_part->address, rootfs_part->size,
              (uint32_t)ROOTFS_FLASH_ADDR);
 
-    ESP_LOGI(TAG, "FreeRTOS owns HP SRAM below 0x%08" PRIx32
-                  "; Linux device SRAM is 0x%08" PRIx32 "..0x%08" PRIx32,
-             (uint32_t)LINUX_SRAM_START, (uint32_t)LINUX_SRAM_START,
-             (uint32_t)LINUX_SRAM_END);
+    ESP_LOGI(TAG, "FreeRTOS HP SRAM primary region; hosted ring 0x%08" PRIx32
+                  "..0x%08" PRIx32 "; DMA/status 0x%08" PRIx32 "..0x%08" PRIx32,
+             (uint32_t)LINUX_SRAM_START, (uint32_t)LINUX_SRAM_RING_END,
+             (uint32_t)LINUX_DMA_START, (uint32_t)LINUX_DMA_END);
 
     /*
      * Publish the complete transport before hart1 can touch its rings.
