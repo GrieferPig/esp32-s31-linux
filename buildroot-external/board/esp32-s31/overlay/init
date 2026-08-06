@@ -1,5 +1,7 @@
 #!/bin/sh
 
+set -u
+
 mount -t devtmpfs devtmpfs /dev 2>/dev/null || {
 	mknod /dev/console c 5 1 2>/dev/null || true
 	mknod /dev/ttyS0 c 4 64 2>/dev/null || true
@@ -15,11 +17,74 @@ mount -t proc proc /proc 2>/dev/null || true
 mount -t sysfs sysfs /sys 2>/dev/null || true
 mount -t devpts devpts /dev/pts 2>/dev/null || true
 
-mount -t tmpfs -o mode=0755,nosuid,nodev tmpfs /run
-mount -t tmpfs -o mode=1777,nosuid,nodev tmpfs /tmp
-mount -t tmpfs -o mode=0755,nosuid,nodev tmpfs /var/log
+# The rootfs is SquashFS. Keep the persist mount outside the future merged
+# root while the overlay is assembled, then expose it at /persist after the
+# pivot. Identify persist by its ESP-IDF label, not a fixed MTD number.
+persist_dev=""
+for _try in $(seq 1 50); do
+	for name_path in /sys/class/mtd/mtd*/name; do
+		[ -r "$name_path" ] || continue
+		[ "$(cat "$name_path")" = persist ] || continue
+		mtd_name="${name_path#/sys/class/mtd/mtd}"
+		mtd_name="${mtd_name%/name}"
+		if [ -b "/dev/mtdblock${mtd_name}" ]; then
+			persist_dev="/dev/mtdblock${mtd_name}"
+			break 2
+		fi
+	done
+	sleep 0.1
+done
+
+if [ -z "$persist_dev" ]; then
+	echo "S31 overlay: persist MTD block device not found" >&2
+	exec /sbin/init
+fi
+
+# /mnt is part of the immutable root, so use a temporary mount there for the
+# overlay construction. A freshly erased NOR partition is a valid empty JFFS2
+# filesystem and does not need a separate mkfs operation on the target.
+mount -t tmpfs -o mode=0755,nosuid,nodev tmpfs /mnt || {
+	echo "S31 overlay: failed to allocate staging tmpfs" >&2
+	exec /sbin/init
+}
+mkdir -p /mnt/persist /mnt/newroot
+if ! mount -t jffs2 "$persist_dev" /mnt/persist; then
+	echo "S31 overlay: failed to mount persist as JFFS2" >&2
+	exec /sbin/init
+fi
+
+mkdir -p /mnt/persist/upper /mnt/persist/work
+if ! mount -t overlay overlay \
+	-o lowerdir=/,upperdir=/mnt/persist/upper,workdir=/mnt/persist/work,\
+index=off,redirect_dir=off /mnt/newroot; then
+	echo "S31 overlay: failed to mount overlayfs" >&2
+	exec /sbin/init
+fi
+
+mkdir -p /mnt/newroot/oldroot /mnt/newroot/persist
+mount --bind /mnt/persist /mnt/newroot/persist || {
+	echo "S31 overlay: failed to expose persist" >&2
+	exec /sbin/init
+}
+if ! pivot_root /mnt/newroot /mnt/newroot/oldroot; then
+	echo "S31 overlay: pivot_root failed" >&2
+	exec /sbin/init
+fi
+cd /
+umount -l /oldroot 2>/dev/null || true
+
+# Recreate volatile mounts in the merged root. They do not consume JFFS2
+# space and are not copied up into the persistent upperdir.
+mount -t devtmpfs devtmpfs /dev 2>/dev/null || true
+mount -t proc proc /proc 2>/dev/null || true
+mount -t sysfs sysfs /sys 2>/dev/null || true
+mount -t devpts devpts /dev/pts 2>/dev/null || true
+mount -t tmpfs -o mode=0755,nosuid,nodev tmpfs /run 2>/dev/null || true
+mount -t tmpfs -o mode=1777,nosuid,nodev tmpfs /tmp 2>/dev/null || true
+mount -t tmpfs -o mode=0755,nosuid,nodev tmpfs /var/log 2>/dev/null || true
 mkdir -p /run/lock
 mkdir -m 0700 /run/bluetooth
 mkdir -m 0700 /run/seedrng
+mkdir -p /etc/s31-conf
 
 exec /sbin/init

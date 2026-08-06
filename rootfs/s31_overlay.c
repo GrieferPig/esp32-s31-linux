@@ -7,8 +7,6 @@
 #include <fcntl.h>
 #include <libfdt.h>
 #include <linux/ioctl.h>
-#include <mtd/mtd-user.h>
-#include <stddef.h>
 #include <stdint.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -22,13 +20,11 @@
 #define OVERLAY_PREFIX "esp32s31-overlay-"
 #define OVERLAY_SUFFIX ".dtbo"
 #define CURRENT_FILE "/run/s31-overlay.current"
-#define PERSIST_MTD_NAME "persist"
-#define PERSIST_MAGIC "S31OVL1"
-#define PERSIST_VERSION 1U
+#define PERSIST_FILE "/etc/s31-conf/s31-overlay.conf"
 #define MAX_DTBO_SIZE (128U * 1024U)
 #define MAX_OVERLAYS 32
 #define NAME_LEN 32
-/* The first 2 KiB of persist are reserved for the DTBO configuration. */
+/* Persistent settings live in the merged root's JFFS2 upperdir. */
 #define CONFIG_LEN 2024
 
 #define S31_OVERLAY_IOC_MAGIC 'O'
@@ -42,18 +38,6 @@ struct overlay_name { char name[NAME_LEN]; };
 struct overlay_item { int32_t id; char name[NAME_LEN]; uint64_t gpios; };
 struct overlay_list { uint32_t count; struct overlay_item items[MAX_OVERLAYS]; };
 
-struct __attribute__((packed)) persist_record {
-	char magic[8];
-	uint32_t version;
-	uint32_t sequence;
-	uint32_t length;
-	char config[CONFIG_LEN];
-	uint32_t crc;
-};
-
-_Static_assert(sizeof(struct persist_record) == 2048,
-	       "DTBO persist record must occupy exactly 2 KiB");
-
 static const char *overlay_dir(void)
 {
 	const char *path = getenv("S31_OVERLAY_DIR");
@@ -61,20 +45,11 @@ static const char *overlay_dir(void)
 	return path && *path ? path : OVERLAY_DIR;
 }
 
-static uint32_t crc32_bytes(const void *data, size_t length)
+static const char *persist_file(void)
 {
-	const uint8_t *p = data;
-	uint32_t crc = ~0U;
-	size_t i;
-	unsigned int bit;
+	const char *path = getenv("S31_OVERLAY_PERSIST");
 
-	for (i = 0; i < length; i++) {
-		crc ^= p[i];
-		for (bit = 0; bit < 8; bit++)
-			crc = (crc >> 1) ^ (0xedb88320U &
-						-(int32_t)(crc & 1));
-	}
-	return ~crc;
+	return path && *path ? path : PERSIST_FILE;
 }
 
 static int valid_name(const char *name)
@@ -98,166 +73,81 @@ static int valid_gpio(unsigned int gpio)
 	       gpio != 33 && gpio != 34 && gpio != 41;
 }
 
-static uint32_t sequence_from_slot(const void *data, ssize_t got,
-				   char *config, size_t config_size)
-{
-	const struct persist_record *record = data;
-
-	if (got >= (ssize_t)sizeof(*record) &&
-	    !memcmp(record->magic, PERSIST_MAGIC, sizeof(record->magic)) &&
-	    record->version == PERSIST_VERSION &&
-	    record->length < sizeof(record->config) &&
-	    record->config[record->length] == '\0' &&
-	    record->crc == crc32_bytes(record,
-				       offsetof(struct persist_record, crc))) {
-		snprintf(config, config_size, "%s", record->config);
-		return record->sequence;
-	}
-	return 0;
-}
-
-static int find_persist_mtd(char *path, size_t path_size)
-{
-	char name_path[64], name[64];
-	int i;
-
-	for (i = 0; i < 32; i++) {
-		FILE *file;
-
-		snprintf(name_path, sizeof(name_path),
-			 "/sys/class/mtd/mtd%d/name", i);
-		file = fopen(name_path, "r");
-		if (!file)
-			continue;
-		if (fgets(name, sizeof(name), file)) {
-			name[strcspn(name, "\r\n")] = '\0';
-			if (!strcmp(name, PERSIST_MTD_NAME)) {
-				fclose(file);
-				snprintf(path, path_size, "/dev/mtd%d", i);
-				return 0;
-			}
-		}
-		fclose(file);
-	}
-	errno = ENODEV;
-	return -1;
-}
-
 static int read_persist(char *config, size_t config_size, int *best_slot,
 			uint32_t *best_sequence)
 {
-	struct persist_record record;
-	struct mtd_info_user info;
-	char path[32];
-	uint32_t sequence;
-	int fd;
+	FILE *file;
+	char line[512], *equal, *name, *value;
+	size_t used = 0;
 
-	if (find_persist_mtd(path, sizeof(path)))
+	config[0] = '\0';
+	file = fopen(persist_file(), "r");
+	if (!file)
 		return -1;
-	fd = open(path, O_RDWR | O_SYNC);
-	if (fd < 0)
-		return -1;
-	if (ioctl(fd, MEMGETINFO, &info) < 0 || !info.erasesize ||
-	    info.size < sizeof(record)) {
-		close(fd);
-		errno = EINVAL;
-		return -1;
+	while (fgets(line, sizeof(line), file)) {
+		size_t length = strcspn(line, "\r\n");
+		line[length] = '\0';
+		if (!line[0] || line[0] == '#')
+			continue;
+		equal = strchr(line, '=');
+		if (!equal || strncmp(line, "overlay.", 8))
+			continue;
+		*equal = '\0';
+		name = line + 8;
+		value = equal + 1;
+		if (!valid_name(name) || !*value ||
+		    used + strlen(value) + 2 > config_size) {
+			fclose(file);
+			errno = EINVAL;
+			return -1;
+		}
+		used += snprintf(config + used, config_size - used, "%s\n", value);
 	}
-	sequence = sequence_from_slot(&record,
-				      pread(fd, &record, sizeof(record), 0),
-				      config, config_size);
-	close(fd);
-	if (!sequence) {
-		errno = ENODATA;
-		return -1;
-	}
-	*best_slot = 0;
-	*best_sequence = sequence;
+	fclose(file);
+	*best_slot = -1;
+	*best_sequence = 0;
 	return 0;
 }
 
 static int write_persist(const char *config)
 {
-	struct persist_record record, verify;
-	struct erase_info_user erase;
-	struct mtd_info_user info;
-	char previous[CONFIG_LEN] = "", path[32];
-	uint8_t *reserved;
-	uint32_t sequence = 0;
-	size_t length = strlen(config);
-	size_t reserved_len;
-	int best_slot = -1, fd, attempt, write_errno = 0;
-	ssize_t written;
+	char temporary[256], old[CONFIG_LEN], *save, *line;
+	int fd;
 
-	if (length >= sizeof(record.config)) {
+	if (strlen(config) >= sizeof(old)) {
 		errno = E2BIG;
 		return -1;
 	}
-	read_persist(previous, sizeof(previous), &best_slot, &sequence);
-	if (find_persist_mtd(path, sizeof(path)))
+	if (mkdir("/etc/s31-conf", 0755) && errno != EEXIST)
 		return -1;
-	fd = open(path, O_RDWR | O_SYNC);
+	snprintf(temporary, sizeof(temporary), "%s.tmp", persist_file());
+	fd = open(temporary, O_WRONLY | O_CREAT | O_TRUNC, 0600);
 	if (fd < 0)
 		return -1;
-	if (ioctl(fd, MEMGETINFO, &info) < 0 || !info.erasesize ||
-	    info.size < info.erasesize || info.erasesize < sizeof(record)) {
+	strcpy(old, config);
+	for (line = strtok_r(old, "\n", &save); line;
+	     line = strtok_r(NULL, "\n", &save)) {
+		size_t name_len = strcspn(line, " \t");
+		if (!name_len || name_len >= NAME_LEN) {
+			close(fd);
+			unlink(temporary);
+			errno = EINVAL;
+			return -1;
+		}
+		if (dprintf(fd, "overlay.%.*s=%s\n", (int)name_len, line,
+			    line) < 0) {
+			int saved = errno;
+			close(fd);
+			unlink(temporary);
+			errno = saved;
+			return -1;
+		}
+	}
+	if (fsync(fd) || close(fd) || rename(temporary, persist_file())) {
+		int saved = errno;
 		close(fd);
-		errno = EINVAL;
-		return -1;
-	}
-	reserved_len = info.erasesize - sizeof(record);
-	reserved = malloc(reserved_len ? reserved_len * 2 : 1);
-	if (!reserved) {
-		close(fd);
-		return -1;
-	}
-	/* Preserve the HUK primary record beginning at offset 0x800. */
-	if (reserved_len && pread(fd, reserved, reserved_len, sizeof(record)) !=
-				    (ssize_t)reserved_len) {
-		free(reserved);
-		close(fd);
-		return -1;
-	}
-	erase.start = 0;
-	erase.length = info.erasesize;
-	if (ioctl(fd, MEMERASE, &erase) < 0) {
-		free(reserved);
-		close(fd);
-		return -1;
-	}
-	memset(&record, 0, sizeof(record));
-	memcpy(record.magic, PERSIST_MAGIC, sizeof(record.magic));
-	record.version = PERSIST_VERSION;
-	record.sequence = sequence + 1;
-	record.length = length;
-	memcpy(record.config, config, length);
-	record.crc = crc32_bytes(&record, offsetof(struct persist_record, crc));
-	written = pwrite(fd, &record, sizeof(record), 0);
-	if (written != sizeof(record))
-		write_errno = written < 0 ? errno : EIO;
-	if (reserved_len &&
-	    pwrite(fd, reserved, reserved_len, sizeof(record)) !=
-							(ssize_t)reserved_len)
-		write_errno = errno ?: EIO;
-	/*
-	 * The S31 ROM proxy can report a late program error after all bytes have
-	 * reached NOR.  Accept it only when an independent full-record readback
-	 * (including CRC) is byte-identical; otherwise preserve the write error.
-	 */
-	for (attempt = 0; attempt < 20; attempt++) {
-		if (pread(fd, &verify, sizeof(verify), 0) == sizeof(verify) &&
-		    !memcmp(&record, &verify, sizeof(record)) &&
-		    (!reserved_len ||
-		     (pread(fd, reserved + reserved_len, reserved_len,
-			    sizeof(record)) == (ssize_t)reserved_len &&
-		      !memcmp(reserved, reserved + reserved_len, reserved_len))))
-			break;
-		usleep(10000);
-	}
-	free(reserved);
-	close(fd);
-	if (attempt == 20) {
-		errno = write_errno ?: EIO;
+		unlink(temporary);
+		errno = saved ?: EIO;
 		return -1;
 	}
 	return 0;
@@ -566,7 +456,8 @@ int main(int argc, char **argv)
 	}
 	if (!strcmp(argv[1], "restore")) {
 		if (read_persist(config, sizeof(config), &slot, &sequence))
-			return errno == ENODATA || errno == ENODEV ? 0 : 1;
+			return errno == ENODATA || errno == ENODEV || errno == ENOENT ?
+				0 : 1;
 		if (manager_remove(NULL) && errno != ENOENT)
 			return 1;
 		strcpy(persisted, config);

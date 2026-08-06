@@ -64,6 +64,10 @@ This project uses a unified `Makefile` at the root directory to manage downloadi
   Flashes the Linux kernel (`xipImage`) to the ESP32-S31.
 - **`make flash-rootfs`**
   Flashes `build/rootfs.sqfs` to the ESP32-S31 rootfs partition.
+- **`make persist` / `make flash-persist`**
+  Builds and flashes an empty 8-KiB-eraseblock JFFS2 image for `persist`.
+  This resets overlay upper files and should only be used when initializing
+  or intentionally clearing persistent data.
 - **`make bootloader`**
   Dynamically searches for your ESP-IDF installation (looking for `export.sh` up to 5 levels deep in your home folder), sources the environment, and invokes `idf.py build` inside the `bootloader/` directory.
 - **`make flash-bootloader`**

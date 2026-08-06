@@ -68,12 +68,13 @@ GMAC RGMII、SDMMC、ADC、触摸和比较器使用 IDF 指定的专用 IO-MUX p
 布局分别由 `sdmmc0`、`sdmmc1` DTBO 表示。GMAC/SDMMC dedicated-pad 选择
 会随设备 probe/remove 自动设置和释放。
 
-`persist` 是 flash 末尾的 16 KiB MTD 分区。其前 2 KiB 保存带序列号和
-CRC32 的 DTBO 配置；启动脚本 `S03s31-overlay` 在用户空间启动早期恢复
-持久配置。DTBO 本身随只读 rootfs 安装在 `/usr/lib/s31-overlays`。从
-`0x800` 起预留给 Key Manager 的 HUK/密钥恢复记录；DTBO 更新会保留与
-回写同一擦除块内的 HUK 主记录。持久化格式固定为 v1，不读取、迁移或
-写入其他版本。
+`persist` 是 OpenSBI 分区之后、Linux 分区之前的 1.375 MiB MTD 分区
+（flash 偏移 `0x2A0000`，大小 `0x160000`），启动时以 JFFS2 挂载并作为
+overlayfs 的 upper/work 存储。程序级持久配置统一写入合并根下的
+`/etc/s31-conf/*.conf`，格式为简单的 `字段=值` 行；DTBO 配置使用
+`/etc/s31-conf/s31-overlay.conf`。DTBO 本身随只读 rootfs 安装在
+`/usr/lib/s31-overlays`。启动脚本 `S03s31-overlay` 在用户空间启动早期
+恢复持久配置。
 
 | overlay | 启用内容 | 测试方式 |
 | --- | --- | --- |
@@ -144,8 +145,8 @@ GPTimer 和 RMT 按当前范围不移植，也没有对应 overlay。
 
 通过 `/dev/ttyUSB0` 完成刷写和串口测试。已验证：多个无冲突 DTBO 并存、
 物理 GPIO/matrix input/独占 host/interrupt source 冲突拒绝、同名 DTBO
-事务式 GPIO reassign 及失败回滚；16 KiB `persist` 的 DTBO 配置
-写入、CRC 和跨重启自动恢复；TIMG0/TIMG1/RTC
+事务式 GPIO reassign 及失败回滚；JFFS2 persist 上的 DTBO 配置写入和
+跨重启自动恢复；TIMG0/TIMG1/RTC
 watchdog ping/magic-close；SYSTIMER/RTC timer 递增；7 个 PWM 控制器和 2 个
 PCNT 注册及 PWM apply；ADC oneshot、温度采样、触摸 channel 8 转换、比较器
 事件接口；GMAC 驱动以 DWMAC1000 模式 probe/remove；AHB-GDMA 使用 12-byte

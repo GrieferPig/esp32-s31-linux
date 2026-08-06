@@ -44,16 +44,18 @@ PARTITIONS_CSV := $(CURDIR)/bootloader/partitions.csv
 OPENSBI_OFFSET := $(shell awk -F, '/opensbi/ {gsub(/ /, "", $$4); print $$4}' $(PARTITIONS_CSV))
 LINUX_OFFSET := $(shell awk -F, '/linux/ {gsub(/ /, "", $$4); print $$4}' $(PARTITIONS_CSV))
 ROOTFS_OFFSET := $(shell awk -F, '/rootfs/ {gsub(/ /, "", $$4); print $$4}' $(PARTITIONS_CSV))
+PERSIST_OFFSET := $(shell awk -F, '/persist/ {gsub(/ /, "", $$4); print $$4}' $(PARTITIONS_CSV))
 
 FW_PAYLOAD := $(BUILD_DIR)/fw_payload.bin
 XIP_IMAGE := $(BUILD_DIR)/xipImage
 ROOTFS_IMG := $(BUILD_DIR)/rootfs.sqfs
+PERSIST_IMG := $(BUILD_DIR)/persist.jffs2
 
 IDF_EXPORT := $(shell find $(HOME) -maxdepth 5 -type f -name export.sh 2>/dev/null | grep esp-idf | head -n 1)
 
 .PHONY: all download toolchain toolchain-source opensbi linux coremark rootfs initramfs s31-pie-cases \
 	buildroot-menuconfig buildroot-clean clean fullclean flash-opensbi flash-linux \
-	flash-rootfs bootloader flash-bootloader erase
+	flash-rootfs persist flash-persist bootloader flash-bootloader erase
 
 all: toolchain download opensbi linux initramfs
 
@@ -185,6 +187,7 @@ coremark: toolchain | $(COREMARK_OUT)
 # Keep this decimal because POSIX test(1) and truncate(1) do not accept the
 # partition table's 0x-prefixed value.
 ROOTFS_PARTITION_SIZE ?= 6291456
+PERSIST_PARTITION_SIZE ?= 1441792
 BUILDROOT_MAKE = $(MAKE) -C $(BUILDROOT_DIR) O=$(BUILDROOT_OUT) \
 	BR2_EXTERNAL=$(BUILDROOT_EXTERNAL) BR2_DL_DIR=$(BUILDROOT_DL_DIR)
 
@@ -210,6 +213,15 @@ rootfs: toolchain s31-pie-cases | $(BUILDROOT_OUT)
 # Historical/user-facing name for the root filesystem image.
 initramfs: linux rootfs
 
+# Generate an empty, NOR-compatible JFFS2 image for the persist partition.
+# This is separate from normal firmware updates so user data is not erased.
+persist: | $(BUILD_DIR)
+	@command -v mkfs.jffs2 >/dev/null || { echo "ERROR: mkfs.jffs2 is required" >&2; exit 1; }
+	@staging=$$(mktemp -d "$(BUILD_DIR)/persist.XXXXXX"); \
+	trap 'rmdir "$$staging"' EXIT; \
+	mkfs.jffs2 -q -e 0x2000 --pad=$(PERSIST_PARTITION_SIZE) \
+		-d "$$staging" -o $(PERSIST_IMG)
+
 buildroot-menuconfig: | $(BUILDROOT_OUT)
 	$(BUILDROOT_MAKE) esp32s31_rootfs_defconfig
 	$(BUILDROOT_MAKE) menuconfig
@@ -232,6 +244,9 @@ flash-linux:
 
 flash-rootfs:
 	esptool -p /dev/ttyUSB0 -b 2000000 write-flash $(ROOTFS_OFFSET) $(ROOTFS_IMG)
+
+flash-persist: persist
+	esptool -p /dev/ttyUSB0 -b 2000000 write-flash $(PERSIST_OFFSET) $(PERSIST_IMG)
 
 bootloader:
 	@if [ -z "$(IDF_EXPORT)" ]; then echo "ERROR: ESP-IDF export.sh not found under $(HOME)"; exit 1; fi
