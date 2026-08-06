@@ -449,10 +449,10 @@ void app_main(void)
              (uint32_t)LINUX_SRAM_START, (uint32_t)LINUX_SRAM_RING_END,
              (uint32_t)LINUX_DMA_START, (uint32_t)LINUX_DMA_END);
 
-    /*
-     * Publish the complete transport before hart1 can touch its rings.
-     * The hart0 receive path polls and therefore has no
-     * interrupt-matrix route that could be lost when hart1 is reset.
+    /* Publish the complete transport before hart1 can touch its rings.
+     * Hart0 receives Linux traffic through the IDF-owned CPU3 doorbell;
+     * the RX task blocks between notifications, so Linux cannot alter its
+     * interrupt-matrix route by resetting hart1.
      */
     if (s31_hosted_sram_start() != ESP_OK)
         loader_restart("hosted SRAM transport");

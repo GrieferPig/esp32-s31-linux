@@ -9,13 +9,18 @@
 #include "esp_attr.h"
 #include "esp_err.h"
 #include "esp_heap_caps.h"
+#include "esp_intr_alloc.h"
 #include "esp_log.h"
+#include "esp_pm.h"
 #include "esp_sleep.h"
 #include "esp_system.h"
 #include "esp_timer.h"
+#include "sdkconfig.h"
 #include "freertos/FreeRTOS.h"
 #include "freertos/task.h"
 #include "soc/hp_system_reg.h"
+#include "soc/interrupts.h"
+#include "soc/rtc.h"
 #include "soc/soc.h"
 
 #include "hosted_sram.h"
@@ -29,6 +34,8 @@ static volatile struct s31_hosted_slot *const s_h0_to_h1 =
 static volatile struct s31_hosted_slot *const s_h1_to_h0 =
 	(void *)(S31_HOSTED_SRAM_BASE + S31_HOSTED_H1_TO_H0_OFFSET);
 static portMUX_TYPE s_tx_lock = portMUX_INITIALIZER_UNLOCKED;
+static TaskHandle_t s_rx_task;
+static intr_handle_t s_h1_irq;
 static uint16_t s_tx_sequence;
 static s31_hosted_frame_handler_t s_frame_handler;
 static void *s_frame_handler_arg;
@@ -36,6 +43,8 @@ static bool s_clock_test_active;
 static uint32_t s_clock_test_cookie;
 static uint32_t s_clock_test_duration;
 static int64_t s_clock_test_deadline_us;
+
+#define S31_PM_MIN_FREQ_MHZ 53
 
 static inline void shared_wmb(void)
 {
@@ -80,6 +89,20 @@ static void notify_hart1(void)
 	shared_wmb();
 	REG_WRITE(HP_SYSTEM_CPU_INT_FROM_CPU_2_REG,
 		  HP_SYSTEM_CPU_INT_FROM_CPU_2);
+}
+
+static void IRAM_ATTR h1_doorbell_isr(void *arg)
+{
+	BaseType_t wake = pdFALSE;
+
+	(void)arg;
+	REG_WRITE(HP_SYSTEM_CPU_INT_FROM_CPU_3_REG, 0);
+	s_ctrl->h0_irq_count++;
+	shared_wmb();
+	if (s_rx_task)
+		vTaskNotifyGiveFromISR(s_rx_task, &wake);
+	if (wake)
+		portYIELD_FROM_ISR();
 }
 
 int s31_hosted_sram_send_meta(uint8_t if_type, uint8_t if_num,
@@ -245,6 +268,64 @@ static bool process_mem_stats_control(const struct s31_hosted_control_msg *msg)
 	return true;
 }
 
+static bool process_cpu_freq_control(const struct s31_hosted_control_msg *msg)
+{
+	struct s31_hosted_cpu_freq_msg request;
+	struct s31_hosted_cpu_freq_msg response_data = { 0 };
+	struct s31_hosted_control_msg response = {
+		.type = S31_HOSTED_CTRL_CPU_FREQ_SET_RESPONSE,
+		.length = sizeof(response),
+		.generation = s_ctrl->generation,
+	};
+	rtc_cpu_freq_config_t actual_config;
+	esp_pm_config_t pm_config;
+	esp_err_t err;
+
+	if (msg->type != S31_HOSTED_CTRL_CPU_FREQ_SET)
+		return false;
+	memcpy(&request, msg->data, sizeof(request));
+	response_data.target_mhz = request.target_mhz;
+	if (!rtc_clk_cpu_freq_mhz_to_config(request.target_mhz, &actual_config)) {
+		response_data.status = ESP_ERR_INVALID_ARG;
+		goto send_response;
+	}
+
+	/* Linux changes only the PM floor; FreeRTOS task activity owns the mode. */
+	err = esp_pm_get_configuration(&pm_config);
+	if (err != ESP_OK) {
+		response_data.status = err;
+		goto send_response;
+	}
+	if (request.target_mhz > (uint32_t)pm_config.max_freq_mhz) {
+		response_data.status = ESP_ERR_INVALID_ARG;
+		goto send_response;
+	}
+	pm_config.min_freq_mhz = request.target_mhz;
+	err = esp_pm_configure(&pm_config);
+	if (err != ESP_OK) {
+		response_data.status = err;
+		goto send_response;
+	}
+
+	rtc_clk_cpu_freq_get_config(&actual_config);
+	response_data.actual_mhz = actual_config.freq_mhz;
+	response_data.status = ESP_OK;
+
+send_response:
+	memcpy(response.data, &response_data, sizeof(response_data));
+	(void)s31_hosted_sram_send(S31_HOSTED_PRIV_IF, &response,
+				   sizeof(response), 0);
+	return true;
+}
+
+bool __attribute__((weak)) hosted_wifi_config_handler(const uint8_t *data,
+						 size_t len)
+{
+	(void)data;
+	(void)len;
+	return false;
+}
+
 void __attribute__((weak)) hosted_wifi_rx_handler(const uint8_t *data,
 							size_t len)
 {
@@ -290,7 +371,11 @@ static void process_h1_frame(const uint8_t *frame, size_t frame_length)
 		return;
 	if (header->if_type == S31_HOSTED_PRIV_IF &&
 	    length >= sizeof(struct s31_hosted_control_msg)) {
+		if (hosted_wifi_config_handler(frame + offset, length))
+			return;
 		msg = (const void *)(frame + offset);
+		if (process_cpu_freq_control(msg))
+			return;
 		if (process_clock_control(msg))
 			return;
 		if (process_mem_stats_control(msg))
@@ -423,17 +508,12 @@ static void hosted_rx_task(void *arg)
 			}
 		}
 
-		/*
-		 * Polling is the correctness path.  Do not
-		 * yield here: Linux reconfigures the shared interrupt fabric and
-		 * the hart0 FreeRTOS tick then stops, so a yielded task may never
-		 * be scheduled again. Higher-priority radio tasks still preempt us.
-		 */
-		REG_WRITE(HP_SYSTEM_CPU_INT_FROM_CPU_3_REG, 0);
 		s_ctrl->h0_rx_polls++;
 		drain_h1_ring();
 		clock_test_poll();
-		__asm__ volatile("nop");
+
+		/* The ring is authoritative; the doorbell only wakes this task. */
+		(void)ulTaskNotifyTake(pdTRUE, portMAX_DELAY);
 	}
 }
 
@@ -466,6 +546,18 @@ void s31_hosted_sram_set_bt_mac(const uint8_t mac[6])
 esp_err_t s31_hosted_sram_start(void)
 {
 	uint32_t generation = 1;
+	esp_pm_config_t pm_config = {
+		.max_freq_mhz = CONFIG_ESP_DEFAULT_CPU_FREQ_MHZ,
+		.min_freq_mhz = S31_PM_MIN_FREQ_MHZ,
+		.light_sleep_enable = false,
+	};
+	esp_err_t err;
+
+	err = esp_pm_configure(&pm_config);
+	if (err != ESP_OK) {
+		ESP_LOGE(TAG, "failed to configure ESP PM: %s", esp_err_to_name(err));
+		return err;
+	}
 
 	if (s_ctrl->magic == S31_HOSTED_MAGIC &&
 	    s_ctrl->abi_version == S31_HOSTED_ABI_VERSION)
@@ -480,10 +572,27 @@ esp_err_t s31_hosted_sram_start(void)
 
 	REG_WRITE(HP_SYSTEM_CPU_INT_FROM_CPU_2_REG, 0);
 	REG_WRITE(HP_SYSTEM_CPU_INT_FROM_CPU_3_REG, 0);
+	err = esp_intr_alloc(ETS_CPU_INTR_FROM_CPU_3_SOURCE,
+			      ESP_INTR_FLAG_LEVEL1 | ESP_INTR_FLAG_INTRDISABLED,
+			      h1_doorbell_isr, NULL, &s_h1_irq);
+	if (err != ESP_OK) {
+		ESP_LOGE(TAG, "failed to allocate Linux doorbell IRQ");
+		return err;
+	}
 
 	if (xTaskCreatePinnedToCore(hosted_rx_task, "hosted_rx", 4096, NULL, 1,
-				    NULL, 0) != pdPASS) {
+				    &s_rx_task, 0) != pdPASS) {
+		esp_intr_free(s_h1_irq);
+		s_h1_irq = NULL;
 		return ESP_ERR_NO_MEM;
+	}
+	err = esp_intr_enable(s_h1_irq);
+	if (err != ESP_OK) {
+		vTaskDelete(s_rx_task);
+		s_rx_task = NULL;
+		esp_intr_free(s_h1_irq);
+		s_h1_irq = NULL;
+		return err;
 	}
 
 	ESP_LOGI(TAG, "SRAM transport ready: 0x%08x..0x%08x generation=%" PRIu32,

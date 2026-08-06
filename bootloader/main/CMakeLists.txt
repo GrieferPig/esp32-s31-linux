@@ -7,5 +7,5 @@ if(CONFIG_S31_HOSTED_WIFI_ENABLE)
 endif()
 
 idf_component_register(SRCS ${srcs}
-                       REQUIRES freertos heap spi_flash esp_partition esp_psram esp_hw_support esp_rom hal esp_mm esp_hal_wdt esp_timer vfs esp_hosted_slave nvs_flash esp_driver_uart
+                       REQUIRES freertos heap spi_flash esp_partition esp_psram esp_hw_support esp_rom esp_pm hal esp_mm esp_hal_wdt esp_timer vfs esp_hosted_slave nvs_flash esp_driver_uart
                        INCLUDE_DIRS "." "../../shared" "${LINUX_MMAP_HEADER_DIR}")

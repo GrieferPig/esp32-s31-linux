@@ -18,7 +18,8 @@ set(srcs
     "${slave_dir}/slave_util.c"
     "${slave_dir}/slave_bt.c"
     "${slave_dir}/slave_wifi_std.c"
-    "sram_slave_api.c")
+    "sram_slave_api.c"
+    "s31_wifi_config.c")
 
 if(CONFIG_ESP_WIFI_ENTERPRISE_SUPPORT)
     list(APPEND srcs "${slave_dir}/slave_wifi_enterprise.c")

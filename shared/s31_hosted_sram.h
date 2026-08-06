@@ -72,6 +72,17 @@ enum s31_hosted_control_type {
 	/* Linux requests/retrieves FreeRTOS HP-SRAM heap statistics. */
 	S31_HOSTED_CTRL_MEM_STATS_REQUEST,
 	S31_HOSTED_CTRL_MEM_STATS_RESPONSE,
+	S31_HOSTED_CTRL_WIFI_SLOT_SET,
+	S31_HOSTED_CTRL_WIFI_SLOT_GET,
+	S31_HOSTED_CTRL_WIFI_STATE_SET,
+	S31_HOSTED_CTRL_WIFI_STATE_GET,
+	S31_HOSTED_CTRL_WIFI_SLOT_SET_RESPONSE,
+	S31_HOSTED_CTRL_WIFI_SLOT_GET_RESPONSE,
+	S31_HOSTED_CTRL_WIFI_STATE_SET_RESPONSE,
+	S31_HOSTED_CTRL_WIFI_STATE_GET_RESPONSE,
+	/* Linux asks the IDF-owned PM policy to raise the CPU frequency floor. */
+	S31_HOSTED_CTRL_CPU_FREQ_SET,
+	S31_HOSTED_CTRL_CPU_FREQ_SET_RESPONSE,
 };
 
 enum s31_hosted_link_state {
@@ -114,6 +125,15 @@ struct s31_hosted_clock_stamp {
 	s31_u64 freertos_us;
 } __attribute__((packed));
 
+/* CPU_FREQ_SET data payload. target_mhz is the PM floor requested by Linux;
+ * actual_mhz is the current FreeRTOS/ESP-PM-selected frequency. */
+struct s31_hosted_cpu_freq_msg {
+	s31_u32 target_mhz;
+	s31_u32 actual_mhz;
+	s31_u32 status;
+	s31_u32 reserved;
+} __attribute__((packed));
+
 /* MEM_STATS_RESPONSE payload. All fields use little-endian wire order. */
 struct s31_hosted_mem_stats {
 	s31_u32 total_bytes;
@@ -121,6 +141,51 @@ struct s31_hosted_mem_stats {
 	s31_u32 minimum_free_bytes;
 	s31_u32 largest_free_block;
 } __attribute__((packed));
+
+#define S31_HOSTED_WIFI_SLOT_COUNT	3U
+#define S31_HOSTED_WIFI_SSID_MAX	32U
+#define S31_HOSTED_WIFI_PASSWORD_MAX	64U
+#define S31_HOSTED_WIFI_MSG_DATA_SIZE	100U
+
+/* Persistent station profile. Empty/invalid profiles are skipped. */
+struct s31_hosted_wifi_slot {
+	s31_u8 valid;
+	s31_u8 priority;
+	s31_u8 ssid_len;
+	s31_u8 password_len;
+	s31_u8 ssid[S31_HOSTED_WIFI_SSID_MAX];
+	s31_u8 password[S31_HOSTED_WIFI_PASSWORD_MAX];
+} __attribute__((packed));
+
+/* Persistent policy plus the current runtime slot reported by GET. */
+struct s31_hosted_wifi_state {
+	s31_u8 enabled;
+	s31_u8 auto_connect;
+	s31_u16 scan_interval_sec;
+	s31_u8 active_slot;
+	s31_u8 connected_slot;
+	s31_u8 reserved[10];
+} __attribute__((packed));
+
+/* Private transport request/response. Data contains one slot or one state. */
+struct s31_hosted_wifi_msg {
+	s31_u8 type;
+	s31_u8 slot;
+	s31_u16 length;
+	s31_u32 generation;
+	s31_u32 status;
+	s31_u8 data[S31_HOSTED_WIFI_MSG_DATA_SIZE];
+} __attribute__((packed));
+
+struct s31_hosted_wifi_slot_request {
+	s31_u8 slot;
+	s31_u8 reserved[3];
+	struct s31_hosted_wifi_slot config;
+};
+
+struct s31_hosted_wifi_state_request {
+	struct s31_hosted_wifi_state state;
+};
 
 /* Userspace argument for S31_HOSTED_IOC_CLOCK_TEST. */
 struct s31_hosted_clock_test {
@@ -175,8 +240,16 @@ _Static_assert(sizeof(struct s31_hosted_control_msg) == 24,
 	       "hosted control message ABI changed");
 _Static_assert(sizeof(struct s31_hosted_clock_stamp) == 16,
 	       "hosted clock stamp ABI changed");
+_Static_assert(sizeof(struct s31_hosted_cpu_freq_msg) == 16,
+	       "hosted CPU frequency ABI changed");
 _Static_assert(sizeof(struct s31_hosted_mem_stats) == 16,
 	       "hosted memory statistics ABI changed");
+_Static_assert(sizeof(struct s31_hosted_wifi_slot) == 100,
+	       "hosted Wi-Fi slot ABI changed");
+_Static_assert(sizeof(struct s31_hosted_wifi_state) == 16,
+	       "hosted Wi-Fi state ABI changed");
+_Static_assert(sizeof(struct s31_hosted_wifi_msg) == 112,
+	       "hosted Wi-Fi message ABI changed");
 _Static_assert(sizeof(struct s31_hosted_ring_state) == 192,
 	       "hosted ring state must occupy three cache lines");
 _Static_assert(sizeof(struct s31_hosted_control) == 448,

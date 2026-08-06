@@ -50,12 +50,15 @@ define S31_TOOLS_BUILD_CMDS
 		-I$(BR2_EXTERNAL_ESP32_S31_PATH)/../shared \
 		$(@D)/s31_freertos_mem.c -o $(@D)/s31-freertos-mem
 	$(TARGET_CC) $(TARGET_CFLAGS) $(TARGET_LDFLAGS) \
+		-I$(BR2_EXTERNAL_ESP32_S31_PATH)/../shared \
 		-I$(S31_TOOLS_PROTO_DIR) \
 		-I$(S31_TOOLS_PROTOBUF_DIR) \
 		$(@D)/esp_hosted_ctl.c \
 		$(S31_TOOLS_PROTO_DIR)/esp_hosted_rpc.pb-c.c \
 		$(S31_TOOLS_PROTOBUF_DIR)/protobuf-c/protobuf-c.c \
 		-o $(@D)/esp-hosted-ctl
+	$(TARGET_CC) $(TARGET_CFLAGS) $(TARGET_LDFLAGS) \
+		$(@D)/s31_cpufreq.c -o $(@D)/s31-cpufreq
 endef
 
 define S31_TOOLS_INSTALL_TARGET_CMDS
@@ -81,6 +84,8 @@ define S31_TOOLS_INSTALL_TARGET_CMDS
 		$(TARGET_DIR)/usr/sbin/s31-freertos-mem
 	$(INSTALL) -D -m 0755 $(@D)/esp-hosted-ctl \
 		$(TARGET_DIR)/usr/sbin/esp-hosted-ctl
+	$(INSTALL) -D -m 0755 $(@D)/s31-cpufreq \
+		$(TARGET_DIR)/usr/sbin/s31-cpufreq
 	ln -sfn esp-hosted-ctl $(TARGET_DIR)/usr/sbin/test.out
 endef
 

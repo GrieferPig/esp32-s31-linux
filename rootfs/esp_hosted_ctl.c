@@ -15,10 +15,12 @@
 #include <stdlib.h>
 #include <string.h>
 #include <sys/types.h>
+#include <sys/ioctl.h>
 #include <time.h>
 #include <unistd.h>
 
 #include "esp_hosted_rpc.pb-c.h"
+#include "s31_hosted_sram.h"
 
 #define SERIAL_DEVICE		"/dev/esps0"
 #define RPC_ENDPOINT		"RPCRsp"
@@ -30,6 +32,15 @@
 
 #define WIFI_MODE_STA		1
 #define WIFI_IF_STA		0
+
+#define S31_HOSTED_IOC_WIFI_SLOT_SET \
+	_IOW('S', 0x33, struct s31_hosted_wifi_slot_request)
+#define S31_HOSTED_IOC_WIFI_SLOT_GET \
+	_IOWR('S', 0x34, struct s31_hosted_wifi_slot_request)
+#define S31_HOSTED_IOC_WIFI_STATE_SET \
+	_IOW('S', 0x35, struct s31_hosted_wifi_state_request)
+#define S31_HOSTED_IOC_WIFI_STATE_GET \
+	_IOR('S', 0x36, struct s31_hosted_wifi_state_request)
 
 enum station_result {
 	STATION_PENDING,
@@ -50,8 +61,14 @@ static void usage(const char *program)
 		"  %s get_wifi_mode\n"
 		"  %s set_wifi_mode <0..3>\n"
 		"  %s wifi_stop\n"
+		"  %s wifi_slot_set <0..2> <ssid> <password>\n"
+		"  %s wifi_slot_clear <0..2>\n"
+		"  %s wifi_slot_get <0..2>\n"
+		"  %s wifi_state_get\n"
+		"  %s wifi_state_set <enabled> <auto_connect> <interval_sec> <active_slot>\n"
 		"  %s get_fw_version\n",
-		program, program, program, program, program, program);
+		program, program, program, program, program, program, program,
+		program, program, program, program);
 }
 
 static int remaining_ms(const struct timespec *deadline)
@@ -536,6 +553,97 @@ static int get_fw_version(void)
 	return status ? -1 : 0;
 }
 
+static int parse_index(const char *text, unsigned int max, unsigned int *value)
+{
+	char *end;
+	unsigned long parsed = strtoul(text, &end, 0);
+	if (!*text || *end || parsed >= max)
+		return -1;
+	*value = parsed;
+	return 0;
+}
+
+static int wifi_slot_set(unsigned int slot, const char *ssid,
+				 const char *password, int clear)
+{
+	struct s31_hosted_wifi_slot_request request = { 0 };
+	if (!clear && (strlen(ssid) > S31_HOSTED_WIFI_SSID_MAX ||
+			      strlen(password) > S31_HOSTED_WIFI_PASSWORD_MAX ||
+			      !strlen(ssid))) {
+		fprintf(stderr, "SSID/password length is invalid\n");
+		return -1;
+	}
+	request.slot = slot;
+	if (!clear) {
+		request.config.valid = 1;
+		request.config.ssid_len = strlen(ssid);
+		request.config.password_len = strlen(password);
+		memcpy(request.config.ssid, ssid, request.config.ssid_len);
+		memcpy(request.config.password, password,
+		       request.config.password_len);
+	}
+	if (ioctl(serial_fd, S31_HOSTED_IOC_WIFI_SLOT_SET, &request) < 0) {
+		fprintf(stderr, "wifi_slot_%s: %s\n", clear ? "clear" : "set",
+			strerror(errno));
+		return -1;
+	}
+	printf("Wi-Fi slot %u %s\n", slot, clear ? "cleared" : "saved");
+	return 0;
+}
+
+static int wifi_slot_get(unsigned int slot)
+{
+	struct s31_hosted_wifi_slot_request request = { .slot = slot };
+	if (ioctl(serial_fd, S31_HOSTED_IOC_WIFI_SLOT_GET, &request) < 0) {
+		fprintf(stderr, "wifi_slot_get: %s\n", strerror(errno));
+		return -1;
+	}
+	if (!request.config.valid) {
+		printf("Wi-Fi slot %u: empty\n", slot);
+		return 0;
+	}
+	printf("Wi-Fi slot %u: SSID=%.*s password=%.*s priority=%u\n",
+		slot, request.config.ssid_len, request.config.ssid,
+		request.config.password_len, request.config.password,
+		request.config.priority);
+	return 0;
+}
+
+static int wifi_state_get(void)
+{
+	struct s31_hosted_wifi_state_request request = { 0 };
+	if (ioctl(serial_fd, S31_HOSTED_IOC_WIFI_STATE_GET, &request) < 0) {
+		fprintf(stderr, "wifi_state_get: %s\n", strerror(errno));
+		return -1;
+	}
+	printf("Wi-Fi state: enabled=%u auto_connect=%u interval_sec=%u "
+	       "active_slot=%u connected_slot=%s\n",
+	       request.state.enabled, request.state.auto_connect,
+	       request.state.scan_interval_sec, request.state.active_slot,
+	       request.state.connected_slot == 0xff ? "none" : "set");
+	return 0;
+}
+
+static int wifi_state_set(unsigned int enabled, unsigned int auto_connect,
+				  unsigned int interval, unsigned int active_slot)
+{
+	struct s31_hosted_wifi_state_request request = { 0 };
+	if (interval == 0 || interval > UINT16_MAX) {
+		fprintf(stderr, "wifi_state_set: invalid interval\n");
+		return -1;
+	}
+	request.state.enabled = !!enabled;
+	request.state.auto_connect = !!auto_connect;
+	request.state.scan_interval_sec = interval;
+	request.state.active_slot = active_slot;
+	request.state.connected_slot = 0xff;
+	if (ioctl(serial_fd, S31_HOSTED_IOC_WIFI_STATE_SET, &request) < 0) {
+		fprintf(stderr, "wifi_state_set: %s\n", strerror(errno));
+		return -1;
+	}
+	return wifi_state_get();
+}
+
 int main(int argc, char **argv)
 {
 	int ret = -1;
@@ -572,6 +680,41 @@ int main(int argc, char **argv)
 			ret = set_wifi_mode((int)mode);
 	} else if (!strcmp(argv[1], "wifi_stop") && argc == 2) {
 		ret = wifi_stop();
+	} else if (!strcmp(argv[1], "wifi_slot_set") && argc == 5) {
+		unsigned int slot;
+		if (parse_index(argv[2], S31_HOSTED_WIFI_SLOT_COUNT, &slot))
+			usage(argv[0]);
+		else
+			ret = wifi_slot_set(slot, argv[3], argv[4], 0);
+	} else if (!strcmp(argv[1], "wifi_slot_clear") && argc == 3) {
+		unsigned int slot;
+		if (parse_index(argv[2], S31_HOSTED_WIFI_SLOT_COUNT, &slot))
+			usage(argv[0]);
+		else
+			ret = wifi_slot_set(slot, NULL, NULL, 1);
+	} else if (!strcmp(argv[1], "wifi_slot_get") && argc == 3) {
+		unsigned int slot;
+		if (parse_index(argv[2], S31_HOSTED_WIFI_SLOT_COUNT, &slot))
+			usage(argv[0]);
+		else
+			ret = wifi_slot_get(slot);
+	} else if (!strcmp(argv[1], "wifi_state_get") && argc == 2) {
+		ret = wifi_state_get();
+	} else if (!strcmp(argv[1], "wifi_state_set") && argc == 6) {
+		char *end;
+		unsigned long enabled = strtoul(argv[2], &end, 0);
+		int valid = !*argv[2] || *end;
+		unsigned long auto_connect = strtoul(argv[3], &end, 0);
+		valid = valid || !*argv[3] || *end;
+		unsigned long interval = strtoul(argv[4], &end, 0);
+		valid = valid || !*argv[4] || *end;
+		unsigned int active_slot;
+		if (valid || enabled > 1 || auto_connect > 1 ||
+		    parse_index(argv[5], S31_HOSTED_WIFI_SLOT_COUNT, &active_slot))
+			usage(argv[0]);
+		else
+			ret = wifi_state_set(enabled, auto_connect, interval,
+					    active_slot);
 	} else if (!strcmp(argv[1], "get_fw_version") && argc == 2) {
 		ret = get_fw_version();
 	} else {

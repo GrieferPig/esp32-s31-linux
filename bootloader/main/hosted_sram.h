@@ -3,6 +3,7 @@
 
 #include <stddef.h>
 #include <stdint.h>
+#include <stdbool.h>
 #include "esp_err.h"
 
 typedef int (*s31_hosted_frame_handler_t)(const uint8_t *frame,
@@ -23,3 +24,6 @@ void s31_hosted_sram_set_features(uint32_t features);
 void s31_hosted_sram_set_wifi_state(uint32_t state);
 void s31_hosted_sram_set_sta_mac(const uint8_t mac[6]);
 void s31_hosted_sram_set_bt_mac(const uint8_t mac[6]);
+
+/* Handles private Wi-Fi profile/policy messages from the Linux host. */
+bool hosted_wifi_config_handler(const uint8_t *data, size_t len);
