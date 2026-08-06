@@ -27,15 +27,12 @@ S31_USER_FLAGS := -march=$(S31_USER_ISA) $(S31_COMMON_FLAGS) -mespv-spec=2p2
 BUILD_DIR := $(CURDIR)/build
 OPENSBI_DIR := $(CURDIR)/opensbi-esp32-s31
 LINUX_DIR := $(CURDIR)/linux-esp32-s31
-COREMARK_DIR := $(CURDIR)/coremark
-COREMARK_ITERATIONS ?= 20000
 BUILDROOT_DIR := $(CURDIR)/buildroot
 BUILDROOT_EXTERNAL := $(CURDIR)/buildroot-external
 
 # Out-of-tree build dirs
 OPENSBI_OUT := $(BUILD_DIR)/opensbi
 LINUX_OUT := $(BUILD_DIR)/linux
-COREMARK_OUT := $(BUILD_DIR)/coremark
 BUILDROOT_OUT := $(BUILD_DIR)/buildroot
 BUILDROOT_DL_DIR := $(BUILD_DIR)/buildroot-dl
 TOOLCHAIN_ARCHIVE := $(BUILD_DIR)/downloads/$(TOOLCHAIN_RELEASE_ASSET)
@@ -59,7 +56,7 @@ IDF_EXPORT := $(shell find $(HOME) -maxdepth 5 -type f -name export.sh 2>/dev/nu
 
 all: toolchain download opensbi linux initramfs
 
-$(BUILD_DIR) $(OPENSBI_OUT) $(LINUX_OUT) $(COREMARK_OUT) $(BUILDROOT_OUT):
+$(BUILD_DIR) $(OPENSBI_OUT) $(LINUX_OUT) $(BUILDROOT_OUT):
 	mkdir -p $@
 
 download: toolchain
@@ -178,11 +175,9 @@ linux: toolchain | $(LINUX_OUT)
 	cp -v $(LINUX_OUT)/arch/riscv/boot/$(LINUX_TARGET) $(XIP_IMAGE)
 	cp -v $(LINUX_OUT)/arch/riscv/boot/dts/espressif/esp32s31_generic.dtb $(FDT_DTB)
 
-coremark: toolchain | $(COREMARK_OUT)
-	@echo "--- CoreMark ---"
-	$(MAKE) -C $(COREMARK_DIR) PORT_DIR=linux OPATH="$(COREMARK_OUT)/" \
-		CC="$(CC)" NO_LIBRT=1 ITERATIONS=$(COREMARK_ITERATIONS) REBUILD=1 \
-		XCFLAGS="-static $(S31_USER_FLAGS) -include $(BUILDROOT_EXTERNAL)/package/coremark-s31/coremark-monotonic.h" compile
+coremark: rootfs
+	@test -x "$(BUILDROOT_OUT)/target/usr/bin/coremark"
+	@echo "Buildroot CoreMark: $(BUILDROOT_OUT)/target/usr/bin/coremark"
 
 # Keep this decimal because POSIX test(1) and truncate(1) do not accept the
 # partition table's 0x-prefixed value.
