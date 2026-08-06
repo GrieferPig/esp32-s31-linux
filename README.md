@@ -29,11 +29,10 @@ $ esptool -p /dev/ttyUSB0 -b 2000000 write-flash \
     --flash-mode dio --flash-freq 80m --flash-size 16MB \
     0x2000 bootloader.bin \
     0x8000 partition-table.bin \
-    0x17000 ota_data_initial.bin \
     0x20000 hello_world.bin \
     0x220000 fw_payload.bin \
-    0x2A0000 xipImage \
-    0xA20000 rootfs.sqfs
+    0x400000 xipImage \
+    0xA00000 rootfs.sqfs
 ```
 
 ## Porting progress

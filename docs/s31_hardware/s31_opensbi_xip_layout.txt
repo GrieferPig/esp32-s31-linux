@@ -9,8 +9,9 @@ Goal:
   single-core mode and keeps running the FreeRTOS scheduler.
 
 Address contract:
-- The factory app maps the opensbi partition for instruction access at 0x40030000.
-- OpenSBI must be linked with FW_TEXT_START=0x40030000.
+- The factory app maps the complete 16-MiB Flash linearly at 0x40000000.
+- OpenSBI is at flash offset 0x220000 and must be linked with
+  FW_TEXT_START=0x40220000.
 - OpenSBI writable sections are linked with FW_RW_START=0x2F052000.
 - OpenSBI owns the 64-KiB internal HP-SRAM interval
   0x2F052000..0x2F062000. The factory app reserves it before heap creation.
@@ -20,7 +21,17 @@ Address contract:
   CONFIG_SPIRAM_USE_MEMMAP and explicitly disables USE_CAPS_ALLOC/USE_MALLOC.
   IDF's own extram reserved-region entry therefore keeps all PSRAM out of the
   FreeRTOS heap without a duplicate project reservation.
-- Linux xipImage is mapped at 0x400B0000.
+- Linux xipImage is at flash offset 0x400000 and executes at 0x40400000,
+  aligned to the 4-MiB Sv32 megapage boundary. Its partition reserves exactly
+  0x600000 bytes and ends at flash offset 0xA00000.
+- The persist partition starts immediately after OpenSBI at flash offset
+  0x2A0000 and fills the 0x160000 gap before Linux. It is a 1.375-MiB data
+  partition and ends at the Linux offset.
+- The rootfs starts at flash offset 0xA00000 and executes at 0x40A00000. Its
+  partition is expanded to 0x600000 bytes and ends at the 16-MiB flash limit
+  (offset 0x1000000).
+- The full 16-MiB Flash MTD window is the same linear mapping,
+  0x40000000..0x41000000.
 
 Partition image format:
 - Offset 0: raw OpenSBI fw_jump.bin.
@@ -75,7 +86,7 @@ OpenSBI requirements:
 Build-time checks:
 - The generated fw_payload.bin must be exactly 512KB.
 - OpenSBI + FDT must fit in the first 512KB - 4 bytes.
-- Link-time assertions require FW_TEXT_START=0x40030000,
+- Link-time assertions require FW_TEXT_START=0x40220000,
   FW_RW_START=0x2F052000, and writable sections no larger than 16 KiB. The
   configured 8-KiB stack/scratch area and 37-KiB heap keep the total runtime
   allocation within the 64-KiB reserved interval.

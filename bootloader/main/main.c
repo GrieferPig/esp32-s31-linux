@@ -2,9 +2,8 @@
  * ESP32-S31 MMU Linux - Factory App Loader
  *
  * The second-stage bootloader stays minimal. This factory app runs with the
- * normal app startup path so ESP-IDF initializes PSRAM, maps OpenSBI and Linux
- * for flash XIP, maps the rootfs flash window, then jumps into OpenSBI in
- * M-mode.
+ * normal app startup path so ESP-IDF initializes PSRAM, maps the complete Flash
+ * XIP window, then jumps into OpenSBI in M-mode.
  */
 
 #include <stdbool.h>
@@ -47,15 +46,18 @@
 #include "hosted_sram.h"
 #include "s31_hosted_sram.h"
 
-#define OPENSBI_XIP_ADDR              0x40030000U
-#define LINUX_XIP_ADDR                0x400B0000U
-#define ROOTFS_FLASH_ADDR             0x40A20000U
-#define FLASH_MTD_XIP_ADDR            0x41000000U
+#define OPENSBI_XIP_ADDR              0x40220000U
+/* The complete 16-MiB Flash is linearly mapped at the IDF flash aperture. */
+#define LINUX_XIP_ADDR                0x40400000U
+#define ROOTFS_FLASH_ADDR             0x40A00000U
+#define FLASH_MTD_XIP_ADDR            0x40000000U
 #define FLASH_MTD_SIZE                0x01000000U
 #define OPENSBI_FDT_OFFSET_SLOT_SIZE  4U
 #define FDT_MAGIC_LE                  0xEDFE0DD0U
-#define ROOTFS_PARTITION_SIZE         0x005DC000U
-#define ROOTFS_MMU_MAP_SIZE           0x005E0000U
+#define LINUX_PARTITION_OFFSET        0x00400000U
+#define LINUX_PARTITION_SIZE          0x00600000U
+#define ROOTFS_PARTITION_OFFSET       0x00A00000U
+#define ROOTFS_PARTITION_SIZE         0x00600000U
 #define ESP32S31_PSRAM_SIZE           0x01000000U
 #define LINUX_PSRAM_START             0x50000000U
 /*
@@ -276,9 +278,6 @@ static void start_linux_on_core1(uint32_t fdt)
      * Flash MMU entries are shared, but each core has a private I-cache bus.
      * The D-cache/PSRAM data bus is shared.
      */
-    enable_core1_external_memory_bus(OPENSBI_XIP_ADDR, 0x00080000U);
-    enable_core1_external_memory_bus(LINUX_XIP_ADDR, ROOTFS_FLASH_ADDR - LINUX_XIP_ADDR);
-    enable_core1_external_memory_bus(ROOTFS_FLASH_ADDR, ROOTFS_MMU_MAP_SIZE);
     enable_core1_external_memory_bus(FLASH_MTD_XIP_ADDR, FLASH_MTD_SIZE);
     if (!prepare_core1_cached_psram()) {
         loader_restart("hart1 cached PSRAM setup");
@@ -300,15 +299,17 @@ static void start_linux_on_core1(uint32_t fdt)
     }
 }
 
-#define OPENSBI_XIP_ADDR              0x40030000U
-#define LINUX_XIP_ADDR                0x400B0000U
-#define ROOTFS_FLASH_ADDR             0x40A20000U
-#define FLASH_MTD_XIP_ADDR            0x41000000U
+#define OPENSBI_XIP_ADDR              0x40220000U
+#define LINUX_XIP_ADDR                0x40400000U
+#define ROOTFS_FLASH_ADDR             0x40A00000U
+#define FLASH_MTD_XIP_ADDR            0x40000000U
 #define FLASH_MTD_SIZE                0x01000000U
 #define OPENSBI_FDT_OFFSET_SLOT_SIZE  4U
 #define FDT_MAGIC_LE                  0xEDFE0DD0U
-#define ROOTFS_PARTITION_SIZE         0x005DC000U
-#define ROOTFS_MMU_MAP_SIZE           0x005E0000U
+#define LINUX_PARTITION_OFFSET        0x00400000U
+#define LINUX_PARTITION_SIZE          0x00600000U
+#define ROOTFS_PARTITION_OFFSET       0x00A00000U
+#define ROOTFS_PARTITION_SIZE         0x00600000U
 #define ESP32S31_PSRAM_SIZE           0x01000000U
 #define LINUX_PSRAM_START             0x50000000U
 
@@ -355,7 +356,7 @@ void app_main(void)
     disable_apm();
     disable_watchdogs();
 
-    /* Keep XIP mappings intact and expose the full flash at a second alias. */
+    /* Map the entire 16-MiB flash linearly at its physical-offset alias. */
     if (!map_flash_range(FLASH_MTD_XIP_ADDR, 0, FLASH_MTD_SIZE)) {
         ESP_LOGE(TAG, "failed to map complete Flash MTD window");
         loader_restart("Flash MTD mapping");
@@ -364,7 +365,7 @@ void app_main(void)
                   " vaddr=0x%08" PRIx32,
              (uint32_t)FLASH_MTD_SIZE, (uint32_t)FLASH_MTD_XIP_ADDR);
 
-    /* Map OpenSBI at its linked Flash XIP address. */
+    /* The linear map makes each partition available at base + flash offset. */
     const esp_partition_t *part = esp_partition_find_first(
         ESP_PARTITION_TYPE_DATA, 0x40, "opensbi");
     if (!part) {
@@ -372,10 +373,6 @@ void app_main(void)
         loader_restart("OpenSBI partition lookup");
     }
 
-    if (!map_flash_range(OPENSBI_XIP_ADDR, part->address, part->size)) {
-        ESP_LOGE(TAG, "failed to map OpenSBI at linked address");
-        loader_restart("OpenSBI MMU mapping");
-    }
     const void *opensbi_ptr = (const void *)(uintptr_t)OPENSBI_XIP_ADDR;
     ESP_LOGI(TAG, "OpenSBI mapped at %p (size %" PRIu32 ")",
              opensbi_ptr, part->size);
@@ -415,14 +412,10 @@ void app_main(void)
     /* --- Find and mmap Linux partition --- */
     const esp_partition_t *linux_part = esp_partition_find_first(
         ESP_PARTITION_TYPE_DATA, 0x40, "linux");
-    if (!linux_part) {
+    if (!linux_part || linux_part->address != LINUX_PARTITION_OFFSET ||
+        linux_part->size != LINUX_PARTITION_SIZE) {
         ESP_LOGE(TAG, "Linux partition not found");
         loader_restart("Linux partition lookup");
-    }
-    if (!map_flash_range(LINUX_XIP_ADDR, linux_part->address,
-                         linux_part->size)) {
-        ESP_LOGE(TAG, "failed to map Linux at linked address");
-        loader_restart("Linux MMU mapping");
     }
     const void *linux_ptr = (const void *)(uintptr_t)LINUX_XIP_ADDR;
     ESP_LOGI(TAG, "Linux mapped at %p (size %" PRIu32 ")",
@@ -432,8 +425,7 @@ void app_main(void)
         ESP_PARTITION_TYPE_DATA, 0x40, "rootfs");
     if (!rootfs_part ||
         rootfs_part->size != ROOTFS_PARTITION_SIZE ||
-        !map_flash_range(ROOTFS_FLASH_ADDR, rootfs_part->address,
-                         ROOTFS_MMU_MAP_SIZE)) {
+        rootfs_part->address != ROOTFS_PARTITION_OFFSET) {
         ESP_LOGE(TAG, "failed to map 0x%08" PRIx32 "-byte rootfs",
                  (uint32_t)ROOTFS_PARTITION_SIZE);
         loader_restart("rootfs mapping");

@@ -50,8 +50,9 @@ probe.
 The full ESP-Hosted co-processor image is larger than the original loader.
 The project derives its memory linker script from IDF's S31
 `memory.ld.in`, changing only the FreeRTOS flash-XIP base to `0x42000020`.
-OpenSBI and Linux keep their fixed mappings at `0x40030000` and
-`0x400b0000`. The loader programs those mappings directly with the S31 MMU
+The loader maps the complete 16-MiB Flash linearly at `0x40000000`, so OpenSBI
+and Linux execute at `0x40220000` and `0x40400000`. It programs that mapping
+directly with the S31 MMU
 HAL; `esp_partition_mmap()` is not used because its dynamically selected
 address is not a fixed-link ABI.
 

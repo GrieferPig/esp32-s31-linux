@@ -98,7 +98,7 @@ core1_linux_trampoline:
     fence   rw, rw
     fence.i
 
-    li      t0, 0x40030000
+    li      t0, 0x40220000
     jr      t0
 
     .size core1_linux_trampoline, . - core1_linux_trampoline

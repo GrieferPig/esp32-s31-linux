@@ -34,8 +34,8 @@ idf_build_set_property(LINK_OPTIONS "-Wl,--no-check-sections" APPEND)
 project(hello_world)
 
 # The IDF application and the Linux payload execute at the same time on the two
-# HP harts.  Keep the IDF XIP image out of the fixed OpenSBI/Linux mappings
-# (0x40030000 and above).  Generate this from IDF's S31 script so that IDF
+# HP harts.  Keep the IDF XIP image out of the full Flash mapping
+# (0x40000000..0x41000000).  Generate this from IDF's S31 script so that IDF
 # remains the sole source for the rest of the memory layout.
 set(IDF_S31_MEMORY_LD
     "$ENV{IDF_PATH}/components/esp_system/ld/esp32s31/memory.ld.in")

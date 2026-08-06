@@ -115,9 +115,10 @@ toolchain: | $(BUILD_DIR)
 toolchain-source:
 	python3 $(CURDIR)/build_linux_toolchain.py --ct-ng-dir "$(CROSSTOOL_NG_DIR)" --jobs "$(JOBS)" --force
 
-FW_TEXT_START ?= 0x40030000
+FW_TEXT_START ?= 0x40220000
 FW_RW_START ?= 0x50FF0000
-LINUX_XIP_ADDR ?= 0x400B0000
+# SV32 XIP uses a 4-MiB leaf/megapage boundary.
+LINUX_XIP_ADDR ?= 0x40400000
 FW_JUMP_ADDR ?= $(LINUX_XIP_ADDR)
 OPENSBI_PARTITION_SIZE ?= 524288
 
@@ -183,7 +184,7 @@ coremark: toolchain | $(COREMARK_OUT)
 
 # Keep this decimal because POSIX test(1) and truncate(1) do not accept the
 # partition table's 0x-prefixed value.
-ROOTFS_PARTITION_SIZE ?= 6144000
+ROOTFS_PARTITION_SIZE ?= 6291456
 BUILDROOT_MAKE = $(MAKE) -C $(BUILDROOT_DIR) O=$(BUILDROOT_OUT) \
 	BR2_EXTERNAL=$(BUILDROOT_EXTERNAL) BR2_DL_DIR=$(BUILDROOT_DL_DIR)
 
