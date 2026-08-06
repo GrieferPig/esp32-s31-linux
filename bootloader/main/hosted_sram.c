@@ -512,8 +512,13 @@ static void hosted_rx_task(void *arg)
 		drain_h1_ring();
 		clock_test_poll();
 
-		/* The ring is authoritative; the doorbell only wakes this task. */
-		(void)ulTaskNotifyTake(pdTRUE, portMAX_DELAY);
+		/*
+		 * Linux may disable the interrupt fabric and stop the FreeRTOS tick
+		 * while rebooting.  Do not block on a notification or a tick timeout:
+		 * continuously poll so OpenSBI system requests are always observed.
+		 */
+		REG_WRITE(HP_SYSTEM_CPU_INT_FROM_CPU_3_REG, 0);
+		__asm__ volatile("nop");
 	}
 }
 
