@@ -1,0 +1,92 @@
+{
+  "port": "/dev/ttyUSB0",
+  "baud": 2000000,
+  "results": [
+    {
+      "direction": "tx",
+      "bytes": 2014793,
+      "crc": "40f8",
+      "expected_crc": "0a39",
+      "crc_ok": false,
+      "content_ok": false,
+      "missing_bytes": 82359,
+      "host_speed_Bps": 188562.17028668153,
+      "device_speed_Bps": 199995.7,
+      "device_cpu_percent": 7.75,
+      "device_time_us": 10485987
+    },
+    {
+      "direction": "rx",
+      "bytes": 1048576,
+      "crc": "7757",
+      "expected_crc": "7757",
+      "crc_ok": true,
+      "host_write_speed_Bps": 191980.93136250466,
+      "device_speed_Bps": 192048.7,
+      "device_cpu_percent": 8.35,
+      "device_time_us": 5459949
+    },
+    {
+      "direction": "tx",
+      "bytes": 2058569,
+      "crc": "4e62",
+      "expected_crc": "0a39",
+      "crc_ok": false,
+      "content_ok": false,
+      "missing_bytes": 38583,
+      "host_speed_Bps": 192743.64597053037,
+      "device_speed_Bps": 199995.9,
+      "device_cpu_percent": 7.8,
+      "device_time_us": 10485976
+    },
+    {
+      "direction": "rx",
+      "bytes": 1048576,
+      "crc": "7757",
+      "expected_crc": "7757",
+      "crc_ok": true,
+      "host_write_speed_Bps": 198112.06245667549,
+      "device_speed_Bps": 198157.8,
+      "device_cpu_percent": 8.62,
+      "device_time_us": 5291621
+    },
+    {
+      "direction": "tx",
+      "bytes": 2036630,
+      "crc": "f6fc",
+      "expected_crc": "0a39",
+      "crc_ok": false,
+      "content_ok": false,
+      "missing_bytes": 60522,
+      "host_speed_Bps": 190571.90296115098,
+      "device_speed_Bps": 199995.9,
+      "device_cpu_percent": 7.85,
+      "device_time_us": 10485975
+    },
+    {
+      "direction": "rx",
+      "bytes": 1048576,
+      "crc": "7757",
+      "expected_crc": "7757",
+      "crc_ok": true,
+      "host_write_speed_Bps": 195134.28767246407,
+      "device_speed_Bps": 195242.2,
+      "device_cpu_percent": 8.48,
+      "device_time_us": 5370641
+    }
+  ],
+  "summary": {
+    "tx": {
+      "runs": 3,
+      "all_crc_ok": false,
+      "mean_device_speed_Bps": 199995.83333333334,
+      "mean_device_cpu_percent": 7.8
+    },
+    "rx": {
+      "runs": 3,
+      "all_crc_ok": true,
+      "mean_device_speed_Bps": 195149.56666666668,
+      "mean_device_cpu_percent": 8.483333333333333
+    }
+  }
+}

@@ -1,0 +1,5 @@
+/build/
+/sdkconfig
+/uart-bench-smoke.json
+__pycache__/
+*.py[cod]

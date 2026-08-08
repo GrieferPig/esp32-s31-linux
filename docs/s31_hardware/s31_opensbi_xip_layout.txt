@@ -56,10 +56,13 @@ Boot flow:
 - Core 0 remains in the FreeRTOS scheduler after releasing core 1. Its worker
   task and timer interrupts are used to verify concurrent scheduler progress.
 - OpenSBI owns 0x2F052000..0x2F062000 (64 KiB) of IDF-usable HP SRAM.
-- Linux devices own the top contiguous 0x8040 bytes of IDF-usable HP SRAM:
-  0x2F072F80..0x2F07AF80 for AXI-GDMA descriptors and
-  0x2F07AF80..0x2F07AFC0 for USB local SRAM. The factory app registers the
-  combined interval with SOC_RESERVE_MEMORY_REGION before heap creation.
+- Linux devices own a contiguous 0x6880-byte HP-SRAM carve-out:
+  0x2F072F80..0x2F075F80 for AXI-GDMA descriptors,
+  0x2F075F80..0x2F076F80 for AHB-GDMA descriptors,
+  0x2F076F80..0x2F076FC0 for USB local SRAM, and
+  0x2F077000..0x2F079800 for the UHCI0 payload ring. The factory app
+  registers the combined interval with SOC_RESERVE_MEMORY_REGION before heap
+  creation.
 - AXI-GDMA, SDMMC, Ethernet, and USB OTG are enabled. Their DMA allocations
   use cached Linux memory plus the existing S31 driver cache-maintenance and
   internal-SRAM descriptor/status carve-outs.
