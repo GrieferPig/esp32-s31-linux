@@ -1,0 +1,42 @@
+ESP32-S31 DMA memory placement
+
+Descriptor placement:
+- DMA descriptor rings and linked-list descriptor nodes must be allocated from
+  internal HP-SRAM (or another DMA-visible internal-SRAM region).
+- S31 DMA engines fetch descriptor metadata directly and cannot reliably fetch
+  descriptors placed in PSRAM.
+- A PSRAM address must never be written into a descriptor link or descriptor
+  metadata field merely because the corresponding CPU mapping is valid.
+
+Transfer-buffer placement:
+- Transfer buffers are separate from descriptor metadata. They may be backed
+  by Linux PSRAM.
+- Cached PSRAM buffers require the normal DMA mapping and cache
+  synchronization operations for the transfer direction. The driver must not
+  substitute a cached CPU virtual address for the DMA address.
+- The UHCI0 console currently uses a small internal HP-SRAM data buffer as a
+  hardware-specific reliability measure. This is independent of the general
+  rule that DMA payload buffers and DMA descriptors have different placement
+  requirements.
+
+Current S31 carve-outs:
+- Hosted transport: 0x2F06AF80..0x2F072F80 (32 KiB).
+- AXI-GDMA descriptors: 0x2F072F80..0x2F075F80 (12 KiB).
+- AHB-GDMA descriptors: 0x2F075F80..0x2F076F80 (4 KiB).
+- USB local SRAM: 0x2F076F80..0x2F076FC0 (64 bytes). The hart1 early
+  mailbox at 0x2F076FA0 shares this range during early boot, before Linux
+  uses it for DWC2.
+- Alignment padding: 0x2F076FC0..0x2F077000 (64 bytes).
+- UHCI0 UART DMA payload buffer: 0x2F077000..0x2F079800 (10 KiB).
+  The current driver divides it into two 2048-byte TX slots followed by four
+  1536-byte RX slots.
+
+The loader therefore reserves 0x2F06AF80..0x2F079800 from the ESP-IDF heap:
+0x8000 bytes for hosted transport and 0x6880 bytes for Linux devices, for a
+combined 0xE880 bytes (58.125 KiB). Ranges above use an exclusive end
+address.
+
+When adding a DMA client, reserve descriptor memory in the internal HP-SRAM
+carve-out and account for it in the factory application's reserved-memory
+registration. Keep payload buffers independently allocatable from PSRAM when
+the device's cache and addressing requirements are satisfied.

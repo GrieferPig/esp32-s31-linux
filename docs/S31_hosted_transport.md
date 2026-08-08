@@ -4,7 +4,7 @@
 
 - hart0 runs ESP-IDF/FreeRTOS and owns the Wi-Fi/Bluetooth hardware.
 - hart1 runs OpenSBI/Linux.
-- `0x2f062f80..0x2f072f80` is a 64 KiB transport reservation in internal
+- `0x2f06af80..0x2f072f80` is a 32 KiB transport reservation in internal
   HP SRAM. It is directly shared by both HP harts; ring ownership transfers
   use RISC-V fences. The S31 external-memory cache-sync engine is not used
   for this internal `0x2f...` range.
