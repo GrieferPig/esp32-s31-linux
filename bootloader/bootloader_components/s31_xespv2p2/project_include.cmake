@@ -3,6 +3,8 @@ set(S31_XESPV2P2_MARCH
 
 idf_build_set_property(COMPILE_OPTIONS "${S31_XESPV2P2_MARCH}" APPEND)
 idf_build_set_property(LINK_OPTIONS "${S31_XESPV2P2_MARCH}" APPEND)
+idf_build_set_property(LINK_OPTIONS "-Wl,--wrap=bootloader_console_init" APPEND)
+idf_build_set_property(LINK_OPTIONS "-Wl,-u,__wrap_bootloader_console_init" APPEND)
 idf_build_set_property(COMPILE_OPTIONS "-mespv-spec=2p2" APPEND)
 idf_build_set_property(LINK_OPTIONS "-mespv-spec=2p2" APPEND)
 

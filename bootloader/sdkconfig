@@ -1235,6 +1235,31 @@ CONFIG_PARTITION_TABLE_MD5=y
 # end of Partition Table
 
 #
+# S31 audio co-processor
+#
+# default:
+CONFIG_S31_AUDIO_ENABLE=y
+# default:
+CONFIG_S31_AUDIO_I2C_SDA=51
+# default:
+CONFIG_S31_AUDIO_I2C_SCL=50
+# default:
+CONFIG_S31_AUDIO_I2S_MCLK=52
+# default:
+CONFIG_S31_AUDIO_I2S_BCLK=53
+# default:
+CONFIG_S31_AUDIO_I2S_WS=55
+# default:
+CONFIG_S31_AUDIO_I2S_DOUT=56
+# default:
+CONFIG_S31_AUDIO_I2S_DIN=54
+# default:
+CONFIG_S31_AUDIO_PA_GPIO=57
+# default:
+# CONFIG_S31_AUDIO_MIC_RIGHT_SLOT is not set
+# end of S31 audio co-processor
+
+#
 # Example Configuration
 #
 # default:
@@ -1934,6 +1959,17 @@ CONFIG_EFUSE_MAX_BLK_LEN=256
 # end of eFuse Bit Manager
 
 #
+# ADC and ADC Calibration
+#
+# default:
+# CONFIG_ADC_ONESHOT_CTRL_FUNC_IN_IRAM is not set
+# default:
+# CONFIG_ADC_CONTINUOUS_ISR_IRAM_SAFE is not set
+# default:
+# CONFIG_ADC_ENABLE_DEBUG_LOG is not set
+# end of ADC and ADC Calibration
+
+#
 # Wireless Coexistence
 #
 # default:
@@ -1983,6 +2019,28 @@ CONFIG_GDMA_OBJ_DRAM_SAFE=y
 # end of ESP-Driver:GPIO Configurations
 
 #
+# ESP-Driver:I2C Configurations
+#
+# default:
+# CONFIG_I2C_ISR_IRAM_SAFE is not set
+# default:
+# CONFIG_I2C_ENABLE_DEBUG_LOG is not set
+# default:
+CONFIG_I2C_MASTER_ISR_HANDLER_IN_IRAM=y
+# end of ESP-Driver:I2C Configurations
+
+#
+# ESP-Driver:I2S Configurations
+#
+# default:
+# CONFIG_I2S_ISR_IRAM_SAFE is not set
+# default:
+# CONFIG_I2S_CTRL_FUNC_IN_IRAM is not set
+# default:
+# CONFIG_I2S_ENABLE_DEBUG_LOG is not set
+# end of ESP-Driver:I2S Configurations
+
+#
 # ESP-Driver:SPI Configurations
 #
 # default:
@@ -2014,6 +2072,8 @@ CONFIG_SPI_SLAVE_ISR_IN_IRAM=y
 #
 # default:
 CONFIG_USJ_ENABLE_USB_SERIAL_JTAG=y
+# default:
+# CONFIG_USJ_NO_AUTO_LS_ON_CONNECTION is not set
 # end of ESP-Driver:USB Serial/JTAG Configuration
 
 #
@@ -4004,6 +4064,41 @@ CONFIG_VFS_SEMIHOSTFS_MAX_MOUNT_POINTS=1
 # default:
 CONFIG_VFS_INITIALIZE_DEV_NULL=y
 # end of Virtual file system
+
+#
+# Audio Codec Device Configuration
+#
+# default:
+# CONFIG_CODEC_I2C_BACKWARD_COMPATIBLE is not set
+# default:
+CONFIG_CODEC_ES8311_SUPPORT=y
+# default:
+CONFIG_CODEC_ES7210_SUPPORT=y
+# default:
+CONFIG_CODEC_ES7243_SUPPORT=y
+# default:
+CONFIG_CODEC_ES7243E_SUPPORT=y
+# default:
+CONFIG_CODEC_ES8156_SUPPORT=y
+# default:
+CONFIG_CODEC_AW88298_SUPPORT=y
+# default:
+CONFIG_CODEC_ES8389_SUPPORT=y
+# default:
+CONFIG_CODEC_ES8374_SUPPORT=y
+# default:
+CONFIG_CODEC_ES8388_SUPPORT=y
+# default:
+CONFIG_CODEC_TAS5805M_SUPPORT=y
+# default:
+# CONFIG_CODEC_ZL38063_SUPPORT is not set
+# default:
+# CONFIG_CODEC_CJC8910_SUPPORT is not set
+# default:
+# CONFIG_CODEC_DUMMY_SUPPORT is not set
+# default:
+# CONFIG_CODEC_DATA_ADC_SUPPORT is not set
+# end of Audio Codec Device Configuration
 # end of Component config
 
 # default:

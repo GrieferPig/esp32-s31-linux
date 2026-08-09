@@ -25,6 +25,9 @@
 
 #include "hosted_sram.h"
 #include "s31_hosted_sram.h"
+#ifdef CONFIG_S31_AUDIO_ENABLE
+#include "s31_audio_internal.h"
+#endif
 
 static const char *TAG = "hosted_sram";
 static volatile struct s31_hosted_control *const s_ctrl =
@@ -36,13 +39,25 @@ static volatile struct s31_hosted_slot *const s_h1_to_h0 =
 static portMUX_TYPE s_tx_lock = portMUX_INITIALIZER_UNLOCKED;
 static TaskHandle_t s_rx_task;
 static intr_handle_t s_h1_irq;
+static esp_timer_handle_t s_clock_timer;
 static uint16_t s_tx_sequence;
 static s31_hosted_frame_handler_t s_frame_handler;
 static void *s_frame_handler_arg;
 static bool s_clock_test_active;
 static uint32_t s_clock_test_cookie;
 static uint32_t s_clock_test_duration;
-static int64_t s_clock_test_deadline_us;
+
+#define S31_PENDING_CONTROL_DEPTH 4
+#define S31_PENDING_CONTROL_MAX sizeof(struct s31_hosted_wifi_msg)
+
+struct pending_control {
+	size_t length;
+	uint8_t payload[S31_PENDING_CONTROL_MAX];
+};
+
+static struct pending_control s_pending_control[S31_PENDING_CONTROL_DEPTH];
+static uint32_t s_pending_control_producer;
+static uint32_t s_pending_control_consumer;
 
 #define S31_PM_MIN_FREQ_MHZ 53
 
@@ -101,6 +116,10 @@ static void IRAM_ATTR h1_doorbell_isr(void *arg)
 	shared_wmb();
 	if (s_rx_task)
 		vTaskNotifyGiveFromISR(s_rx_task, &wake);
+#ifdef CONFIG_S31_AUDIO_ENABLE
+	if (s31_audio_notify_from_isr())
+		wake = pdTRUE;
+#endif
 	if (wake)
 		portYIELD_FROM_ISR();
 }
@@ -166,6 +185,56 @@ int s31_hosted_sram_send(uint8_t if_type, const void *payload, size_t length,
 					 hci_packet_type);
 }
 
+int s31_hosted_sram_send_control(const void *payload, size_t length)
+{
+	struct pending_control *pending;
+
+	if (!payload || !length || length > S31_PENDING_CONTROL_MAX)
+		return -1;
+	if (!s31_hosted_sram_send(S31_HOSTED_PRIV_IF, payload, length, 0))
+		return 0;
+
+	portENTER_CRITICAL(&s_tx_lock);
+	if (s_pending_control_producer - s_pending_control_consumer >=
+	    S31_PENDING_CONTROL_DEPTH) {
+		portEXIT_CRITICAL(&s_tx_lock);
+		return -1;
+	}
+	pending = &s_pending_control[s_pending_control_producer %
+		S31_PENDING_CONTROL_DEPTH];
+	pending->length = length;
+	memcpy(pending->payload, payload, length);
+	s_pending_control_producer++;
+	portEXIT_CRITICAL(&s_tx_lock);
+
+	if (s_rx_task)
+		xTaskNotifyGive(s_rx_task);
+	return 0;
+}
+
+static void flush_pending_control(void)
+{
+	for (;;) {
+		struct pending_control *pending;
+
+		portENTER_CRITICAL(&s_tx_lock);
+		if (s_pending_control_consumer == s_pending_control_producer) {
+			portEXIT_CRITICAL(&s_tx_lock);
+			return;
+		}
+		pending = &s_pending_control[s_pending_control_consumer %
+			S31_PENDING_CONTROL_DEPTH];
+		portEXIT_CRITICAL(&s_tx_lock);
+
+		if (s31_hosted_sram_send(S31_HOSTED_PRIV_IF, pending->payload,
+					 pending->length, 0))
+			return;
+		portENTER_CRITICAL(&s_tx_lock);
+		s_pending_control_consumer++;
+		portEXIT_CRITICAL(&s_tx_lock);
+	}
+}
+
 void s31_hosted_sram_set_frame_handler(s31_hosted_frame_handler_t handler,
 				       void *arg)
 {
@@ -185,7 +254,7 @@ static void send_control(uint8_t type, uint8_t value)
 		.generation = s_ctrl->generation,
 	};
 
-	(void)s31_hosted_sram_send(S31_HOSTED_PRIV_IF, &msg, sizeof(msg), 0);
+	(void)s31_hosted_sram_send_control(&msg, sizeof(msg));
 }
 
 static int send_clock_stamp(uint8_t type, uint32_t cookie,
@@ -203,22 +272,23 @@ static int send_clock_stamp(uint8_t type, uint32_t cookie,
 	};
 
 	memcpy(msg.data, &stamp, sizeof(stamp));
-	return s31_hosted_sram_send(S31_HOSTED_PRIV_IF, &msg, sizeof(msg), 0);
+	return s31_hosted_sram_send_control(&msg, sizeof(msg));
 }
 
-static void clock_test_poll(void)
+static void clock_test_timeout(void *arg)
 {
 	int64_t now;
 
+	(void)arg;
 	if (!s_clock_test_active)
 		return;
 	now = esp_timer_get_time();
-	if (now < s_clock_test_deadline_us)
+	if (send_clock_stamp(S31_HOSTED_CTRL_CLOCK_STOP,
+			     s_clock_test_cookie, s_clock_test_duration, now)) {
+		(void)esp_timer_restart(s_clock_timer, 1000);
 		return;
-	/* Keep retrying if the outbound ring happens to be full at expiry. */
-	if (!send_clock_stamp(S31_HOSTED_CTRL_CLOCK_STOP,
-			      s_clock_test_cookie, s_clock_test_duration, now))
-		s_clock_test_active = false;
+	}
+	s_clock_test_active = false;
 }
 
 static bool process_clock_control(const struct s31_hosted_control_msg *msg)
@@ -235,11 +305,14 @@ static bool process_clock_control(const struct s31_hosted_control_msg *msg)
 	if (send_clock_stamp(S31_HOSTED_CTRL_CLOCK_START, stamp.cookie,
 			     stamp.duration_sec, now))
 		return true;
+	if (s_clock_test_active)
+		(void)esp_timer_stop(s_clock_timer);
 	s_clock_test_cookie = stamp.cookie;
 	s_clock_test_duration = stamp.duration_sec;
-	s_clock_test_deadline_us =
-		now + (int64_t)stamp.duration_sec * 1000000;
 	s_clock_test_active = true;
+	if (esp_timer_start_once(s_clock_timer,
+				 (uint64_t)stamp.duration_sec * 1000000ULL) != ESP_OK)
+		s_clock_test_active = false;
 	return true;
 }
 
@@ -263,8 +336,7 @@ static bool process_mem_stats_control(const struct s31_hosted_control_msg *msg)
 	stats.minimum_free_bytes = heap_caps_get_minimum_free_size(caps);
 	stats.largest_free_block = heap_caps_get_largest_free_block(caps);
 	memcpy(response.data, &stats, sizeof(stats));
-	(void)s31_hosted_sram_send(S31_HOSTED_PRIV_IF, &response,
-				   sizeof(response), 0);
+	(void)s31_hosted_sram_send_control(&response, sizeof(response));
 	return true;
 }
 
@@ -313,8 +385,7 @@ static bool process_cpu_freq_control(const struct s31_hosted_control_msg *msg)
 
 send_response:
 	memcpy(response.data, &response_data, sizeof(response_data));
-	(void)s31_hosted_sram_send(S31_HOSTED_PRIV_IF, &response,
-				   sizeof(response), 0);
+	(void)s31_hosted_sram_send_control(&response, sizeof(response));
 	return true;
 }
 
@@ -488,37 +559,33 @@ static void drain_h1_ring(void)
 	}
 }
 
+static void process_system_request(void)
+{
+	uint32_t request = s_ctrl->h0_h1_doorbell;
+
+	if (!request)
+		return;
+	s_ctrl->h0_h1_doorbell = 0;
+	shared_wmb();
+	if (request == S31_HOSTED_CTRL_POWER_OFF) {
+		ESP_LOGI(TAG, "OpenSBI requested system power off");
+		esp_deep_sleep_start();
+	}
+	if (request == S31_HOSTED_CTRL_RESTART) {
+		ESP_LOGI(TAG, "OpenSBI requested system restart");
+		esp_restart();
+	}
+}
+
 static void hosted_rx_task(void *arg)
 {
 	(void)arg;
 
 	for (;;) {
-		uint32_t system_request = s_ctrl->h0_h1_doorbell;
-
-		if (system_request) {
-			s_ctrl->h0_h1_doorbell = 0;
-			shared_wmb();
-			if (system_request == S31_HOSTED_CTRL_POWER_OFF) {
-				ESP_LOGI(TAG, "OpenSBI requested system power off");
-				esp_deep_sleep_start();
-			}
-			if (system_request == S31_HOSTED_CTRL_RESTART) {
-				ESP_LOGI(TAG, "OpenSBI requested system restart");
-				esp_restart();
-			}
-		}
-
-		s_ctrl->h0_rx_polls++;
+		ulTaskNotifyTake(pdTRUE, portMAX_DELAY);
+		process_system_request();
 		drain_h1_ring();
-		clock_test_poll();
-
-		/*
-		 * Linux may disable the interrupt fabric and stop the FreeRTOS tick
-		 * while rebooting.  Do not block on a notification or a tick timeout:
-		 * continuously poll so OpenSBI system requests are always observed.
-		 */
-		REG_WRITE(HP_SYSTEM_CPU_INT_FROM_CPU_3_REG, 0);
-		__asm__ volatile("nop");
+		flush_pending_control();
 	}
 }
 
@@ -550,6 +617,10 @@ void s31_hosted_sram_set_bt_mac(const uint8_t mac[6])
 
 esp_err_t s31_hosted_sram_start(void)
 {
+	esp_timer_create_args_t clock_timer_args = {
+		.callback = clock_test_timeout,
+		.name = "hosted_clock",
+	};
 	uint32_t generation = 1;
 	esp_pm_config_t pm_config = {
 		.max_freq_mhz = CONFIG_ESP_DEFAULT_CPU_FREQ_MHZ,
@@ -577,18 +648,26 @@ esp_err_t s31_hosted_sram_start(void)
 
 	REG_WRITE(HP_SYSTEM_CPU_INT_FROM_CPU_2_REG, 0);
 	REG_WRITE(HP_SYSTEM_CPU_INT_FROM_CPU_3_REG, 0);
+	err = esp_timer_create(&clock_timer_args, &s_clock_timer);
+	if (err != ESP_OK)
+		return err;
 	err = esp_intr_alloc(ETS_CPU_INTR_FROM_CPU_3_SOURCE,
 			      ESP_INTR_FLAG_LEVEL1 | ESP_INTR_FLAG_INTRDISABLED,
 			      h1_doorbell_isr, NULL, &s_h1_irq);
 	if (err != ESP_OK) {
 		ESP_LOGE(TAG, "failed to allocate Linux doorbell IRQ");
+		esp_timer_delete(s_clock_timer);
+		s_clock_timer = NULL;
 		return err;
 	}
 
-	if (xTaskCreatePinnedToCore(hosted_rx_task, "hosted_rx", 4096, NULL, 1,
+	if (xTaskCreatePinnedToCore(hosted_rx_task, "hosted_rx", 4096, NULL,
+				    configMAX_PRIORITIES - 1,
 				    &s_rx_task, 0) != pdPASS) {
 		esp_intr_free(s_h1_irq);
 		s_h1_irq = NULL;
+		esp_timer_delete(s_clock_timer);
+		s_clock_timer = NULL;
 		return ESP_ERR_NO_MEM;
 	}
 	err = esp_intr_enable(s_h1_irq);
@@ -597,6 +676,8 @@ esp_err_t s31_hosted_sram_start(void)
 		s_rx_task = NULL;
 		esp_intr_free(s_h1_irq);
 		s_h1_irq = NULL;
+		esp_timer_delete(s_clock_timer);
+		s_clock_timer = NULL;
 		return err;
 	}
 

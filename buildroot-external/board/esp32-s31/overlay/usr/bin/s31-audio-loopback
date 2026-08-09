@@ -1,0 +1,39 @@
+#!/bin/sh
+
+set -eu
+
+usage()
+{
+	echo "usage: $0 [seconds]" >&2
+	exit 2
+}
+
+[ "$#" -le 1 ] || usage
+case "${1:-}" in
+	-h|--help)
+		echo "usage: $0 [seconds]"
+		exit 0
+		;;
+	'' )
+		;;
+	*[!0-9]*|0)
+		usage
+		;;
+esac
+
+echo "Looping the ES8311 microphone to the speaker; press Ctrl-C to stop." >&2
+echo "Keep the speaker volume low to avoid acoustic feedback." >&2
+
+if [ "$#" -eq 1 ]; then
+	arecord -q -D hw:0,1 -t raw -f U16_LE -r 48000 -c 1 \
+		--buffer-size=4096 --period-size=256 -d "$1" | \
+	s31-audio-stream-stats | \
+	aplay -q -D hw:0,0 -t raw -f U16_LE -r 48000 -c 1 \
+		--buffer-size=4096 --period-size=256
+else
+	arecord -q -D hw:0,1 -t raw -f U16_LE -r 48000 -c 1 \
+		--buffer-size=4096 --period-size=256 | \
+	s31-audio-stream-stats | \
+	aplay -q -D hw:0,0 -t raw -f U16_LE -r 48000 -c 1 \
+		--buffer-size=4096 --period-size=256
+fi

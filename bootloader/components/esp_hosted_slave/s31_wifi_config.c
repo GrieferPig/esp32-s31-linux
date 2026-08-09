@@ -240,8 +240,7 @@ static void send_response(uint8_t type, uint8_t slot, esp_err_t status,
 		len = sizeof(response.data);
 	if (data && len)
 		memcpy(response.data, data, len);
-	(void)s31_hosted_sram_send(S31_HOSTED_PRIV_IF, &response,
-				   sizeof(response), 0);
+	(void)s31_hosted_sram_send_control(&response, sizeof(response));
 }
 
 bool hosted_wifi_config_handler(const uint8_t *data, size_t len)

@@ -4,7 +4,7 @@
 
 - hart0 runs ESP-IDF/FreeRTOS and owns the Wi-Fi/Bluetooth hardware.
 - hart1 runs OpenSBI/Linux.
-- `0x2f06af80..0x2f072f80` is a 32 KiB transport reservation in internal
+- `0x2f06af80..0x2f072380` is a 29 KiB transport reservation in internal
   HP SRAM. It is directly shared by both HP harts; ring ownership transfers
   use RISC-V fences. The S31 external-memory cache-sync engine is not used
   for this internal `0x2f...` range.
@@ -15,9 +15,10 @@
 
 The shared ABI is defined only by `shared/s31_hosted_sram.h`.
 
-- A 4 KiB control area contains link metadata and two SPSC ring states.
-- Each direction has 16 slots of 1920 bytes.
-- Each slot has an 8-byte ring header and up to 1912 bytes of ESP-Hosted
+- A 4 KiB control area contains link metadata and two SPSC ring states; the
+  audio control block occupies otherwise unused space in this page.
+- Each direction has eight slots of 1600 bytes.
+- Each slot has an 8-byte ring header and up to 1592 bytes of ESP-Hosted
   frame data.
 - The ESP-Hosted frame uses the upstream 12-byte `esp_payload_header`,
   including sequence number and additive checksum.
@@ -33,19 +34,21 @@ The shared ABI is defined only by `shared/s31_hosted_sram.h`.
   67, Linux raw CLIC ID 40, register `0x20586018`.
 - Linux to FreeRTOS: `HP_SYSTEM_CPU_INT_FROM_CPU_3`, register `0x2058601c`.
 - Doorbells are hints and may coalesce. Both consumers recheck their rings.
-  Hart0 uses a polling task instead of installing a
-  CLIC handler into ESP-IDF's vector table. This task must not call
-  `taskYIELD()`: Linux reconfigures the shared interrupt environment and the
-  hart0 FreeRTOS tick can stop, leaving a yielded task permanently dormant.
+  Hart0's doorbell ISR wakes a high-priority RX task, which drains the ring and
+  blocks again so control RPCs cannot be starved by real-time audio. OpenSBI
+  power requests use a dedicated mailbox followed by the same doorbell, so
+  they do not depend on the payload ring or the FreeRTOS tick.
+- Linux rings the hart0 doorbell after advancing its H0-to-H1 consumer. This
+  TX-space event lets hart0 retry queued control responses without polling.
 - Linux uses the private OpenSBI Hosted extension for the S-mode user-buffer
   copy and ring commit.
 
 ## Boot ordering
 
 FreeRTOS reserves the transport/GDMA/DWC2 SRAM range from the IDF heap,
-initializes and publishes the complete transport, and starts the polling task
-before releasing hart1. Linux rejects a missing magic or ABI mismatch during
-probe.
+initializes and publishes the complete transport, and starts the event-driven
+RX task before releasing hart1. Linux rejects a missing magic or ABI mismatch
+during probe.
 
 The full ESP-Hosted co-processor image is larger than the original loader.
 The project derives its memory linker script from IDF's S31

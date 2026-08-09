@@ -2,8 +2,8 @@ ESP32-S31 OpenSBI Flash XIP layout
 
 Goal:
 - Keep OpenSBI text/rodata in flash and execute through the flash MMU window.
-- Keep OpenSBI writable data, BSS, scratch, stack, and heap in a 64-KiB
-  internal HP-SRAM carve-out so Linux can use all 16 MiB of cached PSRAM.
+- Keep OpenSBI writable data, BSS, scratch, stack, and heap in the final
+  64-KiB PSRAM MMU page, excluded from Linux with a `no-map` reservation.
 - Keep the OpenSBI partition size fixed at 512KB.
 - Boot OpenSBI/Linux on HP core 1. Core 0 boots the ESP-IDF factory app in
   single-core mode and keeps running the FreeRTOS scheduler.
@@ -12,11 +12,10 @@ Address contract:
 - The factory app maps the complete 16-MiB Flash linearly at 0x40000000.
 - OpenSBI is at flash offset 0x220000 and must be linked with
   FW_TEXT_START=0x40220000.
-- OpenSBI writable sections are linked with FW_RW_START=0x2F052000.
-- OpenSBI owns the 64-KiB internal HP-SRAM interval
-  0x2F052000..0x2F062000. The factory app reserves it before heap creation.
-- Linux receives the full 16-MiB cached PSRAM alias in its DT memory node:
-  0x50000000..0x51000000.
+- OpenSBI writable sections are linked with FW_RW_START=0x50FF0000.
+- OpenSBI owns `0x50FF0000..0x51000000`; Linux marks it `no-map`.
+- Linux receives the full 16-MiB cached PSRAM alias in its DT memory node,
+  with the final two 64-KiB pages reserved for audio and OpenSBI.
 - ESP-IDF maps PSRAM at the cached 0x50000000 alias, but the factory app uses
   CONFIG_SPIRAM_USE_MEMMAP and explicitly disables USE_CAPS_ALLOC/USE_MALLOC.
   IDF's own extram reserved-region entry therefore keeps all PSRAM out of the
@@ -55,12 +54,13 @@ Boot flow:
   - a1 = fdt_addr
 - Core 0 remains in the FreeRTOS scheduler after releasing core 1. Its worker
   task and timer interrupts are used to verify concurrent scheduler progress.
-- OpenSBI owns 0x2F052000..0x2F062000 (64 KiB) of IDF-usable HP SRAM.
+- OpenSBI owns the final PSRAM MMU page at 0x50FF0000..0x51000000; the old
+  0x2F052000..0x2F062000 HP-SRAM carve-out has been returned to IDF.
 - Linux devices own a contiguous 0x6880-byte HP-SRAM carve-out:
-  0x2F072F80..0x2F075F80 for AXI-GDMA descriptors,
-  0x2F075F80..0x2F076F80 for AHB-GDMA descriptors,
-  0x2F076F80..0x2F076FC0 for USB local SRAM, and
-  0x2F077000..0x2F079800 for the UHCI0 payload ring. The factory app
+  0x2F072380..0x2F075380 for AXI-GDMA descriptors,
+  0x2F075380..0x2F076380 for AHB-GDMA descriptors,
+  0x2F076380..0x2F0763C0 for USB local SRAM, and
+  0x2F076400..0x2F078C00 for the UHCI0 payload ring. The factory app
   registers the combined interval with SOC_RESERVE_MEMORY_REGION before heap
   creation.
 - AXI-GDMA, SDMMC, Ethernet, and USB OTG are enabled. Their DMA allocations
@@ -90,9 +90,19 @@ Build-time checks:
 - The generated fw_payload.bin must be exactly 512KB.
 - OpenSBI + FDT must fit in the first 512KB - 4 bytes.
 - Link-time assertions require FW_TEXT_START=0x40220000,
-  FW_RW_START=0x2F052000, and writable sections no larger than 16 KiB. The
-  configured 8-KiB stack/scratch area and 37-KiB heap keep the total runtime
-  allocation within the 64-KiB reserved interval.
+  FW_RW_START=0x50FF0000, and all writable sections, stack, scratch, and heap
+  to fit in 64 KiB. The configured 8-KiB stack/scratch area and 37-KiB heap
+  keep the total runtime allocation within the 64-KiB reserved interval.
+
+Hardware validation:
+- Linux reports the audio and OpenSBI reservations as 64 KiB at 0x50FE0000
+  and 0x50FF0000, with the OpenSBI page marked no-map.
+- The compact HP-SRAM layout leaves 278400 bytes in the FreeRTOS heap; the
+  observed minimum free heap is 177204 bytes and the largest free block is
+  172032 bytes.
+- Linux CoreMark validates at 999.818215 iterations/s, and an SBI system reset
+  returns through OpenSBI to the Linux login prompt while the hosted transport
+  repeats its 9 x 1500-byte wrap self-test successfully.
 
 OpenSBI XIP relocation rule:
 - fw_base.S copies .data from flash LMA to FW_RW_START before the boot lottery.
@@ -105,4 +115,4 @@ OpenSBI XIP relocation rule:
 Early fault note:
 - OpenSBI's first instructions copy .data from flash LMA to FW_RW_START.
 - A store/AMO access fault before the OpenSBI banner usually points at the
-  HP-SRAM reservation or handoff protection state, not the FDT offset.
+  PSRAM MMU/cache/PMA handoff state, not the FDT offset.

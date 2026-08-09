@@ -12,6 +12,8 @@
 #ifndef S31_HOSTED_SRAM_H
 #define S31_HOSTED_SRAM_H
 
+#include "s31_memory_layout.h"
+
 #ifdef __KERNEL__
 #include <linux/types.h>
 typedef u8 s31_u8;
@@ -26,10 +28,9 @@ typedef uint32_t s31_u32;
 typedef uint64_t s31_u64;
 #endif
 
-#define S31_HOSTED_SRAM_BASE		0x2f06af80U
-#define S31_HOSTED_SRAM_SIZE		0x00008000U
+#define S31_HOSTED_SRAM_BASE		S31_HP_SHARED_BASE
 #define S31_HOSTED_CTRL_SIZE		0x00001000U
-#define S31_HOSTED_SLOT_SIZE		1792U
+#define S31_HOSTED_SLOT_SIZE		1600U
 #define S31_HOSTED_SLOT_COUNT		8U
 #define S31_HOSTED_SLOT_DATA_SIZE	(S31_HOSTED_SLOT_SIZE - 8U)
 #define S31_HOSTED_H0_TO_H1_OFFSET	S31_HOSTED_CTRL_SIZE

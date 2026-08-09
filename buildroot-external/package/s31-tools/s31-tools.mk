@@ -59,6 +59,10 @@ define S31_TOOLS_BUILD_CMDS
 		-o $(@D)/esp-hosted-ctl
 	$(TARGET_CC) $(TARGET_CFLAGS) $(TARGET_LDFLAGS) \
 		$(@D)/s31_cpufreq.c -o $(@D)/s31-cpufreq
+	$(TARGET_CC) $(TARGET_CFLAGS) $(TARGET_LDFLAGS) \
+		$(@D)/s31_audio_analyze.c -o $(@D)/s31-audio-analyze
+	$(TARGET_CC) $(TARGET_CFLAGS) $(TARGET_LDFLAGS) \
+		$(@D)/s31_audio_stream_stats.c -o $(@D)/s31-audio-stream-stats
 endef
 
 define S31_TOOLS_INSTALL_TARGET_CMDS
@@ -86,6 +90,10 @@ define S31_TOOLS_INSTALL_TARGET_CMDS
 		$(TARGET_DIR)/usr/sbin/esp-hosted-ctl
 	$(INSTALL) -D -m 0755 $(@D)/s31-cpufreq \
 		$(TARGET_DIR)/usr/sbin/s31-cpufreq
+	$(INSTALL) -D -m 0755 $(@D)/s31-audio-analyze \
+		$(TARGET_DIR)/usr/bin/s31-audio-analyze
+	$(INSTALL) -D -m 0755 $(@D)/s31-audio-stream-stats \
+		$(TARGET_DIR)/usr/bin/s31-audio-stream-stats
 	ln -sfn esp-hosted-ctl $(TARGET_DIR)/usr/sbin/test.out
 endef
 

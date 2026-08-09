@@ -45,6 +45,11 @@
 #include "hal/mmu_types.h"
 #include "hosted_sram.h"
 #include "s31_hosted_sram.h"
+#include "s31_audio_sram.h"
+#include "s31_memory_layout.h"
+#ifdef CONFIG_S31_AUDIO_ENABLE
+#include "s31_audio.h"
+#endif
 
 #define OPENSBI_XIP_ADDR              0x40220000U
 /* The complete 16-MiB Flash is linearly mapped at the IDF flash aperture. */
@@ -58,8 +63,8 @@
 #define LINUX_PARTITION_SIZE          0x00600000U
 #define ROOTFS_PARTITION_OFFSET       0x00A00000U
 #define ROOTFS_PARTITION_SIZE         0x00600000U
-#define ESP32S31_PSRAM_SIZE           0x01000000U
-#define LINUX_PSRAM_START             0x50000000U
+#define ESP32S31_PSRAM_SIZE           S31_PSRAM_SIZE
+#define LINUX_PSRAM_START             S31_PSRAM_BASE
 /*
  * Place the shared ring immediately below the hardware-owned DMA/status
  * buffers. This leaves one large primary HP SRAM region for FreeRTOS; the
@@ -68,9 +73,9 @@
 #define LINUX_SRAM_START              S31_HOSTED_SRAM_BASE
 #define LINUX_SRAM_RING_END           (S31_HOSTED_SRAM_BASE + S31_HOSTED_SRAM_SIZE)
 #define LINUX_DMA_START               LINUX_SRAM_RING_END
-#define LINUX_DMA_END                 0x2F079800U
-#define LINUX_SRAM_END                0x2F079800U
-#define HART1_EARLY_MAILBOX_ADDR      0x2F076FA0U
+#define LINUX_DMA_END                 S31_LINUX_DMA_END
+#define LINUX_SRAM_END                S31_HP_SHARED_END
+#define HART1_EARLY_MAILBOX_ADDR      S31_HART1_MAILBOX_BASE
 SOC_RESERVE_MEMORY_REGION(LINUX_SRAM_START, LINUX_SRAM_RING_END, hosted_ring);
 SOC_RESERVE_MEMORY_REGION(LINUX_DMA_START, LINUX_DMA_END, linux_devices);
 
@@ -310,9 +315,6 @@ static void start_linux_on_core1(uint32_t fdt)
 #define LINUX_PARTITION_SIZE          0x00600000U
 #define ROOTFS_PARTITION_OFFSET       0x00A00000U
 #define ROOTFS_PARTITION_SIZE         0x00600000U
-#define ESP32S31_PSRAM_SIZE           0x01000000U
-#define LINUX_PSRAM_START             0x50000000U
-
 static bool map_flash_range(uint32_t vaddr, uint32_t paddr, uint32_t size);
 static bool prepare_core1_cached_psram(void);
 static void enable_core1_external_memory_bus(uint32_t vaddr, uint32_t size);
@@ -436,9 +438,12 @@ void app_main(void)
              rootfs_part->address, rootfs_part->size,
              (uint32_t)ROOTFS_FLASH_ADDR);
 
-    ESP_LOGI(TAG, "FreeRTOS HP SRAM primary region; hosted ring 0x%08" PRIx32
-                  "..0x%08" PRIx32 "; DMA/status 0x%08" PRIx32 "..0x%08" PRIx32,
-             (uint32_t)LINUX_SRAM_START, (uint32_t)LINUX_SRAM_RING_END,
+    ESP_LOGI(TAG, "FreeRTOS HP SRAM primary region; audio PSRAM 0x%08" PRIx32
+                  "..0x%08" PRIx32 "; hosted SRAM 0x%08" PRIx32 "..0x%08" PRIx32
+                  "; DMA/status 0x%08" PRIx32 "..0x%08" PRIx32,
+             (uint32_t)S31_AUDIO_SRAM_BASE,
+             (uint32_t)(S31_AUDIO_SRAM_BASE + S31_AUDIO_SRAM_SIZE),
+             (uint32_t)S31_HOSTED_SRAM_BASE, (uint32_t)LINUX_SRAM_RING_END,
              (uint32_t)LINUX_DMA_START, (uint32_t)LINUX_DMA_END);
 
     /* Publish the complete transport before hart1 can touch its rings.
@@ -449,6 +454,13 @@ void app_main(void)
     if (s31_hosted_sram_start() != ESP_OK)
         loader_restart("hosted SRAM transport");
     ESP_LOGI(TAG, "hosted SRAM transport started");
+
+#ifdef CONFIG_S31_AUDIO_ENABLE
+    err = s31_audio_start();
+    if (err != ESP_OK)
+        ESP_LOGE(TAG, "FreeRTOS audio core unavailable: %s",
+                 esp_err_to_name(err));
+#endif
 
     err = nvs_flash_init();
     if (err == ESP_ERR_NVS_NO_FREE_PAGES ||

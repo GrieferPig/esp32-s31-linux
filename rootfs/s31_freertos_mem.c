@@ -41,12 +41,12 @@ int main(void)
 	print_size("Historical minimum free", stats.minimum_free_bytes);
 	print_size("Largest free block", stats.largest_free_block);
 
-	puts("\nActive 64 KiB OpenSBI HP-SRAM carve-out:");
+	puts("\nOpenSBI RW is in reserved PSRAM; compact HP-SRAM layout:");
 	print_size("Minimum-free headroom", stats.minimum_free_bytes);
 	if (stats.minimum_free_bytes < RECOMMENDED_HEADROOM) {
 		puts("Verdict: MARGINAL; less than 32 KiB low-water headroom remains.");
 		return 2;
 	}
-	puts("Verdict: PASS based on observed low-water usage with the carve-out active.");
+	puts("Verdict: PASS based on observed low-water heap usage.");
 	return 0;
 }
