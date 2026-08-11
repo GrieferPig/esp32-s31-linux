@@ -36,7 +36,8 @@ serialized pass. Raw `esp_vhci_*` symbols remain local to the payload.
 - `0x2f030000..0x2f071800`: blob heap, managed by a Linux `gen_pool`;
 - `0x2f071800..0x2f072380`: synchronous-exception stack and guard;
 - TIMG1/T1 source 29: CLIC46, 100 Hz compatibility tick;
-- radio sources 127, 124 and 133: CLIC47, CLIC45 and CLIC44.
+- radio sources 127, 124 and 133: CLIC47, CLIC45 and CLIC44; and
+- legacy Wi-Fi MAC sources 122 and 120: CLIC43 and CLIC42.
 
 All heap-capability allocations used by the Wi-Fi/BT payload are wrapped onto
 the internal-SRAM pool. The loader reserves the entire radio interval before
@@ -61,3 +62,26 @@ inside `s31_process_timeouts` with `priv=1` and an internal-SRAM stack pointer,
 confirming that the active controller/compatibility scheduler path stayed in
 Linux S-mode. The five-partition radio-only image uses `/dev/mtdblock5` for its
 SquashFS root.
+
+## Stage-5 hardware result
+
+The built-in `esp32s31_wifi` fullmac front end registered `phy0` and `wlan0`
+with cfg80211. A dependency-free userspace test sent a standard generic-netlink
+`NL80211_CMD_TRIGGER_SCAN`, waited for completion, and dumped the cfg80211 BSS
+cache. Two consecutive scans each returned six nearby 2.4-GHz networks with
+BSSID, frequency, RSSI and SSID.
+
+Starting Wi-Fi exposed an ESP-IDF assumption that its legacy logical interrupt
+1 could program the M-mode CLIC window directly. The S-mode adapter now
+translates Wi-Fi sources 122 and 120 into Linux-owned external CLIC43 and
+CLIC42. Hard IRQs only mask and wake the radio worker; the shared blob ISR runs
+inside the serialized gate. After two scans `/proc/interrupts` reported 69
+interrupts on CLIC42, no Oops or warning was present, and the radio tick had
+continued past 9,000 interrupts. OpenOCD halted hart1 during the repeated scan
+with `priv=1`, then resumed it; the scan still completed normally.
+
+The kernel is configured not to require a signed external regulatory database.
+This is intentional for the firmware-free bring-up image: attempting to parse
+the built-in X.509 regulatory certificates exercised an unrelated, unfinished
+S31 SHA-DMA path before the radio worker started. A missing `regulatory.db` is
+therefore non-fatal for this stage.

@@ -40,6 +40,8 @@ define S31_TOOLS_BUILD_CMDS
 		$(@D)/s31_overlay.c -lfdt -o $(@D)/s31-overlay
 	$(TARGET_CC) $(TARGET_CFLAGS) $(TARGET_LDFLAGS) \
 		$(@D)/ble_scan.c -o $(@D)/ble-scan
+	$(TARGET_CC) $(TARGET_CFLAGS) $(TARGET_LDFLAGS) \
+		$(@D)/wifi_scan.c -o $(@D)/wifi-scan
 endef
 
 define S31_TOOLS_INSTALL_TARGET_CMDS
@@ -59,6 +61,7 @@ define S31_TOOLS_INSTALL_TARGET_CMDS
 	$(INSTALL) -D -m 0755 $(@D)/s31-overlay \
 		$(TARGET_DIR)/usr/sbin/s31-overlay
 	$(INSTALL) -D -m 0755 $(@D)/ble-scan $(TARGET_DIR)/usr/sbin/ble-scan
+	$(INSTALL) -D -m 0755 $(@D)/wifi-scan $(TARGET_DIR)/usr/sbin/wifi-scan
 endef
 
 $(eval $(generic-package))

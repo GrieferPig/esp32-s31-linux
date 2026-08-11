@@ -45,6 +45,7 @@ linux_radio.raw.o: radio_stack.linux.o nofreertos_link.txt boot_flags.txt boot_l
 		-Wl,--undefined=s31_radio_stack_task \
 		-Wl,--undefined=s31_radio_bt_enable_task \
 		-Wl,--undefined=s31_radio_vhci_try_send \
+		-Wl,--undefined=s31_radio_wifi_scan_task \
 		-Wl,--undefined=s31_rtos_init -Wl,--undefined=s31_rtos_schedule \
 		-Wl,--undefined=s31_rtos_tick \
 		-Wl,--undefined=esp_wifi_init -Wl,--undefined=esp_bt_controller_init \
@@ -59,7 +60,7 @@ linux-radio-undefined.txt: linux_radio.raw.o
 
 linux-radio-localize.txt: linux_radio.raw.o
 	$(ESP_TOOLS)/bin/riscv32-esp-elf-nm -g --defined-only $< | \
-		awk '{ n=$$NF; if (n !~ /^(s31_radio_(stack|bt_enable)_task|s31_radio_vhci_try_send|s31_rtos_(init|schedule|tick|isr_depth)|xTaskCreatePinnedToCore)$$/) print n; }' | \
+		awk '{ n=$$NF; if (n !~ /^(s31_radio_(stack|bt_enable|wifi_scan)_task|s31_radio_vhci_try_send|s31_rtos_(init|schedule|tick|isr_depth)|xTaskCreatePinnedToCore)$$/) print n; }' | \
 		sort -u > $@
 
 linux_radio.kbuild.o: linux_radio.raw.o linux-radio-localize.txt
