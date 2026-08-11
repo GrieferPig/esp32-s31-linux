@@ -58,7 +58,7 @@ linux-radio-undefined.txt: linux_radio.raw.o
 
 linux-radio-localize.txt: linux_radio.raw.o
 	$(ESP_TOOLS)/bin/riscv32-esp-elf-nm -g --defined-only $< | \
-		awk '{ n=$$NF; if (n !~ /^(s31_radio_(stack|bt_enable)_task|s31_rtos_(init|schedule|tick|get_tick|isr_depth)|xTaskCreatePinnedToCore|esp_wifi_|esp_bt_controller_|esp_intr_alloc)/) print n; }' | \
+		awk '{ n=$$NF; if (n !~ /^(s31_radio_(stack|bt_enable)_task|s31_rtos_(init|schedule|tick|isr_depth)|xTaskCreatePinnedToCore)$$/) print n; }' | \
 		sort -u > $@
 
 linux_radio.kbuild.o: linux_radio.raw.o linux-radio-localize.txt
