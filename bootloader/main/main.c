@@ -30,9 +30,6 @@
 #include "hal/wdt_hal.h"
 #include "heap_memory_layout.h"
 #include "esp_heap_caps.h"
-#include "nvs_flash.h"
-#include "esp_hosted_coprocessor.h"
-#include "slave_bt.h"
 #include "driver/uart.h"
 #include "freertos/FreeRTOS.h"
 #include "freertos/task.h"
@@ -43,13 +40,7 @@
 #include "soc/hp_mem_apm_reg.h"
 #include "hal/mmu_ll.h"
 #include "hal/mmu_types.h"
-#include "hosted_sram.h"
-#include "s31_hosted_sram.h"
-#include "s31_audio_sram.h"
 #include "s31_memory_layout.h"
-#ifdef CONFIG_S31_AUDIO_ENABLE
-#include "s31_audio.h"
-#endif
 
 #define OPENSBI_XIP_ADDR              0x40220000U
 /* The complete 16-MiB Flash is linearly mapped at the IDF flash aperture. */
@@ -70,14 +61,15 @@
  * buffers. This leaves one large primary HP SRAM region for FreeRTOS; the
  * separate ROM-tail region remains available through the IDF heap layout.
  */
-#define LINUX_SRAM_START              S31_HOSTED_SRAM_BASE
-#define LINUX_SRAM_RING_END           (S31_HOSTED_SRAM_BASE + S31_HOSTED_SRAM_SIZE)
+#define LINUX_SRAM_START              S31_HP_SHARED_BASE
+#define LINUX_SRAM_RING_END           (S31_HP_SHARED_BASE + S31_HOSTED_SRAM_SIZE)
 #define LINUX_DMA_START               LINUX_SRAM_RING_END
 #define LINUX_DMA_END                 S31_LINUX_DMA_END
 #define LINUX_SRAM_END                S31_HP_SHARED_END
 #define HART1_EARLY_MAILBOX_ADDR      S31_HART1_MAILBOX_BASE
 SOC_RESERVE_MEMORY_REGION(LINUX_SRAM_START, LINUX_SRAM_RING_END, hosted_ring);
 SOC_RESERVE_MEMORY_REGION(LINUX_DMA_START, LINUX_DMA_END, linux_devices);
+SOC_RESERVE_MEMORY_REGION(S31_RADIO_IRAM_BASE, S31_RADIO_IRAM_END, radio_world);
 
 static const char *TAG = "boot";
 volatile uint32_t g_core1_fdt;
@@ -438,45 +430,14 @@ void app_main(void)
              rootfs_part->address, rootfs_part->size,
              (uint32_t)ROOTFS_FLASH_ADDR);
 
-    ESP_LOGI(TAG, "FreeRTOS HP SRAM primary region; audio PSRAM 0x%08" PRIx32
-                  "..0x%08" PRIx32 "; hosted SRAM 0x%08" PRIx32 "..0x%08" PRIx32
+    ESP_LOGI(TAG, "radio SRAM 0x%08" PRIx32 "..0x%08" PRIx32
+                  "; shared SRAM 0x%08" PRIx32 "..0x%08" PRIx32
                   "; DMA/status 0x%08" PRIx32 "..0x%08" PRIx32,
-             (uint32_t)S31_AUDIO_SRAM_BASE,
-             (uint32_t)(S31_AUDIO_SRAM_BASE + S31_AUDIO_SRAM_SIZE),
-             (uint32_t)S31_HOSTED_SRAM_BASE, (uint32_t)LINUX_SRAM_RING_END,
+             (uint32_t)S31_RADIO_IRAM_BASE, (uint32_t)S31_RADIO_IRAM_END,
+             (uint32_t)S31_HP_SHARED_BASE, (uint32_t)LINUX_SRAM_RING_END,
              (uint32_t)LINUX_DMA_START, (uint32_t)LINUX_DMA_END);
 
-    /* Publish the complete transport before hart1 can touch its rings.
-     * Hart0 receives Linux traffic through the IDF-owned CPU3 doorbell;
-     * the RX task blocks between notifications, so Linux cannot alter its
-     * interrupt-matrix route by resetting hart1.
-     */
-    if (s31_hosted_sram_start() != ESP_OK)
-        loader_restart("hosted SRAM transport");
-    ESP_LOGI(TAG, "hosted SRAM transport started");
-
-#ifdef CONFIG_S31_AUDIO_ENABLE
-    err = s31_audio_start();
-    if (err != ESP_OK)
-        ESP_LOGE(TAG, "FreeRTOS audio core unavailable: %s",
-                 esp_err_to_name(err));
-#endif
-
-    err = nvs_flash_init();
-    if (err == ESP_ERR_NVS_NO_FREE_PAGES ||
-        err == ESP_ERR_NVS_NEW_VERSION_FOUND) {
-        ESP_ERROR_CHECK(nvs_flash_erase());
-        err = nvs_flash_init();
-    }
-    if (err != ESP_OK || esp_hosted_coprocessor_init() != ESP_OK)
-        loader_restart("ESP-Hosted co-processor");
-    ESP_LOGI(TAG, "ESP-Hosted co-processor started");
-
-#ifdef CONFIG_ESP_HOSTED_CP_BT
-    if (init_bluetooth() != ESP_OK || enable_bluetooth() != ESP_OK)
-        loader_restart("Bluetooth controller");
-    ESP_LOGI(TAG, "Bluetooth controller enabled over Hosted VHCI");
-#endif
+    ESP_LOGI(TAG, "radio hardware left to Linux S-mode");
 
     start_linux_on_core1(fdt);
     ESP_LOGI(TAG, "hart1 released to OpenSBI; hart0 FreeRTOS continues");

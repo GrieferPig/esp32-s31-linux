@@ -20,13 +20,16 @@ JOBS ?= $(shell nproc)
 # integer code-generation extension there, and expose the complete ISA to
 # userspace where Linux saves/restores that state.
 S31_SAFE_ISA := rv32imabc_zicsr_zifencei_zaamo_zalrsc_zba_zbb_zbc_zbs
+S31_KERNEL_ISA := rv32imafbc_zicsr_zifencei_zaamo_zalrsc_zba_zbb_zbc_zbs
 S31_USER_ISA := rv32imafbc_zicsr_zifencei_zaamo_zalrsc_zba_zbb_zbc_zbs_xesploop_xespv2p2
 S31_COMMON_FLAGS := -mabi=ilp32 -mtune=esp-base
+S31_KERNEL_FLAGS := -mabi=ilp32f -mtune=esp-base
 S31_USER_FLAGS := -march=$(S31_USER_ISA) $(S31_COMMON_FLAGS) -mespv-spec=2p2
 
 BUILD_DIR := $(CURDIR)/build
 OPENSBI_DIR := $(CURDIR)/opensbi-esp32-s31
 LINUX_DIR := $(CURDIR)/linux-esp32-s31
+BOOTLOADER_DIR := $(CURDIR)/bootloader
 BUILDROOT_DIR := $(CURDIR)/buildroot
 BUILDROOT_EXTERNAL := $(CURDIR)/buildroot-external
 
@@ -50,7 +53,7 @@ PERSIST_IMG := $(BUILD_DIR)/persist.jffs2
 
 IDF_EXPORT := $(shell find $(HOME) -maxdepth 5 -type f -name export.sh 2>/dev/null | grep esp-idf | head -n 1)
 
-.PHONY: all download toolchain toolchain-source opensbi linux coremark rootfs initramfs s31-pie-cases \
+.PHONY: all download toolchain toolchain-source opensbi radio-linux-payload radio-bootloader radio-image linux coremark rootfs initramfs s31-pie-cases \
 	buildroot-menuconfig buildroot-clean clean fullclean flash-opensbi flash-linux \
 	flash-rootfs persist flash-persist bootloader flash-bootloader erase
 
@@ -65,8 +68,8 @@ download: toolchain
 
 toolchain: | $(BUILD_DIR)
 	@set -eu; \
-	if [ -x "$(CC)" ] && { [ -f "$(TOOLCHAIN_PREFIX)/.source-build" ] || [ ! -f "$(TOOLCHAIN_PREFIX)/.release" ]; }; then \
-		echo "Using locally built toolchain at $(TOOLCHAIN_PREFIX)"; \
+	if [ -x "$(CC)" ] && [ "$(TOOLCHAIN_RELEASE_TAG)" = latest ]; then \
+		echo "Using installed toolchain at $(TOOLCHAIN_PREFIX)"; \
 		exit 0; \
 	fi; \
 	mkdir -p "$(dir $(TOOLCHAIN_ARCHIVE))" "$(TOOLCHAIN_DIR)"; \
@@ -155,10 +158,50 @@ opensbi: toolchain | $(OPENSBI_OUT)
 	cat $(BUILD_DIR)/offset.bin >> $(FW_PAYLOAD); \
 	rm -f $(BUILD_DIR)/staged_fw_jump.bin $(BUILD_DIR)/offset.bin
 
+RADIO_BOOT_BUILD := $(BOOTLOADER_DIR)/build-radio
+RADIO_PARTITION_SIZE := 1966080
+RADIO_PAYLOAD := $(BUILD_DIR)/radio-fw-payload.bin
+
+radio-bootloader:
+	@echo "--- Build radio-only loader ---"
+	bash -c "source $(IDF_EXPORT) && cd $(BOOTLOADER_DIR) && \
+		idf.py -B build-radio \
+		-D SDKCONFIG=$(RADIO_BOOT_BUILD)/sdkconfig \
+		-D 'SDKCONFIG_DEFAULTS=$(BOOTLOADER_DIR)/sdkconfig;$(BOOTLOADER_DIR)/sdkconfig.radio.defaults' \
+		reconfigure build"
+
+RADIO_LINUX_CMDLINE := console=ttyS0,115200n8 root=/dev/mtdblock5 rootfstype=squashfs ro rootwait init=/init clk_ignore_unused
+
+radio-image: LINUX_CMDLINE := $(RADIO_LINUX_CMDLINE)
+radio-image: opensbi linux
+	@set -eu; \
+	RAW="$(BUILD_DIR)/radio-fw.raw"; \
+	DTB="$(BUILD_DIR)/radio-esp32s31.dtb"; \
+	cp "$(FDT_DTB)" "$$DTB"; \
+	fdtput -t x "$$DTB" /memory@50000000 reg 0x50000000 0x00e00000; \
+	cp "$(OPENSBI_FW_JUMP_BIN)" "$$RAW"; \
+	RAW_SIZE=$$(stat -c%s "$$RAW"); \
+	FDT_OFFSET=$$(( (RAW_SIZE + 7) & ~7 )); \
+	DTB_SIZE=$$(stat -c%s "$$DTB"); \
+	MAX_PAYLOAD_SIZE=$$(( $(RADIO_PARTITION_SIZE) - 4 )); \
+	if [ $$((FDT_OFFSET + DTB_SIZE)) -gt $$MAX_PAYLOAD_SIZE ]; then \
+		echo "ERROR: OpenSBI + DTB exceeds expanded partition"; exit 1; \
+	fi; \
+	cp "$$RAW" "$(RADIO_PAYLOAD)"; \
+	truncate -s $$FDT_OFFSET "$(RADIO_PAYLOAD)"; \
+	cat "$$DTB" >> "$(RADIO_PAYLOAD)"; \
+	truncate -s $$MAX_PAYLOAD_SIZE "$(RADIO_PAYLOAD)"; \
+	printf '%08x' $$FDT_OFFSET | sed 's/../& /g' | \
+		awk '{for (i=4;i>=1;i--) printf "%s", $$i}' | xxd -r -p >> "$(RADIO_PAYLOAD)"; \
+	echo "Radio payload: $$((FDT_OFFSET + DTB_SIZE)) bytes used, FDT offset $$FDT_OFFSET"
+
 DEFCONFIG ?= esp32s31_defconfig
 LINUX_TARGET ?= xipImage
 
-linux: toolchain | $(LINUX_OUT)
+radio-linux-payload:
+	$(MAKE) -C $(CURDIR)/radio-experiment linux-kbuild
+
+linux: toolchain radio-linux-payload | $(LINUX_OUT)
 	@echo "--- Linux ---"
 	$(MAKE) -C $(LINUX_DIR) O=$(LINUX_OUT) ARCH=riscv CROSS_COMPILE="$(CROSS_COMPILE)" $(DEFCONFIG)
 	$(LINUX_DIR)/scripts/config --file $(LINUX_OUT)/.config \
@@ -169,9 +212,13 @@ linux: toolchain | $(LINUX_OUT)
 		--enable RISCV_ISA_ZBA \
 		--enable RISCV_ISA_ZBB \
 		--enable RISCV_ISA_ZBC
+	@if [ -n "$(LINUX_CMDLINE)" ]; then \
+		$(LINUX_DIR)/scripts/config --file $(LINUX_OUT)/.config \
+			--set-str CMDLINE "$(LINUX_CMDLINE)"; \
+	fi
 	$(MAKE) -C $(LINUX_DIR) O=$(LINUX_OUT) ARCH=riscv CROSS_COMPILE="$(CROSS_COMPILE)" olddefconfig
 	$(MAKE) -C $(LINUX_DIR) O=$(LINUX_OUT) ARCH=riscv CROSS_COMPILE="$(CROSS_COMPILE)" \
-		KCFLAGS="-march=$(S31_SAFE_ISA) $(S31_COMMON_FLAGS)" -j$(JOBS) $(LINUX_TARGET) dtbs
+		KCFLAGS="-march=$(S31_KERNEL_ISA) $(S31_KERNEL_FLAGS)" -j$(JOBS) $(LINUX_TARGET) dtbs
 	cp -v $(LINUX_OUT)/arch/riscv/boot/$(LINUX_TARGET) $(XIP_IMAGE)
 	cp -v $(LINUX_OUT)/arch/riscv/boot/dts/espressif/esp32s31_generic.dtb $(FDT_DTB)
 

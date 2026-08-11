@@ -1235,31 +1235,6 @@ CONFIG_PARTITION_TABLE_MD5=y
 # end of Partition Table
 
 #
-# S31 audio co-processor
-#
-# default:
-CONFIG_S31_AUDIO_ENABLE=y
-# default:
-CONFIG_S31_AUDIO_I2C_SDA=51
-# default:
-CONFIG_S31_AUDIO_I2C_SCL=50
-# default:
-CONFIG_S31_AUDIO_I2S_MCLK=52
-# default:
-CONFIG_S31_AUDIO_I2S_BCLK=53
-# default:
-CONFIG_S31_AUDIO_I2S_WS=55
-# default:
-CONFIG_S31_AUDIO_I2S_DOUT=56
-# default:
-CONFIG_S31_AUDIO_I2S_DIN=54
-# default:
-CONFIG_S31_AUDIO_PA_GPIO=57
-# default:
-# CONFIG_S31_AUDIO_MIC_RIGHT_SLOT is not set
-# end of S31 audio co-processor
-
-#
 # Example Configuration
 #
 # default:

@@ -19,3 +19,4 @@ s31_rom.bin
 .vscode
 toolchain
 bootloader/managed_components/
+bootloader/build-radio/

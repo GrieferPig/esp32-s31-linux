@@ -12,6 +12,14 @@
 #define S31_OPENSBI_RW_BASE            0x50FF0000U
 #define S31_OPENSBI_RW_SIZE            0x00010000U
 
+/* Private Wi-Fi/BT heap in internal HP SRAM.  In RADIO_WORLD_ONLY builds the
+ * loader removes this whole range from its FreeRTOS heap before either hart
+ * starts.  Linux extends the allocator through the otherwise-unused lower
+ * hosted window, but must stop below its synchronous-exception stack. */
+#define S31_RADIO_IRAM_BASE            0x2F030000U
+#define S31_RADIO_IRAM_END             0x2F06AF80U
+#define S31_RADIO_IRAM_SIZE            (S31_RADIO_IRAM_END - S31_RADIO_IRAM_BASE)
+
 /* Compact internal HP-SRAM transport and Linux DMA reservation. */
 #define S31_HP_SHARED_BASE             0x2F06AF80U
 #define S31_HOSTED_SRAM_SIZE           0x00007400U
@@ -26,6 +34,10 @@
 #define S31_UART_DMA_SIZE              0x00002800U
 #define S31_HP_SHARED_END              0x2F078C00U
 #define S31_LINUX_DMA_END              S31_HP_SHARED_END
+
+#if S31_RADIO_IRAM_END != S31_HP_SHARED_BASE
+#error "radio heap must end at the hosted SRAM boundary"
+#endif
 
 #if S31_HP_SHARED_BASE + S31_HOSTED_SRAM_SIZE != S31_AXI_DESC_BASE
 #error "hosted and AXI descriptor regions must be contiguous"
