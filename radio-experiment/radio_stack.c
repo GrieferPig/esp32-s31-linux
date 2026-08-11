@@ -12,6 +12,33 @@ extern void s31_radio_heap_report(const char *stage);
 extern void s31_radio_report_wifi_init(int result);
 extern void s31_radio_report_bt_init(int result);
 extern void s31_radio_report_bt_enable(int result);
+extern void s31_radio_vhci_send_available(void);
+extern int s31_radio_vhci_receive(uint8_t *frame, uint16_t length);
+#endif
+
+#ifdef S31_LINUX_SMODE
+static void s31_vhci_send_available(void)
+{
+	s31_radio_vhci_send_available();
+}
+
+static int s31_vhci_receive(uint8_t *data, uint16_t len)
+{
+	return s31_radio_vhci_receive(data, len);
+}
+
+static const esp_vhci_host_callback_t s31_vhci_callbacks = {
+	.notify_host_send_available = s31_vhci_send_available,
+	.notify_host_recv = s31_vhci_receive,
+};
+
+int s31_radio_vhci_try_send(uint8_t *frame, uint16_t length)
+{
+	if (!esp_vhci_host_check_send_available())
+		return -1;
+	esp_vhci_host_send_packet(frame, length);
+	return 0;
+}
 #endif
 
 void s31_radio_stack_task(void *arg)
@@ -91,6 +118,10 @@ void s31_radio_bt_enable_task(void *arg)
 	rc = esp_bt_controller_enable(BTDM_CONTROLLER_MODE_EFF);
 	esp_rom_printf("[S31] esp_bt_controller_enable rc=%d\n", rc);
 	#ifdef S31_LINUX_SMODE
+	if (rc == 0) {
+		rc = esp_vhci_host_register_callback(&s31_vhci_callbacks);
+		esp_rom_printf("[S31] esp_vhci_host_register_callback rc=%d\n", rc);
+	}
 	s31_radio_report_bt_enable(rc);
 	s31_radio_heap_report("after-bt-enable");
 	#endif

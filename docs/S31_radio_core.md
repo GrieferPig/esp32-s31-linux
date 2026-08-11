@@ -13,7 +13,7 @@ only acknowledge/mask the CLIC source and enqueue work. The worker serializes:
 - deferred ESP-IDF interrupt callbacks;
 - compatibility scheduler passes;
 - Bluetooth's post-IRQ-route enable task; and
-- typed requests from future HCI and cfg80211 front ends.
+- typed requests from the HCI and future cfg80211 front ends.
 
 During each blob pass, local S-mode interrupts are disabled, Linux owns the
 single-precision floating-point registers through `kernel_fpu_begin()`, and
@@ -22,11 +22,14 @@ The worker restores all three before it performs Linux IRQ-domain operations
 or sleeps.
 
 No generic `call(function_pointer, argument)` interface is exported. The public
-header, `include/linux/esp32s31-radio.h`, contains only typed operations. Its
-first operation is `esp32s31_radio_get_health()`, which is itself delivered
+header, `include/linux/esp32s31-radio.h`, contains only typed operations. The
+health operation, `esp32s31_radio_get_health()`, is delivered
 through the serialized command queue and reports init results, tick/pass
-counters and SRAM heap usage. Bluetooth HCI and cfg80211 requests extend that
-typed interface in their respective stages.
+counters and SRAM heap usage. Bluetooth uses bounded H4 RX/TX rings. The blob
+copies controller packets into the RX ring while the gate is held; only after
+Linux IRQ and FPU state has been restored does the core call the HCI driver.
+TX packets take the reverse path and are consumed by VHCI inside the next
+serialized pass. Raw `esp_vhci_*` symbols remain local to the payload.
 
 ## Memory and interrupt ownership
 
@@ -47,3 +50,14 @@ health self-test reported READY with 88,256 bytes used, a 92,464-byte peak and
 268,288 bytes total. At 65 seconds uptime the TIMG1 IRQ count was 6,281 and the
 worker remained live. OpenOCD sampled hart1 twice in S-mode and confirmed the
 three interrupt-matrix registers still contained CLIC45, CLIC47 and CLIC44.
+
+## Stage-4 hardware result
+
+The built-in `hci_esp32s31` driver registered `hci0` through Linux's standard
+Bluetooth HCI core. A management-channel BLE discovery powered the controller,
+ran for eight seconds and found seven unique nearby devices. Source 124/Clic45
+delivered three controller interrupts during the scan. OpenOCD halted hart1
+inside `s31_process_timeouts` with `priv=1` and an internal-SRAM stack pointer,
+confirming that the active controller/compatibility scheduler path stayed in
+Linux S-mode. The five-partition radio-only image uses `/dev/mtdblock5` for its
+SquashFS root.
