@@ -164,7 +164,21 @@ BaseType_t xQueueGenericSend(void *queue, const void *item,
 	if (s31_rtos_in_isr())
 		return xQueueGenericSendFromISR(queue, item, NULL);
 
-	if (q->type == S31_Q_TYPE_SEM) {
+	/* FreeRTOS implements xSemaphoreGive() as xQueueGenericSend(), including
+	 * for an ordinary mutex.  A locked mutex therefore is not a "full queue":
+	 * giving it releases ownership and wakes the next taker.  Recursive mutex
+	 * callers normally use xQueueGiveMutexRecursive(), but honour depth here as
+	 * well so mixed IDF/pthread wrappers cannot drop ownership prematurely. */
+	if (q->type == S31_Q_TYPE_MUTEX) {
+		if (!t || q->owner != t || !q->depth)
+			return pdFAIL;
+		if (--q->depth == 0) {
+			q->owner = NULL;
+			q->count = 0;
+			s31_rtos_wake_waiters(q);
+		}
+		return pdTRUE;
+	} else if (q->type == S31_Q_TYPE_SEM) {
 		if (q->count < q->capacity) {
 			q->count++;
 			s31_rtos_wake_waiters(q);

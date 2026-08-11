@@ -4,8 +4,6 @@
 BOOTLOADER   ?= ../bootloader
 IDF_PATH     ?= $(HOME)/.espressif/master/esp-idf
 ESP_TOOLS    ?= $(HOME)/.espressif/tools/riscv32-esp-elf/esp-15.2.0_20251204/riscv32-esp-elf
-BT_LIBS      := $(BOOTLOADER)/build/esp-idf/bt/libbt.a \
-	$(shell find $(IDF_PATH)/components/bt/controller/lib_esp32s31/esp32s31-bt-lib -name 'lib*.a' | sort)
 
 # picolibc multilib matching the ilp32f radio world.
 PICOLIBC_LIB := $(ESP_TOOLS)/picolibc/riscv32-esp-elf/lib/rv32imafc_zicsr_zifencei_zaamo_zalrsc/ilp32f
@@ -43,15 +41,19 @@ linux-kbuild: linux_radio.kbuild.o
 linux_radio.raw.o: radio_stack.linux.o nofreertos_link.txt boot_flags.txt boot_linkpath.txt $(S31RTOS_LINUX_OBJS)
 	$(ESP_CC) -nostdlib -r -Wl,--gc-sections $(HEAP_WRAP_FLAGS) $(LINUX_WRAP_FLAGS) \
 		-Wl,--undefined=s31_radio_stack_task \
-		-Wl,--undefined=s31_radio_bt_enable_task \
-		-Wl,--undefined=s31_radio_vhci_try_send \
 		-Wl,--undefined=s31_radio_wifi_scan_task \
+		-Wl,--undefined=s31_radio_wifi_connect_task \
+		-Wl,--undefined=s31_radio_wifi_disconnect_task \
+		-Wl,--undefined=s31_radio_wifi_read_mac \
+		-Wl,--undefined=s31_radio_wifi_try_send \
 		-Wl,--undefined=s31_rtos_init -Wl,--undefined=s31_rtos_schedule \
 		-Wl,--undefined=s31_rtos_tick \
-		-Wl,--undefined=esp_wifi_init -Wl,--undefined=esp_bt_controller_init \
+		-Wl,--undefined=wifi_module_enable \
+		-Wl,--undefined=wifi_module_disable \
+		-Wl,--undefined=esp_wifi_init \
 		-Wl,--undefined=esp_intr_alloc \
 		$(shell cat boot_flags.txt) $(shell cat boot_linkpath.txt) \
-		radio_stack.linux.o $(S31RTOS_LINUX_OBJS) $(BT_LIBS) \
+		radio_stack.linux.o $(S31RTOS_LINUX_OBJS) \
 		$(shell sed 's|^esp-idf/|$(BOOTLOADER)/build/esp-idf/|' nofreertos_link.txt) \
 		-L$(PICOLIBC_LIB) -L$(PICOLIBC_GCC) -lc -lm -lgcc -o $@
 
@@ -60,7 +62,7 @@ linux-radio-undefined.txt: linux_radio.raw.o
 
 linux-radio-localize.txt: linux_radio.raw.o
 	$(ESP_TOOLS)/bin/riscv32-esp-elf-nm -g --defined-only $< | \
-		awk '{ n=$$NF; if (n !~ /^(s31_radio_(stack|bt_enable|wifi_scan)_task|s31_radio_vhci_try_send|s31_rtos_(init|schedule|tick|isr_depth)|xTaskCreatePinnedToCore)$$/) print n; }' | \
+		awk '{ n=$$NF; if (n !~ /^(s31_radio_(stack|bt_enable|wifi_(scan|connect|disconnect))_task|s31_radio_wifi_read_mac|s31_radio_(vhci|wifi)_try_send|s31_rtos_(init|schedule|tick|isr_depth)|xTaskCreatePinnedToCore)$$/) print n; }' | \
 		sort -u > $@
 
 linux_radio.kbuild.o: linux_radio.raw.o linux-radio-localize.txt
@@ -97,7 +99,8 @@ ESP_CFLAGS  := -mabi=ilp32f -march=rv32imafc_zicsr_zifencei_zaamo_zalrsc_xesploo
 		-I$(IDF_PATH)/components/esp_hal_timg/esp32s31/include \
 		$(shell cat idf_includes.rsp)
 radio_stack.linux.o: radio_stack.c s31_rtos/s31_rtos.h
-	$(ESP_CC) $(ESP_CFLAGS) -DS31_LINUX_SMODE -I s31_rtos -c $< -o $@
+	$(ESP_CC) $(ESP_CFLAGS) -DS31_LINUX_SMODE -DS31_WIFI_ONLY \
+		-I s31_rtos -c $< -o $@
 
 s31_linux_locks.o: s31_linux_locks.c s31_rtos/s31_rtos.h
 	$(ESP_CC) $(ESP_CFLAGS) -DS31_LINUX_SMODE -I s31_rtos -c $< -o $@
