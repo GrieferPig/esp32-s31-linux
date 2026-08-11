@@ -178,7 +178,6 @@ radio-image: opensbi linux
 	RAW="$(BUILD_DIR)/radio-fw.raw"; \
 	DTB="$(BUILD_DIR)/radio-esp32s31.dtb"; \
 	cp "$(FDT_DTB)" "$$DTB"; \
-	fdtput -t x "$$DTB" /memory@50000000 reg 0x50000000 0x00e00000; \
 	cp "$(OPENSBI_FW_JUMP_BIN)" "$$RAW"; \
 	RAW_SIZE=$$(stat -c%s "$$RAW"); \
 	FDT_OFFSET=$$(( (RAW_SIZE + 7) & ~7 )); \

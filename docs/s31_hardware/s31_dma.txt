@@ -20,7 +20,8 @@ Transfer-buffer placement:
   requirements.
 
 Current S31 carve-outs:
-- Hosted transport: 0x2F06AF80..0x2F072380 (29 KiB).
+- Radio blob heap: 0x2F030000..0x2F071800.
+- Radio synchronous-exception stack: 0x2F071800..0x2F072380.
 - AXI-GDMA descriptors: 0x2F072380..0x2F075380 (12 KiB).
 - AHB-GDMA descriptors: 0x2F075380..0x2F076380 (4 KiB).
 - USB local SRAM: 0x2F076380..0x2F0763C0 (64 bytes). The hart1 early
@@ -31,9 +32,9 @@ Current S31 carve-outs:
   The current driver divides it into two 2048-byte TX slots followed by four
   1536-byte RX slots.
 
-The loader therefore reserves 0x2F06AF80..0x2F078C00 from the ESP-IDF heap:
-0x7400 bytes for hosted transport and 0x6880 bytes for Linux devices, for a
-combined 0xDC80 bytes (55.125 KiB). Ranges above use an exclusive end address.
+The loader reserves 0x2F030000..0x2F072380 for the Linux S-mode radio world
+and 0x2F072380..0x2F078C00 for Linux devices. Ranges above use an exclusive
+end address.
 
 When adding a DMA client, reserve descriptor memory in the internal HP-SRAM
 carve-out and account for it in the factory application's reserved-memory

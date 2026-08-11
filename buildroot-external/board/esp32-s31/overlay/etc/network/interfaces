@@ -1,6 +1,3 @@
-# Loopback and ESP-Hosted network interface.
+# Loopback; the native S-mode radio driver manages wlan0 through cfg80211.
 auto lo
 iface lo inet loopback
-
-auto eth0
-iface eth0 inet dhcp

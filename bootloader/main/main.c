@@ -56,20 +56,13 @@
 #define ROOTFS_PARTITION_SIZE         0x00600000U
 #define ESP32S31_PSRAM_SIZE           S31_PSRAM_SIZE
 #define LINUX_PSRAM_START             S31_PSRAM_BASE
-/*
- * Place the shared ring immediately below the hardware-owned DMA/status
- * buffers. This leaves one large primary HP SRAM region for FreeRTOS; the
- * separate ROM-tail region remains available through the IDF heap layout.
- */
-#define LINUX_SRAM_START              S31_HP_SHARED_BASE
-#define LINUX_SRAM_RING_END           (S31_HP_SHARED_BASE + S31_HOSTED_SRAM_SIZE)
-#define LINUX_DMA_START               LINUX_SRAM_RING_END
+#define RADIO_SRAM_START              S31_RADIO_HEAP_BASE
+#define RADIO_SRAM_END                S31_RADIO_EXC_END
+#define LINUX_DMA_START               S31_AXI_DESC_BASE
 #define LINUX_DMA_END                 S31_LINUX_DMA_END
-#define LINUX_SRAM_END                S31_HP_SHARED_END
 #define HART1_EARLY_MAILBOX_ADDR      S31_HART1_MAILBOX_BASE
-SOC_RESERVE_MEMORY_REGION(LINUX_SRAM_START, LINUX_SRAM_RING_END, hosted_ring);
+SOC_RESERVE_MEMORY_REGION(RADIO_SRAM_START, RADIO_SRAM_END, radio_world);
 SOC_RESERVE_MEMORY_REGION(LINUX_DMA_START, LINUX_DMA_END, linux_devices);
-SOC_RESERVE_MEMORY_REGION(S31_RADIO_IRAM_BASE, S31_RADIO_IRAM_END, radio_world);
 
 static const char *TAG = "boot";
 volatile uint32_t g_core1_fdt;
@@ -266,7 +259,7 @@ static void start_linux_on_core1(uint32_t fdt)
     g_core1_fdt = fdt;
     g_core1_trampoline_entered = 0;
     for (uint32_t addr = HART1_EARLY_MAILBOX_ADDR;
-         addr < LINUX_SRAM_END; addr += sizeof(uint32_t)) {
+         addr < LINUX_DMA_END; addr += sizeof(uint32_t)) {
         *(volatile uint32_t *)addr = 0;
     }
     __asm__ volatile ("fence rw, rw" ::: "memory");
@@ -430,11 +423,11 @@ void app_main(void)
              rootfs_part->address, rootfs_part->size,
              (uint32_t)ROOTFS_FLASH_ADDR);
 
-    ESP_LOGI(TAG, "radio SRAM 0x%08" PRIx32 "..0x%08" PRIx32
-                  "; shared SRAM 0x%08" PRIx32 "..0x%08" PRIx32
+    ESP_LOGI(TAG, "radio heap 0x%08" PRIx32 "..0x%08" PRIx32
+                  "; exception 0x%08" PRIx32 "..0x%08" PRIx32
                   "; DMA/status 0x%08" PRIx32 "..0x%08" PRIx32,
-             (uint32_t)S31_RADIO_IRAM_BASE, (uint32_t)S31_RADIO_IRAM_END,
-             (uint32_t)S31_HP_SHARED_BASE, (uint32_t)LINUX_SRAM_RING_END,
+             (uint32_t)S31_RADIO_HEAP_BASE, (uint32_t)S31_RADIO_HEAP_END,
+             (uint32_t)S31_RADIO_EXC_BASE, (uint32_t)S31_RADIO_EXC_END,
              (uint32_t)LINUX_DMA_START, (uint32_t)LINUX_DMA_END);
 
     ESP_LOGI(TAG, "radio hardware left to Linux S-mode");

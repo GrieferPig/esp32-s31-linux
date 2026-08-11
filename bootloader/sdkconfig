@@ -1235,144 +1235,6 @@ CONFIG_PARTITION_TABLE_MD5=y
 # end of Partition Table
 
 #
-# Example Configuration
-#
-# default:
-CONFIG_ESP_HOSTED_COPROCESSOR=y
-CONFIG_ESP_HOSTED_CP_BT=y
-CONFIG_ESP_HOSTED_CP_WIFI=y
-# CONFIG_ESP_HOSTED_COPROCESSOR_APP_MAIN is not set
-# default:
-CONFIG_ESP_HOST_DEV_BOARD_NONE=y
-
-#
-# Bus Config in between Host and Co-processor
-#
-CONFIG_ESP_SPI_HOST_INTERFACE=y
-# CONFIG_ESP_SPI_HD_HOST_INTERFACE is not set
-# CONFIG_ESP_UART_HOST_INTERFACE is not set
-
-#
-# SPI Full-duplex Configuration
-#
-# default:
-# CONFIG_ESP_SPI_PRIV_MODE_0 is not set
-# default:
-# CONFIG_ESP_SPI_PRIV_MODE_1 is not set
-# default:
-# CONFIG_ESP_SPI_PRIV_MODE_2 is not set
-# default:
-CONFIG_ESP_SPI_PRIV_MODE_3=y
-# default:
-CONFIG_ESP_SPI_MODE=3
-# default:
-CONFIG_SPI_HSPI=y
-# default:
-CONFIG_ESP_SPI_CONTROLLER=1
-
-#
-# Hosted SPI GPIOs
-#
-# default:
-CONFIG_ESP_SPI_HSPI_GPIO_MOSI=7
-# default:
-CONFIG_ESP_SPI_HSPI_GPIO_MISO=2
-# default:
-CONFIG_ESP_SPI_HSPI_GPIO_CLK=6
-# default:
-CONFIG_ESP_SPI_HSPI_GPIO_CS=10
-# default:
-CONFIG_ESP_SPI_GPIO_MOSI=7
-# default:
-CONFIG_ESP_SPI_GPIO_MISO=2
-# default:
-CONFIG_ESP_SPI_GPIO_CLK=6
-# default:
-CONFIG_ESP_SPI_GPIO_CS=10
-# default:
-CONFIG_ESP_SPI_GPIO_HANDSHAKE=26
-# default:
-CONFIG_ESP_SPI_GPIO_DATA_READY=4
-# default:
-CONFIG_ESP_SPI_GPIO_RESET=-1
-# end of Hosted SPI GPIOs
-
-# default:
-CONFIG_ESP_SPI_DEASSERT_HS_ON_CS=y
-# default:
-CONFIG_ESP_SPI_TX_Q_SIZE=20
-# default:
-CONFIG_ESP_SPI_RX_Q_SIZE=20
-# default:
-CONFIG_ESP_SPI_CHECKSUM=y
-# end of SPI Full-duplex Configuration
-
-# default:
-CONFIG_ESP_GPIO_SLAVE_RESET=-1
-# end of Bus Config in between Host and Co-processor
-
-CONFIG_ESP_HOSTED_DEFAULT_TASK_STACK_SIZE=4096
-CONFIG_ESP_HOSTED_DEFAULT_TASK_PRIORITY=5
-# CONFIG_ESP_HOSTED_USE_MEMPOOL is not set
-# default:
-CONFIG_ESP_OTA_WORKAROUND=y
-# default:
-CONFIG_ESP_HOSTED_WIFI_TX_RETRY_ENABLED=y
-# CONFIG_ESP_HOSTED_MEM_MONITOR is not set
-# default:
-# CONFIG_ESP_WIFI_DPP_SUPPORT is not set
-# default:
-# CONFIG_ESP_HOSTED_ALLOW_FULL_APP_DESC is not set
-
-#
-# Hosted Debugging
-#
-# default:
-# CONFIG_ESP_RAW_THROUGHPUT_TRANSPORT is not set
-# default:
-# CONFIG_ESP_PKT_STATS is not set
-# default:
-# CONFIG_ESP_HOSTED_FUNCTION_PROFILING is not set
-# default:
-# CONFIG_ESP_HOSTED_LOG_RUNTIME_FREERTOS_STATS is not set
-# end of Hosted Debugging
-
-# default:
-# CONFIG_ESP_HOSTED_NETWORK_SPLIT_ENABLED is not set
-# default:
-# CONFIG_ESP_HOSTED_HOST_POWER_SAVE_ENABLED is not set
-
-#
-# Light Sleep Power Management
-#
-# default:
-CONFIG_ESP_HOSTED_LIGHT_SLEEP_POWER_DISABLED=y
-# default:
-# CONFIG_ESP_HOSTED_LIGHT_SLEEP_POWER_MIN is not set
-# default:
-# CONFIG_ESP_HOSTED_LIGHT_SLEEP_POWER_MAX is not set
-# default:
-# CONFIG_ESP_HOSTED_LIGHT_SLEEP_POWER_MANUAL is not set
-# end of Light Sleep Power Management
-
-# default:
-# CONFIG_ESP_HOSTED_WIFI_AUTO_CONNECT_ON_STA_START is not set
-# default:
-# CONFIG_ESP_HOSTED_WIFI_AUTO_CONNECT_ON_STA_DISCONNECT is not set
-# default:
-# CONFIG_ESP_HOSTED_CLI_ENABLED is not set
-# default:
-# CONFIG_ESP_HOSTED_USE_EXAMPLE_WIFI_PRE_PROVISION_CONFIG is not set
-# default:
-# CONFIG_ESP_HOSTED_ENABLE_GPIO_EXPANDER is not set
-# default:
-# CONFIG_ESP_HOSTED_CP_EXT_COEX is not set
-# CONFIG_ESP_HOSTED_ENABLE_PEER_DATA_TRANSFER is not set
-# default:
-# CONFIG_ESP_HOSTED_EXTRA_EXAMPLES is not set
-# end of Example Configuration
-
-#
 # Compiler options
 #
 # default:
@@ -2908,11 +2770,11 @@ CONFIG_WIFI_RMT_ENTERPRISE_SUPPORT=y
 # end of Wi-Fi configuration
 
 # default:
-CONFIG_ESP_WIFI_REMOTE_LIBRARY_HOSTED=y
+# CONFIG_ESP_WIFI_REMOTE_LIBRARY_HOSTED is not set
 # default:
 # CONFIG_ESP_WIFI_REMOTE_LIBRARY_EPPP is not set
 # default:
-# CONFIG_ESP_WIFI_REMOTE_LIBRARY_CUSTOM is not set
+CONFIG_ESP_WIFI_REMOTE_LIBRARY_CUSTOM=y
 # default:
 CONFIG_ESP_WIFI_REMOTE_EAP_ENABLED=y
 # end of Wi-Fi Remote

@@ -11,6 +11,24 @@ chmod 0755 "${target_dir}/init"
 # omit that otherwise-unused runtime to keep the squashfs inside its partition.
 rm -f "${target_dir}"/lib/libstdc++.so*
 
+# Keep incremental builds honest after retiring the FreeRTOS hosted/audio
+# transport. Buildroot does not uninstall files emitted by an older version of
+# a local package when the install commands shrink.
+rm -f \
+	"${target_dir}/usr/sbin/esp-hosted-ctl" \
+	"${target_dir}/usr/sbin/s31-clock-compare" \
+	"${target_dir}/usr/sbin/s31-cpufreq" \
+	"${target_dir}/usr/sbin/s31-freertos-mem" \
+	"${target_dir}/usr/sbin/test.out" \
+	"${target_dir}/usr/bin/s31-audio-analyze" \
+	"${target_dir}/usr/bin/s31-audio-loopback" \
+	"${target_dir}/usr/bin/s31-audio-mic-test" \
+	"${target_dir}/usr/bin/s31-audio-stream-stats" \
+	"${target_dir}/usr/bin/aplay" \
+	"${target_dir}/usr/bin/arecord"
+rm -rf "${target_dir}/usr/share/alsa"
+rm -f "${target_dir}"/usr/lib/libasound.so*
+
 rm -rf \
 	"${target_dir}/tmp" \
 	"${target_dir}/run" \

@@ -15,7 +15,7 @@ Address contract:
 - OpenSBI writable sections are linked with FW_RW_START=0x50FF0000.
 - OpenSBI owns `0x50FF0000..0x51000000`; Linux marks it `no-map`.
 - Linux receives the full 16-MiB cached PSRAM alias in its DT memory node,
-  with the final two 64-KiB pages reserved for audio and OpenSBI.
+  with only the final 64-KiB page reserved for OpenSBI.
 - ESP-IDF maps PSRAM at the cached 0x50000000 alias, but the factory app uses
   CONFIG_SPIRAM_USE_MEMMAP and explicitly disables USE_CAPS_ALLOC/USE_MALLOC.
   IDF's own extram reserved-region entry therefore keeps all PSRAM out of the
@@ -95,14 +95,10 @@ Build-time checks:
   keep the total runtime allocation within the 64-KiB reserved interval.
 
 Hardware validation:
-- Linux reports the audio and OpenSBI reservations as 64 KiB at 0x50FE0000
-  and 0x50FF0000, with the OpenSBI page marked no-map.
-- The compact HP-SRAM layout leaves 278400 bytes in the FreeRTOS heap; the
-  observed minimum free heap is 177204 bytes and the largest free block is
-  172032 bytes.
+- Linux reports only the 64-KiB OpenSBI reservation at 0x50FF0000, marked
+  no-map.
 - Linux CoreMark validates at 999.818215 iterations/s, and an SBI system reset
-  returns through OpenSBI to the Linux login prompt while the hosted transport
-  repeats its 9 x 1500-byte wrap self-test successfully.
+  returns through the ROM bootloader and OpenSBI to the Linux login prompt.
 
 OpenSBI XIP relocation rule:
 - fw_base.S copies .data from flash LMA to FW_RW_START before the boot lottery.

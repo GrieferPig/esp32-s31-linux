@@ -1,6 +1,6 @@
 config BR2_PACKAGE_S31_TOOLS
-	bool "ESP32-S31 diagnostic and hosted-control tools"
+	bool "ESP32-S31 diagnostic tools"
 	default y
 	help
-	  Installs the ESP32-S31 MMU diagnostics, memory benchmark,
-	  Bluetooth scanner and ESP-Hosted control utility.
+	  Installs the ESP32-S31 MMU diagnostics, memory benchmark and
+	  Bluetooth scanner.
