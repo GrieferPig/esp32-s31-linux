@@ -170,7 +170,7 @@ radio-bootloader:
 		-D 'SDKCONFIG_DEFAULTS=$(BOOTLOADER_DIR)/sdkconfig;$(BOOTLOADER_DIR)/sdkconfig.radio.defaults' \
 		reconfigure build"
 
-RADIO_LINUX_CMDLINE := console=ttyS0,115200n8 root=/dev/mtdblock5 rootfstype=squashfs ro rootwait init=/init clk_ignore_unused
+RADIO_LINUX_CMDLINE := console=ttyS0,115200n8 root=/dev/mtdblock6 rootfstype=squashfs ro rootwait init=/init clk_ignore_unused
 
 radio-image: LINUX_CMDLINE := $(RADIO_LINUX_CMDLINE)
 radio-image: opensbi linux
