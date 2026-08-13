@@ -1,15 +1,18 @@
-/*
- * SPDX-License-Identifier: BSD-2-Clause
- *
- * S31 radio world stub layer: event groups.
- * See docs/S31_radio_rtos_stub.md.
- */
+/* SPDX-License-Identifier: BSD-2-Clause */
+/* FreeRTOS event groups backed by the Linux synchronization bridge. */
 #include <stdint.h>
 #include <string.h>
 #include "s31_rtos.h"
 
 #define S31_EG_FLAG_ALL_BITS (1U << 0)
 #define S31_EG_FLAG_CLEAR    (1U << 1)
+
+static int s31_eg_match(EventBits_t have, EventBits_t want, uint32_t flags)
+{
+	if (flags & S31_EG_FLAG_ALL_BITS)
+		return (have & want) == want;
+	return (have & want) != 0;
+}
 
 void *xEventGroupCreate(void)
 {
@@ -18,65 +21,51 @@ void *xEventGroupCreate(void)
 	if (!g)
 		return NULL;
 	memset(g, 0, sizeof(*g));
+	g->wait_context = s31_linux_sync_create();
+	if (!g->wait_context) {
+		s31_rtos_free(g);
+		return NULL;
+	}
 	return g;
 }
 
 void vEventGroupDelete(void *group)
 {
 	struct s31_event_group *g = group;
-	struct s31_waiter *w = g->waiters;
 
-	while (w) {
-		struct s31_waiter *next = w->next;
-
-		w->tcb->wait_obj = NULL;
-		s31_rtos_make_ready(w->tcb);
-		s31_rtos_free(w);
-		w = next;
-	}
+	if (!g)
+		return;
+	s31_linux_sync_destroy(g->wait_context);
+	g->wait_context = NULL;
 	s31_rtos_free(g);
-}
-
-static int s31_eg_match(const struct s31_waiter *w, EventBits_t bits)
-{
-	if (w->flags & S31_EG_FLAG_ALL_BITS)
-		return (bits & w->want) == w->want;
-	return (bits & w->want) != 0;
 }
 
 EventBits_t xEventGroupSetBits(void *group, EventBits_t bits)
 {
 	struct s31_event_group *g = group;
-	struct s31_waiter **pp;
+	EventBits_t result;
 
+	if (!g || !g->wait_context)
+		return 0;
+	s31_linux_sync_lock(g->wait_context);
 	g->bits |= bits;
-	pp = &g->waiters;
-	while (*pp) {
-		struct s31_waiter *w = *pp;
-
-		if (s31_eg_match(w, g->bits)) {
-			EventBits_t result = g->bits;
-
-			*pp = w->next;
-			w->tcb->wait_result = result;
-			if (w->flags & S31_EG_FLAG_CLEAR)
-				g->bits &= ~w->want;
-			w->tcb->wait_obj = NULL;
-			s31_rtos_make_ready(w->tcb);
-			s31_rtos_free(w);
-			continue;
-		}
-		pp = &w->next;
-	}
-	return g->bits;
+	result = g->bits;
+	s31_linux_sync_unlock(g->wait_context);
+	s31_linux_sync_wake(g->wait_context);
+	return result;
 }
 
 EventBits_t xEventGroupClearBits(void *group, EventBits_t bits)
 {
 	struct s31_event_group *g = group;
-	EventBits_t previous = g->bits;
+	EventBits_t previous;
 
+	if (!g || !g->wait_context)
+		return 0;
+	s31_linux_sync_lock(g->wait_context);
+	previous = g->bits;
 	g->bits &= ~bits;
+	s31_linux_sync_unlock(g->wait_context);
 	return previous;
 }
 
@@ -86,33 +75,31 @@ EventBits_t xEventGroupWaitBits(void *group, EventBits_t bits,
 				TickType_t timeout)
 {
 	struct s31_event_group *g = group;
-	struct s31_tcb *t = s31_rtos_current();
-	struct s31_waiter *w;
-	EventBits_t have;
+	uint32_t flags = (wait_all_bits ? S31_EG_FLAG_ALL_BITS : 0) |
+		(clear_on_exit ? S31_EG_FLAG_CLEAR : 0);
 
-	if (!g)
+	if (!g || !g->wait_context)
 		return 0;
-	have = g->bits & bits;
-	if (wait_all_bits ? have == bits : have != 0) {
-		EventBits_t result = g->bits;
+	for (;;) {
+		EventBits_t result;
+		uint32_t seq = s31_linux_sync_sequence(g->wait_context);
+		int32_t waited;
 
-		if (clear_on_exit)
-			g->bits &= ~bits;
-		return result;
+		s31_linux_sync_lock(g->wait_context);
+		result = g->bits;
+		if (s31_eg_match(result, bits, flags)) {
+			if (clear_on_exit)
+				g->bits &= ~bits;
+			s31_linux_sync_unlock(g->wait_context);
+			return result;
+		}
+		s31_linux_sync_unlock(g->wait_context);
+		if (!timeout || s31_rtos_in_isr())
+			return 0;
+		waited = s31_linux_sync_wait(g->wait_context, seq, timeout);
+		if (waited <= 0)
+			return 0;
+		if (timeout != portMAX_DELAY)
+			timeout = 0;
 	}
-	if (timeout == 0 || !t)
-		return 0;
-	w = s31_rtos_malloc(sizeof(*w));
-	if (!w)
-		return 0;
-	w->tcb = t;
-	w->dir = 0;
-	w->want = bits;
-	w->flags = (wait_all_bits ? S31_EG_FLAG_ALL_BITS : 0) |
-		   (clear_on_exit ? S31_EG_FLAG_CLEAR : 0);
-	w->next = g->waiters;
-	g->waiters = w;
-	s31_rtos_block(2, g, timeout, 0);
-	/* A setter captures the pre-clear value; timeout leaves it zero. */
-	return t->wait_result;
 }

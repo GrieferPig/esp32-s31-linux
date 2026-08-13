@@ -35,25 +35,37 @@ linux-radio: linux_radio.raw.o linux_radio.kbuild.o linux-radio-undefined.txt
 
 LINUX_IDF_OBJ ?= ../linux-esp32-s31/drivers/platform/esp32s31-radio-idf.o_shipped
 
+S31RTOS_LINUX_OBJS := s31_rtos/s31_rtos_core.linux.o \
+		s31_rtos/s31_rtos_queue.o s31_rtos/s31_rtos_event.o \
+		s31_linux_locks.o s31_linux_timer.o
+# Keep these generated/provider inputs explicit so a clean payload rebuild uses
+# the current PHY configuration and supplies the IDF coexistence logger.
+RADIO_PHY_ARCHIVE := $(BOOTLOADER)/build/esp-idf/esp_phy/libesp_phy.a
+RADIO_COEX_PRINTF_OBJ := s31_coex_printf.o
+
 linux-kbuild: linux_radio.kbuild.o
 	cp -f linux_radio.kbuild.o $(LINUX_IDF_OBJ)
 
-linux_radio.raw.o: radio_stack.linux.o nofreertos_link.txt boot_flags.txt boot_linkpath.txt $(S31RTOS_LINUX_OBJS)
+linux_radio.raw.o: radio_stack.linux.o nofreertos_link.txt boot_flags.txt boot_linkpath.txt $(S31RTOS_LINUX_OBJS) $(RADIO_COEX_PRINTF_OBJ)
 	$(ESP_CC) -nostdlib -r -Wl,--gc-sections $(HEAP_WRAP_FLAGS) $(LINUX_WRAP_FLAGS) \
 		-Wl,--undefined=s31_radio_stack_task \
 		-Wl,--undefined=s31_radio_wifi_scan_task \
 		-Wl,--undefined=s31_radio_wifi_connect_task \
 		-Wl,--undefined=s31_radio_wifi_disconnect_task \
 		-Wl,--undefined=s31_radio_wifi_read_mac \
+		-Wl,--undefined=s31_radio_wifi_clock_enable \
+		-Wl,--undefined=s31_radio_wifi_clock_disable \
 		-Wl,--undefined=s31_radio_wifi_try_send \
-		-Wl,--undefined=s31_rtos_init -Wl,--undefined=s31_rtos_schedule \
+		-Wl,--undefined=s31_radio_wifi_guard_pp_state \
+		-Wl,--undefined=s31_rtos_init \
 		-Wl,--undefined=s31_rtos_tick \
+		-Wl,--undefined=s31_rtos_hard_tick \
 		-Wl,--undefined=wifi_module_enable \
 		-Wl,--undefined=wifi_module_disable \
 		-Wl,--undefined=esp_wifi_init \
 		-Wl,--undefined=esp_intr_alloc \
 		$(shell cat boot_flags.txt) $(shell cat boot_linkpath.txt) \
-		radio_stack.linux.o $(S31RTOS_LINUX_OBJS) \
+		radio_stack.linux.o $(S31RTOS_LINUX_OBJS) $(RADIO_COEX_PRINTF_OBJ) \
 		$(shell sed 's|^esp-idf/|$(BOOTLOADER)/build/esp-idf/|' nofreertos_link.txt) \
 		-L$(PICOLIBC_LIB) -L$(PICOLIBC_GCC) -lc -lm -lgcc -o $@
 
@@ -62,7 +74,7 @@ linux-radio-undefined.txt: linux_radio.raw.o
 
 linux-radio-localize.txt: linux_radio.raw.o
 	$(ESP_TOOLS)/bin/riscv32-esp-elf-nm -g --defined-only $< | \
-		awk '{ n=$$NF; if (n !~ /^(s31_radio_(stack|bt_enable|wifi_(scan|connect|disconnect))_task|s31_radio_wifi_read_mac|s31_radio_(vhci|wifi)_try_send|s31_rtos_(init|schedule|tick|isr_depth)|xTaskCreatePinnedToCore)$$/) print n; }' | \
+		awk '{ n=$$NF; if (n !~ /^(s31_radio_(stack|bt_enable|wifi_(scan|connect|disconnect))_task|s31_radio_wifi_(read_mac|guard_pp_state|clock_enable|clock_disable)|s31_radio_(vhci|wifi)_try_send|s31_rtos_(init|tick|isr_depth|hard_tick|free)|xTaskCreatePinnedToCore)$$/) print n; }' | \
 		sort -u > $@
 
 linux_radio.kbuild.o: linux_radio.raw.o linux-radio-localize.txt
@@ -70,12 +82,11 @@ linux_radio.kbuild.o: linux_radio.raw.o linux-radio-localize.txt
 		--strip-debug \
 		--localize-symbols=linux-radio-localize.txt $< $@
 
-S31RTOS_LINUX_OBJS := s31_rtos/s31_rtos_core.linux.o \
-		s31_rtos/s31_rtos_queue.o s31_rtos/s31_rtos_event.o \
-		s31_linux_locks.o s31_linux_timer.o
 # The main rule appears above this simply-expanded list; add the prerequisites
 # here so a clean/forced build cannot reach the linker before they exist.
-linux_radio.raw.o: $(S31RTOS_LINUX_OBJS)
+linux_radio.raw.o: $(S31RTOS_LINUX_OBJS) $(RADIO_PHY_ARCHIVE)
+s31_coex_printf.o: $(IDF_PATH)/components/esp_coex/src/lib_printf.c
+	$(ESP_CC) $(ESP_CFLAGS) -c $< -o $@
 s31_rtos/%.o: s31_rtos/%.c s31_rtos/s31_rtos.h
 	$(ESP_CC) $(ESP_CFLAGS) -I s31_rtos -c $< -o $@
 

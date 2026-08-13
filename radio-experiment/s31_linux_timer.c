@@ -124,11 +124,17 @@ int64_t __wrap_esp_timer_get_time(void)
 	return (int64_t)s31_now_us;
 }
 
+/* Called from the TIMG1 hard IRQ so esp_timer_get_time() advances even while
+ * the radio worker is starved by a blob-gate holder. */
+void s31_linux_timer_advance(void)
+{
+	s31_now_us += 10000;
+}
+
 void s31_linux_timers_tick(void)
 {
 	struct esp_timer *timer, *next;
 
-	s31_now_us += 10000;
 	for (timer = s31_timers; timer; timer = next) {
 		esp_timer_cb_t callback;
 		void *arg;

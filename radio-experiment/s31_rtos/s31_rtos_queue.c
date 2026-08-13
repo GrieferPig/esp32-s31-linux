@@ -1,16 +1,22 @@
 /*
  * SPDX-License-Identifier: BSD-2-Clause
  *
- * S31 radio world stub layer: queues, semaphores, mutexes.
- * See docs/S31_radio_rtos_stub.md.
+ * FreeRTOS queue/semaphore/mutex compatibility backed by the opaque Linux
+ * synchronization bridge.  Queue state remains in the payload ABI; Linux
+ * owns the actual lock and wait queue.
  */
 #include <stdint.h>
 #include <string.h>
 #include "s31_rtos.h"
 
+extern int esp_rom_printf(const char *fmt, ...);
+
+static uint32_t s31_queue_create_count;
+static uint32_t s31_queue_dynamic_create_count;
+static uint32_t s31_queue_delete_count;
+
 static void s31_queue_init(struct s31_queue *q, uint32_t type,
-			   uint32_t len, uint32_t item_size,
-			   uint8_t *storage)
+			   uint32_t len, uint32_t item_size, uint8_t *storage)
 {
 	memset(q, 0, sizeof(*q));
 	q->type = type;
@@ -18,6 +24,12 @@ static void s31_queue_init(struct s31_queue *q, uint32_t type,
 	q->item_size = item_size;
 	q->storage = (uint32_t)storage;
 	q->is_static = 0;
+	q->wait_context = s31_linux_sync_create();
+}
+
+static int s31_queue_valid(const struct s31_queue *q)
+{
+	return q && q->wait_context;
 }
 
 void *xQueueGenericCreate(uint32_t queue_len, uint32_t item_size,
@@ -26,17 +38,28 @@ void *xQueueGenericCreate(uint32_t queue_len, uint32_t item_size,
 	struct s31_queue *q;
 	uint8_t *storage;
 	uint32_t total;
+	uint32_t count = ++s31_queue_dynamic_create_count;
+
+	if (count <= 16)
+		esp_rom_printf("[S31] queue dynamic create #%u len=%u item=%u type=%u\n",
+			       count, queue_len, item_size, queue_type);
 
 	if (!queue_len || (item_size &&
 	    queue_len > (UINT32_MAX - sizeof(*q)) / item_size))
 		return NULL;
 	total = sizeof(*q) + queue_len * item_size;
-
 	q = s31_rtos_malloc(total);
 	if (!q)
 		return NULL;
 	storage = (uint8_t *)q + sizeof(*q);
 	s31_queue_init(q, queue_type, queue_len, item_size, storage);
+	if (!q->wait_context) {
+		s31_rtos_free(q);
+		return NULL;
+	}
+	if (count <= 16)
+		esp_rom_printf("[S31] queue dynamic create #%u -> q=%p wait=%p storage=%p\n",
+			       count, q, q->wait_context, storage);
 	return q;
 }
 
@@ -45,12 +68,21 @@ void *xQueueGenericCreateStatic(uint32_t queue_len, uint32_t item_size,
 				uint8_t queue_type)
 {
 	struct s31_queue *q = static_queue;
+	uint32_t count = ++s31_queue_create_count;
+
+	if (count <= 16)
+		esp_rom_printf("[S31] queue static create #%u len=%u item=%u storage=%p static=%p type=%u\n",
+			       count, queue_len, item_size, storage, static_queue,
+			       queue_type);
 
 	if (!q || !queue_len || (item_size && !storage))
 		return NULL;
 	s31_queue_init(q, queue_type, queue_len, item_size, storage);
 	q->is_static = 1;
-	return q;
+	if (count <= 16)
+		esp_rom_printf("[S31] queue static create #%u -> q=%p wait=%p\n",
+			       count, q, q->wait_context);
+	return q->wait_context ? q : NULL;
 }
 
 BaseType_t xQueueGenericGetStaticBuffers(void *queue, uint8_t **storage,
@@ -74,191 +106,171 @@ void *xQueueCreateMutex(uint8_t type)
 		return NULL;
 	s31_queue_init(q, S31_Q_TYPE_MUTEX, 1, 0, NULL);
 	(void)type;
+	if (!q->wait_context) {
+		s31_rtos_free(q);
+		return NULL;
+	}
 	return q;
 }
 
 void *xQueueCreateCountingSemaphore(uint32_t max, uint32_t initial)
 {
-	struct s31_queue *q = s31_rtos_malloc(sizeof(*q));
+	struct s31_queue *q;
 
-	if (!q || !max || initial > max) {
-		if (q)
-			s31_rtos_free(q);
+	if (!max || initial > max)
 		return NULL;
-	}
+	q = s31_rtos_malloc(sizeof(*q));
+	if (!q)
+		return NULL;
 	s31_queue_init(q, S31_Q_TYPE_SEM, max, 0, NULL);
 	q->count = initial;
+	if (!q->wait_context) {
+		s31_rtos_free(q);
+		return NULL;
+	}
 	return q;
 }
 
 void vQueueDelete(void *queue)
 {
 	struct s31_queue *q = queue;
-	struct s31_waiter *w = q->waiters;
 
-	while (w) {
-		struct s31_waiter *next = w->next;
-
-		w->tcb->wait_obj = NULL;
-		s31_rtos_make_ready(w->tcb);
-		s31_rtos_free(w);
-		w = next;
-	}
+	if (!q)
+		return;
+	if (++s31_queue_delete_count <= 32)
+		esp_rom_printf("[S31] vQueueDelete #%u q=%p type=%u count=%u cap=%u static=%u wait=%p\n",
+			       s31_queue_delete_count, q, q->type, q->count,
+			       q->capacity, q->is_static, q->wait_context);
+	s31_linux_sync_destroy(q->wait_context);
+	q->wait_context = NULL;
 	if (!q->is_static)
 		s31_rtos_free(q);
 }
 
-static void *s31_waiter_alloc(struct s31_tcb *t, uint32_t dir)
+static TickType_t s31_wait_timeout(TickType_t timeout)
 {
-	struct s31_waiter *w = s31_rtos_malloc(sizeof(*w));
-
-	if (!w)
-		return NULL;
-	w->tcb = t;
-	w->dir = dir;
-	w->next = NULL;
-	return w;
+	return timeout;
 }
 
-/* Link the current task as a waiter on q.  On a send-block it also wakes a
- * parked receiver so the queue can be drained (avoids cooperative
- * deadlock).  Returns 1 on success; on failure the caller must not block. */
-static int s31_waiter_link(struct s31_queue *q, struct s31_tcb *t,
-			   uint32_t dir)
+static BaseType_t s31_queue_send_locked(struct s31_queue *q,
+					const void *item, BaseType_t copy)
 {
-	struct s31_waiter *w = s31_waiter_alloc(t, dir);
-	struct s31_waiter **pp;
+	uint32_t idx;
 
-	if (!w)
-		return 0;
-	for (pp = &q->waiters; *pp; pp = &(*pp)->next)
-		;
-	*pp = w;
-	if (dir == S31_WAIT_SEND) {
-		for (pp = &q->waiters; *pp; pp = &(*pp)->next) {
-			struct s31_waiter *r = *pp;
-
-			if (r->dir == S31_WAIT_RECV && r->tcb != t) {
-				*pp = r->next;
-				r->tcb->wait_obj = NULL;
-				s31_rtos_make_ready(r->tcb);
-				s31_rtos_free(r);
-				return 1;
-			}
-		}
-	}
-	return 1;
-}
-
-/* --- send --- */
-BaseType_t xQueueGenericSend(void *queue, const void *item,
-			     TickType_t timeout, BaseType_t copy)
-{
-	struct s31_queue *q = queue;
-	struct s31_tcb *t = s31_rtos_current();
-
-	if (!q)
-		return pdFAIL;
-
-	/* from ISR: never block */
-	if (s31_rtos_in_isr())
-		return xQueueGenericSendFromISR(queue, item, NULL);
-
-	/* FreeRTOS implements xSemaphoreGive() as xQueueGenericSend(), including
-	 * for an ordinary mutex.  A locked mutex therefore is not a "full queue":
-	 * giving it releases ownership and wakes the next taker.  Recursive mutex
-	 * callers normally use xQueueGiveMutexRecursive(), but honour depth here as
-	 * well so mixed IDF/pthread wrappers cannot drop ownership prematurely. */
 	if (q->type == S31_Q_TYPE_MUTEX) {
+		struct s31_tcb *t = s31_rtos_current();
+
 		if (!t || q->owner != t || !q->depth)
 			return pdFAIL;
 		if (--q->depth == 0) {
 			q->owner = NULL;
 			q->count = 0;
-			s31_rtos_wake_waiters(q);
 		}
-		return pdTRUE;
-	} else if (q->type == S31_Q_TYPE_SEM) {
-		if (q->count < q->capacity) {
-			q->count++;
-			s31_rtos_wake_waiters(q);
-			return pdTRUE;
-		}
-	} else if (q->capacity &&
-		   (q->count < q->capacity || copy == S31_QUEUE_OVERWRITE)) {
-		uint32_t idx;
-
-		if (copy == S31_QUEUE_SEND_TO_FRONT) {
-			q->head = (q->head + q->capacity - 1) % q->capacity;
-			idx = q->head;
-		} else if (copy == S31_QUEUE_OVERWRITE && q->count == q->capacity) {
-			idx = q->head;
-			q->head = (q->head + 1) % q->capacity;
-		} else {
-			idx = (q->head + q->count) % q->capacity;
-		}
-
-		if (item && q->item_size)
-			memcpy((uint8_t *)q->storage + idx * q->item_size,
-			       item, q->item_size);
-		if (q->count < q->capacity)
-			q->count++;
-		s31_rtos_wake_waiters(q);
 		return pdTRUE;
 	}
-
-	/* full: block? */
-	if (timeout == 0 || !t)
-		return pdFAIL;
-	if (!s31_waiter_link(q, t, S31_WAIT_SEND))
-		return pdFAIL;
-	/* park; resumed when a receiver drained a slot */
-	s31_rtos_block(1, q, timeout, pdTRUE);
 	if (q->type == S31_Q_TYPE_SEM) {
-		if (q->count < q->capacity) {
-			q->count++;
-			s31_rtos_wake_waiters(q);
-			return pdTRUE;
-		}
-	} else if (q->capacity && q->count < q->capacity) {
-		uint32_t idx = (q->head + q->count) % q->capacity;
-
-		if (item && q->item_size)
-			memcpy((uint8_t *)q->storage + idx * q->item_size,
-			       item, q->item_size);
+		if (q->count >= q->capacity)
+			return pdFAIL;
 		q->count++;
-		s31_rtos_wake_waiters(q);
 		return pdTRUE;
 	}
-	return pdFAIL;
+	if (!q->capacity ||
+	    (q->count >= q->capacity && copy != S31_QUEUE_OVERWRITE))
+		return pdFAIL;
+	if (copy == S31_QUEUE_SEND_TO_FRONT) {
+		q->head = (q->head + q->capacity - 1) % q->capacity;
+		idx = q->head;
+	}
+	else if (copy == S31_QUEUE_OVERWRITE && q->count == q->capacity) {
+		idx = q->head;
+		q->head = (q->head + 1) % q->capacity;
+	} else
+		idx = (copy == S31_QUEUE_SEND_TO_FRONT) ? q->head :
+			(q->head + q->count) % q->capacity;
+	if (item && q->item_size)
+		memcpy((uint8_t *)q->storage + idx * q->item_size,
+		       item, q->item_size);
+	if (q->count < q->capacity)
+		q->count++;
+	return pdTRUE;
+}
+
+static BaseType_t s31_queue_take_locked(struct s31_queue *q, void *item)
+{
+	if (!q->count || !q->capacity)
+		return pdFALSE;
+	if (item && q->item_size)
+		memcpy(item, (uint8_t *)q->storage + q->head * q->item_size,
+		       q->item_size);
+	q->head = (q->head + 1) % q->capacity;
+	q->count--;
+	return pdTRUE;
+}
+
+BaseType_t xQueueGenericSend(void *queue, const void *item,
+			     TickType_t timeout, BaseType_t copy)
+{
+	struct s31_queue *q = queue;
+	uint32_t seq;
+	int32_t waited;
+
+	if (!s31_queue_valid(q))
+		return pdFAIL;
+	if (s31_rtos_in_isr())
+		return xQueueGenericSendFromISR(queue, item, NULL);
+	for (;;) {
+		seq = s31_linux_sync_sequence(q->wait_context);
+		s31_linux_sync_lock(q->wait_context);
+		if (q->type == S31_Q_TYPE_MUTEX || q->type == S31_Q_TYPE_SEM ||
+		    q->count < q->capacity || copy == S31_QUEUE_OVERWRITE) {
+			BaseType_t ret = s31_queue_send_locked(q, item, copy);
+			s31_linux_sync_unlock(q->wait_context);
+			if (ret)
+				s31_linux_sync_wake(q->wait_context);
+			return ret;
+		}
+		s31_linux_sync_unlock(q->wait_context);
+		if (timeout == 0)
+			return pdFAIL;
+		waited = s31_linux_sync_wait(q->wait_context, seq,
+					     s31_wait_timeout(timeout));
+		if (waited < 0)
+			return pdFAIL;
+		if (waited == 0)
+			return pdFAIL;
+		/* A wake can belong to a competing waiter.  Recheck the predicate;
+		 * the Linux bridge sequence prevents a lost wake. */
+	}
 }
 
 BaseType_t xQueueGenericSendFromISR(void *queue, const void *item,
 				    BaseType_t *woken)
 {
 	struct s31_queue *q = queue;
+	BaseType_t ret;
 
-	if (!q)
+	if (!s31_queue_valid(q))
 		return pdFAIL;
-	if (q->type == S31_Q_TYPE_SEM) {
+	s31_linux_sync_lock(q->wait_context);
+	if (q->type == S31_Q_TYPE_MUTEX) {
+		/* FreeRTOS ISR give is only meaningful for a semaphore. */
+		ret = pdFAIL;
+	} else if (q->type == S31_Q_TYPE_SEM) {
 		if (q->count >= q->capacity)
-			return pdFAIL;
-		q->count++;
-	} else {
-		if (q->count >= q->capacity)
-			return pdFAIL;
-		if (item && q->item_size) {
-			uint32_t idx = (q->head + q->count) % q->capacity;
-
-			memcpy((uint8_t *)q->storage + idx * q->item_size,
-			       item, q->item_size);
+			ret = pdFAIL;
+		else {
+			q->count++;
+			ret = pdTRUE;
 		}
-		q->count++;
+	} else {
+		ret = s31_queue_send_locked(q, item, S31_QUEUE_SEND_TO_BACK);
 	}
-	s31_rtos_wake_waiters(q);
+	s31_linux_sync_unlock(q->wait_context);
+	if (ret)
+		s31_linux_sync_wake(q->wait_context);
 	if (woken)
-		*woken = pdTRUE;
-	return pdTRUE;
+		*woken = ret;
+	return ret;
 }
 
 BaseType_t xQueueGiveFromISR(void *queue, BaseType_t *woken)
@@ -266,96 +278,95 @@ BaseType_t xQueueGiveFromISR(void *queue, BaseType_t *woken)
 	return xQueueGenericSendFromISR(queue, NULL, woken);
 }
 
-/* --- receive --- */
-static BaseType_t s31_queue_take_item(struct s31_queue *q, void *item)
-{
-	if (q->count == 0 || q->capacity == 0)
-		return pdFALSE;
-	if (item && q->item_size)
-		memcpy(item, (uint8_t *)q->storage + q->head * q->item_size,
-		       q->item_size);
-	q->head = (q->head + 1) % q->capacity;
-	q->count--;
-	s31_rtos_wake_waiters(q);
-	return pdTRUE;
-}
-
 BaseType_t xQueueReceive(void *queue, void *item, TickType_t timeout)
 {
 	struct s31_queue *q = queue;
-	struct s31_tcb *t = s31_rtos_current();
+	uint32_t seq;
+	int32_t waited;
 
-	if (!q)
+	if (!s31_queue_valid(q))
 		return pdFAIL;
 	if (s31_rtos_in_isr())
 		return xQueueReceiveFromISR(queue, item, NULL);
-	if (s31_queue_take_item(q, item))
-		return pdTRUE;
-	if (timeout == 0 || !t)
-		return pdFALSE;
-	if (!s31_waiter_link(q, t, S31_WAIT_RECV))
-		return pdFALSE;
-	s31_rtos_block(1, q, timeout, pdTRUE);
-	/* resumed by a sender; the item must be present */
-	return s31_queue_take_item(q, item);
+	for (;;) {
+		seq = s31_linux_sync_sequence(q->wait_context);
+		s31_linux_sync_lock(q->wait_context);
+		if (q->type != S31_Q_TYPE_MUTEX && q->count) {
+			BaseType_t ret = s31_queue_take_locked(q, item);
+			s31_linux_sync_unlock(q->wait_context);
+			if (ret)
+				s31_linux_sync_wake(q->wait_context);
+			return ret;
+		}
+		s31_linux_sync_unlock(q->wait_context);
+		if (timeout == 0)
+			return pdFALSE;
+		waited = s31_linux_sync_wait(q->wait_context, seq,
+					     s31_wait_timeout(timeout));
+		if (waited <= 0)
+			return pdFALSE;
+		/* Recheck after every wake, including wakes for another waiter. */
+	}
 }
 
 BaseType_t xQueueReceiveFromISR(void *queue, void *item, BaseType_t *woken)
 {
 	struct s31_queue *q = queue;
+	BaseType_t ret;
 
-	if (!q)
+	if (!s31_queue_valid(q))
 		return pdFAIL;
-	if (!s31_queue_take_item(q, item))
-		return pdFALSE;
+	s31_linux_sync_lock(q->wait_context);
+	ret = q->type == S31_Q_TYPE_MUTEX ? pdFALSE :
+		s31_queue_take_locked(q, item);
+	s31_linux_sync_unlock(q->wait_context);
+	if (ret)
+		s31_linux_sync_wake(q->wait_context);
 	if (woken)
-		*woken = pdTRUE;
-	return pdTRUE;
+		*woken = ret;
+	return ret;
 }
 
 BaseType_t xQueueSemaphoreTake(void *queue, TickType_t timeout)
 {
 	struct s31_queue *q = queue;
 	struct s31_tcb *t = s31_rtos_current();
+	uint32_t seq;
+	int32_t waited;
 
-	if (!q)
+	if (!s31_queue_valid(q) || !t)
 		return pdFAIL;
-	if (q->type == S31_Q_TYPE_MUTEX) {
-		if (q->owner == t) {
-			q->depth++;
-			return pdTRUE;
-		}
-		if (q->owner == NULL && q->count == 0) {
-			q->owner = t;
-			q->depth = 1;
-			q->count = 1;
-			return pdTRUE;
-		}
-	} else {
-		if (q->count > 0) {
+	for (;;) {
+		seq = s31_linux_sync_sequence(q->wait_context);
+		s31_linux_sync_lock(q->wait_context);
+		if (q->type == S31_Q_TYPE_MUTEX) {
+			if (q->owner == t) {
+				q->depth++;
+				s31_linux_sync_unlock(q->wait_context);
+				return pdTRUE;
+			}
+			if (!q->owner && !q->count) {
+				q->owner = t;
+				q->depth = 1;
+				q->count = 1;
+				s31_linux_sync_unlock(q->wait_context);
+				return pdTRUE;
+			}
+		} else if (q->count) {
 			q->count--;
-			s31_rtos_wake_waiters(q);
+			s31_linux_sync_unlock(q->wait_context);
+			s31_linux_sync_wake(q->wait_context);
 			return pdTRUE;
 		}
+		s31_linux_sync_unlock(q->wait_context);
+		if (!timeout)
+			return pdFALSE;
+		waited = s31_linux_sync_wait(q->wait_context, seq,
+					     s31_wait_timeout(timeout));
+		if (waited <= 0)
+			return pdFALSE;
+		/* Recheck after every wake. */
 	}
-	if (timeout == 0 || !t)
-		return pdFALSE;
-	if (!s31_waiter_link(q, t, S31_WAIT_RECV))
-		return pdFALSE;
-	s31_rtos_block(1, q, timeout, pdTRUE);
-	if (q->type == S31_Q_TYPE_MUTEX) {
-		if (q->owner == NULL && q->count == 0) {
-			q->owner = t;
-			q->depth = 1;
-			q->count = 1;
-			return pdTRUE;
-		}
-	} else if (q->count > 0) {
-		q->count--;
-		s31_rtos_wake_waiters(q);
-		return pdTRUE;
-	}
-	return pdFALSE;
 }
 
 BaseType_t xQueueTakeMutexRecursive(void *queue, TickType_t timeout)
@@ -367,33 +378,48 @@ BaseType_t xQueueGiveMutexRecursive(void *queue)
 {
 	struct s31_queue *q = queue;
 	struct s31_tcb *t = s31_rtos_current();
+	BaseType_t ret = pdFAIL;
 
-	if (!q || q->type != S31_Q_TYPE_MUTEX)
+	if (!s31_queue_valid(q) || q->type != S31_Q_TYPE_MUTEX)
 		return pdFAIL;
-	if (q->owner != t)
-		return pdFAIL;
-	if (--q->depth == 0) {
-		q->owner = NULL;
-		q->count = 0;
-		s31_rtos_wake_waiters(q);
+	s31_linux_sync_lock(q->wait_context);
+	if (q->owner == t && q->depth) {
+		if (--q->depth == 0) {
+			q->owner = NULL;
+			q->count = 0;
+		}
+		ret = pdTRUE;
 	}
-	return pdTRUE;
+	s31_linux_sync_unlock(q->wait_context);
+	if (ret)
+		s31_linux_sync_wake(q->wait_context);
+	return ret;
 }
 
 void *xQueueGetMutexHolder(void *queue)
 {
 	struct s31_queue *q = queue;
+	void *owner;
 
-	if (!q || q->type != S31_Q_TYPE_MUTEX)
+	if (!s31_queue_valid(q) || q->type != S31_Q_TYPE_MUTEX)
 		return NULL;
-	return q->owner;
+	s31_linux_sync_lock(q->wait_context);
+	owner = q->owner;
+	s31_linux_sync_unlock(q->wait_context);
+	return owner;
 }
 
 UBaseType_t uxQueueMessagesWaiting(void *queue)
 {
 	struct s31_queue *q = queue;
+	UBaseType_t count;
 
-	return q ? q->count : 0;
+	if (!s31_queue_valid(q))
+		return 0;
+	s31_linux_sync_lock(q->wait_context);
+	count = q->count;
+	s31_linux_sync_unlock(q->wait_context);
+	return count;
 }
 
 UBaseType_t uxQueueMessagesWaitingFromISR(void *queue)
@@ -405,20 +431,21 @@ BaseType_t xQueueGenericReset(void *queue, BaseType_t new_queue)
 {
 	struct s31_queue *q = queue;
 
-	if (!q)
+	if (!s31_queue_valid(q))
 		return pdFAIL;
+	s31_linux_sync_lock(q->wait_context);
 	q->head = 0;
 	q->count = 0;
 	q->owner = NULL;
 	q->depth = 0;
+	s31_linux_sync_unlock(q->wait_context);
 	if (!new_queue)
-		s31_rtos_wake_waiters(q);
+		s31_linux_sync_wake(q->wait_context);
 	return pdPASS;
 }
 
 BaseType_t xQueueIsQueueEmptyFromISR(void *queue)
 {
-	struct s31_queue *q = queue;
-
-	return !q || q->count == 0 ? pdTRUE : pdFALSE;
+	return !queue || uxQueueMessagesWaitingFromISR(queue) == 0 ?
+		pdTRUE : pdFALSE;
 }

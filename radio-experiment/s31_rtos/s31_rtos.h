@@ -1,8 +1,9 @@
 /*
  * SPDX-License-Identifier: BSD-2-Clause
  *
- * ESP32-S31 radio world: FreeRTOS API stub layer (design doc:
- * docs/S31_radio_rtos_stub.md).  Self-contained, no FreeRTOS headers.
+ * ESP32-S31 radio world: FreeRTOS API stub layer.  The payload keeps the
+ * measured FreeRTOS ABI, while task scheduling and blocking are delegated to
+ * the Linux-side bridge in the S-mode driver.
  * Compiled with the ESP toolchain at ilp32f; ABI-compatible with the IDF
  * callers because every public signature is integer/pointer-only.
  */
@@ -31,41 +32,19 @@ typedef uint32_t EventBits_t;
 
 #define S31_TASK_NAME_LEN 16
 
-#define S31_TASK_READY    1
-#define S31_TASK_RUNNING  2
-#define S31_TASK_BLOCKED  3
-#define S31_TASK_DELAYED  4
-#define S31_TASK_DELETED  5
-
-#define S31_WAIT_RECV 0
-#define S31_WAIT_SEND 1
-
 struct s31_tcb {
 	char name[S31_TASK_NAME_LEN];
 	void (*entry)(void *arg);
 	void *arg;
-	uint32_t stack_size;
-	void *stack_base;
 	uint32_t priority;
-	uint32_t *ctx_sp;       /* offset-free; only used via pointers */
-	uint32_t state;         /* S31_TASK_* */
-	uint32_t wait_kind;     /* 1 = queue/sem/mutex, 2 = event group */
-	void *wait_obj;         /* queue/event group being waited on */
-	TickType_t wake_tick;   /* delay deadline or wait timeout deadline */
-	uint32_t wait_result;   /* event bits captured when a waiter is woken */
+	void *linux_task;       /* opaque Linux task object */
+	void *stack_base;       /* internal-SRAM payload stack */
+	uint32_t stack_size;
 	void *tls[4];
 	void (*tls_dtor[4])(int, void *);
-	struct s31_tcb *ready_next;
-	struct s31_tcb *all_next;
-};
-
-/* single waiter entry, heap-allocated while parked */
-struct s31_waiter {
-	struct s31_tcb *tcb;
-	uint32_t dir;           /* S31_WAIT_* (queues) */
-	EventBits_t want;       /* event group: bits needed */
-	uint32_t flags;         /* event group: all-bits/clear-on-exit */
-	struct s31_waiter *next;
+	uint32_t critical_depth;
+	uint32_t critical_flags;
+	uint32_t tls_cleaned;
 };
 
 #define S31_Q_TYPE_QUEUE 0
@@ -86,24 +65,24 @@ struct s31_queue {
 	uint32_t storage;       /* item buffer address (0 for sem/mutex) */
 	void *owner;            /* mutex owner tcb */
 	uint32_t depth;         /* mutex recursion depth */
-	struct s31_waiter *waiters;
+	void *wait_context;     /* opaque Linux lock/wait object */
 	uint32_t is_static;
 };
 
 /* 8 bytes, fits inside StaticEventGroup_t */
 struct s31_event_group {
 	EventBits_t bits;
-	struct s31_waiter *waiters;
+	void *wait_context;     /* opaque Linux lock/wait object */
 };
 
 /* --- core --- */
 void s31_rtos_init(void);
 void s31_rtos_tick(void);             /* from the Linux-owned TIMG1 tick */
+void s31_rtos_hard_tick(void);        /* TIMG1 hard IRQ: tick + timer epoch */
 int s31_radio_tick_init(void);         /* TIMG1/T1, 1 kHz S-mode tick */
 int s31_radio_tick_service(void);      /* called by Linux through SBI */
 void s31_radio_tick_handoff_to_linux(void);
 BaseType_t s31_rtos_in_isr(void);     /* xPortInIsrContext */
-void s31_rtos_schedule(void);         /* run ready tasks until quiescent */
 void s31_rtos_enter_critical(void);
 void s31_rtos_exit_critical(void);
 TickType_t s31_rtos_get_tick(void);
@@ -112,17 +91,35 @@ void *s31_rtos_malloc(uint32_t size); /* radio heap */
 void s31_rtos_free(void *ptr);
 extern uint32_t s31_rtos_isr_depth;   /* world glue sets around radio ISRs */
 
-/* park the current task (internal; used by queue/event implementations) */
-void s31_rtos_block(uint32_t wait_kind, void *wait_obj, TickType_t timeout,
-		    uint32_t retval);
-/* wake a matching waiter on a queue (internal) */
-void s31_rtos_wake_waiters(struct s31_queue *q);
-void s31_rtos_make_ready(struct s31_tcb *t);
+/* Linux bridge.  This ABI deliberately contains only fixed-width integers,
+ * opaque pointers, and function pointers; it is shared by the ESP payload and
+ * the Linux kernel driver without including kernel headers in the payload. */
+void *s31_linux_task_create(void (*entry)(void *), const char *name,
+				uint32_t stack_size, void *stack_base,
+				void *arg, uint32_t priority, void *cookie);
+void s31_linux_task_exit_current(void);
+int32_t s31_linux_task_stop(void *task);
+void *s31_linux_current_cookie(void);
+void s31_linux_task_delay(TickType_t ticks);
 
-/* cooperative switch: saves integer and ilp32f callee-saved state + retval,
- * stores sp to *prev_ctx, resumes *next_ctx.  Naked asm. */
-void s31_rtos_switch(uint32_t **prev_ctx, uint32_t *next_ctx, uint32_t retval);
-void s31_rtos_task_entry(void);
+void s31_linux_blob_enter(void);
+void s31_linux_blob_leave(void);
+void s31_linux_blob_suspend(void);
+void s31_linux_blob_resume(void);
+
+void *s31_linux_sync_create(void);
+void s31_linux_sync_destroy(void *sync);
+void s31_linux_sync_lock(void *sync);
+void s31_linux_sync_unlock(void *sync);
+uint32_t s31_linux_sync_sequence(void *sync);
+int32_t s31_linux_sync_wait(void *sync, uint32_t sequence,
+				    TickType_t timeout);
+void s31_linux_sync_wake(void *sync);
+
+uint32_t s31_linux_critical_enter(void);
+void s31_linux_critical_exit(uint32_t flags);
+void s31_linux_critical_suspend(void);
+void s31_linux_critical_resume(void);
 
 /* --- FreeRTOS-compatible API (the 34 measured symbols) --- */
 void vPortEnterCritical(void);

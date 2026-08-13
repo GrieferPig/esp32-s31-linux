@@ -6,7 +6,7 @@ Goal:
   64-KiB PSRAM MMU page, excluded from Linux with a `no-map` reservation.
 - Keep the OpenSBI partition size fixed at 512KB.
 - Boot OpenSBI/Linux on HP core 1. Core 0 boots the ESP-IDF factory app in
-  single-core mode and keeps running the FreeRTOS scheduler.
+  single-core mode, then parks permanently after releasing core 1.
 
 Address contract:
 - The factory app maps the complete 16-MiB Flash linearly at 0x40000000.
@@ -52,8 +52,10 @@ Boot flow:
   installs a full-space PMP entry for Linux S-mode, and jumps to OpenSBI with:
   - a0 = 1
   - a1 = fdt_addr
-- Core 0 remains in the FreeRTOS scheduler after releasing core 1. Its worker
-  task and timer interrupts are used to verify concurrent scheduler progress.
+- Core 0 disables local interrupts and parks in WFI after releasing core 1.
+  This is required once Linux owns the mask-ROM Wi-Fi implementation: the ROM
+  PP globals are shared between both HP harts, so retaining a second runtime
+  on core 0 can corrupt the PP task handle and queue state.
 - OpenSBI owns the final PSRAM MMU page at 0x50FF0000..0x51000000; the old
   0x2F052000..0x2F062000 HP-SRAM carve-out has been returned to IDF.
 - Linux devices own a contiguous 0x6880-byte HP-SRAM carve-out:
