@@ -61,9 +61,13 @@ static void s31_queue_trace_receive(struct s31_queue *q, const void *item,
 	uint32_t event;
 	uint32_t n;
 
-	if (!s31_queue_trace_enabled || !s31_queue_is_wifi_main(q))
+	if (!s31_queue_is_wifi_main(q))
 		return;
 	event = s31_queue_event_id(q, item);
+	if (ret)
+		s31_linux_trace_wifi_event(event);
+	if (!s31_queue_trace_enabled)
+		return;
 	n = ++s31_queue_trace_receive_count;
 	if (event == 13)
 		s31_queue_trace_rxevent_receive_count++;
@@ -334,7 +338,8 @@ BaseType_t xQueueGenericSend(void *queue, const void *item,
 			if (!remaining)
 				return pdFAIL;
 			waited = s31_linux_sync_wait(q->wait_context, seq,
-						     remaining);
+						     remaining,
+						     S31_BLOB_RELEASE_QUEUE_SEND);
 		}
 		if (waited < 0)
 			return pdFAIL;
@@ -416,7 +421,8 @@ BaseType_t xQueueReceive(void *queue, void *item, TickType_t timeout)
 			if (!remaining)
 				return pdFALSE;
 			waited = s31_linux_sync_wait(q->wait_context, seq,
-						     remaining);
+						     remaining,
+						     S31_BLOB_RELEASE_QUEUE_RECEIVE);
 		}
 		if (waited <= 0)
 			return pdFALSE;
@@ -504,7 +510,8 @@ BaseType_t xQueueSemaphoreTake(void *queue, TickType_t timeout)
 				waited = 0;
 			else
 				waited = s31_linux_sync_wait(q->wait_context, seq,
-							     remaining);
+							     remaining,
+							     S31_BLOB_RELEASE_SEMAPHORE_TAKE);
 		}
 		if (waited <= 0)
 		{

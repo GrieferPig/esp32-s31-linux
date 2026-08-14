@@ -1,6 +1,6 @@
 # 目标：为esp32-s31移植mmu linux
 
-!!!不要移除！！！重要信息。
+！！！不要移除！！！重要信息。
 
 我在给esp32-s31移植mmu Linux。项目包含bootloader,OpenSBI,Linux. 用idf作为唯一S31硬件参考，同时docs/里面有一些我总结出来的硬件参考。必要时运行openocd(不能用gdb) debug。用中文思考。硬件usage以ESP-IDF为准(IDF在~/.espressif，使用前source export.sh)。疑问停下来问我。在任何任务开始前，如果docs/目录或其中的文件不在context window里，先读取docs/s31_hardware/下的所有文件。
 
@@ -13,11 +13,11 @@
 
 - 任何构建应使用根目录 Makefile 中对应的 target 完成：`make opensbi`、`make linux`、`make coremark`、`make initramfs`、`make bootloader`。不要直接调用子仓库的构建系统；bootloader 的 `make bootloader` target 必须通过 ESP-IDF 的 `idf.py` 构建
 - 使用idf以及任何来自idf的工具（如openocd）都必须先source idf的export.sh
-- 刷写命令：esptool -p /dev/ttyUSB0 -b 2000000 write-flash 0x220000 fw_payload.bin 0x2A0000 xipImage 
+- 刷写命令：`make flash-all`, 单分区刷写参考bootloader/partitions.csv
 - openocd运行命令：. '/home/grieferpig/.espressif/tools/activate_idf_master.sh' && openocd -f board/esp32s31-builtin.cfg。！！！flash前必须关闭openocd！！！
 - 所有S mode register和一些其他register在openocd无法直接读取，需要使用riscv dm_write/dm_read
 - 如果要监控Serial，必须使用ttyUSB0，以及`idf.py monitor`指令，并为idf.py提供一个stdio。！！！不能使用其他tty monitor！！！注意，idf.py monitor不会自动返回，你需要添加timeout
-- s31有概率重置的时候卡在bootloader，这时候应该重置
+- s31有概率重置的时候卡在bootloader，这时候应该再次重置
 - 所有会被 Wi-Fi/BT blob 代码或 blob 执行上下文直接读取、写入或长期持有的内存都必须位于内部 HP SRAM，禁止使用 PSRAM 或普通 Linux `kmalloc`/`vmalloc` 内存。这包括 blob heap、兼容层 task stack/TCB、queue、event、同步对象、临时参数和 buffer、RX/TX staging buffer、DMA descriptor。Linux 通用控制对象只有在确认不会被 blob 直接访问时才可位于普通内存。
 - 用中文思考。用中文思考。用中文思考。
 
@@ -26,6 +26,17 @@
 以下是探测硬件的一些经验，如果你有新的发现，写在这里记住。
 
 # ESP32-S31 Debug Notes
+
+## Flash corruption 判别
+
+刷写不完整或 flash 内容损坏时，串口可能卡在opensbi，仍能打印到
+`hart1 released to OpenSBI; parking loader hart0`，随后 OpenOCD 会看到
+hart1 停在 `__sbi_expected_trap`，并显示看似合理的 PMP/load fault、异常
+`mepc` 或 `mtval`。这类现象不能直接归因于 OpenSBI trap ABI 或 Linux；先
+关闭 OpenOCD，erase flash并重新用 `esptool -p /dev/ttyUSB0 -b 2000000 write-flash`
+完整刷写并校验 bootloader、payload 和 `xipImage`，必要时先复位板卡，再
+重复串口启动观察。只有同一镜像经完整校验后仍稳定复现，才进行 DMI 和
+OpenSBI 源码级定位。
 
 ## Reading Hart Registers Through DMI
 

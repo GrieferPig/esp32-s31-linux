@@ -138,7 +138,8 @@ EventBits_t xEventGroupWaitBits(void *group, EventBits_t bits,
 		}
 		if (!remaining)
 			return result;
-		waited = s31_linux_sync_wait(g->wait_context, seq, remaining);
+		waited = s31_linux_sync_wait(g->wait_context, seq, remaining,
+					     S31_BLOB_RELEASE_EVENT_WAIT);
 		if (waited <= 0)
 		{
 			/* Recheck once after the deadline: the matching set and the

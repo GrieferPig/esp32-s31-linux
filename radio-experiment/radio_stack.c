@@ -12,10 +12,12 @@
 #include "private/esp_coexist_internal.h"
 
 extern int esp_rom_printf(const char *fmt, ...);
+extern uint64_t s31_linux_time_ns(void);
 extern void s31_rtos_use_internal_stacks(void);
 extern int s31_rtos_in_isr(void);
 extern int s31_rtos_can_yield(void);
-extern void s31_radio_timing_tx_done(void);
+extern void s31_radio_timing_tx_done(bool status, const uint8_t *data,
+				     uint16_t length);
 extern void modem_clock_module_enable(int module);
 extern void modem_clock_module_disable(int module);
 /* These ROM-owned pointers live in retained SRAM.  A software reset from an
@@ -114,6 +116,330 @@ static uint32_t s31_wifi_rx_count;
 static uint32_t s31_wifi_tx_count;
 static uint32_t s31_wifi_tx_done_count;
 
+#define S31_TX_DESC_SAMPLES 24
+#define S31_TX_DESC_BYTES 72
+#define S31_TX_FRAME_BYTES 48
+
+struct s31_tx_desc_sample {
+	uint32_t eb;
+	uint32_t frame;
+	uint32_t flags;
+	uint32_t control;
+	uint16_t length;
+	uint8_t tid;
+	uint8_t desc[S31_TX_DESC_BYTES];
+	uint8_t header[S31_TX_FRAME_BYTES];
+};
+
+static struct s31_tx_desc_sample s31_tx_desc_samples[S31_TX_DESC_SAMPLES];
+static uint32_t s31_tx_desc_sample_count;
+static bool s31_tx_desc_samples_dumped;
+static uint32_t s31_tx_desc_call_count;
+static uint32_t s31_tx_desc_bad_eb_count;
+static uint32_t s31_tx_desc_bad_desc_count;
+static uint32_t s31_tx_desc_bad_frame_count;
+static uint32_t s31_tx_desc_nondata_count;
+static bool s31_tx_desc_capture_enabled;
+static uint32_t s31_tx_desc_ipv4_submit_count;
+
+#define S31_KEY_SAMPLES 16
+#define S31_KEY_INFO_BYTES 12
+
+struct s31_key_sample {
+	uint32_t slot;
+	uint32_t key_len;
+	uint32_t key_hash;
+	uint8_t key_info[S31_KEY_INFO_BYTES];
+};
+
+static struct s31_key_sample s31_key_samples[S31_KEY_SAMPLES];
+static uint32_t s31_key_sample_count;
+static bool s31_key_capture_enabled;
+
+static uint32_t s31_lmac_txerr_count;
+static uint32_t s31_lmac_txerr_seckid_count;
+static uint32_t s31_lmac_txdone_count;
+static uint32_t s31_lmac_txdone_bad_count;
+
+extern void __real_ieee80211_set_tx_desc(void *ic, void *eb, uint32_t tid,
+					 uint32_t flags, uint32_t control);
+extern int __real_lmacTxFrame(void *eb, uint32_t queue);
+extern void __real_hal_crypto_set_key_entry(int key_idx, const void *key,
+					    int key_len, const void *key_info);
+extern void __real_lmacProcessTxError(int err_type, int status, void *arg);
+extern int __real_lmacTxDone(void *eb, int status);
+extern int esp_test_get_hw_rx_statistics(uint16_t *stats);
+
+static bool s31_radio_ptr_is_hpsram(const void *ptr, size_t length)
+{
+	uintptr_t start = (uintptr_t)ptr;
+	uintptr_t end = start + length;
+
+	return start >= 0x2f000000U && end >= start && end <= 0x2f800000U;
+}
+
+static uint32_t s31_fnv1a(const uint8_t *data, size_t len)
+{
+	uint32_t hash = 2166136261u;
+	size_t i;
+
+	for (i = 0; i < len; i++) {
+		hash ^= data[i];
+		hash *= 16777619u;
+	}
+	return hash;
+}
+
+void __wrap_ieee80211_set_tx_desc(void *ic, void *eb, uint32_t tid,
+				  uint32_t flags, uint32_t control)
+{
+	struct s31_tx_desc_sample *sample;
+	uint8_t *desc;
+	uint8_t *frame = NULL;
+	void *buffer;
+	uint32_t index;
+	uint32_t i;
+
+	__real_ieee80211_set_tx_desc(ic, eb, tid, flags, control);
+	s31_tx_desc_call_count++;
+	if (!s31_radio_ptr_is_hpsram(eb, 56)) {
+		s31_tx_desc_bad_eb_count++;
+		return;
+	}
+	desc = *(uint8_t **)((uint8_t *)eb + 52);
+	buffer = *(void **)((uint8_t *)eb + 4);
+	if (s31_radio_ptr_is_hpsram(buffer, 8))
+		frame = *(uint8_t **)((uint8_t *)buffer + 4);
+	if (!s31_radio_ptr_is_hpsram(desc, S31_TX_DESC_BYTES)) {
+		s31_tx_desc_bad_desc_count++;
+		return;
+	}
+	if (!s31_radio_ptr_is_hpsram(frame, 8 + S31_TX_FRAME_BYTES)) {
+		s31_tx_desc_bad_frame_count++;
+		return;
+	}
+	frame += 8;
+	if (!s31_tx_desc_capture_enabled || (frame[0] & 0x0c) != 0x08 ||
+	    !(frame[1] & 0x40)) {
+		s31_tx_desc_nondata_count++;
+		return;
+	}
+	index = s31_tx_desc_sample_count;
+	if (index >= S31_TX_DESC_SAMPLES)
+		return;
+	s31_tx_desc_sample_count = index + 1;
+	sample = &s31_tx_desc_samples[index];
+	sample->eb = (uintptr_t)eb;
+	sample->frame = (uintptr_t)frame;
+	sample->flags = flags;
+	sample->control = control;
+	sample->length = *(uint16_t *)((uint8_t *)eb + 22);
+	sample->tid = tid;
+	for (i = 0; i < S31_TX_DESC_BYTES; i++)
+		sample->desc[i] = desc[i];
+	for (i = 0; i < S31_TX_FRAME_BYTES; i++)
+		sample->header[i] = frame[i];
+}
+
+int __wrap_lmacTxFrame(void *eb, uint32_t queue)
+{
+	struct s31_tx_desc_sample *sample;
+	uint8_t *desc;
+	uint8_t *frame = NULL;
+	void *buffer;
+	uint32_t index;
+	uint32_t i;
+
+	s31_tx_desc_call_count++;
+	if (!s31_radio_ptr_is_hpsram(eb, 56)) {
+		s31_tx_desc_bad_eb_count++;
+		return __real_lmacTxFrame(eb, queue);
+	}
+	desc = *(uint8_t **)((uint8_t *)eb + 52);
+	buffer = *(void **)((uint8_t *)eb + 4);
+	if (s31_radio_ptr_is_hpsram(buffer, 8))
+		frame = *(uint8_t **)((uint8_t *)buffer + 4);
+	if (!s31_radio_ptr_is_hpsram(desc, S31_TX_DESC_BYTES)) {
+		s31_tx_desc_bad_desc_count++;
+		return __real_lmacTxFrame(eb, queue);
+	}
+	if (!s31_radio_ptr_is_hpsram(frame, 8 + S31_TX_FRAME_BYTES)) {
+		s31_tx_desc_bad_frame_count++;
+		return __real_lmacTxFrame(eb, queue);
+	}
+	frame += 8;
+	if (!s31_tx_desc_capture_enabled || (frame[0] & 0x0c) != 0x08 ||
+	    !(frame[1] & 0x40)) {
+		s31_tx_desc_nondata_count++;
+		return __real_lmacTxFrame(eb, queue);
+	}
+	index = s31_tx_desc_sample_count;
+	if (index < S31_TX_DESC_SAMPLES) {
+		s31_tx_desc_sample_count = index + 1;
+		sample = &s31_tx_desc_samples[index];
+		sample->eb = (uintptr_t)eb;
+		sample->frame = (uintptr_t)frame;
+		sample->flags = 0x4c4d4143U;
+		sample->control = queue;
+		sample->length = *(uint16_t *)((uint8_t *)eb + 22);
+		sample->tid = queue;
+		for (i = 0; i < S31_TX_DESC_BYTES; i++)
+			sample->desc[i] = desc[i];
+		for (i = 0; i < S31_TX_FRAME_BYTES; i++)
+			sample->header[i] = frame[i];
+	}
+	return __real_lmacTxFrame(eb, queue);
+}
+
+void __wrap_hal_crypto_set_key_entry(int key_idx, const void *key,
+				     int key_len, const void *key_info)
+{
+	struct s31_key_sample *sample;
+	const uint8_t *info = key_info;
+	uint32_t i;
+
+	(void)key_len;
+	__real_hal_crypto_set_key_entry(key_idx, key, key_len, key_info);
+	if (!s31_key_capture_enabled ||
+	    !s31_radio_ptr_is_hpsram(info, S31_KEY_INFO_BYTES) ||
+	    s31_key_sample_count >= S31_KEY_SAMPLES)
+		return;
+	sample = &s31_key_samples[s31_key_sample_count++];
+	sample->slot = key_idx;
+	sample->key_len = key_len;
+	sample->key_hash = s31_fnv1a(key, key_len);
+	for (i = 0; i < S31_KEY_INFO_BYTES; i++)
+		sample->key_info[i] = info[i];
+}
+
+void __wrap_lmacProcessTxError(int err_type, int status, void *arg)
+{
+	uint32_t count = ++s31_lmac_txerr_count;
+
+	if (status == 192)
+		s31_lmac_txerr_seckid_count++;
+	if (count <= 32 || status == 192 || status == 0 || status == 1 ||
+	    status == 2)
+		esp_rom_printf("[S31] LMACTXERR #%u type=%d status=%d(0x%x) arg=%p\n",
+			       count, err_type, status, status, arg);
+	__real_lmacProcessTxError(err_type, status, arg);
+}
+
+int __wrap_lmacTxDone(void *eb, int status)
+{
+	uint8_t *desc = NULL;
+	uint32_t w0 = 0;
+	uint32_t w4 = 0;
+	uint32_t count = ++s31_lmac_txdone_count;
+
+	if (status != 0)
+		s31_lmac_txdone_bad_count++;
+	if (s31_radio_ptr_is_hpsram(eb, 56)) {
+		desc = *(uint8_t **)((uint8_t *)eb + 52);
+		if (s31_radio_ptr_is_hpsram(desc, 72)) {
+			w0 = *(uint32_t *)(desc + 0);
+			w4 = *(uint32_t *)(desc + 16);
+		}
+	}
+	if (count <= 4)
+		esp_rom_printf("[S31] LMACTXDONE #%u status=%d w0=%08x w4=%08x eb=%p\n",
+			       count, status, w0, w4, eb);
+	return __real_lmacTxDone(eb, status);
+}
+
+static void s31_wifi_dump_crypto_regs(void);
+static void s31_wifi_dump_rx_stats(void);
+
+static void s31_wifi_dump_crypto_samples(void)
+{
+	uint32_t i;
+	uint32_t j;
+
+	esp_rom_printf("[S31] LMACTXERR total=%u seckid=%u txdone=%u txdone-bad=%u keys=%u\n",
+		       s31_lmac_txerr_count, s31_lmac_txerr_seckid_count,
+		       s31_lmac_txdone_count, s31_lmac_txdone_bad_count,
+		       s31_key_sample_count);
+	for (i = 0; i < s31_key_sample_count; i++) {
+		struct s31_key_sample *sample = &s31_key_samples[i];
+
+		esp_rom_printf("[S31] KEY #%u slot=%u len=%u fnv=%08x info=",
+			       i, sample->slot, sample->key_len, sample->key_hash);
+		for (j = 0; j < S31_KEY_INFO_BYTES; j++)
+			esp_rom_printf("%02x", sample->key_info[j]);
+		esp_rom_printf("\n");
+	}
+	s31_wifi_dump_crypto_regs();
+}
+
+static void s31_wifi_dump_crypto_regs(void)
+{
+	volatile const uint32_t *base = (volatile const uint32_t *)0x20104800;
+	uint32_t slot;
+
+	esp_rom_printf("[S31] CRYPTO c0=%08x c1=%08x c2=%08x c3=%08x cfg=%08x valid=%08x\n",
+		       base[0], base[1], base[2], base[3], base[4], base[5]);
+	/* Dump only the key-entry metadata words (peer MAC + cipher word) and an
+	 * FNV-1a fingerprint of the installed key bytes (never the key itself). */
+	for (slot = 0; slot < 6; slot++) {
+		volatile const uint32_t *entry =
+			(volatile const uint32_t *)(0x20105800 + slot * 40);
+		uint32_t hash;
+
+		if (!(base[5] & (1u << slot)))
+			continue;
+		hash = s31_fnv1a((const uint8_t *)(entry + 2), 16);
+		esp_rom_printf("[S31] KEYS slot=%u hdr0=%08x hdr1=%08x keyfnv=%08x\n",
+			       slot, entry[0], entry[1], hash);
+	}
+	s31_wifi_dump_rx_stats();
+}
+
+static void s31_wifi_dump_rx_stats(void)
+{
+	uint16_t stats[48] = { 0 };
+	uint32_t i;
+	int rc = esp_test_get_hw_rx_statistics(stats);
+
+	esp_rom_printf("[S31] RXSTAT rc=%d", rc);
+	for (i = 0; i < 37; i++)
+		esp_rom_printf(" %u:%u", i, stats[i]);
+	esp_rom_printf(" w38=%08x w40=%08x\n",
+		       *(uint32_t *)((uint8_t *)stats + 76),
+		       *(uint32_t *)((uint8_t *)stats + 80));
+}
+
+static void s31_wifi_dump_tx_desc_samples(void)
+{
+	uint32_t count = s31_tx_desc_sample_count;
+	uint32_t i;
+	uint32_t j;
+
+	if (s31_tx_desc_samples_dumped)
+		return;
+	if (count > S31_TX_DESC_SAMPLES)
+		count = S31_TX_DESC_SAMPLES;
+	esp_rom_printf("[S31] TXDESC status calls=%u samples=%u bad-eb=%u bad-desc=%u bad-frame=%u nondata=%u\n",
+		       s31_tx_desc_call_count, count, s31_tx_desc_bad_eb_count,
+		       s31_tx_desc_bad_desc_count, s31_tx_desc_bad_frame_count,
+		       s31_tx_desc_nondata_count);
+	if (!count)
+		return;
+	s31_tx_desc_samples_dumped = true;
+	for (i = 0; i < count; i++) {
+		struct s31_tx_desc_sample *sample = &s31_tx_desc_samples[i];
+
+		esp_rom_printf("[S31] TXDESC #%u eb=%08x frame=%08x len=%u tid=%u flags=%08x ctl=%08x desc=",
+			       i, sample->eb, sample->frame, sample->length,
+			       sample->tid, sample->flags, sample->control);
+		for (j = 0; j < S31_TX_DESC_BYTES; j++)
+			esp_rom_printf("%02x", sample->desc[j]);
+		esp_rom_printf(" hdr=");
+		for (j = 0; j < S31_TX_FRAME_BYTES; j++)
+			esp_rom_printf("%02x", sample->header[j]);
+		esp_rom_printf("\n");
+	}
+}
+
 /* esp_wifi_internal_tx() copies Linux frames, so the by-reference callbacks
  * are not expected to run.  The native ESP-IDF station glue still registers
  * them at STA_START and the closed driver uses that registration as part of
@@ -137,7 +463,7 @@ static void s31_wifi_tx_done(uint8_t interface, uint8_t *data,
 {
 	uint32_t count = ++s31_wifi_tx_done_count;
 
-	s31_radio_timing_tx_done();
+	s31_radio_timing_tx_done(status, data, length ? *length : 0);
 	(void)data;
 	if (!status)
 		esp_rom_printf("[S31] Wi-Fi TX done #%u if=%u len=%u ok=%u\n",
@@ -262,6 +588,8 @@ static void s31_wifi_event(void *arg, esp_event_base_t base, int32_t id,
 
 		s31_wifi_pending = S31_WIFI_PENDING_NONE;
 		s31_wifi_start_complete = 1;
+		s31_key_sample_count = 0;
+		s31_key_capture_enabled = true;
 		rc = esp_wifi_internal_reg_netstack_buf_cb(
 			s31_wifi_netstack_ref, s31_wifi_netstack_free);
 		esp_rom_printf("[S31] Wi-Fi STA_START rc=%d pending=%u\n",
@@ -313,6 +641,22 @@ static void s31_wifi_event(void *arg, esp_event_base_t base, int32_t id,
 non_scan_event:
 	if (id == WIFI_EVENT_STA_CONNECTED) {
 		wifi_event_sta_connected_t *event = event_data;
+
+		/* Association traffic fills the small capture ring before Linux can
+		 * submit DHCP.  Start a fresh window at the protected data boundary. */
+		s31_tx_desc_sample_count = 0;
+		s31_tx_desc_samples_dumped = false;
+		s31_tx_desc_call_count = 0;
+		s31_tx_desc_bad_eb_count = 0;
+		s31_tx_desc_bad_desc_count = 0;
+		s31_tx_desc_bad_frame_count = 0;
+		s31_tx_desc_nondata_count = 0;
+		s31_tx_desc_ipv4_submit_count = 0;
+		s31_tx_desc_capture_enabled = true;
+		s31_lmac_txerr_count = 0;
+		s31_lmac_txerr_seckid_count = 0;
+		s31_lmac_txdone_count = 0;
+		s31_lmac_txdone_bad_count = 0;
 		/* Match wifi_default_action_sta_connected(): the S31 station data
 		 * interface becomes ready only after association, so registering at
 		 * STA_START can return success without attaching the RX data path. */
@@ -433,8 +777,16 @@ int s31_radio_wifi_read_mac(uint8_t *mac)
 
 int s31_radio_wifi_try_send(uint8_t *frame, uint16_t length)
 {
-	int rc = esp_wifi_internal_tx(WIFI_IF_STA, frame, length);
+	bool ipv4 = length >= 14 && frame[12] == 0x08 && frame[13] == 0x00;
+	int rc;
 	uint32_t count = ++s31_wifi_tx_count;
+
+	/* esp_wifi_internal_tx() only queues the Ethernet frame.  By the second
+	 * DHCP retry, the first one has traversed the asynchronous Wi-Fi task and
+	 * lmacTxFrame(), so dump that completed capture before queuing another. */
+	if (ipv4)
+		s31_tx_desc_ipv4_submit_count++;
+	rc = esp_wifi_internal_tx(WIFI_IF_STA, frame, length);
 
 	if (count <= 16 || rc) {
 		if (length >= 14)

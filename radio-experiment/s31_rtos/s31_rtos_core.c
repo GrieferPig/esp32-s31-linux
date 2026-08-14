@@ -335,11 +335,24 @@ enum {
 	S31_NOTIFY_RECEIVED = 2,
 };
 
+static TickType_t s31_notify_wait_remaining(TickType_t timeout,
+					     TickType_t start)
+{
+	TickType_t elapsed;
+
+	if (timeout == portMAX_DELAY)
+		return portMAX_DELAY;
+	elapsed = s31_rtos_get_tick() - start;
+	return elapsed >= timeout ? 0 : timeout - elapsed;
+}
+
 uint32_t ulTaskGenericNotifyTake(UBaseType_t index, BaseType_t clear,
 				 TickType_t timeout)
 {
 	struct s31_tcb *t = s31_rtos_current();
+	TickType_t start = s31_rtos_get_tick();
 	uint32_t seq, value;
+	int32_t waited;
 
 	if (!t || index != 0)
 		return 0;
@@ -355,7 +368,18 @@ uint32_t ulTaskGenericNotifyTake(UBaseType_t index, BaseType_t clear,
 		}
 		t->notify_state = S31_NOTIFY_WAITING;
 		s31_linux_sync_unlock(t->notify_context);
-		if (!timeout || s31_linux_sync_wait(t->notify_context, seq, timeout) <= 0) {
+		if (!timeout)
+			waited = 0;
+		else {
+			TickType_t remaining =
+				s31_notify_wait_remaining(timeout, start);
+
+			waited = remaining ?
+				s31_linux_sync_wait(t->notify_context, seq,
+						     remaining,
+						     S31_BLOB_RELEASE_NOTIFY_TAKE) : 0;
+		}
+		if (waited <= 0) {
 			s31_linux_sync_lock(t->notify_context);
 			t->notify_state = S31_NOTIFY_NOT_WAITING;
 			s31_linux_sync_unlock(t->notify_context);
@@ -369,7 +393,9 @@ BaseType_t xTaskGenericNotifyWait(UBaseType_t index, uint32_t clear_entry,
 				   TickType_t timeout)
 {
 	struct s31_tcb *t = s31_rtos_current();
+	TickType_t start = s31_rtos_get_tick();
 	uint32_t seq, value;
+	int32_t waited;
 
 	if (!t || index != 0)
 		return pdFAIL;
@@ -389,7 +415,18 @@ BaseType_t xTaskGenericNotifyWait(UBaseType_t index, uint32_t clear_entry,
 		}
 		t->notify_state = S31_NOTIFY_WAITING;
 		s31_linux_sync_unlock(t->notify_context);
-		if (!timeout || s31_linux_sync_wait(t->notify_context, seq, timeout) <= 0) {
+		if (!timeout)
+			waited = 0;
+		else {
+			TickType_t remaining =
+				s31_notify_wait_remaining(timeout, start);
+
+			waited = remaining ?
+				s31_linux_sync_wait(t->notify_context, seq,
+						     remaining,
+						     S31_BLOB_RELEASE_NOTIFY_WAIT) : 0;
+		}
+		if (waited <= 0) {
 			s31_linux_sync_lock(t->notify_context);
 			if (out)
 				*out = t->notify_value;
@@ -451,7 +488,8 @@ void vTaskSuspend(void *task)
 	if (!t || t != s31_rtos_current())
 		return;
 	seq = s31_linux_sync_sequence(t->suspend_context);
-	(void)s31_linux_sync_wait(t->suspend_context, seq, portMAX_DELAY);
+	(void)s31_linux_sync_wait(t->suspend_context, seq, portMAX_DELAY,
+				  S31_BLOB_RELEASE_TASK_SUSPEND);
 }
 
 void vTaskPrioritySet(void *task, UBaseType_t priority)

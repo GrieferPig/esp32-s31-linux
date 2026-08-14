@@ -59,6 +59,21 @@ struct s31_tcb {
 #define S31_QUEUE_SEND_TO_FRONT 1
 #define S31_QUEUE_OVERWRITE     2
 
+/* Fixed payload/kernel ABI values used only for gate timing diagnostics. */
+enum s31_blob_release_reason {
+	S31_BLOB_RELEASE_LEAVE = 0,
+	S31_BLOB_RELEASE_TASK_DELAY,
+	S31_BLOB_RELEASE_TASK_YIELD,
+	S31_BLOB_RELEASE_QUEUE_SEND,
+	S31_BLOB_RELEASE_QUEUE_RECEIVE,
+	S31_BLOB_RELEASE_SEMAPHORE_TAKE,
+	S31_BLOB_RELEASE_NOTIFY_TAKE,
+	S31_BLOB_RELEASE_NOTIFY_WAIT,
+	S31_BLOB_RELEASE_EVENT_WAIT,
+	S31_BLOB_RELEASE_TASK_SUSPEND,
+	S31_BLOB_RELEASE_COUNT,
+};
+
 /* fits inside the IDF StaticQueue_t buffer (<= ~52 bytes) */
 struct s31_queue {
 	uint32_t type;
@@ -107,14 +122,16 @@ int32_t s31_linux_task_stop(void *task);
 void *s31_linux_current_cookie(void);
 void s31_linux_task_delay(TickType_t ticks);
 uint32_t s31_linux_tick_count(void);
+uint64_t s31_linux_time_ns(void);
 void s31_linux_task_yield(void);
 void s31_linux_task_set_priority(void *task, UBaseType_t priority);
 void s31_rtos_task_release(void *cookie);
 
 void s31_linux_blob_enter(void);
 void s31_linux_blob_leave(void);
-void s31_linux_blob_suspend(void);
+void s31_linux_blob_suspend(uint32_t reason);
 void s31_linux_blob_resume(void);
+void s31_linux_trace_wifi_event(uint32_t event);
 
 void *s31_linux_sync_create(void);
 void s31_linux_sync_destroy(void *sync);
@@ -122,7 +139,7 @@ void s31_linux_sync_lock(void *sync);
 void s31_linux_sync_unlock(void *sync);
 uint32_t s31_linux_sync_sequence(void *sync);
 int32_t s31_linux_sync_wait(void *sync, uint32_t sequence,
-				    TickType_t timeout);
+				    TickType_t timeout, uint32_t reason);
 void s31_linux_sync_wake(void *sync);
 
 uint32_t s31_linux_critical_enter(void);

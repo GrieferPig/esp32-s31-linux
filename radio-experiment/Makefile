@@ -23,7 +23,9 @@ LINUX_WRAP_APIS := esp_log_timestamp esp_timer_create esp_timer_delete \
 	esp_timer_start_once esp_timer_start_once_at esp_timer_start_periodic \
 	esp_timer_start_periodic_at esp_timer_stop esp_timer_restart \
 	esp_timer_is_active esp_timer_get_time esp_intr_ptr_in_isr_region \
-	esp_intr_alloc esp_intr_enable esp_intr_disable esp_intr_free
+	esp_intr_alloc esp_intr_enable esp_intr_disable esp_intr_free \
+	ieee80211_set_tx_desc lmacTxFrame hal_crypto_set_key_entry \
+	lmacProcessTxError lmacTxDone
 LINUX_WRAP_FLAGS := $(addprefix -Wl$(comma)--wrap=,$(LINUX_WRAP_APIS))
 
 .PHONY: all clean linux-radio linux-kbuild
@@ -83,7 +85,7 @@ linux_radio.kbuild.o: linux_radio.raw.o linux-radio-localize.txt
 
 S31RTOS_LINUX_OBJS := s31_rtos/s31_rtos_core.linux.o \
 		s31_rtos/s31_rtos_queue.o s31_rtos/s31_rtos_event.o \
-		s31_linux_locks.o s31_linux_timer.o
+		s31_linux_locks.o s31_linux_timer.o s31_memcpy.o
 # The main rule appears above this simply-expanded list; add the prerequisites
 # here so a clean/forced build cannot reach the linker before they exist.
 linux_radio.raw.o: $(S31RTOS_LINUX_OBJS)
@@ -132,6 +134,9 @@ s31_linux_locks.o: s31_linux_locks.c s31_rtos/s31_rtos.h
 
 s31_linux_timer.o: s31_linux_timer.c s31_rtos/s31_rtos.h
 	$(ESP_CC) $(ESP_CFLAGS) -DS31_LINUX_SMODE -I s31_rtos -c $< -o $@
+
+s31_memcpy.o: s31_memcpy.c
+	$(ESP_CC) $(ESP_CFLAGS) -c $< -o $@
 
 clean:
 	rm -f *.o s31_rtos/*.o \

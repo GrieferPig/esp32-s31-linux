@@ -74,6 +74,10 @@ volatile uint32_t g_core1_trap_mepc;
 
 extern void core1_linux_trampoline(void);
 
+#ifdef S31_NATIVE_WIFI_PROBE
+extern void s31_native_wifi_probe(void) __attribute__((noreturn));
+#endif
+
 /* Keep all loader output on the dedicated USB Serial/JTAG peripheral. */
 static __attribute__((noreturn)) void loader_restart(const char *reason)
 {
@@ -364,6 +368,13 @@ static void prepare_linux_uart0(void)
 
 void app_main(void)
 {
+#ifdef S31_NATIVE_WIFI_PROBE
+    /* Keep the native comparison on the same /dev/ttyUSB0 UART used by
+     * OpenSBI/Linux. */
+    esp_rom_output_set_as_console(0);
+    s31_native_wifi_probe();
+#endif
+
     /* Allow the USB Serial/JTAG device to enumerate before loader output. */
     vTaskDelay(pdMS_TO_TICKS(5000));
 
