@@ -20,3 +20,4 @@ s31_rom.bin
 toolchain
 bootloader/managed_components/
 bootloader/build-radio/
+docs/esp-idf-docs/

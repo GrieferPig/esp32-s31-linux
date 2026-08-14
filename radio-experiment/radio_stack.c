@@ -1,5 +1,4 @@
 /* SPDX-License-Identifier: BSD-2-Clause */
-#include <errno.h>
 #include <stdint.h>
 #include <string.h>
 #include "esp_bt.h"
@@ -14,6 +13,9 @@
 
 extern int esp_rom_printf(const char *fmt, ...);
 extern void s31_rtos_use_internal_stacks(void);
+extern int s31_rtos_in_isr(void);
+extern int s31_rtos_can_yield(void);
+extern void s31_radio_timing_tx_done(void);
 extern void modem_clock_module_enable(int module);
 extern void modem_clock_module_disable(int module);
 /* These ROM-owned pointers live in retained SRAM.  A software reset from an
@@ -21,16 +23,12 @@ extern void modem_clock_module_disable(int module);
  * the ROM registration functions intentionally keep an existing adapter. */
 extern coex_adapter_funcs_t *g_coa_funcs_p;
 extern wifi_osi_funcs_t *g_osi_funcs_p;
-extern void *s_wifi_queue;
-extern void *xphyQueue;
-extern void *pp_task_hdl;
 /* ESP-IDF invokes this from its SECONDARY system-init stage (priority 104),
  * before app_main() can initialize Wi-Fi.  The S-mode payload deliberately
  * does not run the generic IDF startup table, so preserve that ordering here.
  * WPA3/SAE uses the PSA key store for HMAC-SHA256 and otherwise fails while
  * deriving the password element. */
 extern int32_t psa_crypto_init(void);
-
 #ifdef S31_LINUX_SMODE
 #define S31_PERIPH_WIFI_MODULE 5
 
@@ -115,51 +113,6 @@ static enum s31_wifi_pending_operation s31_wifi_pending;
 static uint32_t s31_wifi_rx_count;
 static uint32_t s31_wifi_tx_count;
 static uint32_t s31_wifi_tx_done_count;
-static void *s31_wifi_pp_queue;
-static void *s31_wifi_pp_handle;
-static void *s31_wifi_pp_task;
-static uint32_t s31_wifi_pp_restore_count;
-
-static void s31_wifi_report_pp_queue(const char *stage)
-{
-	uint32_t *wrapper = s_wifi_queue;
-
-	if (wrapper)
-		esp_rom_printf("[S31] pp queue %s: wrapper=%p handle=%p storage=%p xphy=%p\n",
-			       stage, wrapper, (void *)wrapper[0],
-			       (void *)wrapper[1], xphyQueue);
-	else
-		esp_rom_printf("[S31] pp queue %s: wrapper=NULL xphy=%p\n",
-			       stage, xphyQueue);
-}
-
-/*
- * The S31 mask ROM keeps the PP task pointers in a global SRAM block.  Linux
- * has observed that block being cleared after esp_wifi_init() without either
- * _task_delete or _wifi_delete_queue being called.  The backing kthread and
- * queue remain live, so retain and restore their published ROM handles.  A
- * real teardown goes through the two adapter callbacks and is never repaired
- * by this guard.
- */
-void s31_radio_wifi_guard_pp_state(void)
-{
-	if (!s31_wifi_pp_queue || !s31_wifi_pp_handle || !s31_wifi_pp_task)
-		return;
-	if (s_wifi_queue == s31_wifi_pp_queue &&
-	    xphyQueue == s31_wifi_pp_handle &&
-	    pp_task_hdl == s31_wifi_pp_task)
-		return;
-	if (++s31_wifi_pp_restore_count <= 8)
-		esp_rom_printf("[S31] restoring PP state #%u tick=%u q=%p/%p "
-			       "xphy=%p/%p task=%p/%p\n",
-			       s31_wifi_pp_restore_count, xTaskGetTickCount(),
-			       s_wifi_queue, s31_wifi_pp_queue,
-			       xphyQueue, s31_wifi_pp_handle,
-			       pp_task_hdl, s31_wifi_pp_task);
-	s_wifi_queue = s31_wifi_pp_queue;
-	xphyQueue = s31_wifi_pp_handle;
-	pp_task_hdl = s31_wifi_pp_task;
-}
 
 /* esp_wifi_internal_tx() copies Linux frames, so the by-reference callbacks
  * are not expected to run.  The native ESP-IDF station glue still registers
@@ -167,12 +120,16 @@ void s31_radio_wifi_guard_pp_state(void)
  * bringing up its netstack-facing data path. */
 static void s31_wifi_netstack_ref(void *buffer)
 {
-	(void)buffer;
+	static uint32_t count;
+	if (++count <= 16)
+		esp_rom_printf("[S31] netstack ref #%u buffer=%p\n", count, buffer);
 }
 
 static void s31_wifi_netstack_free(void *buffer)
 {
-	(void)buffer;
+	static uint32_t count;
+	if (++count <= 16)
+		esp_rom_printf("[S31] netstack free #%u buffer=%p\n", count, buffer);
 }
 
 static void s31_wifi_tx_done(uint8_t interface, uint8_t *data,
@@ -180,8 +137,9 @@ static void s31_wifi_tx_done(uint8_t interface, uint8_t *data,
 {
 	uint32_t count = ++s31_wifi_tx_done_count;
 
+	s31_radio_timing_tx_done();
 	(void)data;
-	if (count <= 8 || !status)
+	if (!status)
 		esp_rom_printf("[S31] Wi-Fi TX done #%u if=%u len=%u ok=%u\n",
 			       count, interface, length ? *length : 0, status);
 }
@@ -189,29 +147,36 @@ static void s31_wifi_tx_done(uint8_t interface, uint8_t *data,
 static void s31_wifi_set_intr(int32_t cpu_no, uint32_t source,
 			      uint32_t logical_intr, int32_t priority)
 {
-	esp_rom_printf("[S31] Wi-Fi _set_intr cpu=%d source=%u logical=%u prio=%d\n",
-		       cpu_no, source, logical_intr, priority);
+	(void)cpu_no;
 	s31_radio_wifi_intr_configure(source, logical_intr, priority);
 }
 
 static void s31_wifi_set_isr(int32_t logical_intr, void *handler, void *arg)
 {
-	esp_rom_printf("[S31] Wi-Fi _set_isr logical=%d handler=%p\n",
-		       logical_intr, handler);
+	esp_rom_printf("[S31] Wi-Fi set_isr logical=%d handler=%p arg=%p\n",
+		       logical_intr, handler, arg);
 	s31_radio_wifi_intr_set_isr(logical_intr,
-				    (void (*)(void *))handler, arg);
+				     (void (*)(void *))handler, arg);
 }
 
 static void s31_wifi_ints_on(uint32_t mask)
 {
-	esp_rom_printf("[S31] Wi-Fi _ints_on mask=%08x\n", mask);
 	s31_radio_wifi_intr_mask(mask, true);
 }
 
 static void s31_wifi_ints_off(uint32_t mask)
 {
-	esp_rom_printf("[S31] Wi-Fi _ints_off mask=%08x\n", mask);
 	s31_radio_wifi_intr_mask(mask, false);
+}
+
+static bool s31_wifi_is_from_isr(void)
+{
+	/* Match S31 esp_adapter.c exactly: _is_from_isr is implemented as
+	 * !xPortCanYield(), despite its name.  On the CLIC port xPortCanYield()
+	 * is false both in an ISR and while the interrupt threshold is raised by
+	 * a task critical section.  Looking only at deferred-ISR nesting made the
+	 * blob select blocking queue APIs while its critical section was active. */
+	return !s31_rtos_can_yield();
 }
 
 static int s31_wifi_rx(void *buffer, uint16_t length, void *eb)
@@ -238,35 +203,22 @@ static int s31_wifi_prepare(void)
 	int rc = 0;
 
 	if (!s31_wifi_prepared) {
-		s31_wifi_report_pp_queue("before-prepare");
-		esp_rom_printf("[S31] scan prepare: set_storage\n");
 		/* Match the native ESP-IDF station setup used on this chip.  In
 		 * particular, keep the closed driver out of its HE and modem-sleep
 		 * paths until those timing services are modelled by the Linux shim. */
 		rc = esp_wifi_set_storage(WIFI_STORAGE_RAM);
-		esp_rom_printf("[S31] scan prepare: set_storage rc=%d\n", rc);
 		if (!rc)
-			esp_rom_printf("[S31] scan prepare: set_country\n"),
 			rc = esp_wifi_set_country(&country);
-		esp_rom_printf("[S31] scan prepare: set_country rc=%d\n", rc);
 		if (!rc)
-			esp_rom_printf("[S31] scan prepare: set_mode\n"),
 			rc = esp_wifi_set_mode(WIFI_MODE_STA);
-		esp_rom_printf("[S31] scan prepare: set_mode rc=%d\n", rc);
 		if (!rc)
-			esp_rom_printf("[S31] scan prepare: set_protocol\n"),
 			rc = esp_wifi_set_protocol(WIFI_IF_STA,
 				WIFI_PROTOCOL_11B | WIFI_PROTOCOL_11G |
 				WIFI_PROTOCOL_11N);
-		esp_rom_printf("[S31] scan prepare: set_protocol rc=%d\n", rc);
 		if (!rc)
-			esp_rom_printf("[S31] scan prepare: set_ps\n"),
 			rc = esp_wifi_set_ps(WIFI_PS_NONE);
-		esp_rom_printf("[S31] scan prepare: set_ps rc=%d\n", rc);
 		if (!rc)
-			esp_rom_printf("[S31] scan prepare: set_bandwidth\n"),
 			rc = esp_wifi_set_bandwidth(WIFI_IF_STA, WIFI_BW20);
-		esp_rom_printf("[S31] scan prepare: set_bandwidth rc=%d\n", rc);
 		if (!rc)
 			s31_wifi_prepared = 1;
 	}
@@ -285,9 +237,7 @@ static int s31_wifi_start_operation(enum s31_wifi_pending_operation operation)
 	s31_wifi_pending = operation;
 	if (s31_wifi_start_requested)
 		return 0;
-	esp_rom_printf("[S31] calling esp_wifi_start operation=%u\n", operation);
 	rc = esp_wifi_start();
-	esp_rom_printf("[S31] esp_wifi_start returned rc=%d\n", rc);
 	if (rc) {
 		s31_wifi_pending = S31_WIFI_PENDING_NONE;
 		return -rc;
@@ -363,7 +313,6 @@ static void s31_wifi_event(void *arg, esp_event_base_t base, int32_t id,
 non_scan_event:
 	if (id == WIFI_EVENT_STA_CONNECTED) {
 		wifi_event_sta_connected_t *event = event_data;
-
 		/* Match wifi_default_action_sta_connected(): the S31 station data
 		 * interface becomes ready only after association, so registering at
 		 * STA_START can return success without attaching the RX data path. */
@@ -372,6 +321,10 @@ non_scan_event:
 			s31_wifi_rx_registered = 1;
 		if (!rc)
 			rc = esp_wifi_set_tx_done_cb(s31_wifi_tx_done);
+		esp_rom_printf("[S31] RX slots ref=%p sta=%p free=%p expected=%p\n",
+			       *(void * volatile *)0x2f07ff68,
+			       *(void * volatile *)0x2f07ff6c,
+			       *(void * volatile *)0x2f07ff78, s31_wifi_rx);
 		esp_rom_printf("[S31] Wi-Fi STA connected channel=%u data-cb=%d\n",
 			       event->channel, rc);
 		s31_radio_wifi_connected(event->bssid, event->channel, rc);
@@ -399,16 +352,12 @@ void s31_radio_wifi_scan_task(void *arg)
 
 	(void)arg;
 	rc = s31_wifi_prepare();
-	esp_rom_printf("[S31] scan task: prepare rc=%d\n", rc);
 	if (!rc) {
 		start = s31_wifi_start_operation(S31_WIFI_PENDING_SCAN);
-		esp_rom_printf("[S31] scan task: start_operation=%d\n", start);
 		if (start > 0)
-			esp_rom_printf("[S31] scan task: scan_start\n"),
 			rc = esp_wifi_scan_start(NULL, false);
 		else if (start < 0)
 			rc = -start;
-		esp_rom_printf("[S31] scan task: scan_start rc=%d\n", rc);
 	}
 	if (rc)
 		s31_radio_wifi_scan_complete(NULL, 0, rc);
@@ -434,6 +383,8 @@ void s31_radio_wifi_connect_task(void *arg)
 	if (params->has_password) {
 		memcpy(config.sta.password, params->password,
 		       params->password_length);
+		/* Match the last known-good native S31 IDF path: a WPA-length
+		 * plaintext password is normalized from OPEN to WPA2 internally. */
 	} else if (params->has_psk) {
 		for (i = 0; i < 32; i++) {
 			config.sta.password[i * 2] = hex[params->psk[i] >> 4];
@@ -485,13 +436,18 @@ int s31_radio_wifi_try_send(uint8_t *frame, uint16_t length)
 	int rc = esp_wifi_internal_tx(WIFI_IF_STA, frame, length);
 	uint32_t count = ++s31_wifi_tx_count;
 
-	if (count <= 8 || rc)
-		esp_rom_printf("[S31] Wi-Fi TX #%u len=%u rc=%d\n",
-			       count, length, rc);
-	if (rc == ESP_ERR_NO_MEM || rc == ESP_ERR_WIFI_POST ||
-	    rc == ESP_ERR_WIFI_WOULD_BLOCK)
-		return -EAGAIN;
-	return rc ? -EIO : 0;
+	if (count <= 16 || rc) {
+		if (length >= 14)
+			esp_rom_printf("[S31] Wi-Fi TX #%u len=%u rc=%d dst=%02x:%02x:%02x:%02x:%02x:%02x src=%02x:%02x:%02x:%02x:%02x:%02x type=%02x%02x\n",
+				       count, length, rc,
+				       frame[0], frame[1], frame[2], frame[3], frame[4], frame[5],
+				       frame[6], frame[7], frame[8], frame[9], frame[10], frame[11],
+				       frame[12], frame[13]);
+		else
+				esp_rom_printf("[S31] Wi-Fi TX #%u len=%u rc=%d\n",
+				       count, length, rc);
+	}
+	return rc;
 }
 #endif
 
@@ -525,6 +481,7 @@ void s31_radio_stack_task(void *arg)
 	g_wifi_osi_funcs._set_isr = s31_wifi_set_isr;
 	g_wifi_osi_funcs._ints_on = s31_wifi_ints_on;
 	g_wifi_osi_funcs._ints_off = s31_wifi_ints_off;
+	g_wifi_osi_funcs._is_from_isr = s31_wifi_is_from_isr;
 	/* Linux owns flash/MTD; do not let the IDF blob open its NVS backend. */
 	wifi_cfg.nvs_enable = 0;
 	/* Replace the loader/FreeRTOS callbacks retained by the COEX ROM. */
@@ -560,13 +517,6 @@ void s31_radio_stack_task(void *arg)
 		rc = esp_event_handler_register(WIFI_EVENT, ESP_EVENT_ANY_ID,
 						s31_wifi_event, NULL);
 	#endif
-	if (rc == 0)
-		s31_wifi_report_pp_queue("after-init");
-	if (rc == 0) {
-		s31_wifi_pp_queue = s_wifi_queue;
-		s31_wifi_pp_handle = xphyQueue;
-		s31_wifi_pp_task = pp_task_hdl;
-	}
 	#ifdef S31_LINUX_SMODE
 	s31_radio_report_wifi_init(rc);
 	#endif

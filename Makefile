@@ -165,7 +165,7 @@ RADIO_PAYLOAD := $(BUILD_DIR)/radio-fw-payload.bin
 radio-bootloader:
 	@echo "--- Build radio-only loader ---"
 	bash -c "source $(IDF_EXPORT) && cd $(BOOTLOADER_DIR) && \
-		idf.py -B build-radio \
+		S31_RADIO_DEPS=1 idf.py -B build-radio \
 		-D SDKCONFIG=$(RADIO_BOOT_BUILD)/sdkconfig \
 		-D 'SDKCONFIG_DEFAULTS=$(BOOTLOADER_DIR)/sdkconfig;$(BOOTLOADER_DIR)/sdkconfig.radio.defaults' \
 		reconfigure build"
@@ -197,7 +197,7 @@ radio-image: opensbi linux
 DEFCONFIG ?= esp32s31_defconfig
 LINUX_TARGET ?= xipImage
 
-radio-linux-payload:
+radio-linux-payload: radio-bootloader
 	$(MAKE) -C $(CURDIR)/radio-experiment linux-kbuild
 
 linux: toolchain radio-linux-payload | $(LINUX_OUT)

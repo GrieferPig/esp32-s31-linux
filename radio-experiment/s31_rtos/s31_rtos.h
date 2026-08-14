@@ -45,6 +45,10 @@ struct s31_tcb {
 	uint32_t critical_depth;
 	uint32_t critical_flags;
 	uint32_t tls_cleaned;
+	uint32_t notify_value;
+	uint32_t notify_state;
+	void *notify_context;
+	void *suspend_context;
 };
 
 #define S31_Q_TYPE_QUEUE 0
@@ -83,6 +87,7 @@ int s31_radio_tick_init(void);         /* TIMG1/T1, 1 kHz S-mode tick */
 int s31_radio_tick_service(void);      /* called by Linux through SBI */
 void s31_radio_tick_handoff_to_linux(void);
 BaseType_t s31_rtos_in_isr(void);     /* xPortInIsrContext */
+BaseType_t s31_rtos_can_yield(void);  /* S31 xPortCanYield semantics */
 void s31_rtos_enter_critical(void);
 void s31_rtos_exit_critical(void);
 TickType_t s31_rtos_get_tick(void);
@@ -101,6 +106,10 @@ void s31_linux_task_exit_current(void);
 int32_t s31_linux_task_stop(void *task);
 void *s31_linux_current_cookie(void);
 void s31_linux_task_delay(TickType_t ticks);
+uint32_t s31_linux_tick_count(void);
+void s31_linux_task_yield(void);
+void s31_linux_task_set_priority(void *task, UBaseType_t priority);
+void s31_rtos_task_release(void *cookie);
 
 void s31_linux_blob_enter(void);
 void s31_linux_blob_leave(void);
@@ -154,7 +163,7 @@ void vQueueDelete(void *queue);
 BaseType_t xQueueGenericSend(void *queue, const void *item,
 			     TickType_t timeout, BaseType_t copy);
 BaseType_t xQueueGenericSendFromISR(void *queue, const void *item,
-				    BaseType_t *woken);
+				    BaseType_t *woken, BaseType_t copy);
 BaseType_t xQueueGiveFromISR(void *queue, BaseType_t *woken);
 BaseType_t xQueueReceive(void *queue, void *item, TickType_t timeout);
 BaseType_t xQueueReceiveFromISR(void *queue, void *item, BaseType_t *woken);

@@ -306,35 +306,21 @@ static void enable_core1_external_memory_bus(uint32_t vaddr, uint32_t size);
 static void disable_core1_stack_protector(void);
 static void start_linux_on_core1(uint32_t fdt);
 
-/*
- * Scrub the SRAM regions that Linux/OpenSBI will own before the handoff,
- * so stale FreeRTOS/ROM data cannot leak into the radio world or DMA
- * descriptor pools.  The range is strictly limited to the SOC-reserved
- * areas (radio heap + exception stack + Linux DMA/status): the FreeRTOS
- * heap (and this task's own stack) lives below 0x2f030000 and above
- * 0x2f078c00, and the mask-ROM Wi-Fi variables live at 0x2f07f170..,
- * so none of those are touched.
- */
+/* Clear only the HP-SRAM regions transferred to Linux/blob ownership. */
 static void clear_sram_for_linux(void)
 {
     const uint32_t start = S31_RADIO_HEAP_BASE;
     const uint32_t end = S31_LINUX_DMA_END;
-
     volatile uint32_t *p = (volatile uint32_t *)start;
+
     while ((uint32_t)p < end) {
         *p++ = 0;
     }
-
-    /* The L1 D-cache is shared by both HP harts: discard stale lines so
-     * hart1 does not observe pre-handoff data. */
     if (Cache_WriteBack_Invalidate_Addr(CACHE_MAP_L1_DCACHE, start,
                                         end - start) != 0) {
         ESP_LOGE(TAG, "SRAM D-cache handoff failed");
     }
-
-    /* The mask-ROM Wi-Fi/PHY globals sit immediately above the Linux-owned
-     * carve-out.  Do not scrub them, but publish and invalidate any dirty
-     * hart0 lines before hart1 starts using the same cached mapping. */
+    /* Publish ROM Wi-Fi globals without overwriting them. */
     if (Cache_WriteBack_Invalidate_Addr(CACHE_MAP_L1_DCACHE,
                                         0x2f07f000, 0x1000) != 0) {
         ESP_LOGE(TAG, "ROM Wi-Fi global D-cache handoff failed");
@@ -342,14 +328,8 @@ static void clear_sram_for_linux(void)
     fence_i();
 }
 
-/*
- * The factory app only prepares the machine for OpenSBI.  Once hart1 owns
- * Linux and the radio blob, hart0 must never return to the ESP-IDF scheduler:
- * the mask-ROM Wi-Fi state is global to both HP harts, and a second runtime
- * touching that state corrupts the PP task queue.  Keep hart0 quiescent with
- * all local interrupts disabled; a pending interrupt may make WFI return, so
- * the loop is intentional.
- */
+/* Hart0 must not resume the IDF scheduler after radio ownership is handed to
+ * Linux on hart1; both harts otherwise share and race on mask-ROM PP state. */
 static __attribute__((noreturn)) void park_loader_hart(void)
 {
     __asm__ volatile ("csrci mstatus, 8\n"

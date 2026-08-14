@@ -2,6 +2,9 @@
 # ESP32-S31 Linux S-mode Wi-Fi/Bluetooth payload.
 
 BOOTLOADER   ?= ../bootloader
+BOOTLOADER_ABS := $(abspath $(BOOTLOADER))
+RADIO_BUILD  := $(BOOTLOADER)/build-radio
+RADIO_BUILD_ABS := $(abspath $(RADIO_BUILD))
 IDF_PATH     ?= $(HOME)/.espressif/master/esp-idf
 ESP_TOOLS    ?= $(HOME)/.espressif/tools/riscv32-esp-elf/esp-15.2.0_20251204/riscv32-esp-elf
 
@@ -34,13 +37,6 @@ all: linux-radio
 linux-radio: linux_radio.raw.o linux_radio.kbuild.o linux-radio-undefined.txt
 
 LINUX_IDF_OBJ ?= ../linux-esp32-s31/drivers/platform/esp32s31-radio-idf.o_shipped
-
-S31RTOS_LINUX_OBJS := s31_rtos/s31_rtos_core.linux.o \
-		s31_rtos/s31_rtos_queue.o s31_rtos/s31_rtos_event.o \
-		s31_linux_locks.o s31_linux_timer.o
-# Keep these generated/provider inputs explicit so a clean payload rebuild uses
-# the current PHY configuration and supplies the IDF coexistence logger.
-RADIO_PHY_ARCHIVE := $(BOOTLOADER)/build/esp-idf/esp_phy/libesp_phy.a
 RADIO_COEX_PRINTF_OBJ := s31_coex_printf.o
 
 linux-kbuild: linux_radio.kbuild.o
@@ -56,17 +52,20 @@ linux_radio.raw.o: radio_stack.linux.o nofreertos_link.txt boot_flags.txt boot_l
 		-Wl,--undefined=s31_radio_wifi_clock_enable \
 		-Wl,--undefined=s31_radio_wifi_clock_disable \
 		-Wl,--undefined=s31_radio_wifi_try_send \
-		-Wl,--undefined=s31_radio_wifi_guard_pp_state \
 		-Wl,--undefined=s31_rtos_init \
 		-Wl,--undefined=s31_rtos_tick \
 		-Wl,--undefined=s31_rtos_hard_tick \
+		-Wl,--undefined=s31_rtos_task_release \
+		-Wl,--undefined=xPortEnterCriticalTimeout \
+		-Wl,--undefined=vPortExitCriticalMultiCore \
 		-Wl,--undefined=wifi_module_enable \
 		-Wl,--undefined=wifi_module_disable \
 		-Wl,--undefined=esp_wifi_init \
 		-Wl,--undefined=esp_intr_alloc \
-		$(shell cat boot_flags.txt) $(shell cat boot_linkpath.txt) \
+		$(shell cat boot_flags.txt) \
+		$(shell sed 's|$(BOOTLOADER_ABS)/build/|$(RADIO_BUILD_ABS)/|g' boot_linkpath.txt) \
 		radio_stack.linux.o $(S31RTOS_LINUX_OBJS) $(RADIO_COEX_PRINTF_OBJ) \
-		$(shell sed 's|^esp-idf/|$(BOOTLOADER)/build/esp-idf/|' nofreertos_link.txt) \
+		$(shell sed 's|^esp-idf/|$(RADIO_BUILD)/esp-idf/|' nofreertos_link.txt) \
 		-L$(PICOLIBC_LIB) -L$(PICOLIBC_GCC) -lc -lm -lgcc -o $@
 
 linux-radio-undefined.txt: linux_radio.raw.o
@@ -74,7 +73,7 @@ linux-radio-undefined.txt: linux_radio.raw.o
 
 linux-radio-localize.txt: linux_radio.raw.o
 	$(ESP_TOOLS)/bin/riscv32-esp-elf-nm -g --defined-only $< | \
-		awk '{ n=$$NF; if (n !~ /^(s31_radio_(stack|bt_enable|wifi_(scan|connect|disconnect))_task|s31_radio_wifi_(read_mac|guard_pp_state|clock_enable|clock_disable)|s31_radio_(vhci|wifi)_try_send|s31_rtos_(init|tick|isr_depth|hard_tick|free)|xTaskCreatePinnedToCore)$$/) print n; }' | \
+		awk '{ n=$$NF; if (n !~ /^(s31_radio_(stack|bt_enable|wifi_(scan|connect|disconnect))_task|s31_radio_wifi_(read_mac|clock_enable|clock_disable)|s31_radio_(vhci|wifi)_try_send|s31_rtos_(init|tick|hard_tick|free|task_release|isr_depth)|xTaskCreatePinnedToCore)$$/) print n; }' | \
 		sort -u > $@
 
 linux_radio.kbuild.o: linux_radio.raw.o linux-radio-localize.txt
@@ -82,9 +81,12 @@ linux_radio.kbuild.o: linux_radio.raw.o linux-radio-localize.txt
 		--strip-debug \
 		--localize-symbols=linux-radio-localize.txt $< $@
 
+S31RTOS_LINUX_OBJS := s31_rtos/s31_rtos_core.linux.o \
+		s31_rtos/s31_rtos_queue.o s31_rtos/s31_rtos_event.o \
+		s31_linux_locks.o s31_linux_timer.o
 # The main rule appears above this simply-expanded list; add the prerequisites
 # here so a clean/forced build cannot reach the linker before they exist.
-linux_radio.raw.o: $(S31RTOS_LINUX_OBJS) $(RADIO_PHY_ARCHIVE)
+linux_radio.raw.o: $(S31RTOS_LINUX_OBJS)
 s31_coex_printf.o: $(IDF_PATH)/components/esp_coex/src/lib_printf.c
 	$(ESP_CC) $(ESP_CFLAGS) -c $< -o $@
 s31_rtos/%.o: s31_rtos/%.c s31_rtos/s31_rtos.h
@@ -93,10 +95,22 @@ s31_rtos/%.o: s31_rtos/%.c s31_rtos/s31_rtos.h
 s31_rtos/s31_rtos_core.linux.o: s31_rtos/s31_rtos_core.c s31_rtos/s31_rtos.h
 	$(ESP_CC) $(ESP_CFLAGS) -DS31_LINUX_SMODE -I s31_rtos -c $< -o $@
 
-# Link variant without FreeRTOS: drop libfreertos.a from the archive set.
-nofreertos_link.txt: boot_link.txt
-	grep -E '^(esp-idf/|/).*[.]a$$' $< | \
-		grep -v '^esp-idf/freertos/libfreertos.a$$' > $@
+# Preserve the minimal, previously working archive order, but only use
+# components produced by the matching radio-only IDF configuration.  Pulling
+# the full application closure into a relocatable Linux payload also drags in
+# IDF startup/restart code and linker-script boundary symbols that do not
+# belong in S mode.
+nofreertos_link.txt: boot_link.txt $(RADIO_BUILD)/build.ninja
+	@set -eu; : > $@; \
+	while IFS= read -r archive; do \
+		case "$$archive" in \
+			esp-idf/freertos/libfreertos.a) continue ;; \
+			esp-idf/*.a) candidate="$(RADIO_BUILD)/$$archive" ;; \
+			/*.a) candidate="$$archive" ;; \
+			*) continue ;; \
+		esac; \
+		if [ -f "$$candidate" ]; then printf '%s\n' "$$archive" >> $@; fi; \
+	done < $<
 
 ESP_CC      := $(ESP_TOOLS)/bin/riscv32-esp-elf-gcc
 ESP_CFLAGS  := -mabi=ilp32f -march=rv32imafc_zicsr_zifencei_zaamo_zalrsc_xesploop_xespv2p2 \

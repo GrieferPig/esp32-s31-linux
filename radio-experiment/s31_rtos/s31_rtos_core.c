@@ -21,6 +21,16 @@ static volatile uint32_t s31_orphan_critical_depth;
 static volatile uint32_t s31_orphan_critical_flags;
 static uint32_t s31_task_return_count;
 static uint32_t s31_task_delete_count;
+static uint32_t s31_task_yield_count;
+static uint32_t s31_task_delay_count;
+static uint32_t s31_task_priority_set_count;
+/* Linux's serialized radio worker executes the deferred Wi-Fi ISR, esp_timer
+ * callbacks, and direct data-path calls.  Native FreeRTOS always has a
+ * pxCurrentTCB in those contexts (an ISR observes the interrupted task), while
+ * the kthread bridge previously returned NULL.  Keep a stable internal-SRAM
+ * identity for all non-compatibility worker entries so mutex ownership and
+ * pthread TLS retain FreeRTOS semantics. */
+static struct s31_tcb s31_foreign_tcb;
 
 /* --- radio heap (heap_caps in the same world) --- */
 void *s31_rtos_malloc(uint32_t size)
@@ -40,9 +50,10 @@ static void *s31_rtos_stack_malloc(uint32_t size)
 {
 	 extern void *heap_caps_malloc(uint32_t size, uint32_t caps);
 
-	/* Linux sleeps on this stack too (bridge waits), so keep headroom. */
-	if (size < 16384)
-		size = 16384;
+	/* The caller has already expanded the advertised stack size to include
+	 * the Linux bridge headroom.  Keeping that adjustment outside this
+	 * allocator is essential: the trampoline must put SP at the end of the
+	 * complete allocation, not at the end of the smaller IDF request. */
 	return heap_caps_malloc(size, 0x804 /* INTERNAL | 8BIT */);
 }
 
@@ -86,6 +97,24 @@ void vPortExitCritical(void)
 		s31_linux_critical_exit(t->critical_flags);
 }
 
+/* IDF's SMP port spells the same critical-section contract through a
+ * portMUX pointer. Blob execution is already serialized by the Linux gate;
+ * retain FreeRTOS nesting/IRQ semantics through the per-task implementation
+ * above and treat the mux storage as opaque. */
+BaseType_t xPortEnterCriticalTimeout(void *mux, BaseType_t timeout)
+{
+	(void)mux;
+	(void)timeout;
+	vPortEnterCritical();
+	return pdTRUE;
+}
+
+void vPortExitCriticalMultiCore(void *mux)
+{
+	(void)mux;
+	vPortExitCritical();
+}
+
 BaseType_t s31_rtos_in_isr(void)
 {
 	return s31_rtos_isr_depth > 0 ? pdTRUE : pdFALSE;
@@ -96,6 +125,13 @@ BaseType_t xPortInIsrContext(void)
 	return s31_rtos_in_isr();
 }
 
+BaseType_t s31_rtos_can_yield(void)
+{
+	struct s31_tcb *t = s31_rtos_current();
+
+	return !s31_rtos_in_isr() && (!t || t->critical_depth == 0);
+}
+
 void vPortYieldFromISR(void)
 {
 	/* Linux threaded IRQs wake the task through the bridge. */
@@ -103,17 +139,21 @@ void vPortYieldFromISR(void)
 
 TickType_t xTaskGetTickCount(void)
 {
+#ifdef S31_LINUX_SMODE
+	return s31_linux_tick_count();
+#else
 	return s31_tick;
+#endif
 }
 
 TickType_t s31_rtos_get_tick(void)
 {
-	return s31_tick;
+	return xTaskGetTickCount();
 }
 
 TickType_t xTaskGetTickCountFromISR(void)
 {
-	return s31_tick;
+	return xTaskGetTickCount();
 }
 
 /*
@@ -139,7 +179,8 @@ void s31_rtos_tick(void)
 #ifdef S31_LINUX_SMODE
 	 extern void s31_linux_timers_tick(void);
 
-	/* s31_rtos_hard_tick() already advanced the tick from the hard IRQ. */
+	/* The hard IRQ already advanced both epochs.  Callback execution remains
+	 * serialized under the blob gate in the radio worker. */
 	s31_linux_timers_tick();
 #else
 	s31_tick++;
@@ -148,7 +189,9 @@ void s31_rtos_tick(void)
 
 struct s31_tcb *s31_rtos_current(void)
 {
-	return s31_linux_current_cookie();
+	struct s31_tcb *t = s31_linux_current_cookie();
+
+	return t ? t : &s31_foreign_tcb;
 }
 
 UBaseType_t xTaskGetSchedulerState(void)
@@ -203,11 +246,30 @@ BaseType_t xTaskCreatePinnedToCore(void (*task_func)(void *), const char *name,
 	t->entry = task_func;
 	t->arg = param;
 	t->priority = prio;
+	t->notify_context = s31_linux_sync_create();
+	t->suspend_context = s31_linux_sync_create();
+	if (!t->notify_context || !t->suspend_context) {
+		if (t->notify_context)
+			s31_linux_sync_destroy(t->notify_context);
+		if (t->suspend_context)
+			s31_linux_sync_destroy(t->suspend_context);
+		s31_rtos_free(t);
+		return pdFAIL;
+	}
 	/* ESP-IDF, unlike upstream FreeRTOS, specifies this in bytes.  The
 	 * execution stack must live in internal SRAM (see s31_rtos_stack_malloc). */
 	stack_size = (stack_depth + 15U) & ~15U;
+	/* A compatibility task calls Linux wait/schedule code on this same HP-SRAM
+	 * stack.  Previously s31_rtos_stack_malloc() silently allocated 8 KiB but
+	 * task->stack_size retained (for example) Wi-Fi's 3584-byte request, so the
+	 * trampoline placed SP in the middle of the allocation and exposed only
+	 * 3584 bytes to downward-growing kernel frames. */
+	if (stack_size < 8192)
+		stack_size = 8192;
 	t->stack_base = s31_rtos_stack_malloc(stack_size);
 	if (!t->stack_base) {
+		s31_linux_sync_destroy(t->notify_context);
+		s31_linux_sync_destroy(t->suspend_context);
 		s31_rtos_free(t);
 		return pdFAIL;
 	}
@@ -216,6 +278,8 @@ BaseType_t xTaskCreatePinnedToCore(void (*task_func)(void *), const char *name,
 					   stack_size, t->stack_base, t, prio, t);
 	if (!linux_task) {
 		s31_rtos_free(t->stack_base);
+		s31_linux_sync_destroy(t->notify_context);
+		s31_linux_sync_destroy(t->suspend_context);
 		s31_rtos_free(t);
 		return pdFAIL;
 	}
@@ -231,11 +295,181 @@ void *xTaskGetCurrentTaskHandle(void)
 	return s31_rtos_current();
 }
 
+void s31_rtos_task_release(void *cookie)
+{
+	struct s31_tcb *t = cookie;
+
+	if (!t)
+		return;
+	if (t->notify_context)
+		s31_linux_sync_destroy(t->notify_context);
+	if (t->suspend_context)
+		s31_linux_sync_destroy(t->suspend_context);
+	s31_rtos_free(t);
+}
+
 void vTaskDelay(TickType_t ticks)
 {
 	if (s31_rtos_in_isr())
 		return;
-	s31_linux_task_delay(ticks);
+	if (!ticks) {
+		if (++s31_task_yield_count <= 32)
+			esp_rom_printf("[S31] vTaskDelay(0) yield #%u task=%s prio=%u\n",
+				       s31_task_yield_count,
+				       s31_rtos_current() ? s31_rtos_current()->name : "none",
+				       s31_rtos_current() ? s31_rtos_current()->priority : 0);
+		s31_linux_task_yield();
+	} else {
+		if (++s31_task_delay_count <= 64)
+			esp_rom_printf("[S31] vTaskDelay #%u ticks=%u task=%s prio=%u\n",
+			       s31_task_delay_count, ticks,
+			       s31_rtos_current() ? s31_rtos_current()->name : "none",
+			       s31_rtos_current() ? s31_rtos_current()->priority : 0);
+		s31_linux_task_delay(ticks);
+	}
+}
+
+enum {
+	S31_NOTIFY_NOT_WAITING = 0,
+	S31_NOTIFY_WAITING = 1,
+	S31_NOTIFY_RECEIVED = 2,
+};
+
+uint32_t ulTaskGenericNotifyTake(UBaseType_t index, BaseType_t clear,
+				 TickType_t timeout)
+{
+	struct s31_tcb *t = s31_rtos_current();
+	uint32_t seq, value;
+
+	if (!t || index != 0)
+		return 0;
+	for (;;) {
+		seq = s31_linux_sync_sequence(t->notify_context);
+		s31_linux_sync_lock(t->notify_context);
+		value = t->notify_value;
+		if (value) {
+			t->notify_value = clear ? 0 : value - 1;
+			t->notify_state = S31_NOTIFY_NOT_WAITING;
+			s31_linux_sync_unlock(t->notify_context);
+			return value;
+		}
+		t->notify_state = S31_NOTIFY_WAITING;
+		s31_linux_sync_unlock(t->notify_context);
+		if (!timeout || s31_linux_sync_wait(t->notify_context, seq, timeout) <= 0) {
+			s31_linux_sync_lock(t->notify_context);
+			t->notify_state = S31_NOTIFY_NOT_WAITING;
+			s31_linux_sync_unlock(t->notify_context);
+			return 0;
+		}
+	}
+}
+
+BaseType_t xTaskGenericNotifyWait(UBaseType_t index, uint32_t clear_entry,
+				   uint32_t clear_exit, uint32_t *out,
+				   TickType_t timeout)
+{
+	struct s31_tcb *t = s31_rtos_current();
+	uint32_t seq, value;
+
+	if (!t || index != 0)
+		return pdFAIL;
+	for (;;) {
+		seq = s31_linux_sync_sequence(t->notify_context);
+		s31_linux_sync_lock(t->notify_context);
+		if (t->notify_state != S31_NOTIFY_RECEIVED)
+			t->notify_value &= ~clear_entry;
+		if (t->notify_state == S31_NOTIFY_RECEIVED) {
+			value = t->notify_value;
+			if (out)
+				*out = value;
+			t->notify_value &= ~clear_exit;
+			t->notify_state = S31_NOTIFY_NOT_WAITING;
+			s31_linux_sync_unlock(t->notify_context);
+			return pdPASS;
+		}
+		t->notify_state = S31_NOTIFY_WAITING;
+		s31_linux_sync_unlock(t->notify_context);
+		if (!timeout || s31_linux_sync_wait(t->notify_context, seq, timeout) <= 0) {
+			s31_linux_sync_lock(t->notify_context);
+			if (out)
+				*out = t->notify_value;
+			t->notify_state = S31_NOTIFY_NOT_WAITING;
+			s31_linux_sync_unlock(t->notify_context);
+			return pdFAIL;
+		}
+	}
+}
+
+BaseType_t xTaskGenericNotify(void *task, UBaseType_t index, uint32_t value,
+			       int action, uint32_t *previous)
+{
+	struct s31_tcb *t = task;
+	BaseType_t rc = pdPASS;
+
+	if (!t || index != 0)
+		return pdFAIL;
+	s31_linux_sync_lock(t->notify_context);
+	if (previous)
+		*previous = t->notify_value;
+	switch (action) {
+	case 0: break;
+	case 1: t->notify_value |= value; break;
+	case 2: t->notify_value++; break;
+	case 3: t->notify_value = value; break;
+	case 4:
+		if (t->notify_state == S31_NOTIFY_RECEIVED)
+			rc = pdFAIL;
+		else
+			t->notify_value = value;
+		break;
+	default: rc = pdFAIL; break;
+	}
+	if (rc == pdPASS)
+		t->notify_state = S31_NOTIFY_RECEIVED;
+	s31_linux_sync_unlock(t->notify_context);
+	if (rc == pdPASS)
+		s31_linux_sync_wake(t->notify_context);
+	return rc;
+}
+
+void vTaskGenericNotifyGiveFromISR(void *task, UBaseType_t index,
+				    BaseType_t *higher_woken)
+{
+	(void)xTaskGenericNotify(task, index, 0, 2, NULL);
+	if (higher_woken)
+		*higher_woken = pdTRUE;
+}
+
+void vTaskSuspendAll(void) { }
+BaseType_t xTaskResumeAll(void) { return pdFALSE; }
+
+void vTaskSuspend(void *task)
+{
+	struct s31_tcb *t = task ? task : s31_rtos_current();
+	uint32_t seq;
+
+	if (!t || t != s31_rtos_current())
+		return;
+	seq = s31_linux_sync_sequence(t->suspend_context);
+	(void)s31_linux_sync_wait(t->suspend_context, seq, portMAX_DELAY);
+}
+
+void vTaskPrioritySet(void *task, UBaseType_t priority)
+{
+	struct s31_tcb *t = task ? task : s31_rtos_current();
+	if (t) {
+		t->priority = priority;
+		s31_linux_task_set_priority(t->linux_task, priority);
+		if (++s31_task_priority_set_count <= 32)
+			esp_rom_printf("[S31] vTaskPrioritySet #%u task=%s prio=%u\n",
+				       s31_task_priority_set_count, t->name, priority);
+	}
+}
+
+BaseType_t xTaskGetCoreID(void *task) { (void)task; return 0; }
+void *xTaskGetCurrentTaskHandleForCore(BaseType_t core)
+{
+	return core == 0 ? s31_rtos_current() : NULL;
 }
 
 void vTaskDelete(void *task)
@@ -285,6 +519,10 @@ void vTaskSetThreadLocalStoragePointerAndDelCallback(void *task, int index,
 
 void s31_rtos_init(void)
 {
+	memset(&s31_foreign_tcb, 0, sizeof(s31_foreign_tcb));
+	strncpy(s31_foreign_tcb.name, "radio-worker",
+		S31_TASK_NAME_LEN - 1);
+	s31_foreign_tcb.priority = 24;
 	s31_tick = 0;
 	s31_scheduler_started = 0;
 	s31_rtos_isr_depth = 0;

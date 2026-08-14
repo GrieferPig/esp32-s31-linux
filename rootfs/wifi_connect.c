@@ -240,14 +240,14 @@ static int connect_network(int fd, int family, uint32_t ifindex,
 	genl = NLMSG_DATA(nlh); genl->cmd = NL80211_CMD_CONNECT; genl->version = 1;
 	if (add_attr(nlh, sizeof(buffer), NL80211_ATTR_IFINDEX, &ifindex, sizeof(ifindex)) ||
 	    add_attr(nlh, sizeof(buffer), NL80211_ATTR_SSID, ssid, strlen(ssid)) ||
-	    add_attr(nlh, sizeof(buffer), NL80211_ATTR_PRIVACY, NULL, 0) ||
+	    (passphrase[0] && (add_attr(nlh, sizeof(buffer), NL80211_ATTR_PRIVACY, NULL, 0) ||
 	    add_attr(nlh, sizeof(buffer), NL80211_ATTR_WPA_VERSIONS, &wpa, sizeof(wpa)) ||
 	    add_attr(nlh, sizeof(buffer), NL80211_ATTR_CIPHER_SUITES_PAIRWISE, &cipher, sizeof(cipher)) ||
 	    add_attr(nlh, sizeof(buffer), NL80211_ATTR_CIPHER_SUITE_GROUP, &cipher, sizeof(cipher)) ||
 	    add_attr(nlh, sizeof(buffer), NL80211_ATTR_AKM_SUITES, akm, sizeof(akm)) ||
 	    add_attr(nlh, sizeof(buffer), NL80211_ATTR_PMK, pmk, 32) ||
 	    add_attr(nlh, sizeof(buffer), NL80211_ATTR_SAE_PASSWORD,
-		     passphrase, strlen(passphrase)) ||
+		     passphrase, strlen(passphrase)))) ||
 	    (bssid && add_attr(nlh, sizeof(buffer), NL80211_ATTR_MAC, bssid, 6)) ||
 	    (frequency && add_attr(nlh, sizeof(buffer), NL80211_ATTR_WIPHY_FREQ,
 				   &frequency, sizeof(frequency))) || send_request(fd, nlh)) return -1;
@@ -264,7 +264,7 @@ int main(int argc, char **argv)
 		fprintf(stderr, "usage: %s interface ssid passphrase [bssid frequency]\n", argv[0]); return 2;
 	}
 	if (strlen(argv[2]) < 1 || strlen(argv[2]) > 32 ||
-	    strlen(argv[3]) < 8 || strlen(argv[3]) > 63) {
+	    (strlen(argv[3]) && strlen(argv[3]) < 8) || strlen(argv[3]) > 63) {
 		fprintf(stderr, "invalid SSID or WPA2 passphrase length\n"); return 2;
 	}
 	if (argc == 6) {
@@ -275,7 +275,8 @@ int main(int argc, char **argv)
 		}
 	}
 	ifindex = if_nametoindex(argv[1]); if (!ifindex) { perror(argv[1]); return 1; }
-	derive_pmk(argv[3], argv[2], pmk);
+	if (argv[3][0])
+		derive_pmk(argv[3], argv[2], pmk);
 	fd = socket(AF_NETLINK, SOCK_RAW, NETLINK_GENERIC);
 	if (fd < 0 || bind(fd, (void *)&local, sizeof(local))) { perror("netlink"); return 1; }
 	family = resolve_family(fd); if (family < 0) { fprintf(stderr, "cannot resolve nl80211\n"); return 1; }
