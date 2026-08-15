@@ -3,6 +3,7 @@
 #include <string.h>
 #include "esp_bt.h"
 #include "esp_event.h"
+#include "esp_log.h"
 #include "esp_wifi.h"
 #include "esp_event.h"
 #include "esp_wifi.h"
@@ -76,6 +77,8 @@ extern void s31_radio_wifi_connected(const uint8_t *bssid, uint8_t channel,
 				     int status);
 extern void s31_radio_wifi_disconnected(uint16_t reason);
 extern int s31_radio_wifi_receive(uint8_t *frame, uint16_t length);
+extern int s31_radio_wifi_receive_zerocopy(uint8_t *frame, void *eb,
+					    uint16_t length);
 extern void s31_radio_wifi_intr_configure(uint32_t source,
 					 uint32_t logical_intr, uint32_t priority);
 extern void s31_radio_wifi_intr_set_isr(uint32_t logical_intr,
@@ -465,7 +468,11 @@ static void s31_wifi_tx_done(uint8_t interface, uint8_t *data,
 
 	s31_radio_timing_tx_done(status, data, length ? *length : 0);
 	(void)data;
-	if (!status)
+	/* esp_rom_printf() busy-polls the ROM UART, so a per-frame print here
+	 * serializes the whole gate hold behind 115200-baud output and was
+	 * measured as the long Wi-Fi queue-receive hold.  Keep only the first
+	 * few completions for bring-up diagnostics. */
+	if (!status && count <= 16)
 		esp_rom_printf("[S31] Wi-Fi TX done #%u if=%u len=%u ok=%u\n",
 			       count, interface, length ? *length : 0, status);
 }
@@ -505,16 +512,30 @@ static bool s31_wifi_is_from_isr(void)
 	return !s31_rtos_can_yield();
 }
 
+/* Recycled by the Linux worker inside the blob pass once the net stack has
+ * consumed the frame.  Kept in blob context (gate held) so it is serialized
+ * with the MAC RX esf_buf allocator. */
+void s31_radio_wifi_free_rx_buffer(void *eb)
+{
+	if (eb)
+		esp_wifi_internal_free_rx_buffer(eb);
+}
+
 static int s31_wifi_rx(void *buffer, uint16_t length, void *eb)
 {
-	int rc = s31_radio_wifi_receive(buffer, length);
+	int rc = s31_radio_wifi_receive_zerocopy(buffer, eb, length);
 	uint32_t count = ++s31_wifi_rx_count;
 
 	if (count <= 8 || rc)
 		esp_rom_printf("[S31] Wi-Fi RX #%u len=%u rc=%d\n",
 			       count, length, rc);
 
-	esp_wifi_internal_free_rx_buffer(eb);
+	/* eb is NOT freed here anymore: it travels with the zero-copy RX
+	 * descriptor and is recycled by s31_radio_wifi_free_pending().  If the
+	 * ring was full (rc == -ENOSPC), recycle it right away so the frame is
+	 * dropped without leaking the buffer. */
+	if (rc)
+		esp_wifi_internal_free_rx_buffer(eb);
 	return rc;
 }
 
@@ -812,12 +833,22 @@ void s31_radio_stack_task(void *arg)
 	int rc;
 
 	(void)arg;
-	/* Keep the receive-side sizing identical to the native ESP-IDF S31
-	 * station image used as the hardware reference.  The build-only loader
-	 * intentionally has a smaller default because it never runs Wi-Fi. */
-	wifi_cfg.static_rx_buf_num = 16;
-	wifi_cfg.dynamic_rx_buf_num = 40;
-	wifi_cfg.rx_ba_win = 32;
+	/* Keep blob logging out of the ROM UART busy-poll path: every ESP_LOG
+	 * line serializes the gate hold behind 115200-baud output and was the
+	 * measured cause of the multi-hundred-ms Wi-Fi queue-receive hold. */
+	esp_log_level_set("*", ESP_LOG_WARN);
+	/* ESP-IDF "max WiFi throughput" reference sizing, allocated in internal
+	 * SRAM instead of PSRAM (AGENTS.md forbids blob buffers in PSRAM).  The
+	 * reclaimed heap-low + heap2 chunks give the pool room; the zero-copy RX
+	 * descriptor ring removed the 25.6 KiB data ring that previously forced
+	 * the no-PSRAM minimums. */
+	wifi_cfg.static_rx_buf_num = 48;
+	wifi_cfg.dynamic_rx_buf_num = 72;
+	wifi_cfg.dynamic_tx_buf_num = 64;
+	wifi_cfg.rx_ba_win = 64;
+	/* TX_BA_WIN is a compile-time Kconfig, set via CONFIG_ESP_WIFI_TX_BA_WIN.
+	 * Keep the TX completion path healthy: shrinking TX buffers to 8 stalled
+	 * the download (rc=257) under ACK bursts. */
 	rc = psa_crypto_init();
 	esp_rom_printf("[S31] psa_crypto_init rc=%d\n", rc);
 	if (rc != 0) {

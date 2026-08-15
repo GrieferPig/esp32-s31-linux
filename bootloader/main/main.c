@@ -63,6 +63,8 @@
 #define HART1_EARLY_MAILBOX_ADDR      S31_HART1_MAILBOX_BASE
 SOC_RESERVE_MEMORY_REGION(RADIO_SRAM_START, RADIO_SRAM_END, radio_world);
 SOC_RESERVE_MEMORY_REGION(LINUX_DMA_START, LINUX_DMA_END, linux_devices);
+SOC_RESERVE_MEMORY_REGION(S31_RADIO_HEAP_LOW_BASE, S31_RADIO_HEAP_LOW_END,
+			  radio_heap_low);
 
 static const char *TAG = "boot";
 volatile uint32_t g_core1_fdt;
@@ -313,7 +315,7 @@ static void start_linux_on_core1(uint32_t fdt);
 /* Clear only the HP-SRAM regions transferred to Linux/blob ownership. */
 static void clear_sram_for_linux(void)
 {
-    const uint32_t start = S31_RADIO_HEAP_BASE;
+    const uint32_t start = S31_RADIO_HEAP_LOW_BASE;
     const uint32_t end = S31_LINUX_DMA_END;
     volatile uint32_t *p = (volatile uint32_t *)start;
 
