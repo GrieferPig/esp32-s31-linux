@@ -842,10 +842,13 @@ void s31_radio_stack_task(void *arg)
 	 * reclaimed heap-low + heap2 chunks give the pool room; the zero-copy RX
 	 * descriptor ring removed the 25.6 KiB data ring that previously forced
 	 * the no-PSRAM minimums. */
-	wifi_cfg.static_rx_buf_num = 48;
-	wifi_cfg.dynamic_rx_buf_num = 72;
-	wifi_cfg.dynamic_tx_buf_num = 64;
-	wifi_cfg.rx_ba_win = 64;
+	wifi_cfg.static_rx_buf_num = 32;
+	wifi_cfg.dynamic_rx_buf_num = 32;
+	/* TX buffer type/number follows sdkconfig.radio.defaults.  Static TX
+	 * avoids per-frame alloc/free churn but 16 buffers was too small for the
+	 * BT+WiFi ACK stream (esp_wifi_internal_tx rc=257); keep dynamic TX for
+	 * now while the TX completion stall is debugged. */
+	wifi_cfg.rx_ba_win = 32;
 	/* TX_BA_WIN is a compile-time Kconfig, set via CONFIG_ESP_WIFI_TX_BA_WIN.
 	 * Keep the TX completion path healthy: shrinking TX buffers to 8 stalled
 	 * the download (rc=257) under ACK bursts. */
