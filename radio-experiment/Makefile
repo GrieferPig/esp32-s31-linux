@@ -44,7 +44,7 @@ RADIO_COEX_PRINTF_OBJ := s31_coex_printf.o
 linux-kbuild: linux_radio.kbuild.o
 	cp -f linux_radio.kbuild.o $(LINUX_IDF_OBJ)
 
-linux_radio.raw.o: radio_stack.linux.o nofreertos_link.txt boot_flags.txt boot_linkpath.txt $(S31RTOS_LINUX_OBJS) $(RADIO_COEX_PRINTF_OBJ)
+linux_radio.raw.o: radio_stack.linux.o nofreertos_link.txt boot_flags.txt boot_linkpath.txt $(S31RTOS_LINUX_OBJS) $(RADIO_COEX_PRINTF_OBJ) Makefile
 	$(ESP_CC) -nostdlib -r -Wl,--gc-sections $(HEAP_WRAP_FLAGS) $(LINUX_WRAP_FLAGS) \
 		-Wl,--undefined=s31_radio_stack_task \
 		-Wl,--undefined=s31_radio_wifi_scan_task \
@@ -55,6 +55,8 @@ linux_radio.raw.o: radio_stack.linux.o nofreertos_link.txt boot_flags.txt boot_l
 		-Wl,--undefined=s31_radio_wifi_clock_disable \
 		-Wl,--undefined=s31_radio_wifi_try_send \
 		-Wl,--undefined=s31_radio_wifi_free_rx_buffer \
+		-Wl,--undefined=s31_radio_bt_enable_task \
+		-Wl,--undefined=s31_radio_vhci_try_send \
 		-Wl,--undefined=s31_rtos_init \
 		-Wl,--undefined=s31_rtos_tick \
 		-Wl,--undefined=s31_rtos_hard_tick \
@@ -123,11 +125,13 @@ ESP_CFLAGS  := -mabi=ilp32f -march=rv32imafc_zicsr_zifencei_zaamo_zalrsc_xesploo
 		-I$(IDF_PATH)/components/bt/include/esp32s31/include \
 		-I$(IDF_PATH)/components/bt/porting_btdm/controller/btdm_common/include \
 		-I$(IDF_PATH)/components/bt/porting_btdm/controller/ble/include \
+		-I$(IDF_PATH)/components/bt/porting_btdm/controller/bredr/include \
+		-I$(IDF_PATH)/components/bt/porting_btdm/transport/include \
 		-I$(IDF_PATH)/components/esp_hal_timg/include \
 		-I$(IDF_PATH)/components/esp_hal_timg/esp32s31/include \
 		$(shell cat idf_includes.rsp)
-radio_stack.linux.o: radio_stack.c s31_rtos/s31_rtos.h
-	$(ESP_CC) $(ESP_CFLAGS) -DS31_LINUX_SMODE -DS31_WIFI_ONLY \
+radio_stack.linux.o: radio_stack.c s31_rtos/s31_rtos.h Makefile
+	$(ESP_CC) $(ESP_CFLAGS) -DS31_LINUX_SMODE \
 		-I s31_rtos -c $< -o $@
 
 s31_linux_locks.o: s31_linux_locks.c s31_rtos/s31_rtos.h

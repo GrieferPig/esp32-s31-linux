@@ -40,6 +40,10 @@ esp-idf/esp_phy/libesp_phy.a
 esp-idf/lwip/liblwip.a
 esp-idf/esp_netif/libesp_netif.a
 esp-idf/esp_coex/libesp_coex.a
+esp-idf/bt/libbt.a
+/home/grieferpig/.espressif/master/esp-idf/components/bt/controller/lib_esp32s31/esp32s31-bt-lib/libbtdm_common.a
+/home/grieferpig/.espressif/master/esp-idf/components/bt/controller/lib_esp32s31/esp32s31-bt-lib/libble_app.a
+/home/grieferpig/.espressif/master/esp-idf/components/bt/controller/lib_esp32s31/esp32s31-bt-lib/libbredr_app.a
 esp-idf/esp_wifi/libesp_wifi.a
 esp-idf/wpa_supplicant/libwpa_supplicant.a
 esp-idf/http_parser/libhttp_parser.a
@@ -48,6 +52,10 @@ esp-idf/protocomm/libprotocomm.a
 esp-idf/protobuf-c/libprotobuf-c.a
 esp-idf/esp_phy/libesp_phy.a
 esp-idf/esp_coex/libesp_coex.a
+esp-idf/bt/libbt.a
+/home/grieferpig/.espressif/master/esp-idf/components/bt/controller/lib_esp32s31/esp32s31-bt-lib/libbtdm_common.a
+/home/grieferpig/.espressif/master/esp-idf/components/bt/controller/lib_esp32s31/esp32s31-bt-lib/libble_app.a
+/home/grieferpig/.espressif/master/esp-idf/components/bt/controller/lib_esp32s31/esp32s31-bt-lib/libbredr_app.a
 esp-idf/esp_wifi/libesp_wifi.a
 esp-idf/wpa_supplicant/libwpa_supplicant.a
 /home/grieferpig/.espressif/master/esp-idf/components/esp_phy/lib/esp32s31/libbtbb.a
@@ -62,6 +70,10 @@ esp-idf/wpa_supplicant/libwpa_supplicant.a
 /home/grieferpig/.espressif/master/esp-idf/components/esp_wifi/lib/esp32s31/libwapi.a
 esp-idf/esp_phy/libesp_phy.a
 esp-idf/esp_coex/libesp_coex.a
+esp-idf/bt/libbt.a
+/home/grieferpig/.espressif/master/esp-idf/components/bt/controller/lib_esp32s31/esp32s31-bt-lib/libbtdm_common.a
+/home/grieferpig/.espressif/master/esp-idf/components/bt/controller/lib_esp32s31/esp32s31-bt-lib/libble_app.a
+/home/grieferpig/.espressif/master/esp-idf/components/bt/controller/lib_esp32s31/esp32s31-bt-lib/libbredr_app.a
 esp-idf/esp_wifi/libesp_wifi.a
 esp-idf/wpa_supplicant/libwpa_supplicant.a
 /home/grieferpig/.espressif/master/esp-idf/components/esp_phy/lib/esp32s31/libbtbb.a
@@ -76,6 +88,10 @@ esp-idf/wpa_supplicant/libwpa_supplicant.a
 /home/grieferpig/.espressif/master/esp-idf/components/esp_wifi/lib/esp32s31/libwapi.a
 esp-idf/esp_phy/libesp_phy.a
 esp-idf/esp_coex/libesp_coex.a
+esp-idf/bt/libbt.a
+/home/grieferpig/.espressif/master/esp-idf/components/bt/controller/lib_esp32s31/esp32s31-bt-lib/libbtdm_common.a
+/home/grieferpig/.espressif/master/esp-idf/components/bt/controller/lib_esp32s31/esp32s31-bt-lib/libble_app.a
+/home/grieferpig/.espressif/master/esp-idf/components/bt/controller/lib_esp32s31/esp32s31-bt-lib/libbredr_app.a
 esp-idf/esp_wifi/libesp_wifi.a
 esp-idf/wpa_supplicant/libwpa_supplicant.a
 /home/grieferpig/.espressif/master/esp-idf/components/esp_phy/lib/esp32s31/libbtbb.a

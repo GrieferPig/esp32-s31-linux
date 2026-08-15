@@ -226,3 +226,34 @@ RX（省 51 KiB 环换 ~27 个 RX buffer）。
   无法做同服务器换信道对照。下一步若要继续区分同频干扰 vs 驱动问题，
   建议把测速服务器放进两个 AP 都能同子网可达的位置（或让 win AP 桥接到
   10.131.205.0/24），再跑同一 payload 的 ch1 vs ch11 对照。
+
+## BT/coex + VHCI 接入（round4，2026-08-15）
+
+- 启用 BT controller-only：`sdkconfig.radio.defaults` 开
+  `CONFIG_BT_ENABLED` / `CONFIG_BT_CONTROLLER_ONLY` /
+  `CONFIG_BT_CONTROLLER_ENABLED` / `CONFIG_BTDM_CTRL_MODE_BTDM`。
+  `radio-experiment/Makefile` 去掉 `-DS31_WIFI_ONLY`，链接
+  `esp-idf/bt/libbt.a` + `libbtdm_common.a` + `libble_app.a` +
+  `libbredr_app.a`，补 `bredr/include`、`transport/include`，并
+  `--undefined=s31_radio_bt_enable_task` / `s31_radio_vhci_try_send`。
+  Linux defconfig 开 `CONFIG_BT_ESP32S31` / `CONFIG_BT_BREDR`。
+- 实测：
+  - `esp_bt_controller_init rc=0`、`esp_bt_controller_enable rc=0`、
+    `esp_vhci_host_register_callback rc=0`；btdm compat task 启动后不再
+    忙等（本轮 350 KB heap 下未复现 RF 校准占死）。
+  - `hci0` 注册成功；BTDM 会在 host 首条命令前发一帧 unsolicited
+    NOP command-complete（`04 0e 03 01 00 00`），已在
+    `hci_esp32s31.c` 中丢弃该 quirk 帧。
+  - HCI init 序列正常：HCI_RESET → Read Local Supported Features /
+    Version / BD_ADDR / Commands / LE buffer size / LE features /
+    LE supported states 均正常完成。
+  - **WiFi + BT 共存**：`wifi-connect wlan0 win 99003231` 在 BT 已使能
+    下 `set_config rc=0`、assoc ch1 成功、DHCP 拿到 192.168.10.15。
+- 已知问题：BT 使能后跑 50 MB 本地 payload 下载会在几十 KB 处 stalled，
+  periodic 显示 `allocfail=15 rx_drop=0 tx_drop=15`（42 s 时
+  `used=301776 free=47200`），随后出现 `heap_caps_malloc(1848)` 失败。
+  此时 free 仍有 47 KB，但小分配（254 B）也失败，说明 gen_pool 在 BT
+  分配/释放后碎片化，不是总容量不够；同时单 hart 上 btdm 与 WiFi 共用
+  blob gate，TX 环 48 槽仍会被 ACK 突发填满。下一步需要把 gen_pool
+  换成抗碎片更好的分配策略，或按 size class 拆池，并评估单 hart 下
+  的 coex 吞吐上限。

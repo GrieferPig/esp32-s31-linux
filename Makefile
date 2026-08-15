@@ -210,7 +210,10 @@ linux: toolchain radio-linux-payload | $(LINUX_OUT)
 		--disable RISCV_ISA_V_DEFAULT_ENABLE \
 		--enable RISCV_ISA_ZBA \
 		--enable RISCV_ISA_ZBB \
-		--enable RISCV_ISA_ZBC
+		--enable RISCV_ISA_ZBC \
+		--enable BT \
+		--enable BT_ESP32S31 \
+		--enable BT_BREDR
 	@if [ -n "$(LINUX_CMDLINE)" ]; then \
 		$(LINUX_DIR)/scripts/config --file $(LINUX_OUT)/.config \
 			--set-str CMDLINE "$(LINUX_CMDLINE)"; \
