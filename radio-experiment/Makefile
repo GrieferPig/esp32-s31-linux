@@ -118,6 +118,11 @@ nofreertos_link.txt: boot_link.txt $(RADIO_BUILD)/build.ninja
 	done < $<
 
 ESP_CC      := $(ESP_TOOLS)/bin/riscv32-esp-elf-gcc
+ifeq ($(S31_WIFI_ONLY),1)
+RADIO_STACK_DEFS := -DS31_LINUX_SMODE -DS31_WIFI_ONLY
+else
+RADIO_STACK_DEFS := -DS31_LINUX_SMODE
+endif
 ESP_CFLAGS  := -mabi=ilp32f -march=rv32imafc_zicsr_zifencei_zaamo_zalrsc_xesploop_xespv2p2 \
 		-mtune=esp-base -mespv-spec=2p2 -ffunction-sections -fdata-sections \
 		-fno-stack-protector -fno-builtin -ffreestanding -std=gnu11 -Wall \
@@ -131,7 +136,7 @@ ESP_CFLAGS  := -mabi=ilp32f -march=rv32imafc_zicsr_zifencei_zaamo_zalrsc_xesploo
 		-I$(IDF_PATH)/components/esp_hal_timg/esp32s31/include \
 		$(shell cat idf_includes.rsp)
 radio_stack.linux.o: radio_stack.c s31_rtos/s31_rtos.h Makefile
-	$(ESP_CC) $(ESP_CFLAGS) -DS31_LINUX_SMODE \
+	$(ESP_CC) $(ESP_CFLAGS) $(RADIO_STACK_DEFS) \
 		-I s31_rtos -c $< -o $@
 
 s31_linux_locks.o: s31_linux_locks.c s31_rtos/s31_rtos.h

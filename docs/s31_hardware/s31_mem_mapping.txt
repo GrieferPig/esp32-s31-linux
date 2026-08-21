@@ -37,9 +37,13 @@ accessed by the LP CPU:
         to the FLASH MMU (bypassing the cache).
 - External PSRAM (64MB MAX, 16MB onboard):
   - Cached Access: Mapped to 0x5000_0000 – 0x53FF_FFFF and routed through
-        the 32KB Cache and PSRAM MMU. (don't use for opensbi/linux bring up, use uncached)
+        the shared write-back data cache and PSRAM MMU. Current OpenSBI/Linux
+        RAM uses this alias. Before the Sv32 walker or a non-coherent DMA
+        engine consumes freshly written data, software must perform the
+        required cache writeback.
   - Direct Access: Mapped to 0xC000_0000 – 0xC3FF_FFFF and routed directly
-        to the PSRAM MMU (bypassing the cache).
+        to the PSRAM MMU (bypassing the cache). Use it only where the relevant
+        peripheral/driver contract explicitly requires the direct alias.
 
 3. Unavailable Address Space
 

@@ -75,6 +75,8 @@ def make_tree_writable(path: Path) -> None:
         directory_path.chmod(directory_path.stat().st_mode | stat.S_IWUSR | stat.S_IXUSR)
         for name in files:
             file_path = directory_path / name
+            if file_path.is_symlink():
+                continue
             file_path.chmod(file_path.stat().st_mode | stat.S_IWUSR)
 
 

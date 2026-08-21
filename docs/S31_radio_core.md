@@ -6,10 +6,12 @@ radio interrupts.
 
 ## Execution contract
 
-There is one blob execution owner: the `s31-radio` kthread. Linux hard IRQs
-only acknowledge/mask the CLIC source and enqueue work. The worker serializes:
+All blob execution is serialized by one global blob gate. Linux hard IRQs only
+acknowledge/mask the CLIC source and wake `s31-radio`; the worker runs deferred
+ISR callbacks. Compatibility tasks such as `wifi`, `sys_evt`, and `btdm` also
+enter the same gate before executing closed payload code. The worker serializes:
 
-- TIMG1/T1 compatibility-RTOS ticks;
+- jiffies-derived compatibility-RTOS ticks;
 - deferred ESP-IDF interrupt callbacks;
 - compatibility scheduler passes;
 - Bluetooth's post-IRQ-route enable task; and
@@ -33,9 +35,12 @@ serialized pass. Raw `esp_vhci_*` symbols remain local to the payload.
 
 ## Memory and interrupt ownership
 
-- `0x2f030000..0x2f071800`: blob heap, managed by a Linux `gen_pool`;
+- `0x2f030000..0x2f038840`: linked blob data and BSS;
+- `0x2f038840..0x2f071800`, `0x2f018000..0x2f030000`, and
+  `0x2f078c00..0x2f07cfb0`: internal-SRAM blob heap chunks, managed by a Linux
+  `gen_pool` (349,040 bytes total in the current image);
 - `0x2f071800..0x2f072380`: synchronous-exception stack and guard;
-- TIMG1/T1 source 29: CLIC46, 100 Hz compatibility tick;
+- `0x2f072380..0x2f078c00`: radio DMA/status reservation;
 - radio sources 127, 124 and 133: CLIC47, CLIC45 and CLIC44; and
 - legacy Wi-Fi MAC sources 122 and 120: CLIC43 and CLIC42.
 
@@ -43,45 +48,32 @@ All heap-capability allocations used by the Wi-Fi/BT payload are wrapped onto
 the internal-SRAM pool. The loader reserves the entire radio interval before
 releasing hart1.
 
-## Stage-3 hardware result
+## Current hardware result (2026-08-21)
 
-The full radio payload and XIP kernel booted on the board. Wi-Fi init, BT init
-and BT enable returned zero; all three radio routes were installed. The queued
-health self-test reported READY with 88,256 bytes used, a 92,464-byte peak and
-268,288 bytes total. At 65 seconds uptime the TIMG1 IRQ count was 6,281 and the
-worker remained live. OpenOCD sampled hart1 twice in S-mode and confirmed the
-three interrupt-matrix registers still contained CLIC45, CLIC47 and CLIC44.
+The built-in cfg80211 and HCI front ends register `wlan0` and `hci0`. Wi-Fi
+connects to a WPA2 AP, obtains DHCP, and transfers data while BLE discovery is
+active. Radio interrupts remain native S-mode CLIC interrupts; OpenSBI neither
+handles nor proxies them.
 
-## Stage-4 hardware result
+The closed BLE controller asserted at `ble_lll_mmgmt.c:648` when both harts ran
+pinned CoreMark alongside Wi-Fi and discovery. The later Flash-XIP trap faults
+were nested consequences of the IDF assert/panic path, not evidence that radio
+activity disabled flash/cache. The actual mismatch was scheduling: CFS nice
+levels do not preserve the FreeRTOS latency contract, while promoting only
+`btdm` starves the equal-priority Wi-Fi MAC task.
 
-The built-in `hci_esp32s31` driver registered `hci0` through Linux's standard
-Bluetooth HCI core. A management-channel BLE discovery powered the controller,
-ran for eight seconds and found seven unique nearby devices. Source 124/Clic45
-delivered three controller interrupts during the scan. OpenOCD halted hart1
-inside `s31_process_timeouts` with `priv=1` and an internal-SRAM stack pointer,
-confirming that the active controller/compatibility scheduler path stayed in
-Linux S-mode. The five-partition radio-only image uses `/dev/mtdblock5` for its
-SquashFS root.
+Both IDF priority-23 tasks (`wifi` and `btdm`) now run as Linux `SCHED_RR/80`,
+matching FreeRTOS equal-priority time slicing. The deferred ISR worker uses
+`SCHED_FIFO/90` only during a pass that begins with pending IRQ callbacks and
+demotes immediately afterward. A 90-second test with one CoreMark on each hart,
+continuous ping and HTTP wget, and BLE discovery completed with 89/89 pings,
+209 HTTP transfers, four valid CoreMark runs per hart, and no assertion, panic,
+reset, or shell stall.
 
-## Stage-5 hardware result
+The scanned `Mesh Mi Switch` briefly reports connected but aborts locally before
+GATT service discovery. This does not reproduce the concurrency failure; use a
+known continuously-connectable peripheral (or the switch provisioning window)
+to validate remote GATT enumeration.
 
-The built-in `esp32s31_wifi` fullmac front end registered `phy0` and `wlan0`
-with cfg80211. A dependency-free userspace test sent a standard generic-netlink
-`NL80211_CMD_TRIGGER_SCAN`, waited for completion, and dumped the cfg80211 BSS
-cache. Two consecutive scans each returned six nearby 2.4-GHz networks with
-BSSID, frequency, RSSI and SSID.
-
-Starting Wi-Fi exposed an ESP-IDF assumption that its legacy logical interrupt
-1 could program the M-mode CLIC window directly. The S-mode adapter now
-translates Wi-Fi sources 122 and 120 into Linux-owned external CLIC43 and
-CLIC42. Hard IRQs only mask and wake the radio worker; the shared blob ISR runs
-inside the serialized gate. After two scans `/proc/interrupts` reported 69
-interrupts on CLIC42, no Oops or warning was present, and the radio tick had
-continued past 9,000 interrupts. OpenOCD halted hart1 during the repeated scan
-with `priv=1`, then resumed it; the scan still completed normally.
-
-The kernel is configured not to require a signed external regulatory database.
-This is intentional for the firmware-free bring-up image: attempting to parse
-the built-in X.509 regulatory certificates exercised an unrelated, unfinished
-S31 SHA-DMA path before the radio worker started. A missing `regulatory.db` is
-therefore non-fatal for this stage.
+The kernel intentionally does not require a signed external regulatory
+database. A missing `regulatory.db` is non-fatal for this firmware-free image.

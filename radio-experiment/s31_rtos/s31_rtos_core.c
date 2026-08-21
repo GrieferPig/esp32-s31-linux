@@ -11,7 +11,7 @@
 #include <string.h>
 #include "s31_rtos.h"
 
-extern int esp_rom_printf(const char *fmt, ...);
+
 
 uint32_t s31_rtos_isr_depth;
 
@@ -157,20 +157,14 @@ TickType_t xTaskGetTickCountFromISR(void)
 }
 
 /*
- * The S-mode radio worker may be starved for long stretches while a
- * compatibility task owns the blob gate and busy-waits inside closed code.
- * The TIMG1 hard IRQ therefore advances the RTOS tick (and the esp_timer
- * epoch) directly; the worker only runs the esp_timer callbacks afterwards.
- * Without this, any payload busy-wait on xTaskGetTickCount() or
- * esp_timer_get_time() while the gate is held would spin forever.
+ * The RTOS tick and esp_timer epoch now come from Linux jiffies through the
+ * bridge, so the TIMG1 hard IRQ no longer owns the time base.  This hook is
+ * kept as a no-op for the measured ABI.
  */
 void s31_rtos_hard_tick(void)
 {
+#ifndef S31_LINUX_SMODE
 	s31_tick++;
-#ifdef S31_LINUX_SMODE
-	 extern void s31_linux_timer_advance(void);
-
-	s31_linux_timer_advance();
 #endif
 }
 
@@ -179,8 +173,8 @@ void s31_rtos_tick(void)
 #ifdef S31_LINUX_SMODE
 	 extern void s31_linux_timers_tick(void);
 
-	/* The hard IRQ already advanced both epochs.  Callback execution remains
-	 * serialized under the blob gate in the radio worker. */
+	/* Callback execution is serialized under the blob gate in the radio
+	 * worker.  Time is read from the Linux bridge in s31_linux_timer.c. */
 	s31_linux_timers_tick();
 #else
 	s31_tick++;
@@ -207,11 +201,11 @@ static void s31_rtos_task_entry(void *arg)
 	int i;
 
 	if (++s31_task_return_count <= 16)
-		esp_rom_printf("[S31] compat task enter %s t=%p entry=%p\n",
+		s31_linux_printf("[S31] compat task enter %s t=%p entry=%p\n",
 			       t->name, t, t->entry);
 	t->entry(t->arg);
 	if (s31_task_return_count <= 16)
-		esp_rom_printf("[S31] compat task returned %s t=%p\n", t->name, t);
+		s31_linux_printf("[S31] compat task returned %s t=%p\n", t->name, t);
 	if (!t->tls_cleaned) {
 		t->tls_cleaned = 1;
 		for (i = 0; i < 4; i++)
@@ -314,14 +308,14 @@ void vTaskDelay(TickType_t ticks)
 		return;
 	if (!ticks) {
 		if (++s31_task_yield_count <= 32)
-			esp_rom_printf("[S31] vTaskDelay(0) yield #%u task=%s prio=%u\n",
+			s31_linux_printf("[S31] vTaskDelay(0) yield #%u task=%s prio=%u\n",
 				       s31_task_yield_count,
 				       s31_rtos_current() ? s31_rtos_current()->name : "none",
 				       s31_rtos_current() ? s31_rtos_current()->priority : 0);
 		s31_linux_task_yield();
 	} else {
 		if (++s31_task_delay_count <= 64)
-			esp_rom_printf("[S31] vTaskDelay #%u ticks=%u task=%s prio=%u\n",
+			s31_linux_printf("[S31] vTaskDelay #%u ticks=%u task=%s prio=%u\n",
 			       s31_task_delay_count, ticks,
 			       s31_rtos_current() ? s31_rtos_current()->name : "none",
 			       s31_rtos_current() ? s31_rtos_current()->priority : 0);
@@ -499,7 +493,7 @@ void vTaskPrioritySet(void *task, UBaseType_t priority)
 		t->priority = priority;
 		s31_linux_task_set_priority(t->linux_task, priority);
 		if (++s31_task_priority_set_count <= 32)
-			esp_rom_printf("[S31] vTaskPrioritySet #%u task=%s prio=%u\n",
+			s31_linux_printf("[S31] vTaskPrioritySet #%u task=%s prio=%u\n",
 				       s31_task_priority_set_count, t->name, priority);
 	}
 }
@@ -518,7 +512,7 @@ void vTaskDelete(void *task)
 	if (!t)
 		return;
 	if (++s31_task_delete_count <= 32)
-		esp_rom_printf("[S31] vTaskDelete #%u task=%p current=%p name=%s linux=%p\n",
+		s31_linux_printf("[S31] vTaskDelete #%u task=%p current=%p name=%s linux=%p\n",
 			       s31_task_delete_count, t, s31_rtos_current(), t->name,
 			       t->linux_task);
 	if (!t->tls_cleaned) {

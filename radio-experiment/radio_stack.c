@@ -11,16 +11,16 @@
 #include "esp_private/wifi.h"
 #include "private/esp_coexist_adapter.h"
 #include "private/esp_coexist_internal.h"
+#include "btdm_lp.h"
 
-extern int esp_rom_printf(const char *fmt, ...);
+
 extern uint64_t s31_linux_time_ns(void);
+extern void s31_linux_printf(const char *fmt, ...);
 extern void s31_rtos_use_internal_stacks(void);
 extern int s31_rtos_in_isr(void);
 extern int s31_rtos_can_yield(void);
 extern void s31_radio_timing_tx_done(bool status, const uint8_t *data,
 				     uint16_t length);
-extern void modem_clock_module_enable(int module);
-extern void modem_clock_module_disable(int module);
 /* These ROM-owned pointers live in retained SRAM.  A software reset from an
  * ESP-IDF image can leave them pointing at that image's flash/data mapping;
  * the ROM registration functions intentionally keep an existing adapter. */
@@ -323,7 +323,7 @@ void __wrap_lmacProcessTxError(int err_type, int status, void *arg)
 		s31_lmac_txerr_seckid_count++;
 	if (count <= 32 || status == 192 || status == 0 || status == 1 ||
 	    status == 2)
-		esp_rom_printf("[S31] LMACTXERR #%u type=%d status=%d(0x%x) arg=%p\n",
+		s31_linux_printf("[S31] LMACTXERR #%u type=%d status=%d(0x%x) arg=%p\n",
 			       count, err_type, status, status, arg);
 	__real_lmacProcessTxError(err_type, status, arg);
 }
@@ -345,7 +345,7 @@ int __wrap_lmacTxDone(void *eb, int status)
 		}
 	}
 	if (count <= 4)
-		esp_rom_printf("[S31] LMACTXDONE #%u status=%d w0=%08x w4=%08x eb=%p\n",
+		s31_linux_printf("[S31] LMACTXDONE #%u status=%d w0=%08x w4=%08x eb=%p\n",
 			       count, status, w0, w4, eb);
 	return __real_lmacTxDone(eb, status);
 }
@@ -358,18 +358,18 @@ static void s31_wifi_dump_crypto_samples(void)
 	uint32_t i;
 	uint32_t j;
 
-	esp_rom_printf("[S31] LMACTXERR total=%u seckid=%u txdone=%u txdone-bad=%u keys=%u\n",
+	s31_linux_printf("[S31] LMACTXERR total=%u seckid=%u txdone=%u txdone-bad=%u keys=%u\n",
 		       s31_lmac_txerr_count, s31_lmac_txerr_seckid_count,
 		       s31_lmac_txdone_count, s31_lmac_txdone_bad_count,
 		       s31_key_sample_count);
 	for (i = 0; i < s31_key_sample_count; i++) {
 		struct s31_key_sample *sample = &s31_key_samples[i];
 
-		esp_rom_printf("[S31] KEY #%u slot=%u len=%u fnv=%08x info=",
+		s31_linux_printf("[S31] KEY #%u slot=%u len=%u fnv=%08x info=",
 			       i, sample->slot, sample->key_len, sample->key_hash);
 		for (j = 0; j < S31_KEY_INFO_BYTES; j++)
-			esp_rom_printf("%02x", sample->key_info[j]);
-		esp_rom_printf("\n");
+			s31_linux_printf("%02x", sample->key_info[j]);
+		s31_linux_printf("\n");
 	}
 	s31_wifi_dump_crypto_regs();
 }
@@ -379,7 +379,7 @@ static void s31_wifi_dump_crypto_regs(void)
 	volatile const uint32_t *base = (volatile const uint32_t *)0x20104800;
 	uint32_t slot;
 
-	esp_rom_printf("[S31] CRYPTO c0=%08x c1=%08x c2=%08x c3=%08x cfg=%08x valid=%08x\n",
+	s31_linux_printf("[S31] CRYPTO c0=%08x c1=%08x c2=%08x c3=%08x cfg=%08x valid=%08x\n",
 		       base[0], base[1], base[2], base[3], base[4], base[5]);
 	/* Dump only the key-entry metadata words (peer MAC + cipher word) and an
 	 * FNV-1a fingerprint of the installed key bytes (never the key itself). */
@@ -391,7 +391,7 @@ static void s31_wifi_dump_crypto_regs(void)
 		if (!(base[5] & (1u << slot)))
 			continue;
 		hash = s31_fnv1a((const uint8_t *)(entry + 2), 16);
-		esp_rom_printf("[S31] KEYS slot=%u hdr0=%08x hdr1=%08x keyfnv=%08x\n",
+		s31_linux_printf("[S31] KEYS slot=%u hdr0=%08x hdr1=%08x keyfnv=%08x\n",
 			       slot, entry[0], entry[1], hash);
 	}
 	s31_wifi_dump_rx_stats();
@@ -403,10 +403,10 @@ static void s31_wifi_dump_rx_stats(void)
 	uint32_t i;
 	int rc = esp_test_get_hw_rx_statistics(stats);
 
-	esp_rom_printf("[S31] RXSTAT rc=%d", rc);
+	s31_linux_printf("[S31] RXSTAT rc=%d", rc);
 	for (i = 0; i < 37; i++)
-		esp_rom_printf(" %u:%u", i, stats[i]);
-	esp_rom_printf(" w38=%08x w40=%08x\n",
+		s31_linux_printf(" %u:%u", i, stats[i]);
+	s31_linux_printf(" w38=%08x w40=%08x\n",
 		       *(uint32_t *)((uint8_t *)stats + 76),
 		       *(uint32_t *)((uint8_t *)stats + 80));
 }
@@ -421,7 +421,7 @@ static void s31_wifi_dump_tx_desc_samples(void)
 		return;
 	if (count > S31_TX_DESC_SAMPLES)
 		count = S31_TX_DESC_SAMPLES;
-	esp_rom_printf("[S31] TXDESC status calls=%u samples=%u bad-eb=%u bad-desc=%u bad-frame=%u nondata=%u\n",
+	s31_linux_printf("[S31] TXDESC status calls=%u samples=%u bad-eb=%u bad-desc=%u bad-frame=%u nondata=%u\n",
 		       s31_tx_desc_call_count, count, s31_tx_desc_bad_eb_count,
 		       s31_tx_desc_bad_desc_count, s31_tx_desc_bad_frame_count,
 		       s31_tx_desc_nondata_count);
@@ -431,15 +431,15 @@ static void s31_wifi_dump_tx_desc_samples(void)
 	for (i = 0; i < count; i++) {
 		struct s31_tx_desc_sample *sample = &s31_tx_desc_samples[i];
 
-		esp_rom_printf("[S31] TXDESC #%u eb=%08x frame=%08x len=%u tid=%u flags=%08x ctl=%08x desc=",
+		s31_linux_printf("[S31] TXDESC #%u eb=%08x frame=%08x len=%u tid=%u flags=%08x ctl=%08x desc=",
 			       i, sample->eb, sample->frame, sample->length,
 			       sample->tid, sample->flags, sample->control);
 		for (j = 0; j < S31_TX_DESC_BYTES; j++)
-			esp_rom_printf("%02x", sample->desc[j]);
-		esp_rom_printf(" hdr=");
+			s31_linux_printf("%02x", sample->desc[j]);
+		s31_linux_printf(" hdr=");
 		for (j = 0; j < S31_TX_FRAME_BYTES; j++)
-			esp_rom_printf("%02x", sample->header[j]);
-		esp_rom_printf("\n");
+			s31_linux_printf("%02x", sample->header[j]);
+		s31_linux_printf("\n");
 	}
 }
 
@@ -451,14 +451,14 @@ static void s31_wifi_netstack_ref(void *buffer)
 {
 	static uint32_t count;
 	if (++count <= 16)
-		esp_rom_printf("[S31] netstack ref #%u buffer=%p\n", count, buffer);
+		s31_linux_printf("[S31] netstack ref #%u buffer=%p\n", count, buffer);
 }
 
 static void s31_wifi_netstack_free(void *buffer)
 {
 	static uint32_t count;
 	if (++count <= 16)
-		esp_rom_printf("[S31] netstack free #%u buffer=%p\n", count, buffer);
+		s31_linux_printf("[S31] netstack free #%u buffer=%p\n", count, buffer);
 }
 
 static void s31_wifi_tx_done(uint8_t interface, uint8_t *data,
@@ -468,12 +468,12 @@ static void s31_wifi_tx_done(uint8_t interface, uint8_t *data,
 
 	s31_radio_timing_tx_done(status, data, length ? *length : 0);
 	(void)data;
-	/* esp_rom_printf() busy-polls the ROM UART, so a per-frame print here
+	/* s31_linux_printf() busy-polls the ROM UART, so a per-frame print here
 	 * serializes the whole gate hold behind 115200-baud output and was
 	 * measured as the long Wi-Fi queue-receive hold.  Keep only the first
 	 * few completions for bring-up diagnostics. */
 	if (!status && count <= 16)
-		esp_rom_printf("[S31] Wi-Fi TX done #%u if=%u len=%u ok=%u\n",
+		s31_linux_printf("[S31] Wi-Fi TX done #%u if=%u len=%u ok=%u\n",
 			       count, interface, length ? *length : 0, status);
 }
 
@@ -486,7 +486,7 @@ static void s31_wifi_set_intr(int32_t cpu_no, uint32_t source,
 
 static void s31_wifi_set_isr(int32_t logical_intr, void *handler, void *arg)
 {
-	esp_rom_printf("[S31] Wi-Fi set_isr logical=%d handler=%p arg=%p\n",
+	s31_linux_printf("[S31] Wi-Fi set_isr logical=%d handler=%p arg=%p\n",
 		       logical_intr, handler, arg);
 	s31_radio_wifi_intr_set_isr(logical_intr,
 				     (void (*)(void *))handler, arg);
@@ -527,7 +527,7 @@ static int s31_wifi_rx(void *buffer, uint16_t length, void *eb)
 	uint32_t count = ++s31_wifi_rx_count;
 
 	if (count <= 8 || rc)
-		esp_rom_printf("[S31] Wi-Fi RX #%u len=%u rc=%d\n",
+		s31_linux_printf("[S31] Wi-Fi RX #%u len=%u rc=%d\n",
 			       count, length, rc);
 
 	/* eb is NOT freed here anymore: it travels with the zero-copy RX
@@ -613,7 +613,7 @@ static void s31_wifi_event(void *arg, esp_event_base_t base, int32_t id,
 		s31_key_capture_enabled = true;
 		rc = esp_wifi_internal_reg_netstack_buf_cb(
 			s31_wifi_netstack_ref, s31_wifi_netstack_free);
-		esp_rom_printf("[S31] Wi-Fi STA_START rc=%d pending=%u\n",
+		s31_linux_printf("[S31] Wi-Fi STA_START rc=%d pending=%u\n",
 			       rc, pending);
 		if (!rc && pending == S31_WIFI_PENDING_SCAN)
 			rc = esp_wifi_scan_start(NULL, false);
@@ -686,17 +686,17 @@ non_scan_event:
 			s31_wifi_rx_registered = 1;
 		if (!rc)
 			rc = esp_wifi_set_tx_done_cb(s31_wifi_tx_done);
-		esp_rom_printf("[S31] RX slots ref=%p sta=%p free=%p expected=%p\n",
+		s31_linux_printf("[S31] RX slots ref=%p sta=%p free=%p expected=%p\n",
 			       *(void * volatile *)0x2f07ff68,
 			       *(void * volatile *)0x2f07ff6c,
 			       *(void * volatile *)0x2f07ff78, s31_wifi_rx);
-		esp_rom_printf("[S31] Wi-Fi STA connected channel=%u data-cb=%d\n",
+		s31_linux_printf("[S31] Wi-Fi STA connected channel=%u data-cb=%d\n",
 			       event->channel, rc);
 		s31_radio_wifi_connected(event->bssid, event->channel, rc);
 	} else if (id == WIFI_EVENT_STA_DISCONNECTED) {
 		wifi_event_sta_disconnected_t *event = event_data;
 
-		esp_rom_printf("[S31] Wi-Fi STA disconnected reason=%u\n",
+		s31_linux_printf("[S31] Wi-Fi STA disconnected reason=%u\n",
 			       event->reason);
 		s31_radio_wifi_disconnected(event->reason);
 	}
@@ -764,7 +764,7 @@ void s31_radio_wifi_connect_task(void *arg)
 		config.sta.threshold.authmode = WIFI_AUTH_OPEN;
 	}
 	rc = esp_wifi_set_config(WIFI_IF_STA, &config);
-	esp_rom_printf("[S31] Wi-Fi set_config rc=%d security=%s\n", rc,
+	s31_linux_printf("[S31] Wi-Fi set_config rc=%d security=%s\n", rc,
 		       params->has_password ? "WPA2/WPA3" :
 		       params->has_psk ? "WPA2-PSK" : "open");
 	if (!rc) {
@@ -774,7 +774,7 @@ void s31_radio_wifi_connect_task(void *arg)
 		else if (start < 0)
 			rc = -start;
 	}
-	esp_rom_printf("[S31] Wi-Fi connect submit rc=%d\n", rc);
+	s31_linux_printf("[S31] Wi-Fi connect submit rc=%d\n", rc);
 failed:
 	if (rc)
 		s31_radio_wifi_connected(NULL, 0, rc);
@@ -811,13 +811,13 @@ int s31_radio_wifi_try_send(uint8_t *frame, uint16_t length)
 
 	if (count <= 16 || rc) {
 		if (length >= 14)
-			esp_rom_printf("[S31] Wi-Fi TX #%u len=%u rc=%d dst=%02x:%02x:%02x:%02x:%02x:%02x src=%02x:%02x:%02x:%02x:%02x:%02x type=%02x%02x\n",
+			s31_linux_printf("[S31] Wi-Fi TX #%u len=%u rc=%d dst=%02x:%02x:%02x:%02x:%02x:%02x src=%02x:%02x:%02x:%02x:%02x:%02x type=%02x%02x\n",
 				       count, length, rc,
 				       frame[0], frame[1], frame[2], frame[3], frame[4], frame[5],
 				       frame[6], frame[7], frame[8], frame[9], frame[10], frame[11],
 				       frame[12], frame[13]);
 		else
-				esp_rom_printf("[S31] Wi-Fi TX #%u len=%u rc=%d\n",
+				s31_linux_printf("[S31] Wi-Fi TX #%u len=%u rc=%d\n",
 				       count, length, rc);
 	}
 	return rc;
@@ -853,7 +853,7 @@ void s31_radio_stack_task(void *arg)
 	 * Keep the TX completion path healthy: shrinking TX buffers to 8 stalled
 	 * the download (rc=257) under ACK bursts. */
 	rc = psa_crypto_init();
-	esp_rom_printf("[S31] psa_crypto_init rc=%d\n", rc);
+	s31_linux_printf("[S31] psa_crypto_init rc=%d\n", rc);
 	if (rc != 0) {
 	#ifdef S31_LINUX_SMODE
 		s31_radio_report_wifi_init(rc);
@@ -873,7 +873,7 @@ void s31_radio_stack_task(void *arg)
 	/* Replace the loader/FreeRTOS callbacks retained by the COEX ROM. */
 	rc = esp_coex_adapter_register(&g_coex_adapter_funcs);
 	if (rc != 0) {
-		esp_rom_printf("[S31] esp_coex_adapter_register rc=%d\n", rc);
+		s31_linux_printf("[S31] esp_coex_adapter_register rc=%d\n", rc);
 	#ifdef S31_LINUX_SMODE
 		s31_radio_report_wifi_init(rc);
 	#endif
@@ -886,7 +886,7 @@ void s31_radio_stack_task(void *arg)
 	 * faults as soon as it registers its scheduler callbacks.
 	 */
 	rc = coex_pre_init();
-	esp_rom_printf("[S31] coex_pre_init rc=%d\n", rc);
+	s31_linux_printf("[S31] coex_pre_init rc=%d\n", rc);
 	if (rc != 0) {
 	#ifdef S31_LINUX_SMODE
 		s31_radio_report_wifi_init(rc);
@@ -897,7 +897,7 @@ void s31_radio_stack_task(void *arg)
 	rc = esp_event_loop_create_default();
 	if (rc == 0)
 		rc = esp_wifi_init(&wifi_cfg);
-	esp_rom_printf("[S31] esp_wifi_init rc=%d\n", rc);
+	s31_linux_printf("[S31] esp_wifi_init rc=%d\n", rc);
 	#ifdef S31_LINUX_SMODE
 	if (rc == 0)
 		rc = esp_event_handler_register(WIFI_EVENT, ESP_EVENT_ANY_ID,
@@ -909,10 +909,10 @@ void s31_radio_stack_task(void *arg)
 	if (rc == 0) {
 	#ifndef S31_LINUX_SMODE
 		rc = esp_wifi_set_mode(WIFI_MODE_STA);
-		esp_rom_printf("[S31] esp_wifi_set_mode rc=%d\n", rc);
+		s31_linux_printf("[S31] esp_wifi_set_mode rc=%d\n", rc);
 		if (rc == 0) {
 			rc = esp_wifi_start();
-			esp_rom_printf("[S31] esp_wifi_start rc=%d\n", rc);
+			s31_linux_printf("[S31] esp_wifi_start rc=%d\n", rc);
 		}
 	#endif
 	}
@@ -921,15 +921,27 @@ void s31_radio_stack_task(void *arg)
 		return;
 
 #ifndef S31_WIFI_ONLY
+	/* The controller still needs an accurate low-power time base when modem
+	 * sleep is disabled.  IDF's S31 Kconfig only exposes the LP-clock choice
+	 * when CONFIG_BT_CTRL_SLEEP_ENABLE=y; otherwise btdm_lp_timer_clk_init()
+	 * falls back to the system 136 kHz RC clock.  IDF explicitly documents
+	 * that source as unable to reliably maintain ACL links.  Select the
+	 * divided main XTAL while the controller is still IDLE, before init. */
+	/* S31's current IDF BLE port fixes cfg->ble.rtc_freq at 32 kHz.  Feed
+	 * that controller an equally exact 32 kHz clock from the 40 MHz main
+	 * XTAL (divider 1250), rather than the inaccurate RC source or the
+	 * common port's 100 kHz main-XTAL default. */
+	btdm_lp_set_lpclk_freq(32000);
+	btdm_lp_set_lpclk_src(MODEM_CLOCK_LPCLK_SRC_MAIN_XTAL);
 	rc = esp_bt_controller_init(&bt_cfg);
-	esp_rom_printf("[S31] esp_bt_controller_init rc=%d\n", rc);
+	s31_linux_printf("[S31] esp_bt_controller_init rc=%d\n", rc);
 	#ifdef S31_LINUX_SMODE
 	s31_radio_report_bt_init(rc);
 	#endif
 	if (rc == 0) {
 	#ifndef S31_LINUX_SMODE
 		rc = esp_bt_controller_enable(BTDM_CONTROLLER_MODE_EFF);
-		esp_rom_printf("[S31] esp_bt_controller_enable rc=%d\n", rc);
+		s31_linux_printf("[S31] esp_bt_controller_enable rc=%d\n", rc);
 	#endif
 	}
 #endif
@@ -949,11 +961,11 @@ void s31_radio_bt_enable_task(void *arg)
 	(void)arg;
 	s31_rtos_use_internal_stacks();
 	rc = esp_bt_controller_enable(BTDM_CONTROLLER_MODE_EFF);
-	esp_rom_printf("[S31] esp_bt_controller_enable rc=%d\n", rc);
+	s31_linux_printf("[S31] esp_bt_controller_enable rc=%d\n", rc);
 	#ifdef S31_LINUX_SMODE
 	if (rc == 0) {
 		rc = esp_vhci_host_register_callback(&s31_vhci_callbacks);
-		esp_rom_printf("[S31] esp_vhci_host_register_callback rc=%d\n", rc);
+		s31_linux_printf("[S31] esp_vhci_host_register_callback rc=%d\n", rc);
 	}
 	s31_radio_report_bt_enable(rc);
 	s31_radio_heap_report("after-bt-enable");

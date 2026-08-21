@@ -4,7 +4,7 @@
 #include <string.h>
 #include "s31_rtos.h"
 
-extern int esp_rom_printf(const char *fmt, ...);
+
 
 #define S31_EG_FLAG_ALL_BITS (1U << 0)
 #define S31_EG_FLAG_CLEAR    (1U << 1)
@@ -40,7 +40,7 @@ void *xEventGroupCreate(void)
 		return NULL;
 	}
 	if (++s31_event_create_count <= 16)
-		esp_rom_printf("[S31] event create #%u g=%p task=%s\n",
+		s31_linux_printf("[S31] event create #%u g=%p task=%s\n",
 			       s31_event_create_count, g, s31_event_task_name());
 	return g;
 }
@@ -69,7 +69,7 @@ EventBits_t xEventGroupSetBits(void *group, EventBits_t bits)
 	s31_linux_sync_unlock(g->wait_context);
 	s31_linux_sync_wake(g->wait_context);
 	if (++s31_event_set_count <= 64)
-		esp_rom_printf("[S31] event set #%u g=%p add=%08x result=%08x task=%s\n",
+		s31_linux_printf("[S31] event set #%u g=%p add=%08x result=%08x task=%s\n",
 			       s31_event_set_count, g, bits, result,
 			       s31_event_task_name());
 	return result;
@@ -105,7 +105,7 @@ EventBits_t xEventGroupWaitBits(void *group, EventBits_t bits,
 		uint32_t n = ++s31_event_wait_count;
 
 		if (n <= 64)
-			esp_rom_printf("[S31] event wait #%u g=%p want=%08x clear=%d all=%d timeout=%u task=%s\n",
+			s31_linux_printf("[S31] event wait #%u g=%p want=%08x clear=%d all=%d timeout=%u task=%s\n",
 			       n, g, bits, clear_on_exit, wait_all_bits,
 			       timeout, s31_event_task_name());
 	}
@@ -122,7 +122,7 @@ EventBits_t xEventGroupWaitBits(void *group, EventBits_t bits,
 				g->bits &= ~bits;
 			s31_linux_sync_unlock(g->wait_context);
 			if (s31_event_wait_count <= 64)
-				esp_rom_printf("[S31] event wait done g=%p result=%08x task=%s\n",
+				s31_linux_printf("[S31] event wait done g=%p result=%08x task=%s\n",
 				       g, result, s31_event_task_name());
 			return result;
 		}
@@ -150,7 +150,7 @@ EventBits_t xEventGroupWaitBits(void *group, EventBits_t bits,
 			if (s31_eg_match(result, bits, flags) && clear_on_exit)
 				g->bits &= ~bits;
 			s31_linux_sync_unlock(g->wait_context);
-			esp_rom_printf("[S31] event wait timeout g=%p want=%08x timeout=%u waited=%d have=%08x task=%s\n",
+			s31_linux_printf("[S31] event wait timeout g=%p want=%08x timeout=%u waited=%d have=%08x task=%s\n",
 			       g, bits, timeout, waited, result,
 			       s31_event_task_name());
 			return result;

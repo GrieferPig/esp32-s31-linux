@@ -96,6 +96,50 @@ stval    0x143 = 0x00000000
 satp     0x180 = 0x80850045
 ```
 
+## S-mode timer and native-IPI lockout findings (2026-08-20)
+
+- S-mode loads from the local MTIME window at `0x10000000` fault even with a
+  valid Sv32 4 KiB PTE, a root-level leaf PTE, or an identity mapping. Keep
+  Linux on the emulated TIME CSR plus SBI TIME path; do not directly ioremap
+  `mtime`/`mtimecmp` from S-mode.
+- With native doorbell IPIs, a stalled target can show doorbell=1 and the
+  target CLIC slot as `IP=1, IE=1, MODE=S`, proving that notification was not
+  lost. The preserved Ctrl-C stall had CPU0 in idle with `sstatus.SIE=0`, CPU1
+  waiting in `smp_call_function_many_cond()`, `riscv_sbi_for_rfence=0`, and
+  CPU0 `SINTSTATUS.SIL=0xff`. `sintstatus` is readable as CSR `0xdb1` through
+  DMI, but an abstract CSR write is rejected with `cmderr=3`.
+- Level-7 native IPIs may legitimately preempt the level-1 timer, so Linux
+  must preserve a real SPIL such as `0x3f` on return. Only the impossible
+  `SPIL=0xff` cross-privilege sentinel may be cleared; unconditionally clearing
+  SPIL breaks legitimate nesting, while restoring every value leaks the
+  sentinel. Idle polling via `nohlt` does not cure the remaining Ctrl-C stall.
+
+## Radio + dual-compute scheduling finding (2026-08-21)
+
+- The first deterministic failure under two pinned CoreMarks + Wi-Fi + BLE
+  scan is the controller invariant assertion
+  `ble_lll_mmgmt.c:648, param:0x0,0x2`. The later Linux/OpenSBI Flash-XIP
+  instruction faults occur while the IDF assert/panic path is already nesting
+  traps; they are secondary and are not evidence that normal radio activity
+  disabled flash/cache. This is also not evidence for ID21 or an M-mode radio
+  interrupt.
+- `nice -20` is still CFS and does not reproduce the FreeRTOS deadline/priority
+  contract. The S31 IDF creates both `wifi` and `btdm` at FreeRTOS priority 23
+  and time-slices equal-priority runnable tasks. Map both tasks to Linux
+  `SCHED_RR/80`; giving only `btdm` real-time priority makes BLE discovery
+  starve Wi-Fi while cfg80211 misleadingly remains associated. The deferred
+  IRQ worker may use the higher `SCHED_FIFO/90` only while servicing pending
+  blob IRQ callbacks, and must demote afterward.
+- The RR mapping passed 90 seconds with one CoreMark pinned to each hart,
+  continuous Wi-Fi ping and HTTP wget, and active BLE discovery: 89/89 pings,
+  209 HTTP downloads, four valid CoreMark runs per hart, and discovery of
+  `Mesh Mi Switch`, with no line-648 assert, lockup, reset, or shell stall.
+- The discovered switch briefly reports LE connected and then
+  `le-connection-abort-by-local` before service discovery, so no remote GATT
+  attributes are available. Use a device known to remain connectable (or put
+  the switch into its provisioning window) before treating this as a Linux
+  controller/GATT failure.
+
 Read a GPR using register number `0x1000 + xN`. For example:
 
 ```text

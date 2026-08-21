@@ -1,112 +1,123 @@
-ESP32-S31 CLIC/CLINT reference
-Cleaned/updated: 2026-06-28
-Ground truth: docs/s_mode_clic_interrupt.md
+ESP32-S31 CLIC, timer and native-IPI reference
+Updated: 2026-08-21
 
-Overview
---------
-- ESP32-S31 HP core is CLIC-only.  mtvec.MODE and stvec.MODE are CLIC mode
-  0x3.
-- The basic RISC-V interrupt CSR path is not used:
-      mie, mip, mideleg, uie, uip: unavailable or hardwired
-      sie (CSR 0x104): illegal
-- mideleg is hardwired to 0.  CLIC interrupt delivery privilege is selected by
-  clicintattr[i].MODE once mcliccfg.NMBITS is configured.
-- mcause upper bits contain implementation state on traps.  Always decode the
-  trap cause / interrupt ID with:
-      mcause_code = mcause & 0xfff
+Authority and scope
+-------------------
+- This is the current S31 reference. Do not copy CLIC/CLINT addresses or the
+  privilege model from p4_clic_clint_details.txt.
+- Hardware register usage follows ESP-IDF's ESP32-S31 implementation and the
+  probes recorded in s31_smode_clic_irq_findings.txt.
+- The HP harts are CLIC-only. mtvec.MODE and stvec.MODE are 3. Standard
+  mie/mip/mideleg/sie/sip interrupt handling must not be used; CSR sie is
+  illegal on this chip.
 
-CLIC base and register layout
------------------------------
-- M CLIC base:
-      mclicbase CSR 0x350 = 0x10800000
-- Global config register:
-      mcliccfg at 0x10800000
-- Per-interrupt registers:
-      0x10801000 + 4 * raw_clic_id
+CLIC address model
+------------------
+- Machine CLIC base: mclicbase CSR 0x350 = 0x10800000.
+- Supervisor CLIC base: sclicbase CSR 0x150 = 0x10a00000.
+- Per-interrupt registers start at base + 0x1000 + 4 * raw_id:
+      byte +0  IP
+      byte +1  IE
+      byte +2  ATTR (SHV/TRIG/MODE)
+      byte +3  CTL
+- The windows are hart-address-virtualized. A hart accesses its own CLIC at
+  the normal address and the other HP hart through the +0x10000 window.
+- sclicbase offset zero is not an alias of machine mcliccfg and reads as zero.
+  Diagnose machine configuration only through the M-mode window/CSR.
 
-      byte +0: clicintip
-      byte +1: clicintie
-      byte +2: clicintattr
-      byte +3: clicintctl
+Machine CLIC global configuration
+---------------------------------
+- S31 uses ESP-IDF's legacy CLIC_INT_CONFIG layout at 0x10800000:
+      bits [6:5] NMBITS  (RO, hardwired 0)
+      bits [4:1] MNLBITS (R/W)
+      bit  [0]   NVBITS  (RO, hardwired 1)
+- Do not write bits [6:5] to request NMBITS=1. That conclusion came from an
+  obsolete interpretation of the P4 layout.
+- NMBITS=0 describes the machine CLIC bank; it does not disable S31's separate
+  supervisor CLIC window. Linux programs MODE=S through sclicbase.
+- CLICINTCTLBITS is 3. Only CTL[7:5] is programmable and CTL[4:0] reads as
+  ones. The current Linux/OpenSBI configuration is deliberately non-nested:
+  all native S-mode timer, IPI and device slots use level 1 (CTL 0x3f).
 
-- External peripheral interrupt targets use raw CLIC IDs 16..47.  When
-  programming interrupt matrix SOURCE_MAP registers by hand, write the raw CLIC
-  ID.  Do not use an ESP-IDF allocator interrupt number unless going through
-  the ESP-IDF helper that performs the translation.
+Interrupt IDs and routing
+-------------------------
+- Implemented local/system IDs observed: 1, 3, 5, 7 and 11.
+- External CLIC IDs are 16..47 and are selected by the interrupt matrix.
+  SOURCE_MAP values contain raw CLIC IDs, not Linux virqs or ESP-IDF allocator
+  handles.
+- Native Linux doorbells:
+      CPU0 -> CPU1: 0x20586014, matrix source 66, hart1 raw ID40
+      CPU1 -> CPU0: 0x20586010, matrix source 65, hart0 raw ID41
+  The sender publishes the ipi_mux reason, executes wmb(), then writes 1. The
+  receiver writes 0 before ipi_mux_process().
+- Linux SYSTIMER TARGET0/source33 is routed to hart0 ID41. TARGET1/source34 is
+  routed to hart1 ID40. Timer and doorbell intentionally share one physical
+  level slot per hart to avoid a timer/IPI nesting boundary.
+- AHB-GDMA TX4 is matrix source45/raw ID31. UHCI/UART0 uses DMA pair4, so an
+  unserviced ID31 can leave the serial writer asleep after only part of a line
+  has reached ttyUSB0.
 
-S-mode CLIC setup
------------------
-1. Enable multi-privilege CLIC interpretation:
+Timer model
+-----------
+- S-mode loads from the local MTIME/MTIMECMP window at 0x10000000 fault even
+  with valid Sv32 mappings. Do not grant or use a direct S-mode CLINT mapping.
+- Linux uses the 16 MHz always-on SYSTIMER counter1 and TARGET0/TARGET1 as
+  native per-hart one-shot clockevents. It does not depend on a direct CLINT
+  compare access.
+- OpenSBI may still advertise SBI TIME, but the S31 Linux clockevent path uses
+  the native SYSTIMER hooks. OpenSBI remains required for boot, HSM, reset and
+  services that cannot safely be implemented in S-mode.
 
-       volatile uint32_t *mcliccfg = (volatile uint32_t *)0x10800000;
-       *mcliccfg = (*mcliccfg & ~(3U << 5)) | (1U << 5);
+Trap cause and xRET rules
+-------------------------
+- CLIC xcause contains return-state metadata above the low cause field. Use
+  `xcause & 0xfff` for logical dispatch.
+- Linux stores the full hardware scause token separately in
+  pt_regs.cause_raw and presents only the normalized cause to generic code.
+- On a real CLIC interrupt return, restore raw scause before sstatus/sepc and
+  execute exactly one sret. OpenSBI follows the corresponding
+  mcause-before-mstatus rule for real M interrupts.
+- S31's current Linux configuration forbids S interrupt nesting and clears the
+  saved SPIL field in its private return token. Generic Linux code must never
+  modify the raw token.
+- A synchronous trap crossing M/S privilege must not propagate the upper raw
+  CLIC metadata. Redirect/return only the low logical cause. Otherwise the
+  hardware 0xff cross-privilege sentinel can leak into supervisor interrupt
+  state and block later S interrupts.
 
-   This sets effective NMBITS=1 in bits [6:5].
+Initialization contract
+-----------------------
+- Both bootloader hart trampolines clear IP, IE, ATTR and CTL for all 128 CLIC
+  entries before entering OpenSBI. Hart0 is the OpenSBI/Linux boot hart;
+  hart1 waits as the HSM secondary.
+- Linux initializes hart0 external IDs16..47 as disabled MODE=S level slots,
+  then enables them through normal irqdomain operations. Each hart initializes
+  only its own combined native IPI/SYSTIMER slot (hart0 ID41, hart1 ID40).
+- sintthresh is set to zero. ID1 is not used as the SMP transport. Linux
+  registers its native IPI virq range before the architecture SBI IPI setup,
+  which keeps riscv_sbi_for_rfence false and prevents runtime RFENCE/TLB
+  shootdowns from entering OpenSBI's M-mode IPI path.
 
-2. Program the target CLIC slot.
-
-   Example for raw CLIC ID 1:
-
-       volatile uint32_t *clicint_1 =
-           (volatile uint32_t *)(0x10801000 + 4 * 1);
-
-       *clicint_1 = (0xffU << 24) |   /* clicintctl */
-                    (0x42U << 16) |   /* clicintattr: MODE=S, TRIG=edge, SHV=0 */
-                    (1U    << 8)  |   /* clicintie */
-                    0U;               /* clicintip */
-
-   MODE encodings used by ESP-IDF:
-       PRV_U = 0
-       PRV_S = 1
-       PRV_M = 3
-
-3. Configure stvec:
-
-       csrw stvec, ((handler_base & ~0x3f) | 3)
-
-   stvec.BASE is writable with 64-byte alignment; MODE is forced to 3.
-
-4. Before mret into S-mode, enable S interrupt state through mstatus:
-
-       mstatus.SIE  = 1
-       mstatus.SPIE = 1
-
-   Do not access CSR sie.
-
-5. For external peripheral interrupts, route the peripheral source through
-   Espressif's interrupt matrix/INTR frontend to the selected raw CLIC ID.
-   The target privilege still comes from clicintattr[i].MODE.
-
-6. S-mode can clear clicintip directly by reading the S-mode specific `sclicbase` (CSR 0x150) and writing to the IP bit at `sclicbase + 0x1000 + 4*i`. M-mode must configure CPU_APM to allow S-mode access to peripheral regions to prevent Store access faults.
-
-S-mode trap/MMU CSRs
---------------------
-Observed useful S-mode CSRs:
-- stvec: CLIC mode forced; BASE writable and normalized to a 64-byte-aligned
-  value plus mode 3.
-- sscratch: ordinary R/W.
-- sepc: bit 0 forced to 0.
-- scause: writable/WARL; mask with 0xfff when decoding causes from trap state.
-- stval: ordinary R/W.
-- sstatus: WARL; reflects visible status state.
-- satp: writable in the halted-DMI probe, including Sv32 mode bit and PPN bits.
-
-DO NOT USE standard S-mode interrupt CSRs such as sie/sip for this chip.
-
-CLIC slot implementation notes
+S31 pending-interrupt recovery
 ------------------------------
-- Implemented slots observed:
-      local/system: raw IDs 1, 3, 5, 7, 11
-      external:     raw IDs 16..47
-- Unimplemented/reserved raw IDs in 0..47 ignore MODE/TRIG/SHV writes and read
-  those fields as zero.
-- clicintctl exposes 3 effective high bits; low 5 bits read as 1.
-- S/U CLIC-base windows are not required for the working S-mode configuration.
-  Configure CLIC slots through the M CLIC base from M-mode/OpenSBI.
+- Hardware can leave an S-mode slot at IP=1, IE=1 with SIE=1 without entering
+  the handler. This was observed for native IPI/timer slots and for ID31.
+- Both harts therefore use IRQ-enabled idle polling. With local IRQs disabled,
+  the poller checks the doorbell, SYSTIMER status, and every enabled external
+  CLIC slot. Pending external IDs are dispatched through the normal irqdomain;
+  device acknowledgement remains in the owning driver.
+- Software dispatch installs a temporary kernel-mode pt_regs with set_irq_regs,
+  encloses handlers in irq_enter/irq_exit, restores the previous irq_regs, and
+  then restores local IRQ state. Calling tick_periodic without this frame
+  causes a fatal page fault through get_irq_regs().
 
-CLINT/timer note
-----------------
-The HP core's timer/software interrupt sources are routed through the CLIC
-interrupt mechanism.  Do not assume a standard memory-mapped RISC-V CLINT at
-common CLINT base addresses.  For Linux bring-up, expose timer functionality via
-OpenSBI/M-mode until the final timer interrupt path is implemented.
+Debug interpretation
+--------------------
+- A pending slot is a four-byte word. For example 0x3f400101 means IP=1,
+  IE=1, ATTR=0x40 (MODE=S, positive level), CTL=0x3f.
+- `sintstatus=0xff00` alone does not prove that ID21 fired. Check OpenSBI's
+  machine-trap recorder and the actual raw ID. In the preserved SMP failures,
+  ID21 count was zero while radio was disabled.
+- When halted, select each hart through DMI and validate cmderr before using
+  S-mode CSR data. OpenOCD system-bus reads of cached PSRAM can be stale; a
+  hart0 progbuf physical load can observe dirty shared D-cache data when needed.

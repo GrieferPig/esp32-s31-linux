@@ -15,16 +15,23 @@ CPP := $(CROSS_COMPILE)cpp
 DTC := dtc
 JOBS ?= $(shell nproc)
 
-# S31 supports F and the stateful Espressif HWLoop/PIE extensions, but firmware
-# and kernel C code must not borrow task coprocessor state.  Use every safe
-# integer code-generation extension there, and expose the complete ISA to
-# userspace where Linux saves/restores that state.
+# S31 supports F and the stateful Espressif HWLoop/PIE extensions, but their
+# state CSRs are M-mode-only.  Saving them through SBI on every task switch can
+# lock S-mode interrupts at SIL=0xff, so stable SMP builds use only stateless
+# ISA extensions for both kernel and normal userspace.  Explicit Xesp test
+# binaries supply their own per-file flags in the Buildroot package.
 S31_SAFE_ISA := rv32imabc_zicsr_zifencei_zaamo_zalrsc_zba_zbb_zbc_zbs
 S31_KERNEL_ISA := rv32imafbc_zicsr_zifencei_zaamo_zalrsc_zba_zbb_zbc_zbs
-S31_USER_ISA := rv32imafbc_zicsr_zifencei_zaamo_zalrsc_zba_zbb_zbc_zbs_xesploop_xespv2p2
+S31_USER_ISA := rv32imafbc_zicsr_zifencei_zaamo_zalrsc_zba_zbb_zbc_zbs
 S31_COMMON_FLAGS := -mabi=ilp32 -mtune=esp-base
 S31_KERNEL_FLAGS := -mabi=ilp32f -mtune=esp-base
-S31_USER_FLAGS := -march=$(S31_USER_ISA) $(S31_COMMON_FLAGS) -mespv-spec=2p2
+S31_USER_FLAGS := -march=$(S31_USER_ISA) $(S31_COMMON_FLAGS)
+# The S31 compiler supports Xesploop/XespV, but its bundled libc and libgcc
+# were built with stateful HWLoop instructions.  Linux deliberately avoids the
+# M-mode SBI context-switch extension for stable SMP, so use scalar runtime
+# libraries for normal userspace.  Explicit extension tests are still built by
+# s31-tools with the S31 compiler and opt-in ISA flags.
+S31_SCALAR_RUNTIME_SYSROOT ?= /opt/riscv32imac-musl/sysroot
 
 BUILD_DIR := $(CURDIR)/build
 OPENSBI_DIR := $(CURDIR)/opensbi-esp32-s31
@@ -196,6 +203,11 @@ radio-image: opensbi linux
 
 DEFCONFIG ?= esp32s31_defconfig
 LINUX_TARGET ?= xipImage
+# Default to maxcpus=1 for 100% boot; bring up second CPU after boot via
+# `echo 1 > /sys/devices/system/cpu/cpu1/online` for dual-core.  CMDLINE_FORCE
+# replaces, rather than extends, the defconfig command line, so retain the
+# rootfs and console arguments here as well.
+LINUX_CMDLINE ?= console=ttyS0,115200n8 root=/dev/mtdblock6 rootfstype=squashfs ro rootwait init=/init clk_ignore_unused irqaffinity=0 maxcpus=1
 
 radio-linux-payload: radio-bootloader
 	$(MAKE) -C $(CURDIR)/radio-experiment linux-kbuild
@@ -213,7 +225,16 @@ linux: toolchain radio-linux-payload | $(LINUX_OUT)
 		--enable RISCV_ISA_ZBC \
 		--enable BT \
 		--enable BT_ESP32S31 \
-		--enable BT_BREDR
+		--enable BT_BREDR \
+		--enable SMP \
+		--set-val NR_CPUS 2 \
+		--disable ESP32S31_COPROC_CONTEXT \
+		--enable CSD_LOCK_WAIT_DEBUG \
+		--enable CSD_LOCK_WAIT_DEBUG_DEFAULT \
+		--enable PREEMPT_VOLUNTARY \
+		--disable PREEMPT_NONE \
+		--enable HZ_100 \
+		--disable HZ_250
 	@if [ -n "$(LINUX_CMDLINE)" ]; then \
 		$(LINUX_DIR)/scripts/config --file $(LINUX_OUT)/.config \
 			--set-str CMDLINE "$(LINUX_CMDLINE)"; \
@@ -233,7 +254,10 @@ coremark: rootfs
 ROOTFS_PARTITION_SIZE ?= 6291456
 PERSIST_PARTITION_SIZE ?= 1441792
 BUILDROOT_MAKE = $(MAKE) -C $(BUILDROOT_DIR) O=$(BUILDROOT_OUT) \
-	BR2_EXTERNAL=$(BUILDROOT_EXTERNAL) BR2_DL_DIR=$(BUILDROOT_DL_DIR)
+	BR2_EXTERNAL=$(BUILDROOT_EXTERNAL) BR2_DL_DIR=$(BUILDROOT_DL_DIR) \
+	S31_SCALAR_RUNTIME_SYSROOT=$(S31_SCALAR_RUNTIME_SYSROOT) \
+	S31_RUNTIME_STRIP=$(CROSS_COMPILE)strip \
+	S31_RUNTIME_OBJDUMP=$(CROSS_COMPILE)objdump
 
 s31-pie-cases:
 	@if [ -z "$(IDF_EXPORT)" ]; then echo "ERROR: ESP-IDF export.sh not found under $(HOME)"; exit 1; fi
@@ -245,6 +269,7 @@ rootfs: toolchain s31-pie-cases | $(BUILDROOT_OUT)
 	$(BUILDROOT_MAKE) toolchain-external-custom-rebuild
 	$(BUILDROOT_MAKE) toolchain-external-rebuild
 	$(BUILDROOT_MAKE) s31-tools-rebuild
+	$(BUILDROOT_MAKE) coremark-rebuild
 	$(BUILDROOT_MAKE)
 	cp -v $(BUILDROOT_OUT)/images/rootfs.squashfs $(ROOTFS_IMG)
 	@ROOTFS_SIZE=$$(stat -c%s $(ROOTFS_IMG)); \

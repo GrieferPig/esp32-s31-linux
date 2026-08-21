@@ -75,6 +75,7 @@ volatile uint32_t g_core1_trap_mtval;
 volatile uint32_t g_core1_trap_mepc;
 
 extern void core1_linux_trampoline(void);
+extern void core0_enter_opensbi(uint32_t fdt);
 
 #ifdef S31_NATIVE_WIFI_PROBE
 extern void s31_native_wifi_probe(void) __attribute__((noreturn));
@@ -252,6 +253,14 @@ static void enable_core1_external_memory_bus(uint32_t vaddr, uint32_t size)
     cache_ll_l1_enable_bus(1, bus);
 }
 
+static void disable_core0_stack_protector(void)
+{
+    assist_debug_ll_sp_spill_monitor_disable(0);
+    assist_debug_ll_sp_spill_interrupt_disable(0);
+    assist_debug_ll_sp_spill_set_min(0, 0);
+    assist_debug_ll_sp_spill_set_max(0, 0xffffffff);
+}
+
 static void disable_core1_stack_protector(void)
 {
     assist_debug_ll_sp_spill_monitor_disable(1);
@@ -334,19 +343,8 @@ static void clear_sram_for_linux(void)
     fence_i();
 }
 
-/* Hart0 must not resume the IDF scheduler after radio ownership is handed to
- * Linux on hart1; both harts otherwise share and race on mask-ROM PP state. */
-static __attribute__((noreturn)) void park_loader_hart(void)
-{
-    __asm__ volatile ("csrci mstatus, 8\n"
-                      "csrw mie, zero\n"
-                      "fence rw, rw\n"
-                      ::: "memory");
-    for (;;) {
-        __asm__ volatile ("wfi");
-    }
-}
-
+/* Both harts now enter OpenSBI: hart0 is the boot hart, hart1 is parked in
+ * OpenSBI's secondary wait loop until Linux brings it up with SBI HSM. */
 static void prepare_linux_uart0(void)
 {
     const uart_config_t config = {
@@ -482,6 +480,10 @@ void app_main(void)
 
     clear_sram_for_linux();
     start_linux_on_core1(fdt);
-    ESP_LOGI(TAG, "hart1 released to OpenSBI; parking loader hart0");
-    park_loader_hart();
+    disable_core0_stack_protector();
+    ESP_LOGI(TAG, "hart1 released as secondary; hart0 entering OpenSBI");
+    core0_enter_opensbi(fdt);
+    /* Not reached. */
+    while (1)
+        ;
 }

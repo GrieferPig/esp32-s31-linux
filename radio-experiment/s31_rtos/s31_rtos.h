@@ -96,9 +96,9 @@ struct s31_event_group {
 
 /* --- core --- */
 void s31_rtos_init(void);
-void s31_rtos_tick(void);             /* from the Linux-owned TIMG1 tick */
-void s31_rtos_hard_tick(void);        /* TIMG1 hard IRQ: tick + timer epoch */
-int s31_radio_tick_init(void);         /* TIMG1/T1, 1 kHz S-mode tick */
+void s31_rtos_tick(void);             /* worker callback pass */
+void s31_rtos_hard_tick(void);        /* legacy hard-IRQ no-op */
+int s31_radio_tick_init(void);         /* legacy, unused */
 int s31_radio_tick_service(void);      /* called by Linux through SBI */
 void s31_radio_tick_handoff_to_linux(void);
 BaseType_t s31_rtos_in_isr(void);     /* xPortInIsrContext */
@@ -123,6 +123,7 @@ void *s31_linux_current_cookie(void);
 void s31_linux_task_delay(TickType_t ticks);
 uint32_t s31_linux_tick_count(void);
 uint64_t s31_linux_time_ns(void);
+void s31_linux_printf(const char *fmt, ...);
 void s31_linux_task_yield(void);
 void s31_linux_task_set_priority(void *task, UBaseType_t priority);
 void s31_rtos_task_release(void *cookie);

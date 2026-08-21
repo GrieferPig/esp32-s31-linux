@@ -3,7 +3,11 @@
 ::sysinit:/bin/mount -a
 ::sysinit:/bin/mkdir -p /run/lock/subsys
 ::sysinit:/bin/hostname -F /etc/hostname
-::sysinit:/etc/init.d/rcS
+# Run board services asynchronously.  The radio/BT blobs can take a long
+# time in a closed-source wait path; keeping rcS in the sysinit critical path
+# otherwise prevents BusyBox from spawning the serial shell.  rcS itself
+# retains the normal ordered service startup and continues in the background.
+::sysinit:/bin/sh -c '/etc/init.d/rcS >/dev/console 2>&1 &'
 # Restore the interactive serial login shell on the Linux console.
 console::respawn:/sbin/getty -L console 115200 vt100
 ::shutdown:/etc/init.d/rcK

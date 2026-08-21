@@ -9,7 +9,7 @@
 #include <string.h>
 #include "s31_rtos.h"
 
-extern int esp_rom_printf(const char *fmt, ...);
+
 
 static volatile BaseType_t s31_queue_trace_enabled;
 static uint32_t s31_queue_trace_send_count;
@@ -50,7 +50,7 @@ static void s31_queue_trace_send(struct s31_queue *q, const void *item,
 	if (event == 13)
 		s31_queue_trace_rxevent_send_count++;
 	if (n <= 32 || (event == 13 && s31_queue_trace_rxevent_send_count <= 32))
-		esp_rom_printf("[S31] wifi-q send #%u ev=%u rxev=%u isr=%d ret=%d count=%u head=%u\n",
+		s31_linux_printf("[S31] wifi-q send #%u ev=%u rxev=%u isr=%d ret=%d count=%u head=%u\n",
 			       n, event, s31_queue_trace_rxevent_send_count,
 			       from_isr, ret, q->count, q->head);
 }
@@ -72,7 +72,7 @@ static void s31_queue_trace_receive(struct s31_queue *q, const void *item,
 	if (event == 13)
 		s31_queue_trace_rxevent_receive_count++;
 	if (n <= 32 || (event == 13 && s31_queue_trace_rxevent_receive_count <= 32))
-		esp_rom_printf("[S31] wifi-q recv #%u ev=%u rxev=%u ret=%d count=%u head=%u\n",
+		s31_linux_printf("[S31] wifi-q recv #%u ev=%u rxev=%u ret=%d count=%u head=%u\n",
 			       n, event, s31_queue_trace_rxevent_receive_count,
 			       ret, q->count, q->head);
 }
@@ -118,7 +118,7 @@ void *xQueueGenericCreate(uint32_t queue_len, uint32_t item_size,
 	uint32_t count = ++s31_queue_dynamic_create_count;
 
 	if (count <= 16)
-		esp_rom_printf("[S31] queue dynamic create #%u len=%u item=%u type=%u\n",
+		s31_linux_printf("[S31] queue dynamic create #%u len=%u item=%u type=%u\n",
 			       count, queue_len, item_size, queue_type);
 
 	if (!queue_len || (item_size &&
@@ -135,7 +135,7 @@ void *xQueueGenericCreate(uint32_t queue_len, uint32_t item_size,
 		return NULL;
 	}
 	if (count <= 16)
-		esp_rom_printf("[S31] queue dynamic create #%u -> q=%p wait=%p storage=%p\n",
+		s31_linux_printf("[S31] queue dynamic create #%u -> q=%p wait=%p storage=%p\n",
 			       count, q, q->wait_context, storage);
 	return q;
 }
@@ -148,7 +148,7 @@ void *xQueueGenericCreateStatic(uint32_t queue_len, uint32_t item_size,
 	uint32_t count = ++s31_queue_create_count;
 
 	if (count <= 16)
-		esp_rom_printf("[S31] queue static create #%u len=%u item=%u storage=%p static=%p type=%u\n",
+		s31_linux_printf("[S31] queue static create #%u len=%u item=%u storage=%p static=%p type=%u\n",
 			       count, queue_len, item_size, storage, static_queue,
 			       queue_type);
 
@@ -157,7 +157,7 @@ void *xQueueGenericCreateStatic(uint32_t queue_len, uint32_t item_size,
 	s31_queue_init(q, queue_type, queue_len, item_size, storage);
 	q->is_static = 1;
 	if (count <= 16)
-		esp_rom_printf("[S31] queue static create #%u -> q=%p wait=%p\n",
+		s31_linux_printf("[S31] queue static create #%u -> q=%p wait=%p\n",
 			       count, q, q->wait_context);
 	return q->wait_context ? q : NULL;
 }
@@ -189,7 +189,7 @@ void *xQueueCreateMutex(uint8_t type)
 		return NULL;
 	}
 	if (count <= 32)
-		esp_rom_printf("[S31] mutex create #%u q=%p kind=%u task=%s\n",
+		s31_linux_printf("[S31] mutex create #%u q=%p kind=%u task=%s\n",
 			       count, q, type, s31_queue_task_name());
 	return q;
 }
@@ -211,7 +211,7 @@ void *xQueueCreateCountingSemaphore(uint32_t max, uint32_t initial)
 		return NULL;
 	}
 	if (count <= 32)
-		esp_rom_printf("[S31] sem create #%u q=%p max=%u init=%u task=%s\n",
+		s31_linux_printf("[S31] sem create #%u q=%p max=%u init=%u task=%s\n",
 			       count, q, max, initial, s31_queue_task_name());
 	return q;
 }
@@ -223,7 +223,7 @@ void vQueueDelete(void *queue)
 	if (!q)
 		return;
 	if (++s31_queue_delete_count <= 32)
-		esp_rom_printf("[S31] vQueueDelete #%u q=%p type=%u count=%u cap=%u static=%u wait=%p\n",
+		s31_linux_printf("[S31] vQueueDelete #%u q=%p type=%u count=%u cap=%u static=%u wait=%p\n",
 			       s31_queue_delete_count, q, q->type, q->count,
 			       q->capacity, q->is_static, q->wait_context);
 	s31_linux_sync_destroy(q->wait_context);
@@ -317,13 +317,7 @@ BaseType_t xQueueGenericSend(void *queue, const void *item,
 		    q->count < q->capacity || copy == S31_QUEUE_OVERWRITE) {
 			BaseType_t ret = s31_queue_send_locked(q, item, copy);
 			s31_linux_sync_unlock(q->wait_context);
-			if (q->type != S31_Q_TYPE_QUEUE) {
-				uint32_t n = ++s31_sync_give_count;
-				if (n <= 96 || ret != pdTRUE)
-					esp_rom_printf("[S31] sync give #%u q=%p type=%u ret=%d count=%u owner=%p depth=%u task=%s\n",
-					       n, q, q->type, ret, q->count,
-					       q->owner, q->depth, s31_queue_task_name());
-			}
+			(void)s31_sync_give_count;
 			s31_queue_trace_send(q, item, pdFALSE, ret);
 			if (ret)
 				s31_linux_sync_wake(q->wait_context);
@@ -466,10 +460,7 @@ BaseType_t xQueueSemaphoreTake(void *queue, TickType_t timeout)
 			if (q->owner == t) {
 				q->depth++;
 				s31_linux_sync_unlock(q->wait_context);
-				if (++s31_sync_take_count <= 96)
-					esp_rom_printf("[S31] sync take #%u q=%p type=%u timeout=%u ret=1 recursive depth=%u task=%s\n",
-					       s31_sync_take_count, q, q->type, timeout,
-					       q->depth, s31_queue_task_name());
+				(void)s31_sync_take_count;
 				return pdTRUE;
 			}
 			if (!q->owner && !q->count) {
@@ -477,30 +468,20 @@ BaseType_t xQueueSemaphoreTake(void *queue, TickType_t timeout)
 				q->depth = 1;
 				q->count = 1;
 				s31_linux_sync_unlock(q->wait_context);
-				if (++s31_sync_take_count <= 96)
-					esp_rom_printf("[S31] sync take #%u q=%p type=%u timeout=%u ret=1 count=%u task=%s\n",
-					       s31_sync_take_count, q, q->type, timeout,
-					       q->count, s31_queue_task_name());
+				(void)s31_sync_take_count;
 				return pdTRUE;
 			}
 		} else if (q->count) {
 			q->count--;
 			s31_linux_sync_unlock(q->wait_context);
-			if (++s31_sync_take_count <= 96)
-				esp_rom_printf("[S31] sync take #%u q=%p type=%u timeout=%u ret=1 count=%u task=%s\n",
-				       s31_sync_take_count, q, q->type, timeout,
-				       q->count, s31_queue_task_name());
+			(void)s31_sync_take_count;
 			s31_linux_sync_wake(q->wait_context);
 			return pdTRUE;
 		}
 		s31_linux_sync_unlock(q->wait_context);
 		if (!timeout)
 		{
-			uint32_t n = ++s31_sync_take_count;
-			if (n <= 96)
-				esp_rom_printf("[S31] sync take #%u q=%p type=%u timeout=0 ret=0 count=%u owner=%p task=%s\n",
-				       n, q, q->type, q->count, q->owner,
-				       s31_queue_task_name());
+			(void)s31_sync_take_count;
 			return pdFALSE;
 		}
 		{
@@ -514,12 +495,7 @@ BaseType_t xQueueSemaphoreTake(void *queue, TickType_t timeout)
 							     S31_BLOB_RELEASE_SEMAPHORE_TAKE);
 		}
 		if (waited <= 0)
-		{
-			esp_rom_printf("[S31] sync take timeout q=%p type=%u timeout=%u waited=%d count=%u owner=%p task=%s\n",
-			       q, q->type, timeout, waited, q->count, q->owner,
-			       s31_queue_task_name());
 			return pdFALSE;
-		}
 		/* Recheck after every wake. */
 	}
 }
@@ -548,13 +524,7 @@ BaseType_t xQueueGiveMutexRecursive(void *queue)
 	s31_linux_sync_unlock(q->wait_context);
 	if (ret)
 		s31_linux_sync_wake(q->wait_context);
-	{
-		uint32_t n = ++s31_sync_give_count;
-		if (n <= 96 || ret != pdTRUE)
-			esp_rom_printf("[S31] recursive give #%u q=%p ret=%d count=%u owner=%p depth=%u task=%s\n",
-			       n, q, ret, q->count, q->owner, q->depth,
-			       s31_queue_task_name());
-	}
+	(void)s31_sync_give_count;
 	return ret;
 }
 

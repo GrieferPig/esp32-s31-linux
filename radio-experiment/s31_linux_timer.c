@@ -19,7 +19,10 @@ struct esp_timer {
 static struct esp_timer *s31_timers;
 static uint64_t s31_timer_now_us(void)
 {
-	return (uint64_t)s31_linux_tick_count() * 10000ULL;
+	/* Use the Linux monotonic clock directly.  s31_linux_time_ns() is
+	 * ktime_get_mono_fast_ns(); 1 us resolution keeps esp_timer_start_once
+	 * and friends from seeing 10 ms quantization while the gate is held. */
+	return (uint64_t)(s31_linux_time_ns() / 1000ULL);
 }
 
 esp_err_t __wrap_esp_timer_create(const esp_timer_create_args_t *args,
@@ -127,11 +130,10 @@ int64_t __wrap_esp_timer_get_time(void)
 	return (int64_t)s31_timer_now_us();
 }
 
-/* Called from the TIMG1 hard IRQ so esp_timer_get_time() advances even while
- * the radio worker is starved by a blob-gate holder. */
+/* Legacy hard-IRQ advance hook.  Time is now read from the Linux monotonic
+ * clock in s31_timer_now_us(), so there is no separate epoch to advance. */
 void s31_linux_timer_advance(void)
 {
-	/* Time is read from the Linux-owned hard-IRQ counter. */
 }
 
 void s31_linux_timers_tick(void)

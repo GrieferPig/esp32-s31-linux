@@ -257,3 +257,41 @@ RX（省 51 KiB 环换 ~27 个 RX buffer）。
   blob gate，TX 环 48 槽仍会被 ACK 突发填满。下一步需要把 gen_pool
   换成抗碎片更好的分配策略，或按 size class 拆池，并评估单 hart 下
   的 coex 吞吐上限。
+
+## SMP radio-on 回归与 BLE 时钟（round5，2026-08-21）
+
+- S31 当前 BLE port 会把传给 controller blob 的 `rtc_freq` 固定为
+  32000 Hz；但 common `btdm_lp` 在当前非 sleep 配置下会回退到精度不足的
+  136 kHz RC，并明确警告该时钟不能可靠维持 ACL/同步过程。Linux radio
+  payload 现在在 `esp_bt_controller_init()` 前、controller 仍为 IDLE 时，
+  选择由 40 MHz 主晶振精确分频得到的 32 kHz LP clock，使硬件时基与 blob
+  参数一致。不要在 init 后调用 `r_esp_ble_change_rtc_freq()`：实验中改为
+  100 kHz 后扫描 100 秒也找不到设备。
+- 去掉 HCI 全帧串口 trace 后的最终 radio-on 镜像，在 CPU1 热插拔上线
+  (`nproc=2`) 的同时通过：连接 `win`（WPA2，密码见测试环境）、DHCP 获得
+  `192.168.1.21`、网关 ping 20/20、从
+  `detectportal.firefox.com/success.txt` 下载得到 `success`。45 秒 BLE LE
+  扫描同时运行，找到 public 地址 `74:A3:4A:E2:C9:DD`、名称
+  `Mesh Mi Switch`、Xiaomi FE95 service data，系统最后返回
+  `FINAL_ALIVE`。
+- 对该开关发起 LE connect 时，controller 能报告 `Connected: yes`，但
+  BlueZ 在 GATT service discovery 完成前报告
+  `le-connection-abort-by-local`，随后对象为 `Connected: no`，因此没有
+  remote GATT attribute 可列出。延长 Linux `le_supv_timeout`、跳过 remote
+  feature 命令和放宽连接间隔均没有改变结果，相关诊断改动已移除。下一步
+  必须先让开关进入配网/可连接窗口，或换一台确认持续提供 connectable GATT
+  的 BLE 外设，才能把该结果区分为目标设备行为还是 controller 建链问题。
+- 双核满载时最先出现的是 controller blob 的 LLL 管理状态断言
+  `ble_lll_mmgmt.c:648, param:0x0,0x2`。其后的 Linux/OpenSBI Flash-XIP
+  取指异常发生在 IDF assert/panic 已经嵌套 trap 之后，是次生故障；普通
+  radio 活动不会关闭 flash/cache。
+- 单纯 `renice -20` 仍属于 CFS，无法提供 IDF 的实时优先级保证。S31 IDF
+  中 `wifi` 与 `btdm` 都是 FreeRTOS priority 23，且同优先级任务会时间片
+  轮转；Linux 侧因此把两者共同映射为 `SCHED_RR/80`。只提升 `btdm` 会造成
+  BLE 扫描饿死 Wi-Fi（cfg80211 仍显示 associated，但 ARP/ping 全部失败）。
+  deferred IRQ worker 只在确有 blob IRQ callback pending 的 pass 临时使用
+  `SCHED_FIFO/90`，离开 blob gate 后立即降回 CFS。
+- 修复后实测 90 秒：两个 hart 各绑一个 CoreMark、BLE discovery、持续
+  网关 ping 和 HTTP wget 并行。结果为 ping 89/89、HTTP 成功 209 次、每个
+  hart 4 次 CoreMark CRC 正确，并发现 `Mesh Mi Switch`；无 line-648 assert、
+  `CPU_LOCKUP_RESET`、shell stall 或隐藏的 kernel panic。
