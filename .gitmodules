@@ -8,4 +8,4 @@
 	branch = v1.9-esp32-s31
 [submodule "buildroot"]
 	path = buildroot
-	url = https://gitlab.com/buildroot.org/buildroot.git
+	url = https://github.com/buildroot/buildroot.git
