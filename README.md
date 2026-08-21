@@ -42,9 +42,10 @@ $ esptool -p /dev/ttyUSB0 -b 2000000 write-flash \
 | Feature | Status |
 |---|---|
 | Buildroot rootfs | 🟢 Stable |
-| Reboot and poweroff | 🟢 Stable |
-| Wireless (ESP-Hosted) | 🟡 Experimental |
-| Dual hart SMP | ⚫ Not Planned (Used by FreeRTOS; see FAQ) |
+| Reboot | 🟢 Stable |
+| Poweroff | 🔴 Not Implemented |
+| Wireless (S-mode radio blobs) | 🟠 WIP |
+| Dual hart SMP | 🟠 WIP (loader temporarily owns hart0) |
 
 ### Peripheral Drivers
 | Feature | Status |
@@ -135,4 +136,3 @@ I noticed folks on [Hacker News](https://news.ycombinator.com/item?id=49087499) 
 ### TODO
 
 [^1]: I actually liked the BL808 and attempted to use it for a project, but the absurd lack of drivers is REAL BAD and made me appreciate Espressif's software support more
-

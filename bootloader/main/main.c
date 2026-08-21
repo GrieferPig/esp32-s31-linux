@@ -30,9 +30,6 @@
 #include "hal/wdt_hal.h"
 #include "heap_memory_layout.h"
 #include "esp_heap_caps.h"
-#include "nvs_flash.h"
-#include "esp_hosted_coprocessor.h"
-#include "slave_bt.h"
 #include "driver/uart.h"
 #include "freertos/FreeRTOS.h"
 #include "freertos/task.h"
@@ -43,8 +40,7 @@
 #include "soc/hp_mem_apm_reg.h"
 #include "hal/mmu_ll.h"
 #include "hal/mmu_types.h"
-#include "hosted_sram.h"
-#include "s31_hosted_sram.h"
+#include "s31_memory_layout.h"
 
 #define OPENSBI_XIP_ADDR              0x40220000U
 /* The complete 16-MiB Flash is linearly mapped at the IDF flash aperture. */
@@ -58,21 +54,17 @@
 #define LINUX_PARTITION_SIZE          0x00600000U
 #define ROOTFS_PARTITION_OFFSET       0x00A00000U
 #define ROOTFS_PARTITION_SIZE         0x00600000U
-#define ESP32S31_PSRAM_SIZE           0x01000000U
-#define LINUX_PSRAM_START             0x50000000U
-/*
- * Place the shared ring immediately below the hardware-owned DMA/status
- * buffers. This leaves one large primary HP SRAM region for FreeRTOS; the
- * separate ROM-tail region remains available through the IDF heap layout.
- */
-#define LINUX_SRAM_START              S31_HOSTED_SRAM_BASE
-#define LINUX_SRAM_RING_END           (S31_HOSTED_SRAM_BASE + S31_HOSTED_SRAM_SIZE)
-#define LINUX_DMA_START               LINUX_SRAM_RING_END
-#define LINUX_DMA_END                 0x2F079800U
-#define LINUX_SRAM_END                0x2F079800U
-#define HART1_EARLY_MAILBOX_ADDR      0x2F076FA0U
-SOC_RESERVE_MEMORY_REGION(LINUX_SRAM_START, LINUX_SRAM_RING_END, hosted_ring);
+#define ESP32S31_PSRAM_SIZE           S31_PSRAM_SIZE
+#define LINUX_PSRAM_START             S31_PSRAM_BASE
+#define RADIO_SRAM_START              S31_RADIO_HEAP_BASE
+#define RADIO_SRAM_END                S31_RADIO_EXC_END
+#define LINUX_DMA_START               S31_AXI_DESC_BASE
+#define LINUX_DMA_END                 S31_LINUX_DMA_END
+#define HART1_EARLY_MAILBOX_ADDR      S31_HART1_MAILBOX_BASE
+SOC_RESERVE_MEMORY_REGION(RADIO_SRAM_START, RADIO_SRAM_END, radio_world);
 SOC_RESERVE_MEMORY_REGION(LINUX_DMA_START, LINUX_DMA_END, linux_devices);
+SOC_RESERVE_MEMORY_REGION(S31_RADIO_HEAP_LOW_BASE, S31_RADIO_HEAP_LOW_END,
+			  radio_heap_low);
 
 static const char *TAG = "boot";
 volatile uint32_t g_core1_fdt;
@@ -83,6 +75,11 @@ volatile uint32_t g_core1_trap_mtval;
 volatile uint32_t g_core1_trap_mepc;
 
 extern void core1_linux_trampoline(void);
+extern void core0_enter_opensbi(uint32_t fdt);
+
+#ifdef S31_NATIVE_WIFI_PROBE
+extern void s31_native_wifi_probe(void) __attribute__((noreturn));
+#endif
 
 /* Keep all loader output on the dedicated USB Serial/JTAG peripheral. */
 static __attribute__((noreturn)) void loader_restart(const char *reason)
@@ -256,6 +253,14 @@ static void enable_core1_external_memory_bus(uint32_t vaddr, uint32_t size)
     cache_ll_l1_enable_bus(1, bus);
 }
 
+static void disable_core0_stack_protector(void)
+{
+    assist_debug_ll_sp_spill_monitor_disable(0);
+    assist_debug_ll_sp_spill_interrupt_disable(0);
+    assist_debug_ll_sp_spill_set_min(0, 0);
+    assist_debug_ll_sp_spill_set_max(0, 0xffffffff);
+}
+
 static void disable_core1_stack_protector(void)
 {
     assist_debug_ll_sp_spill_monitor_disable(1);
@@ -269,7 +274,7 @@ static void start_linux_on_core1(uint32_t fdt)
     g_core1_fdt = fdt;
     g_core1_trampoline_entered = 0;
     for (uint32_t addr = HART1_EARLY_MAILBOX_ADDR;
-         addr < LINUX_SRAM_END; addr += sizeof(uint32_t)) {
+         addr < LINUX_DMA_END; addr += sizeof(uint32_t)) {
         *(volatile uint32_t *)addr = 0;
     }
     __asm__ volatile ("fence rw, rw" ::: "memory");
@@ -310,15 +315,36 @@ static void start_linux_on_core1(uint32_t fdt)
 #define LINUX_PARTITION_SIZE          0x00600000U
 #define ROOTFS_PARTITION_OFFSET       0x00A00000U
 #define ROOTFS_PARTITION_SIZE         0x00600000U
-#define ESP32S31_PSRAM_SIZE           0x01000000U
-#define LINUX_PSRAM_START             0x50000000U
-
 static bool map_flash_range(uint32_t vaddr, uint32_t paddr, uint32_t size);
 static bool prepare_core1_cached_psram(void);
 static void enable_core1_external_memory_bus(uint32_t vaddr, uint32_t size);
 static void disable_core1_stack_protector(void);
 static void start_linux_on_core1(uint32_t fdt);
 
+/* Clear only the HP-SRAM regions transferred to Linux/blob ownership. */
+static void clear_sram_for_linux(void)
+{
+    const uint32_t start = S31_RADIO_HEAP_LOW_BASE;
+    const uint32_t end = S31_LINUX_DMA_END;
+    volatile uint32_t *p = (volatile uint32_t *)start;
+
+    while ((uint32_t)p < end) {
+        *p++ = 0;
+    }
+    if (Cache_WriteBack_Invalidate_Addr(CACHE_MAP_L1_DCACHE, start,
+                                        end - start) != 0) {
+        ESP_LOGE(TAG, "SRAM D-cache handoff failed");
+    }
+    /* Publish ROM Wi-Fi globals without overwriting them. */
+    if (Cache_WriteBack_Invalidate_Addr(CACHE_MAP_L1_DCACHE,
+                                        0x2f07f000, 0x1000) != 0) {
+        ESP_LOGE(TAG, "ROM Wi-Fi global D-cache handoff failed");
+    }
+    fence_i();
+}
+
+/* Both harts now enter OpenSBI: hart0 is the boot hart, hart1 is parked in
+ * OpenSBI's secondary wait loop until Linux brings it up with SBI HSM. */
 static void prepare_linux_uart0(void)
 {
     const uart_config_t config = {
@@ -342,6 +368,13 @@ static void prepare_linux_uart0(void)
 
 void app_main(void)
 {
+#ifdef S31_NATIVE_WIFI_PROBE
+    /* Keep the native comparison on the same /dev/ttyUSB0 UART used by
+     * OpenSBI/Linux. */
+    esp_rom_output_set_as_console(0);
+    s31_native_wifi_probe();
+#endif
+
     /* Allow the USB Serial/JTAG device to enumerate before loader output. */
     vTaskDelay(pdMS_TO_TICKS(5000));
 
@@ -436,36 +469,21 @@ void app_main(void)
              rootfs_part->address, rootfs_part->size,
              (uint32_t)ROOTFS_FLASH_ADDR);
 
-    ESP_LOGI(TAG, "FreeRTOS HP SRAM primary region; hosted ring 0x%08" PRIx32
-                  "..0x%08" PRIx32 "; DMA/status 0x%08" PRIx32 "..0x%08" PRIx32,
-             (uint32_t)LINUX_SRAM_START, (uint32_t)LINUX_SRAM_RING_END,
+    ESP_LOGI(TAG, "radio heap 0x%08" PRIx32 "..0x%08" PRIx32
+                  "; exception 0x%08" PRIx32 "..0x%08" PRIx32
+                  "; DMA/status 0x%08" PRIx32 "..0x%08" PRIx32,
+             (uint32_t)S31_RADIO_HEAP_BASE, (uint32_t)S31_RADIO_HEAP_END,
+             (uint32_t)S31_RADIO_EXC_BASE, (uint32_t)S31_RADIO_EXC_END,
              (uint32_t)LINUX_DMA_START, (uint32_t)LINUX_DMA_END);
 
-    /* Publish the complete transport before hart1 can touch its rings.
-     * Hart0 receives Linux traffic through the IDF-owned CPU3 doorbell;
-     * the RX task blocks between notifications, so Linux cannot alter its
-     * interrupt-matrix route by resetting hart1.
-     */
-    if (s31_hosted_sram_start() != ESP_OK)
-        loader_restart("hosted SRAM transport");
-    ESP_LOGI(TAG, "hosted SRAM transport started");
+    ESP_LOGI(TAG, "radio hardware left to Linux S-mode");
 
-    err = nvs_flash_init();
-    if (err == ESP_ERR_NVS_NO_FREE_PAGES ||
-        err == ESP_ERR_NVS_NEW_VERSION_FOUND) {
-        ESP_ERROR_CHECK(nvs_flash_erase());
-        err = nvs_flash_init();
-    }
-    if (err != ESP_OK || esp_hosted_coprocessor_init() != ESP_OK)
-        loader_restart("ESP-Hosted co-processor");
-    ESP_LOGI(TAG, "ESP-Hosted co-processor started");
-
-#ifdef CONFIG_ESP_HOSTED_CP_BT
-    if (init_bluetooth() != ESP_OK || enable_bluetooth() != ESP_OK)
-        loader_restart("Bluetooth controller");
-    ESP_LOGI(TAG, "Bluetooth controller enabled over Hosted VHCI");
-#endif
-
+    clear_sram_for_linux();
     start_linux_on_core1(fdt);
-    ESP_LOGI(TAG, "hart1 released to OpenSBI; hart0 FreeRTOS continues");
+    disable_core0_stack_protector();
+    ESP_LOGI(TAG, "hart1 released as secondary; hart0 entering OpenSBI");
+    core0_enter_opensbi(fdt);
+    /* Not reached. */
+    while (1)
+        ;
 }

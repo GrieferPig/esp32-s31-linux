@@ -1,10 +1,12 @@
-Note that P4 and S31's CLIC and CLINT base addresses and reg layout differ!
-S31 override from bootloader probes (2026-06-28): do not apply the P4
-"Only machine mode interrupts are supported" / fixed-RO clicintattr.MODE text
-below directly to S31.  On tested ESP32-S31, mcliccfg WARL readback gives
-NMBITS=1, and implemented M CLIC slots accept MODE=0b00, MODE=0b01, and
-MODE=0b11 through word accesses.  End-to-end non-M interrupt delivery is still
-not proven.
+ESP32-P4 TRM 摘录，仅作为低优先级旁证。
+
+不要把本文件中的地址、寄存器布局或特权级模型直接用于 ESP32-S31。
+当前 S31 实测结论以 s31_clic_clint.txt 为准：M-mode CLIC 基址为
+0x10800000，S-mode CLIC 窗口由 sclicbase=0x10a00000 单独提供；当前机器
+全局配置采用旧版 S31/IDF 布局，NMBITS[6:5] 只读为 0，MNLBITS[4:1]
+可写。因此，本文件后文的“仅支持 M-mode”也不能套用到 S31。
+
+以下内容保持为未经改写的 P4 TRM 参考。
 ======================================================================
 === Page 111 ===
 ======================================================================

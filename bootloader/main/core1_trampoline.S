@@ -124,3 +124,67 @@ core1_early_trap:
     j       1b
 
     .option pop
+
+/*
+ * ESP32-S31 hart0 Linux handoff stub.  Called from C after hart1 has been
+ * released; hart0 then becomes the OpenSBI/Linux boot hart.
+ */
+    .section .iram1, "ax"
+    .align  6
+    .global core0_enter_opensbi
+    .type   core0_enter_opensbi, @function
+    .option push
+    .option norelax
+
+core0_enter_opensbi:
+    csrw    mie, zero
+    csrw    0x307, zero             /* mtvt */
+
+    /* Clear this hart's CLIC slots, same as the hart1 trampoline. */
+    li      t0, 0x10801000
+    li      t1, 128
+1:
+    sb      zero, 0(t0)
+    sb      zero, 1(t0)
+    sb      zero, 2(t0)
+    sb      zero, 3(t0)
+    addi    t0, t0, 4
+    addi    t1, t1, -1
+    bnez    t1, 1b
+
+    /* PMA entry 7 for cached PSRAM, same as hart1. */
+    csrw    0xbc7, zero             /* pmacfg7 */
+    csrw    0xbd7, zero             /* pmaaddr7 */
+    li      t0, 0x147fffff
+    csrw    0xbd7, t0
+    li      t0, 0xe000001d
+    csrw    0xbc7, t0
+
+    /* Clear all possible PMP entries, then allow full RWX. */
+    csrw    pmpcfg0, zero
+    csrw    pmpcfg1, zero
+    csrw    pmpcfg2, zero
+    csrw    pmpcfg3, zero
+    csrw    pmpaddr0, zero
+    csrw    pmpaddr1, zero
+    csrw    pmpaddr2, zero
+    csrw    pmpaddr3, zero
+    csrw    pmpaddr4, zero
+    csrw    pmpaddr5, zero
+    csrw    pmpaddr6, zero
+    csrw    pmpaddr7, zero
+
+    li      t0, -1
+    csrw    pmpaddr0, t0
+    li      t0, 0x1f                 /* NAPOT, RWX */
+    csrw    pmpcfg0, t0
+
+    mv      a1, a0                  /* fdt_addr from C */
+    li      a0, 0                   /* boot hart id */
+    fence   rw, rw
+    fence.i
+    li      t0, 0x40220000
+    jr      t0
+
+    .size core0_enter_opensbi, . - core0_enter_opensbi
+    .option pop

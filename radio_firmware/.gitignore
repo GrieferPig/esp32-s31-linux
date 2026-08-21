@@ -1,0 +1,7 @@
+*.elf
+*.o
+*-log.txt
+*-report.txt
+nofreertos_link.txt
+linux-radio-localize.txt
+linux-radio-undefined.txt

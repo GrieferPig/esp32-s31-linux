@@ -1,108 +1,87 @@
-ESP32-S31 OpenSBI Flash XIP layout
+ESP32-S31 OpenSBI / Linux XIP 当前布局
+======================================
 
-Goal:
-- Keep OpenSBI text/rodata in flash and execute through the flash MMU window.
-- Keep OpenSBI writable data, BSS, scratch, stack, and heap in a 64-KiB
-  internal HP-SRAM carve-out so Linux can use all 16 MiB of cached PSRAM.
-- Keep the OpenSBI partition size fixed at 512KB.
-- Boot OpenSBI/Linux on HP core 1. Core 0 boots the ESP-IDF factory app in
-  single-core mode and keeps running the FreeRTOS scheduler.
+本文只记录当前实现。旧的“hart1 是启动 hart、hart0 永久停驻”方案已经废弃。
 
-Address contract:
-- The factory app maps the complete 16-MiB Flash linearly at 0x40000000.
-- OpenSBI is at flash offset 0x220000 and must be linked with
-  FW_TEXT_START=0x40220000.
-- OpenSBI writable sections are linked with FW_RW_START=0x2F052000.
-- OpenSBI owns the 64-KiB internal HP-SRAM interval
-  0x2F052000..0x2F062000. The factory app reserves it before heap creation.
-- Linux receives the full 16-MiB cached PSRAM alias in its DT memory node:
-  0x50000000..0x51000000.
-- ESP-IDF maps PSRAM at the cached 0x50000000 alias, but the factory app uses
-  CONFIG_SPIRAM_USE_MEMMAP and explicitly disables USE_CAPS_ALLOC/USE_MALLOC.
-  IDF's own extram reserved-region entry therefore keeps all PSRAM out of the
-  FreeRTOS heap without a duplicate project reservation.
-- Linux xipImage is at flash offset 0x400000 and executes at 0x40400000,
-  aligned to the 4-MiB Sv32 megapage boundary. Its partition reserves exactly
-  0x600000 bytes and ends at flash offset 0xA00000.
-- The persist partition starts immediately after OpenSBI at flash offset
-  0x2A0000 and fills the 0x160000 gap before Linux. It is a 1.375-MiB data
-  partition and ends at the Linux offset.
-- The rootfs starts at flash offset 0xA00000 and executes at 0x40A00000. Its
-  partition is expanded to 0x600000 bytes and ends at the 16-MiB flash limit
-  (offset 0x1000000).
-- The full 16-MiB Flash MTD window is the same linear mapping,
-  0x40000000..0x41000000.
+1. Flash 与运行时地址
+---------------------
 
-Partition image format:
-- Offset 0: raw OpenSBI fw_jump.bin.
-- Next byte after fw_jump.bin: OpenSBI FDT blob.
-- Padding: zero bytes up to partition_size - 4.
-- Last 4 bytes of the 512KB partition: little-endian uint32 file offset of the FDT blob.
+- loader 将板载 16 MiB Flash 线性映射到 0x40000000..0x41000000。
+- OpenSBI 分区：Flash offset 0x220000，大小 0x80000；
+  FW_TEXT_START=0x40220000，代码和只读数据直接从 Flash XIP。
+- persist 分区：offset 0x2a0000，大小 0x160000。
+- Linux xipImage：offset 0x400000，大小上限 0x600000；执行映射从
+  0x40400000 开始，满足 Sv32 4 MiB megapage 对齐要求。
+- rootfs：offset 0xa00000，大小 0x600000；线性 Flash 地址为
+  0x40a00000..0x41000000。
 
-Boot flow:
-- The ESP-IDF second-stage bootloader uses the normal IDF partition selection
-  and boots the factory app on core 0.
-- The factory app is built with CONFIG_FREERTOS_UNICORE=y and
-  CONFIG_ESP_SYSTEM_SINGLE_CORE_MODE=y, so IDF does not start core 1.
-- The factory app verifies PSRAM, maps OpenSBI/Linux and the rootfs flash
-  window, configures permissive APM/MSPI PMS, rewrites the shared 64-KiB PSRAM
-  MMU entries for the 16-MiB cached window, enables hart1's private I-cache
-  bus and the shared D-cache bus, then writes the core 1 boot address.
-- Core 1 starts in a small IRAM trampoline. The trampoline clears interrupt
-  state, installs hart-local PMA entry 7 for the cached 64-MiB PSRAM aperture,
-  installs a full-space PMP entry for Linux S-mode, and jumps to OpenSBI with:
-  - a0 = 1
-  - a1 = fdt_addr
-- Core 0 remains in the FreeRTOS scheduler after releasing core 1. Its worker
-  task and timer interrupts are used to verify concurrent scheduler progress.
-- OpenSBI owns 0x2F052000..0x2F062000 (64 KiB) of IDF-usable HP SRAM.
-- Linux devices own a contiguous 0x6880-byte HP-SRAM carve-out:
-  0x2F072F80..0x2F075F80 for AXI-GDMA descriptors,
-  0x2F075F80..0x2F076F80 for AHB-GDMA descriptors,
-  0x2F076F80..0x2F076FC0 for USB local SRAM, and
-  0x2F077000..0x2F079800 for the UHCI0 payload ring. The factory app
-  registers the combined interval with SOC_RESERVE_MEMORY_REGION before heap
-  creation.
-- AXI-GDMA, SDMMC, Ethernet, and USB OTG are enabled. Their DMA allocations
-  use cached Linux memory plus the existing S31 driver cache-maintenance and
-  internal-SRAM descriptor/status carve-outs.
+OpenSBI 可写区的 FW_RW_START=0x50ff0000。它独占 cached PSRAM 的最后
+64 KiB，即 0x50ff0000..0x51000000；设备树必须把该区标为 no-map，Linux
+不得分配它。
 
-Hart1 cached-PSRAM requirement:
-- PMA is hart-local; copying hart0's shared MMU/APM/cache registers is not
-  sufficient. ESP-IDF's S31 esp_cpu_configure_region_protection() programs
-  PMA entry 7 as a locked RWX NAPOT region for
-  0x50000000..0x53FFFFFF. The hart1 trampoline must do the same.
-- The corresponding CSR values are pmaaddr7=0x147FFFFF and
-  pmacfg7=0xE000001D. Without this entry, hart1's first store to cached PSRAM
-  stops with a PMP/PMA Store access fault even though MMU, APM and MSPI PMS
-  allow the access.
-- Linux setup_vm() builds Sv32 page tables in cached PSRAM. S31's page-table
-  walker does not snoop the shared write-back D-cache, so head.S writes back
-  the cached PSRAM window before loading SATP.
+2. fw_payload.bin 格式
+----------------------
 
-OpenSBI requirements:
-- fw_jump.S must report boot hart 1.
-- fw_base.S must allow hart 1 through the early entry check.
-- The OpenSBI/Linux FDT CPU node must describe cpu@1/reg=<1> for the single
-  Linux hart.
+- offset 0：原始 OpenSBI fw_jump.bin。
+- fw_jump.bin 之后按 8 字节对齐放置 FDT。
+- 中间补零到分区末尾前 4 字节。
+- 512 KiB 分区最后 4 字节：FDT 文件偏移的小端 uint32。
 
-Build-time checks:
-- The generated fw_payload.bin must be exactly 512KB.
-- OpenSBI + FDT must fit in the first 512KB - 4 bytes.
-- Link-time assertions require FW_TEXT_START=0x40220000,
-  FW_RW_START=0x2F052000, and writable sections no larger than 16 KiB. The
-  configured 8-KiB stack/scratch area and 37-KiB heap keep the total runtime
-  allocation within the 64-KiB reserved interval.
+构建必须检查：成品恰为 0x80000 字节；OpenSBI 与 FDT 不得覆盖最后的
+偏移槽；链接断言保证所有 writable section、stack、scratch 和 heap 均落在
+上述 64 KiB 保留区内。
 
-OpenSBI XIP relocation rule:
-- fw_base.S copies .data from flash LMA to FW_RW_START before the boot lottery.
-- The R_RISCV_RELATIVE relocation loop then patches pointers inside .data, for
-  example platform.ops at platform + 0x60.
-- Do not copy .data a second time after relocation. Doing so restores the raw
-  flash image, zeros relocated pointers, and can fault on a null load in
-  sbi_platform_ops().
+3. 当前双 hart 启动顺序
+-----------------------
 
-Early fault note:
-- OpenSBI's first instructions copy .data from flash LMA to FW_RW_START.
-- A store/AMO access fault before the OpenSBI banner usually points at the
-  HP-SRAM reservation or handoff protection state, not the FDT offset.
+1. ESP-IDF 二级 bootloader 在 hart0 启动 factory loader。
+2. loader 初始化 PSRAM、Flash 线性映射、cache bus、APM/MSPI PMS，并准备
+   OpenSBI FDT。
+3. loader 释放 hart1 到 IRAM trampoline。hart1 以 a0=1、a1=fdt_addr 进入
+   OpenSBI，并在 secondary wait loop 中等待 SBI HSM 启动。
+4. hart0 随后以 a0=0、a1=fdt_addr 进入同一个 OpenSBI；fw_jump 明确选择
+   hart0 为 cold/boot hart，Linux 也从 hart0 启动。
+5. 当前内核命令行默认 maxcpus=1；系统稳定进入用户态后可通过
+   /sys/devices/system/cpu/cpu1/online 热插拔启动 hart1。
+
+两个 trampoline 都必须在进入 OpenSBI 前独立完成以下 hart-local 初始化：
+
+- 关闭本 hart M-mode 中断并清除全部 128 个 M CLIC slot 的 IP/IE/ATTR/CTL，
+  避免继承 bootloader、ROM 或 blob 留下的 pending/configuration；
+- 设置 PMA7：pmaaddr7=0x147fffff、pmacfg7=0xe000001d，覆盖
+  0x50000000..0x53ffffff cached PSRAM aperture；
+- 清理旧 PMP 配置，再建立允许 Linux S-mode 访问完整地址空间的 RWX
+  NAPOT entry。
+
+PMA 是 hart-local。只配置共享 MMU/APM/cache 寄存器不能替代 hart1 的 PMA7；
+缺少该项时，hart1 对 0x50000000 的首次 store 会产生 access fault。
+
+4. Cache 与 Sv32 页表
+---------------------
+
+OpenSBI 和 Linux RAM 使用 0x50000000 cached PSRAM alias。S31 的 Sv32 page
+table walker 不 snoop shared write-back D-cache，因此 Linux head.S 在首次写
+satp 前必须对页表所在 PSRAM 执行
+ESP32S31_DCACHE_WRITEBACK_LINUX_PSRAM（0x2c000000）。若缺少该 writeback，
+软件看到的 PTE 可以正确，而 walker 仍可能读取旧内容并在开启 MMU 后异常。
+
+5. OpenSBI XIP relocation 约束
+-----------------------------
+
+fw_base.S 在 boot lottery 之前将 .data 从 Flash LMA 复制到 FW_RW_START，随后
+R_RISCV_RELATIVE relocation loop 修正 .data 内的指针。禁止 relocation 后再次
+复制 .data；第二次复制会恢复 Flash 中未重定位的原值，可能使
+sbi_platform_ops() 通过空指针访问而 fault。
+
+OpenSBI banner 前的 store/AMO access fault 应优先检查 PSRAM MMU、cache bus、
+PMA7 和 cache handoff，而不是先归因于 FDT。若异常只在一次刷写后出现，还应
+先按 AGENTS.md 的 flash corruption 流程完整擦写、校验并复现。
+
+6. 当前运行边界
+---------------
+
+OpenSBI 仍负责 M-mode 启动、SBI HSM 和 reset 等固件服务。Linux 运行期的
+跨核 IPI/RFENCE 已走 S-mode native CLIC doorbell，clockevent 走 native
+SYSTIMER；不要退回 OpenSBI M-IPI 或让 S-mode 直接访问 local MTIME。中断
+模型与本轮稳定性修复详见 s31_clic_clint.txt 和
+s31_smode_clic_irq_findings.txt。

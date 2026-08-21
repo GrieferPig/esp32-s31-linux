@@ -1,365 +1,134 @@
-ESP32-S31 S-mode CLIC interrupt findings
-Date: 2026-06-27
-Cleaned/updated: 2026-07-22
-Ground truth: docs/s_mode_clic_interrupt.md
+ESP32-S31 SMP CLIC lockout findings
+Updated: 2026-08-21
 
-Scope
------
-This file keeps only the current, non-obsolete findings for configuring
-ESP32-S31 CLIC interrupts to S-mode.  Older negative tests that were caused by
-missing CLIC multi-privilege configuration, PASS_LEVEL-only routing attempts,
-or S/U CLIC-base mirror confusion have been removed.
-
-Current model
--------------
-- ESP32-S31 HP core is a pure CLIC-mode core.  mtvec.MODE and stvec.MODE read
-  back as CLIC mode 0x3.
-- The standard RISC-V interrupt path is not available for this bring-up:
-  mie/mip/mideleg/uie/uip are unavailable or hardwired, and CSR sie (0x104)
-  is illegal from both M-mode and S-mode.
-- mideleg is hardwired to 0.  In CLIC mode, interrupt target privilege is
-  selected by each implemented CLIC slot's clicintattr[i].MODE field after
-  mcliccfg.NMBITS has been configured.
-- mcause contains implementation status bits in the upper bits on traps.
-  Always parse the cause/interrupt ID with:
-      cause_code = mcause & 0xfff
-- S-mode can clear IP bits directly using the S-mode CLIC base address.
-  On S31, the non-standard S-mode CLIC base is available at CSR 0x150 (`sclicbase`),
-  which evaluates to `0x10A00000`. S-mode must write to `sclicbase + 0x1000 + 4*i`
-  to clear the pending bit. CPU_APM must be configured by M-mode to permit S-mode
-  peripheral access.
-
-CLIC bases and IDs
-------------------
-- M CLIC base:
-      mclicbase CSR 0x350 = 0x10800000
-- Per-interrupt register block:
-      0x10801000 + 4 * raw_clic_id
-      byte +0: clicintip
-      byte +1: clicintie
-      byte +2: clicintattr
-      byte +3: clicintctl
-- External raw CLIC IDs are 16..47.  When writing interrupt matrix SOURCE_MAP
-  registers directly, write the raw CLIC ID, not an ESP-IDF allocator interrupt
-  number.
-- Implemented CLIC slots observed in scans:
-      local/system: 1, 3, 5, 7, 11
-      external:     16..47
-  Other raw IDs in 0..47 read as unimplemented/reserved in the CLIC attr scan.
-
-Required S-mode CLIC configuration
-----------------------------------
-1. Enable multi-privilege CLIC mode in mcliccfg.
-
-   The relevant field is NMBITS[6:5].  Configure effective NMBITS=1 before
-   relying on clicintattr.MODE for M/S/U routing.
-
-   Example:
-       volatile uint32_t *mcliccfg = (volatile uint32_t *)0x10800000;
-       *mcliccfg = (*mcliccfg & ~(3U << 5)) | (1U << 5);
-
-2. Configure the target CLIC slot through the M CLIC per-interrupt word.
-
-   Example for raw CLIC ID 1, commonly used as Supervisor Software Interrupt:
-
-       volatile uint32_t *clicint_1 =
-           (volatile uint32_t *)(0x10801000 + 4 * 1);
-
-       /*
-        * Write ATTR before IP to ensure hardware recognizes edge-triggering!
-        * byte 2: clicintattr = 0x42   MODE=1 (S), TRIG=1, SHV=0
-        * byte 3: clicintctl  = 0xff   highest level/priority
-        * byte 1: clicintie   = 0x01   enable
-        * byte 0: clicintip   = 0x01   trigger pending
-        */
-       volatile uint8_t *c = (volatile uint8_t *)clicint_1;
-       c[2] = 0x42;
-       c[3] = 0xff;
-       c[1] = 0x01;
-       c[0] = 0x01;
-
-   ESP-IDF privilege encodings used for MODE:
-       PRV_U = 0
-       PRV_S = 1
-       PRV_M = 3
-
-3. Configure stvec for S-mode CLIC trap entry.
-
-       csrw stvec, ((handler_base & ~0x3f) | 3)
-
-   The base must be 64-byte aligned.  stvec.MODE reads back as 3.
-
-4. Enable S-mode interrupt state before mret to S-mode.
-
-       mstatus.SIE  = 1
-       mstatus.SPIE = 1
-
-   Do not use CSR sie; it is illegal on S31.
-
-5. If the interrupt is an external peripheral source, connect that peripheral
-   source to the selected raw CLIC ID through the interrupt matrix SOURCE_MAP.
-   The CLIC slot's MODE controls the delivery privilege.  Do not treat
-   interrupt matrix PASS_LEVEL alone as sufficient S-mode delivery.
-
-6. In the S-mode handler, read sclicbase to clear the pending bit directly.
-
-       static void __attribute__((interrupt("supervisor"), aligned(64)))
-       test_s_clic_handler(void)
-       {
-           uint32_t sclicbase;
-           __asm__ volatile ("csrr %0, 0x150" : "=r"(sclicbase));
-           
-           volatile uint8_t *ip = (volatile uint8_t *)(sclicbase + 0x1000 + 4 * 1);
-           *ip = 0;          /* clear clicintip for the relevant ID */
-       }
-
-7. PMP and APM Requirements for S-mode:
-   - M-mode must configure PMP (e.g. pmpaddr0=-1, pmpcfg0=0x1F) to allow S-mode
-     instruction fetch and data access.
-   - M-mode must configure CPU_APM (Access Permission Monitor) to allow S-mode
-     (REE_MODE 1) to access the peripheral memory space, otherwise accessing
-     sclicbase will cause a Store/Load access fault.
-   - mintthresh (0x347) and sintthresh (0x147) must be cleared to 0.
-
-8. Triggering Interrupts via Software:
-   - Only edge-triggered interrupts (ATTR bit 1 = 1) can have their IP bit written
-     by software.
-   - You must write the ATTR register byte FIRST to configure it as edge-triggered,
-     BEFORE attempting to write 1 to the IP byte. Writing them simultaneously via
-     a 32-bit word write will fail to latch the IP bit.
-
-Confirmed useful observations
+Question and final conclusion
 -----------------------------
-- mcliccfg WARL writeback can expose effective NMBITS=1:
-      writing 0x00000063 while preserving existing low fields read back
-      0x00000023 in the observed scan.
-- clicintattr.MODE is writable on implemented M CLIC slots after NMBITS is
-  configured.  Observed readbacks accepted MODE=0, MODE=1, and MODE=3.
-- clicintctl has 3 effective high bits on the tested S31.  The low 5 bits are
-  hardware-forced to 1.  For example:
-      write 0x2a -> read 0x3f
-  This is normal CLIC control-bit WARL behavior and is not a privilege selector.
-- stvec, sscratch, sepc, scause, stval, sstatus, and satp are usable S-mode
-  trap/MMU CSRs for OpenSBI-to-S-mode handoff.  stvec mode bits are forced
-  to 3 with a writable, 64-byte-aligned base.
+CoreMark followed by SIGINT could leave the shell permanently unresponsive on
+two Linux harts. The final diagnosis has two distinct parts:
 
-Linux/OpenSBI CLIC return and timer forwarding (2026-07-22)
-------------------------------------------------------------
-- ESP-IDF is explicit about the architectural requirement.  In
-  components/riscv/vectors.S, the CLIC interrupt return path restores the
-  saved mcause before mstatus and mret because mcause contains the former CPU
-  priority that xret copies back into mintstatus.
-- A temporary bootloader S-mode probe confirmed that the same rule applies to
-  scause on S31.  The measured sequence was:
-      phase=3 outer=98000021 synthetic=98ff0021
-      restored=98000021 after_sret=88000021 second=98000021
-  scause is writable, the complete saved value reads back correctly, and sret
-  consumes the saved cause/priority state.  The probe was removed after the
-  result was captured.
-- Linux therefore restores the complete saved scause, then sstatus and sepc,
-  and executes exactly one sret for each hardware interrupt.  A temporary
-  design that used an early synthetic sret plus the final sret was invalid:
-  it popped the CLIC return state twice.
-- OpenSBI applies the corresponding mcause-before-mstatus restore order to its
-  M-mode trap return.
+1. An old Linux image incorrectly enabled SBI RFENCE. TLB shootdowns entered
+   OpenSBI, sent M-mode software IPI ID3, and could deadlock while both harts
+   were in IRQ-disabled kernel critical sections.
+2. After switching to native S-mode IPIs, S31 could still retain an S CLIC
+   return/active state in which a slot remained IP=1, IE=1 and SIE=1 but the
+   hart did not enter its handler. This affected timer/IPI and ordinary device
+   interrupts, so replacing only the IPI transport was insufficient.
 
-Timer cross-privilege race and final fix
-----------------------------------------
-- S31 rejects medeleg.bit8 (U-mode ECALL); OpenSBI's requested delegation reads
-  back as medeleg=0x0000b000.  Linux user syscalls therefore arrive first as
-  raw M-mode mcause=0x08000008 and are redirected to S-mode.  Timer SBI calls
-  similarly arrive as raw mcause=0x08000009.
-- Copying the raw M cause to scause, or restoring its complete CLIC metadata on
-  mret for a synchronous exception, leaks the cross-privilege 0xff sentinel
-  into S-mode SIL.  The stuck signature is timer/peripheral clicintip=1 and
-  clicintie=1 while the CPU remains in arch_cpu_idle; DMI readback showed
-  mintstatus=0x0000ff00.
-- Complete xcause restoration is mandatory only for CLIC interrupts, whose
-  cause contains a real previous interrupt level.  For synchronous M traps,
-  OpenSBI now restores only `mcause & 0xfff`.  M-to-S exception redirect also
-  writes only `trap->cause & 0xfff` to scause.  SIL itself remains read-only;
-  it is restored by xret from the correctly constructed writable xcause.
-- The hardware compare is delivered directly to S-mode as raw local ID7 at
-  clicintctl=0x3f.  Linux translates ID7 to architectural timer IRQ5 for the
-  generic RISC-V timer handler.  The obsolete synthetic-ID5 generator,
-  sintstatus.SIL retry workaround, ID5 setup, and Linux SPIL=0xff sanitizer
-  are not used and have been removed.  The timer device itself now owns ID7
-  enable and pending-latch handling instead of the generic timer core.
-- Validation after this fix: 128 MiB SD write/read plus active GMAC completed,
-  with 69,175 timer interrupts, 573 GMAC interrupts and no interrupt lockout.
+The current solution keeps runtime SMP IPIs and RFENCE entirely in S-mode,
+uses a non-nested native SYSTIMER/doorbell layout, and adds an idle software
+recovery path that dispatches every enabled pending S external slot through its
+normal Linux handler.
 
-Cross-privilege SIL=0xff bootloader probe (2026-07-24)
-------------------------------------------------------
-- A temporary bootloader probe entered an outer S interrupt (raw ID16,
-  clicintctl=0x5f), used an S-mode ecall to arm M timer ID7, and injected
-  S timer ID5 from the M timer handler.  The probe was removed after capture.
-- With M timer clicintctl=0xff, its trap captured:
-      mcause=0x98000007
-      mintstatus=0xff00ff00  (MIL=0xff, saved S-level field=0xff)
-- With M timer clicintctl=0x3f, its trap captured:
-      mcause=0x98000007
-      mintstatus=0x3f00ff00  (MIL=0x3f, saved S-level field=0xff)
-- Therefore the saved S-level value 0xff is independent of both the active
-  M interrupt level (tested 0x3f and 0xff) and the outer S interrupt's
-  clicintctl (0x5f).  It is an S31 hardware sentinel/state produced when an
-  M-mode CLIC interrupt preempts S-mode, not inheritance of another mode's
-  MIL, SIL, or SPIL value.
-- In this controlled sequence, ID5 later entered with
-      scause=0x98000005 (SPIL=0)
-      sintstatus.SIL=0xff
-  showing that the cross-privilege 0xff first appears in the active/saved
-  S-level state.  Whether it is copied into a later S trap's SPIL depends on
-  the exact acceptance/xRET boundary; the Linux race captured that copy as
-  scause=0x98ff0005.
+Evidence for the original SBI RFENCE deadlock
+----------------------------------------------
+- `riscv_sbi_for_rfence` was 1 in the old image although the S31 irqchip was
+  intended to provide native IPIs.
+- The failing path was Linux remote sfence -> OpenSBI sbi_tlb_request() ->
+  M-mode IPI ID3. Both harts could have SIE=0 inside spin_lock_irqsave while
+  OpenSBI waited for completion.
+- The CLIC driver now calls riscv_ipi_set_virq_range() before sbi_ipi_init().
+  The architecture sees an existing IPI range, returns without enabling the
+  SBI transport, and leaves `riscv_sbi_for_rfence=0`.
+- Runtime reschedule, call-function and TLB-shootdown IPIs use HP_SYSTEM
+  doorbells ID40/41 and no longer enter OpenSBI.
 
-M-mode PLIC-style aggregation experiment (2026-07-26)
-------------------------------------------------------
-- A bootloader probe confirmed that S-mode software interrupt ID1 does not
-  nest into an active S handler when SIE is clear.  It remains pending and is
-  accepted after the outer sret, so ID1 alone initially appeared suitable as
-  a single OpenSBI-to-Linux notification interrupt.
-- A full OpenSBI prototype then routed timer ID7 and external IDs16-47 to M
-  mode, queued their IDs per hart, and notified Linux through S ID1.  Linux
-  claimed queued IDs through a private SBI extension and dispatched them
-  through its normal irq domains.
-- The full system still locked out S interrupts once an M interrupt crossed a
-  sensitive S return boundary.  The preserved OpenOCD signature was:
-      OpenSBI pending_lo=0x00000080  (timer ID7 queued)
-      CLIC ID1 word=0x5f420101       (IP=1, IE=1, S edge)
-      CPU PC=arch_cpu_idle
-  Thus the queue and notification were both present, but S could not accept
-  ID1, consistent with the cross-privilege SIL=0xff state above.
-- Restoring a sanitized scause only when saved SPIL was 0xff was also tested.
-  It reproducibly corrupted return to userspace (init instruction-access
-  fault at an invalid PC), while writing scause for normal interrupts was
-  likewise unsafe.  The experiment was reverted.
-- Conclusion: an M-mode PLIC emulation that forwards every interrupt through
-  one S CLIC software interrupt is not a safe workaround on current S31.  It
-  increases the number of M-to-S interrupt crossings that create the 0xff
-  sentinel, and the sentinel cannot be repaired generically by Linux.  Keep
-  hardware interrupts in S mode unless hardware supplies a documented way to
-  preserve/restore the S CLIC level across M-mode preemption.
+Evidence for the native S-mode acceptance lockout
+-------------------------------------------------
+- Preserved failures showed the target in or near idle with:
+      sstatus.SIE = 1
+      native slot IP = 1
+      native slot IE = 1
+      doorbell = 1 in IPI cases
+  The notification was present in hardware, but no S handler was accepted.
+- The OpenSBI machine-trap recorder reported no runtime ID21 in these failures.
+  Radio was disabled with `esp32s31_radio=off`. ID21 must therefore not be
+  blamed without an actual recorder hit.
+- Commit 63410ef was not contrary evidence: it used a single Linux hart and did
+  not exercise SMP reschedule, call-function or remote TLB shootdown paths.
 
-Single-level CLIC and raw/logical cause separation (2026-07-26)
-----------------------------------------------------------------
-- Linux keeps S31 scause in a private `pt_regs.cause_raw` hardware-return
-  token.  `pt_regs.cause` is independently normalized to the Linux logical
-  form (`CAUSE_IRQ_FLAG | raw_id`) before generic IRQ/exception dispatch.
-  Because this configuration deliberately forbids nesting, the private token
-  clears SPIL[23:16] to the only valid software return level (idle level 0).
-  Both interrupt and synchronous-exception returns write only that private
-  token to scause, immediately before restoring sstatus/sepc and executing
-  sret.  Generic Linux code never reads or modifies the hardware token.
-- OpenSBI follows the same separation: the trap context retains raw mcause for
-  hardware mret state, while a local masked cause is used for dispatch.  The
-  existing synchronous-exception path continues to remove CLIC metadata before
-  redirecting or returning.
-- Every programmable S interrupt (direct timer ID7 and external IDs16..47) is
-  fixed at ctl=0x3f.  Linux's priority API is clamped to that value, so a driver
-  cannot reintroduce priority nesting.  While an S interrupt is active, its
-  current level therefore blocks every other S interrupt until sret.
-- An OpenOCD snapshot from an initial implementation still caught a lockout:
-  CPU in `arch_cpu_idle`, ID7 and peripheral slots pending+enabled.  The same
-  snapshot showed ID21 as `0x3fc00100`; writes proved both its MODE=M and IE=1
-  fields are hardware-fixed.  Thus slot-level programming alone cannot prevent
-  every M-to-S interrupt crossing.
-- ESP-IDF's S31 `soc/interrupt_reg.h` defines `INTTHRESH_STANDARD=1`, so
-  OpenSBI programs machine `mintthresh` (CSR 0x347) to 0x3f and disables the
-  unused single-hart machine software interrupt ID3.  However, two later
-  preserved lockout snapshots proved that `mintthresh` does not remain a
-  usable persistent gate across the Linux privilege-return sequence: it read
-  back as 0x0f in both snapshots.  A halted DMI write of 0x3f read back
-  correctly, so this is later hardware state restoration, not a WARL rejection.
-- Both preserved failures had CPU0 in `arch_cpu_idle`, with ID7, SD ID16 and
-  GMAC ID17 pending+enabled at ctl=0x3f.  CPU0 additionally showed
-      scause=0x08ff0008
-      sintstatus=0x0000ff00
-      mintstatus=0x0000ff00
-      sintthresh=0x0f, mintthresh=0x0f
-  The second snapshot was taken after reasserting mintthresh in final_init and
-  every timer SBI call.  This ruled out a one-time initialization ordering bug
-  and identified restoration of raw SPIL=0xff as the immediate S lockout.
-- Final non-nested-token validation first completed one single CoreMark at
-  951.15 and returned immediately to the shell.  Two complete simultaneous
-  rounds then overlapped five CoreMarks, 32 MiB SD reads, 1000 x 1400-byte GMAC
-  pings, and repeated DWC2 unbind/bind/enumeration attempts.  Round scores were
-  145.37, 144.69, 145.14, 145.74 and 147.49 (sum 728.43), then 121.70, 120.79,
-  123.49, 124.80 and 126.91 (sum 617.70).  Both rounds ended with immediate
-  shell responses.  Final IRQ counters were timer 76317, GMAC 3427, USB 490,
-  and SDMMC 27435.
-- After applying the same SPIL sanitization to the CLIC trampoline path, the
-  final flashed image completed another full simultaneous round at 117.74,
-  118.54, 122.09, 119.14 and 123.51 (sum 601.02), plus 32 MiB SD, 1000 GMAC
-  pings and two DWC2 rebind/enumeration cycles.  `FINAL_ALIVE` returned
-  immediately; that boot recorded GMAC 1141, USB 159 and SDMMC 8425 IRQs.
-- The attached USB mass-storage device itself did not enumerate in these final
-  runs (`device descriptor read/64`, errors -71 and -110), even after controller
-  rebinds.  Therefore USB controller/error-path concurrency was validated, but
-  USB mass-storage data throughput was not; the medium must be unplugged/power
-  cycled before that part can be rerun.  Holding the board in serial RTS reset
-  for 5 seconds did not recover it: Linux still exposed only the USB root hub,
-  recorded 50 DWC2 IRQs, and failed descriptor reads with -71.  Board reset
-  therefore does not remove VBUS from the attached medium.
+Cross-privilege 0xff state
+--------------------------
+- A controlled bootloader probe proved that an M-mode CLIC interrupt crossing
+  from S-mode creates a supervisor 0xff sentinel independent of the M interrupt
+  level. Copying complete raw M cause metadata to S-mode can propagate that
+  state into a later S return boundary.
+- Logical dispatch must always mask xcause with 0xfff. Full raw xcause restore
+  is valid only for returning from the corresponding real CLIC interrupt.
+  Synchronous M/S redirects must carry only the low logical cause.
+- Restoring arbitrary SPIL values or trying to repair sintstatus from Linux was
+  unsafe. A conditional SPIL sanitizer corrupted a userspace return in an
+  earlier experiment. The current design instead forbids S interrupt nesting
+  and owns a separate raw return token.
 
-AXI GDMA validation
+Rejected or incomplete approaches
+---------------------------------
+- IPI level 7: one SIGINT sequence improved, but a later sequence stalled.
+  A higher-level IPI can also meet a cross-privilege return boundary and adds
+  nesting state that S31 does not restore reliably.
+- Separate SYSTIMER ID42/43 and IPI ID40/41: still stalled.
+- Combining SYSTIMER and IPI into one level-1 slot: reduced the frequency but
+  did not eliminate lockout by itself.
+- MNLBITS changes, `nohlt`, threshold rewriting, doorbell readback/reassert and
+  request/ack recovery: useful diagnostics, not complete fixes.
+- M-mode PLIC-style aggregation followed by one S ID1 notification: still left
+  ID1 pending and unaccepted, while increasing cross-privilege interrupts.
+- Synthetic exception/sret recovery: unsafe; a probe became stuck in exception
+  table lookup and an extra sret pops CLIC return state twice.
+- Completely removing OpenSBI: not currently valid. Direct S-mode access to
+  local MTIME/MTIMECMP faults, and boot/HSM/reset still require M-mode services.
+  The performance-sensitive SMP IPI/RFENCE path has nevertheless been removed
+  from OpenSBI.
+
+Final native layout
 -------------------
-- All three AXI GDMA channel pairs are exposed through raw CLIC IDs 33, 34 and
-  35, backed by interrupt-matrix sources 48, 49 and 50.
-- dmatest configuration: one thread per channel, three channels, 128 KiB test
-  buffers, fixed 64 KiB copies, norandom=Y.
-- Stress result: 1000 copies per channel, 0 failures on all channels, about
-  19.1 iops and 1222-1225 KiB/s per channel.  IRQ counts increased exactly by
-  1000 for each channel.
-- Final trace-free image regression: 200 copies per channel, 0 failures,
-  19.64-19.73 iops and 1257-1263 KiB/s; IRQ counts were exactly 200/200/200.
+- All S-mode timer, IPI and device slots use level 1; nesting is disabled.
+- Doorbells:
+      hart0 -> hart1: 0x20586014/source66/raw ID40
+      hart1 -> hart0: 0x20586010/source65/raw ID41
+- SYSTIMER TARGET0/source33 shares hart0 ID41; TARGET1/source34 shares hart1
+  ID40. The handler drains both asserted sources from the shared slot.
+- Linux uses SYSTIMER counter1 and per-hart one-shot targets rather than direct
+  S-mode CLINT compare access.
 
-AXI GDMA dmaengine expansion and performance (2026-07-22)
-----------------------------------------------------------
-- A 3-channel x 200-copy comparison used 64 KiB fixed transfers.  A 32-byte
-  AXI burst averaged about 19.75 iops while 128-byte burst averaged about
-  19.88 iops, both with zero failures.  The driver therefore uses 128-byte
-  bursts.  The small difference is expected because this dmatest setup is
-  dominated by non-coherent cache synchronization.
-- TX interrupt-matrix sources 51, 52 and 53 are routed to raw CLIC IDs 36, 37
-  and 38.  RX remains on source 48-50 / raw ID 33-35.
-- The dmaengine implementation now supports memcpy, memset, slave SG, cyclic,
-  residue reporting, TX descriptor-error IRQ, hardware LINK_RESTART append,
-  contiguous allocations from the internal descriptor pool, and IDF-style
-  64-byte RX head/tail stash recovery through the uncached PSRAM alias.
-- Random source/destination offsets exercised the stash path: 200 memcpy tests
-  per channel and 200 memset tests per channel completed with zero failures.
-  Four threads per channel (1200 total memcpy operations) completed with zero
-  failures and exercised multiple outstanding descriptors/hardware append.
-- A userspace cached-memory memcpy benchmark moved 128 MiB per case and measured
-  51.78 MiB/s for 64 KiB blocks and 55.07 MiB/s for 512 KiB blocks.
-- A temporary kernel benchmark mapped buffers once and then repeatedly submitted
-  DMA copies.  It measured 20.92 MiB/s with 64 KiB transactions and 95.78 MiB/s
-  with 512 KiB transactions.  The temporary benchmark hook was removed.  This
-  shows that small DMA transactions are dominated by descriptor/IRQ overhead,
-  while large transfers outperform cached software memcpy by about 1.74x.
-- Normal dmatest (about 1.2 MiB/s as reported against the requested copy size)
-  maps and synchronizes the full test buffers on every iteration, so it is an
-  end-to-end DMA API result and must not be interpreted as raw AXI bandwidth.
+Software pending recovery and the ID31 proof
+--------------------------------------------
+- Forced IRQ-enabled idle polling checks doorbell, SYSTIMER status and every
+  enabled external CLIC ID16..47 with local interrupts disabled.
+- A pending doorbell is cleared before ipi_mux_process(). A pending timer calls
+  the ordinary RISC-V clockevent handler. Other IDs are passed to
+  generic_handle_domain_irq(), preserving each device driver's acknowledgement
+  and wakeup rules.
+- The first poller version handled only timer/IPI. It completed 20 SIGINT task
+  exits, then serial output stopped between `SIGTEST20:rc=130` and its newline.
+  JTAG found both doorbells clear and both harts idle, but hart0 ID31 was
+  IP=1, IE=1. ID31 is AHB-GDMA TX4/source45, used by UHCI/UART0 DMA pair4.
+  General external-slot polling dispatched its normal completion handler and
+  removed the half-line serial stall.
+- Software timer dispatch initially panicked with "Fatal exception in
+  interrupt". The saved frame showed a load page fault at tick_periodic() from
+  bad address 0x80000000: get_irq_regs() was invalid because no hardware trap
+  frame existed. The poller now installs a zeroed kernel-mode pt_regs with
+  set_irq_regs(), surrounds dispatch with irq_enter/irq_exit, and restores the
+  prior pointer afterward.
 
-SDMMC IDMAC and GMAC validation (2026-07-24)
----------------------------------------------
-- The test card is a 32 GB SDHC card on a 1-bit CLK/CMD/D0 Dupont-wire bus.
-  The stable setting is max-frequency=12 MHz (actual 10.416 MHz).
-- Sv32 cannot express the S31 uncached PTE memory type.  DW-MSHC descriptor
-  rings therefore use a streaming DMA mapping with explicit CPU/device sync.
-  SDIO_HOST remains edge-triggered; a request-scoped 500 us hrtimer drains
-  MINTSTS/RINTSTS/IDSTS if the interrupt-matrix edge is lost.
-- Raw-card benchmark outside the partitions, at 1 GiB offset:
-      write 128 MiB, conv=fsync: 115.60 s, 1.1 MB/s
-      read 128 MiB + md5sum:    107.63 s, about 1.2 MB/s
-      MD5: fde9e0818281836e4fc0edfede2b8762
-  The write and read commands both returned zero.
-- GMAC uses interrupt-matrix source 98 on raw CLIC ID17.  Descriptor rings use
-  the uncached 0xc0000000 direct PSRAM alias while retaining the cached
-  allocation for DMA mapping/free bookkeeping.
-- YT8531 negotiated 1 Gbps/full duplex with rgmii-id and 1950 ps RX/TX delay.
-  DHCP produced no lease, but RX advanced to 208 packets with rx_errors=0.
-  Static broadcast-neighbour UDP transmitted 12,926,098 bytes in 9,229 packets
-  with tx_errors=0.  The 8.4 MB standalone portion took 7.38 s (~1.14 MB/s).
-- Concurrent 4.2 MB UDP TX plus 32 MiB SD read completed; SD retained 1.2 MB/s
-  (27.01 s).  Final IRQ counts were timer=69,175, GMAC=573 and SDMMC=36.
+Validation and remaining boundary
+---------------------------------
+- Final flashed xipImage SHA-256:
+      8e0ef27a49b0abdb8e4744c16b2422f541cac2e58b6d690abc069c44bb844b74
+- With CPU1 hotplugged, the recovery image passed:
+      30/30 exact CoreMark SIGINT tests, then 10/10 on the optimized image
+      dual CoreMark TERM with status 143/143
+      200 affinity round trips
+      two complete pinned dual-CoreMark runs
+      final scores 1048.22 + 1063.60 iterations/s
+- A longer run recorded timer IRQs 26255/23743, ID31 count 922, reschedule IPI
+  562/518 and call-function IPI 2325/2739, then returned `FINAL_ALIVE` with
+  CPUs 0-1 online.
+- This validates radio-off SMP, hotplug, signal teardown, native IPIs, device
+  completion recovery and sustained dual compute. Wi-Fi/BT remains outside
+  this validation. If a future stall records ID21, capture the OpenSBI trap
+  recorder before attributing it to the blob.
+- Recovery currently runs at idle polling points. A future workload that
+  proves both harts can remain permanently non-idle while CLIC acceptance is
+  locked would require an additional safe polling point; that condition was
+  not observed in the completed dual-CoreMark tests.

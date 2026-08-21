@@ -1,0 +1,1 @@
+-Wl,--defsym=IDF_TARGET_ESP32S31=0 -T rom.api.ld -T esp32s31.rom.heap.ld -T esp32s31.peripherals.ld -T esp32s31.rom.ld -T esp32s31.rom.api.ld -T esp32s31.rom.rvfp.ld -T esp32s31.rom.version.ld -T esp32s31.rom.phy.ld -T esp32s31.rom.coexist.ld -T esp32s31.rom.net80211.ld -T esp32s31.rom.pp.ld -T rom.systimer.ld -T rom.wdt.ld -u include_esp_phy_override

@@ -18,3 +18,6 @@ s31_rom.bin
 .agents
 .vscode
 toolchain
+bootloader/managed_components/
+bootloader/build-radio/
+docs/esp-idf-docs/

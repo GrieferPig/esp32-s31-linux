@@ -20,21 +20,21 @@ Transfer-buffer placement:
   requirements.
 
 Current S31 carve-outs:
-- Hosted transport: 0x2F06AF80..0x2F072F80 (32 KiB).
-- AXI-GDMA descriptors: 0x2F072F80..0x2F075F80 (12 KiB).
-- AHB-GDMA descriptors: 0x2F075F80..0x2F076F80 (4 KiB).
-- USB local SRAM: 0x2F076F80..0x2F076FC0 (64 bytes). The hart1 early
-  mailbox at 0x2F076FA0 shares this range during early boot, before Linux
+- Radio blob heap: 0x2F030000..0x2F071800.
+- Radio synchronous-exception stack: 0x2F071800..0x2F072380.
+- AXI-GDMA descriptors: 0x2F072380..0x2F075380 (12 KiB).
+- AHB-GDMA descriptors: 0x2F075380..0x2F076380 (4 KiB).
+- USB local SRAM: 0x2F076380..0x2F0763C0 (64 bytes). The hart1 early
+  mailbox at 0x2F0763A0 shares this range during early boot, before Linux
   uses it for DWC2.
-- Alignment padding: 0x2F076FC0..0x2F077000 (64 bytes).
-- UHCI0 UART DMA payload buffer: 0x2F077000..0x2F079800 (10 KiB).
+- Alignment padding: 0x2F0763C0..0x2F076400 (64 bytes).
+- UHCI0 UART DMA payload buffer: 0x2F076400..0x2F078C00 (10 KiB).
   The current driver divides it into two 2048-byte TX slots followed by four
   1536-byte RX slots.
 
-The loader therefore reserves 0x2F06AF80..0x2F079800 from the ESP-IDF heap:
-0x8000 bytes for hosted transport and 0x6880 bytes for Linux devices, for a
-combined 0xE880 bytes (58.125 KiB). Ranges above use an exclusive end
-address.
+The loader reserves 0x2F030000..0x2F072380 for the Linux S-mode radio world
+and 0x2F072380..0x2F078C00 for Linux devices. Ranges above use an exclusive
+end address.
 
 When adding a DMA client, reserve descriptor memory in the internal HP-SRAM
 carve-out and account for it in the factory application's reserved-memory

@@ -15,18 +15,28 @@ CPP := $(CROSS_COMPILE)cpp
 DTC := dtc
 JOBS ?= $(shell nproc)
 
-# S31 supports F and the stateful Espressif HWLoop/PIE extensions, but firmware
-# and kernel C code must not borrow task coprocessor state.  Use every safe
-# integer code-generation extension there, and expose the complete ISA to
-# userspace where Linux saves/restores that state.
+# S31 supports F and the stateful Espressif HWLoop/PIE extensions, but their
+# state CSRs are M-mode-only.  Saving them through SBI on every task switch can
+# lock S-mode interrupts at SIL=0xff, so stable SMP builds use only stateless
+# ISA extensions for both kernel and normal userspace.  Explicit Xesp test
+# binaries supply their own per-file flags in the Buildroot package.
 S31_SAFE_ISA := rv32imabc_zicsr_zifencei_zaamo_zalrsc_zba_zbb_zbc_zbs
-S31_USER_ISA := rv32imafbc_zicsr_zifencei_zaamo_zalrsc_zba_zbb_zbc_zbs_xesploop_xespv2p2
+S31_KERNEL_ISA := rv32imafbc_zicsr_zifencei_zaamo_zalrsc_zba_zbb_zbc_zbs
+S31_USER_ISA := rv32imafbc_zicsr_zifencei_zaamo_zalrsc_zba_zbb_zbc_zbs
 S31_COMMON_FLAGS := -mabi=ilp32 -mtune=esp-base
-S31_USER_FLAGS := -march=$(S31_USER_ISA) $(S31_COMMON_FLAGS) -mespv-spec=2p2
+S31_KERNEL_FLAGS := -mabi=ilp32f -mtune=esp-base
+S31_USER_FLAGS := -march=$(S31_USER_ISA) $(S31_COMMON_FLAGS)
+# The S31 compiler supports Xesploop/XespV, but its bundled libc and libgcc
+# were built with stateful HWLoop instructions.  Linux deliberately avoids the
+# M-mode SBI context-switch extension for stable SMP, so use scalar runtime
+# libraries for normal userspace.  Explicit extension tests are still built by
+# s31-tools with the S31 compiler and opt-in ISA flags.
+S31_SCALAR_RUNTIME_SYSROOT ?= /opt/riscv32imac-musl/sysroot
 
 BUILD_DIR := $(CURDIR)/build
 OPENSBI_DIR := $(CURDIR)/opensbi-esp32-s31
 LINUX_DIR := $(CURDIR)/linux-esp32-s31
+BOOTLOADER_DIR := $(CURDIR)/bootloader
 BUILDROOT_DIR := $(CURDIR)/buildroot
 BUILDROOT_EXTERNAL := $(CURDIR)/buildroot-external
 
@@ -48,9 +58,12 @@ XIP_IMAGE := $(BUILD_DIR)/xipImage
 ROOTFS_IMG := $(BUILD_DIR)/rootfs.sqfs
 PERSIST_IMG := $(BUILD_DIR)/persist.jffs2
 
-IDF_EXPORT := $(shell find $(HOME) -maxdepth 5 -type f -name export.sh 2>/dev/null | grep esp-idf | head -n 1)
+IDF_ROOT ?= $(HOME)/.espressif
+# Keep the ESP-IDF dependency local to its installation root.  The master
+# checkout is preferred, with an installed alternate accepted as a fallback.
+IDF_EXPORT ?= $(firstword $(wildcard $(IDF_ROOT)/master/esp-idf/export.sh) $(shell find $(IDF_ROOT) -maxdepth 5 -type f -path '*/esp-idf/export.sh' 2>/dev/null | sort | head -n 1))
 
-.PHONY: all download toolchain toolchain-source opensbi linux coremark rootfs initramfs s31-pie-cases \
+.PHONY: all download toolchain toolchain-source idf-check opensbi radio-linux-payload radio-bootloader radio-image linux coremark rootfs initramfs s31-pie-cases \
 	buildroot-menuconfig buildroot-clean clean fullclean flash-opensbi flash-linux \
 	flash-rootfs persist flash-persist bootloader flash-bootloader erase
 
@@ -65,8 +78,8 @@ download: toolchain
 
 toolchain: | $(BUILD_DIR)
 	@set -eu; \
-	if [ -x "$(CC)" ] && { [ -f "$(TOOLCHAIN_PREFIX)/.source-build" ] || [ ! -f "$(TOOLCHAIN_PREFIX)/.release" ]; }; then \
-		echo "Using locally built toolchain at $(TOOLCHAIN_PREFIX)"; \
+	if [ -x "$(CC)" ] && [ "$(TOOLCHAIN_RELEASE_TAG)" = latest ]; then \
+		echo "Using installed toolchain at $(TOOLCHAIN_PREFIX)"; \
 		exit 0; \
 	fi; \
 	mkdir -p "$(dir $(TOOLCHAIN_ARCHIVE))" "$(TOOLCHAIN_DIR)"; \
@@ -155,10 +168,57 @@ opensbi: toolchain | $(OPENSBI_OUT)
 	cat $(BUILD_DIR)/offset.bin >> $(FW_PAYLOAD); \
 	rm -f $(BUILD_DIR)/staged_fw_jump.bin $(BUILD_DIR)/offset.bin
 
+RADIO_BOOT_BUILD := $(BOOTLOADER_DIR)/build-radio
+RADIO_PARTITION_SIZE := 1966080
+RADIO_PAYLOAD := $(BUILD_DIR)/radio-fw-payload.bin
+
+idf-check:
+	@test -f "$(IDF_EXPORT)" || { echo "ERROR: ESP-IDF export.sh not found under $(IDF_ROOT)" >&2; exit 1; }
+
+radio-bootloader: idf-check
+	@echo "--- Build radio-only loader ---"
+	bash -c "source $(IDF_EXPORT) && cd $(BOOTLOADER_DIR) && \
+		S31_RADIO_DEPS=1 idf.py -B build-radio \
+		-D SDKCONFIG=$(RADIO_BOOT_BUILD)/sdkconfig \
+		-D 'SDKCONFIG_DEFAULTS=$(BOOTLOADER_DIR)/sdkconfig;$(BOOTLOADER_DIR)/sdkconfig.radio.defaults' \
+		reconfigure build"
+
+RADIO_LINUX_CMDLINE := console=ttyS0,115200n8 root=/dev/mtdblock6 rootfstype=squashfs ro rootwait init=/init clk_ignore_unused
+
+radio-image: LINUX_CMDLINE := $(RADIO_LINUX_CMDLINE)
+radio-image: opensbi linux
+	@set -eu; \
+	RAW="$(BUILD_DIR)/radio-fw.raw"; \
+	DTB="$(BUILD_DIR)/radio-esp32s31.dtb"; \
+	cp "$(FDT_DTB)" "$$DTB"; \
+	cp "$(OPENSBI_FW_JUMP_BIN)" "$$RAW"; \
+	RAW_SIZE=$$(stat -c%s "$$RAW"); \
+	FDT_OFFSET=$$(( (RAW_SIZE + 7) & ~7 )); \
+	DTB_SIZE=$$(stat -c%s "$$DTB"); \
+	MAX_PAYLOAD_SIZE=$$(( $(RADIO_PARTITION_SIZE) - 4 )); \
+	if [ $$((FDT_OFFSET + DTB_SIZE)) -gt $$MAX_PAYLOAD_SIZE ]; then \
+		echo "ERROR: OpenSBI + DTB exceeds expanded partition"; exit 1; \
+	fi; \
+	cp "$$RAW" "$(RADIO_PAYLOAD)"; \
+	truncate -s $$FDT_OFFSET "$(RADIO_PAYLOAD)"; \
+	cat "$$DTB" >> "$(RADIO_PAYLOAD)"; \
+	truncate -s $$MAX_PAYLOAD_SIZE "$(RADIO_PAYLOAD)"; \
+	printf '%08x' $$FDT_OFFSET | sed 's/../& /g' | \
+		awk '{for (i=4;i>=1;i--) printf "%s", $$i}' | xxd -r -p >> "$(RADIO_PAYLOAD)"; \
+	echo "Radio payload: $$((FDT_OFFSET + DTB_SIZE)) bytes used, FDT offset $$FDT_OFFSET"
+
 DEFCONFIG ?= esp32s31_defconfig
 LINUX_TARGET ?= xipImage
+# Default to maxcpus=1 for 100% boot; bring up second CPU after boot via
+# `echo 1 > /sys/devices/system/cpu/cpu1/online` for dual-core.  CMDLINE_FORCE
+# replaces, rather than extends, the defconfig command line, so retain the
+# rootfs and console arguments here as well.
+LINUX_CMDLINE ?= console=ttyS0,115200n8 root=/dev/mtdblock6 rootfstype=squashfs ro rootwait init=/init clk_ignore_unused irqaffinity=0 maxcpus=1
 
-linux: toolchain | $(LINUX_OUT)
+radio-linux-payload: radio-bootloader
+	$(MAKE) -C $(CURDIR)/radio_firmware IDF_ROOT="$(IDF_ROOT)" linux-kbuild
+
+linux: toolchain radio-linux-payload | $(LINUX_OUT)
 	@echo "--- Linux ---"
 	$(MAKE) -C $(LINUX_DIR) O=$(LINUX_OUT) ARCH=riscv CROSS_COMPILE="$(CROSS_COMPILE)" $(DEFCONFIG)
 	$(LINUX_DIR)/scripts/config --file $(LINUX_OUT)/.config \
@@ -168,10 +228,26 @@ linux: toolchain | $(LINUX_OUT)
 		--disable RISCV_ISA_V_DEFAULT_ENABLE \
 		--enable RISCV_ISA_ZBA \
 		--enable RISCV_ISA_ZBB \
-		--enable RISCV_ISA_ZBC
+		--enable RISCV_ISA_ZBC \
+		--enable BT \
+		--enable BT_ESP32S31 \
+		--enable BT_BREDR \
+		--enable SMP \
+		--set-val NR_CPUS 2 \
+		--disable ESP32S31_COPROC_CONTEXT \
+		--enable CSD_LOCK_WAIT_DEBUG \
+		--enable CSD_LOCK_WAIT_DEBUG_DEFAULT \
+		--enable PREEMPT_VOLUNTARY \
+		--disable PREEMPT_NONE \
+		--enable HZ_100 \
+		--disable HZ_250
+	@if [ -n "$(LINUX_CMDLINE)" ]; then \
+		$(LINUX_DIR)/scripts/config --file $(LINUX_OUT)/.config \
+			--set-str CMDLINE "$(LINUX_CMDLINE)"; \
+	fi
 	$(MAKE) -C $(LINUX_DIR) O=$(LINUX_OUT) ARCH=riscv CROSS_COMPILE="$(CROSS_COMPILE)" olddefconfig
 	$(MAKE) -C $(LINUX_DIR) O=$(LINUX_OUT) ARCH=riscv CROSS_COMPILE="$(CROSS_COMPILE)" \
-		KCFLAGS="-march=$(S31_SAFE_ISA) $(S31_COMMON_FLAGS)" -j$(JOBS) $(LINUX_TARGET) dtbs
+		KCFLAGS="-march=$(S31_KERNEL_ISA) $(S31_KERNEL_FLAGS)" -j$(JOBS) $(LINUX_TARGET) dtbs
 	cp -v $(LINUX_OUT)/arch/riscv/boot/$(LINUX_TARGET) $(XIP_IMAGE)
 	cp -v $(LINUX_OUT)/arch/riscv/boot/dts/espressif/esp32s31_generic.dtb $(FDT_DTB)
 
@@ -184,10 +260,13 @@ coremark: rootfs
 ROOTFS_PARTITION_SIZE ?= 6291456
 PERSIST_PARTITION_SIZE ?= 1441792
 BUILDROOT_MAKE = $(MAKE) -C $(BUILDROOT_DIR) O=$(BUILDROOT_OUT) \
-	BR2_EXTERNAL=$(BUILDROOT_EXTERNAL) BR2_DL_DIR=$(BUILDROOT_DL_DIR)
+	BR2_EXTERNAL=$(BUILDROOT_EXTERNAL) BR2_DL_DIR=$(BUILDROOT_DL_DIR) \
+	S31_SCALAR_RUNTIME_SYSROOT=$(S31_SCALAR_RUNTIME_SYSROOT) \
+	S31_RUNTIME_STRIP=$(CROSS_COMPILE)strip \
+	S31_RUNTIME_OBJDUMP=$(CROSS_COMPILE)objdump
 
 s31-pie-cases:
-	@if [ -z "$(IDF_EXPORT)" ]; then echo "ERROR: ESP-IDF export.sh not found under $(HOME)"; exit 1; fi
+	@$(MAKE) --no-print-directory idf-check
 	bash -c "source $(IDF_EXPORT) >/dev/null && $(CURDIR)/rootfs/gen_s31_pie_cases.sh $(CURDIR)/rootfs/s31_pie_cases.inc"
 
 rootfs: toolchain s31-pie-cases | $(BUILDROOT_OUT)
@@ -196,6 +275,7 @@ rootfs: toolchain s31-pie-cases | $(BUILDROOT_OUT)
 	$(BUILDROOT_MAKE) toolchain-external-custom-rebuild
 	$(BUILDROOT_MAKE) toolchain-external-rebuild
 	$(BUILDROOT_MAKE) s31-tools-rebuild
+	$(BUILDROOT_MAKE) coremark-rebuild
 	$(BUILDROOT_MAKE)
 	cp -v $(BUILDROOT_OUT)/images/rootfs.squashfs $(ROOTFS_IMG)
 	@ROOTFS_SIZE=$$(stat -c%s $(ROOTFS_IMG)); \
