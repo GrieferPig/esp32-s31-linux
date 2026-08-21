@@ -86,7 +86,7 @@ def _extract_symbol(disasm_file: Path, symbol: str) -> str:
     capture = False
     result: list[str] = []
     for line in lines:
-        if line.strip().startswith(f"<{symbol}>:"):
+        if f"<{symbol}>:" in line:
             capture = True
             result.append(line)
             continue
