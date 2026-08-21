@@ -45,6 +45,8 @@ OPENSBI_OUT := $(BUILD_DIR)/opensbi
 LINUX_OUT := $(BUILD_DIR)/linux
 BUILDROOT_OUT := $(BUILD_DIR)/buildroot
 BUILDROOT_DL_DIR := $(BUILD_DIR)/buildroot-dl
+COREMARK_OUT := $(BUILD_DIR)/coremark
+COREMARK_BIN := $(COREMARK_OUT)/coremark.exe
 TOOLCHAIN_ARCHIVE := $(BUILD_DIR)/downloads/$(TOOLCHAIN_RELEASE_ASSET)
 
 PARTITIONS_CSV := $(CURDIR)/bootloader/partitions.csv
@@ -69,7 +71,7 @@ IDF_EXPORT ?= $(firstword $(wildcard $(IDF_ROOT)/master/esp-idf/export.sh) $(wil
 
 all: toolchain download opensbi linux initramfs
 
-$(BUILD_DIR) $(OPENSBI_OUT) $(LINUX_OUT) $(BUILDROOT_OUT):
+$(BUILD_DIR) $(OPENSBI_OUT) $(LINUX_OUT) $(BUILDROOT_OUT) $(COREMARK_OUT):
 	mkdir -p $@
 
 download: toolchain
@@ -251,9 +253,11 @@ linux: toolchain radio-linux-payload | $(LINUX_OUT)
 	cp -v $(LINUX_OUT)/arch/riscv/boot/$(LINUX_TARGET) $(XIP_IMAGE)
 	cp -v $(LINUX_OUT)/arch/riscv/boot/dts/espressif/esp32s31_generic.dtb $(FDT_DTB)
 
-coremark: rootfs
+coremark: rootfs | $(COREMARK_OUT)
 	@test -x "$(BUILDROOT_OUT)/target/usr/bin/coremark"
-	@echo "Buildroot CoreMark: $(BUILDROOT_OUT)/target/usr/bin/coremark"
+	@mkdir -p "$(COREMARK_OUT)"
+	@cp -v "$(BUILDROOT_OUT)/target/usr/bin/coremark" "$(COREMARK_BIN)"
+	@echo "CoreMark: $(COREMARK_BIN)"
 
 # Keep this decimal because POSIX test(1) and truncate(1) do not accept the
 # partition table's 0x-prefixed value.
