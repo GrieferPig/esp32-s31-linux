@@ -140,9 +140,9 @@ else
 RADIO_STACK_DEFS := -DS31_LINUX_SMODE
 endif
 ESP_CFLAGS  := -mabi=ilp32f -march=rv32imafc_zicsr_zifencei_zaamo_zalrsc_xesploop_xespv2p2 \
-		-mtune=esp-base -mespv-spec=2p2 -ffunction-sections -fdata-sections \
+		-mtune=esp-base -ffunction-sections -fdata-sections \
 		-fno-stack-protector -fno-builtin -ffreestanding -std=gnu11 -Wall \
-	-specs=$(RADIO_BUILD)/specs/picolibc.specs \
+	-specs=picolibc.specs \
 		-I$(IDF_PATH)/components/bt/include/esp32s31/include \
 		-I$(IDF_PATH)/components/bt/porting_btdm/controller/btdm_common/include \
 		-I$(IDF_PATH)/components/bt/porting_btdm/controller/ble/include \
