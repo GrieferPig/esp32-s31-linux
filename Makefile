@@ -61,7 +61,7 @@ PERSIST_IMG := $(BUILD_DIR)/persist.jffs2
 IDF_ROOT ?= $(HOME)/.espressif
 # Keep the ESP-IDF dependency local to its installation root.  The master
 # checkout is preferred, with an installed alternate accepted as a fallback.
-IDF_EXPORT ?= $(firstword $(wildcard $(IDF_ROOT)/master/esp-idf/export.sh) $(shell find $(IDF_ROOT) -maxdepth 5 -type f -path '*/esp-idf/export.sh' 2>/dev/null | sort | head -n 1))
+IDF_EXPORT ?= $(firstword $(wildcard $(IDF_ROOT)/master/esp-idf/export.sh) $(wildcard $(IDF_PATH)/export.sh) $(shell find $(IDF_ROOT) -maxdepth 5 -type f -path '*/esp-idf/export.sh' 2>/dev/null | sort | head -n 1))
 
 .PHONY: all download toolchain toolchain-source idf-check opensbi radio-linux-payload radio-bootloader radio-image linux coremark rootfs initramfs s31-pie-cases \
 	buildroot-menuconfig buildroot-clean clean fullclean flash-opensbi flash-linux \
