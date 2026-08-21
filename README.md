@@ -44,10 +44,15 @@ $ esptool -p /dev/ttyUSB0 -b 2000000 write-flash \
 | Buildroot rootfs | 🟢 Stable |
 | Reboot | 🟢 Stable |
 | Poweroff | 🔴 Not Implemented |
-| Wireless (S-mode radio blobs) | 🟠 WIP |
-| Dual hart SMP | 🟠 WIP (loader temporarily owns hart0) |
+| Linux native wireless | 🟡 Experimental |
+| - WiFi | 🟡 Experimental |
+| - Bluetooth Dual Mode | 🟡 Experimental |
+| Dual hart SMP | 🟡 Experimental |
 
 ### Peripheral Drivers
+
+> Note: There has been a major CLIC driver change since 8/21/26's dual hart SMP commit, these drivers below haven't been tested.
+
 | Feature | Status |
 |---|---|
 | AXI GDMA | 🟡 Experimental |
@@ -80,7 +85,7 @@ $ esptool -p /dev/ttyUSB0 -b 2000000 write-flash \
 | I2S | 🔴 Not Implemented |
 | SPI | 🔴 Not Implemented |
 | RMT | 🔴 Not Implemented |
-| USB Serial/JTAG | ⚫ Not Planned (Used by FreeRTOS; see FAQ) |
+| USB Serial/JTAG | 🔴 Not Implemented |
 
 
 > 🟢 **Stable** — Fully tested and working | 🟡 **Experimental** — Seems working; not thoroughly tested | 🟠 **WIP** - Functions not fully implemented
@@ -115,17 +120,9 @@ In mainline linux, XIP support on RISC-V was removed, so 6.12 was used instead w
 
 ## FAQ
 
-### Why not SMP?
+### ~Why not SMP?~
 
-For several reasons:
-
-- Espressif's radio firmware blobs are closed source, and must run within ESP-IDF's FreeRTOS framework. It's near impossible to reverse-engineer them (not to mention legal risks.)
-- S31's two cores are kinda heterogeneous already: SIMD path only on hart 1. SMP makes scheduling things on the right core harder.
-- PSRAM is already slow enough (compared to SRAM); two cores would share the same, tiny 32KiB D-cache.
-- Cache maintenance, IPC, Interrupt routing, etc.
-- I like having an RTOS for other tasks. If you want absolute performance, a low-end MPU (like `Allwinner T113-S3`) would be a far better choice
-
-For this port, think S31 as a reincarnated `Bouffallo BL808`.[^1]
+Edit: *SMP support is added.* Espressif's radio blobs exposes a set of OSI (OS interfaces). Radio support is accomplished by emulating a compatible OSI using Linux kthreads. 
 
 ### Vibe-coded?
 
@@ -133,6 +130,3 @@ I noticed folks on [Hacker News](https://news.ycombinator.com/item?id=49087499) 
 
 - Yes, it is heavily agent-assisted. It do work on real S31 dev boards (there's console output above and binary releases to prove that.) I understand the esp32 microcontroller architecture to some extent, but I barely know how to port Linux to other RISC-V platforms; what I did is to tell the agent something like "Go implement an IPC transport that uses a shared SRAM buffer and an IPC interrupt doorbell" or "sdmmc uses designware ip; search esp-idf usage and port the existing Linux driver over." An AI agent on its own would never discover S31's bespoke hardware behavior without my guidance, for example, that the register `mcliccfg` has writable bits, despite esp-idf saying otherwise. However I admit that AI assistance is the direct reason why I am able to progress this fast, and I did learn a lot about kernel development during the process.
 
-### TODO
-
-[^1]: I actually liked the BL808 and attempted to use it for a project, but the absurd lack of drivers is REAL BAD and made me appreciate Espressif's software support more
