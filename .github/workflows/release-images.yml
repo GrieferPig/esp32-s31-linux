@@ -88,10 +88,8 @@ jobs:
           set -ex
           echo "=== Build Artifacts ==="
           ls -lh build/fw_payload.bin build/xipImage build/rootfs.sqfs
-          ls -lh build/coremark/coremark.exe 2>/dev/null || echo "WARN: coremark.exe missing"
           ls -lh bootloader/build/bootloader/bootloader.bin 2>/dev/null || echo "WARN: bootloader.bin missing"
           ls -lh bootloader/build/hello_world.bin 2>/dev/null || echo "WARN: hello_world.bin missing"
-          ls -lh bootloader/build/ota_data_initial.bin 2>/dev/null || echo "WARN: ota_data_initial.bin missing"
           echo "=== sdkconfig ==="
           grep -E 'CONFIG_ESPTOOLPY_FLASHMODE|CONFIG_FLASHMODE' bootloader/sdkconfig || echo "WARN: flash mode config not in sdkconfig"
           echo "=== esptool ==="
@@ -128,10 +126,8 @@ jobs:
             build/xipImage \
             build/rootfs.sqfs \
             build/esp32s31_generic.dtb \
-            build/coremark/coremark.exe \
             bootloader/build/bootloader/bootloader.bin \
             bootloader/build/partition_table/partition-table.bin \
-            bootloader/build/ota_data_initial.bin \
             bootloader/build/hello_world.bin \
             --title "$RELEASE_TITLE" \
             --notes "$FLASH_COMMAND"
