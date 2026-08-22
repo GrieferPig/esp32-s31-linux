@@ -47,11 +47,11 @@ $ esptool -p /dev/ttyUSB0 -b 2000000 write-flash \
 | Linux native wireless | 🟡 Experimental |
 | - WiFi | 🟡 Experimental |
 | - Bluetooth Dual Mode | 🟡 Experimental |
-| Dual hart SMP | 🟡 Experimental |
+| Dual core SMP | 🟡 Experimental |
 
 ### Peripheral Drivers
 
-> Note: There has been a major CLIC driver change since 8/21/26's dual hart SMP commit, these drivers below haven't been tested.
+> Note: There has been a major CLIC driver change since 8/21/26's dual hart SMP commit, these drivers below haven't been tested since then (unless marked otherwise). The statuses below show their state before the CLIC driver change.
 
 | Feature | Status |
 |---|---|
