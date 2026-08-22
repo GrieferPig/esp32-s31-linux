@@ -283,11 +283,11 @@ rootfs: toolchain s31-pie-cases | $(BUILDROOT_OUT)
 	$(BUILDROOT_MAKE)
 	cp -v $(BUILDROOT_OUT)/images/rootfs.squashfs $(ROOTFS_IMG)
 	@ROOTFS_SIZE=$$(stat -c%s $(ROOTFS_IMG)); \
+	echo "Buildroot rootfs: $$ROOTFS_SIZE / $(ROOTFS_PARTITION_SIZE) bytes ($$(( $(ROOTFS_PARTITION_SIZE) - $$ROOTFS_SIZE )) bytes free)"; \
 	if [ $$ROOTFS_SIZE -gt $(ROOTFS_PARTITION_SIZE) ]; then \
 		echo "ERROR: Buildroot rootfs ($$ROOTFS_SIZE bytes) exceeds partition ($(ROOTFS_PARTITION_SIZE) bytes)"; \
 		exit 1; \
-	fi; \
-	truncate -s $(ROOTFS_PARTITION_SIZE) $(ROOTFS_IMG)
+	fi
 
 # Historical/user-facing name for the root filesystem image.
 initramfs: linux rootfs
