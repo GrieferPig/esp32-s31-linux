@@ -28,6 +28,21 @@ module_loaded()
 	grep -q "^${module_name} " /proc/modules 2>/dev/null
 }
 
+radio_ready()
+{
+    bound=0
+    for health in /sys/bus/platform/drivers/esp32s31-radio/*/radio_health; do
+        [ -r "$health" ] || continue
+        grep -Eq '(^| )state=2( |$)' "$health" || continue
+        bound=1
+        break
+    done
+    [ "$bound" = 1 ] || return 1
+    case "$1" in wifi|combo) [ -d /sys/class/net/wlan0 ] || return 1 ;; esac
+    case "$1" in bt|combo) [ -c /dev/s31-hci ] || return 1 ;; esac
+    return 0
+}
+
 remove_radio_profiles()
 {
 	for old_profile in radio-combo radio-wifi radio-bluetooth; do
@@ -89,7 +104,12 @@ start_radio()
 
 	if module_loaded; then
 		current_mode=$(cat /sys/module/esp32s31_radio/parameters/mode 2>/dev/null)
-		[ "$current_mode" = "$mode" ] && return 0
+		if [ "$current_mode" = "$mode" ]; then
+            radio_ready "$mode" && return 0
+            echo 'ESP32-S31 radio module is loaded but its device is not ready' >&2
+            stop_radio || echo 'ESP32-S31 failed radio module could not be removed' >&2
+            return 1
+        fi
 		stop_radio || {
 			echo 'ESP32-S31 radio is busy; stop Wi-Fi/BT users before changing mode' >&2
 			return 1
@@ -121,7 +141,18 @@ start_radio()
 	sync
 	[ ! -w /proc/sys/vm/drop_caches ] || echo 3 > /proc/sys/vm/drop_caches
 	/usr/sbin/s31-modload "$module_file" "mode=$mode" direct_hci=1 \
-		firmware=esp32s31-radio-fw-v1.o
+		firmware=esp32s31-radio-fw-v1.o || return 1
+    # Probe may fail even when module registration succeeded. Inspect binding
+    # and local frontends; RF association/controller opening is a later stage.
+    attempt=0
+    while [ "$attempt" -lt 5 ]; do
+        radio_ready "$mode" && return 0
+        attempt=$((attempt + 1))
+        sleep 1
+    done
+    echo 'ESP32-S31 radio probe/frontend readiness failed' >&2
+    stop_radio || echo 'ESP32-S31 failed radio module could not be removed' >&2
+    return 1
 }
 
 case "$1" in

@@ -632,6 +632,6 @@ esac
 
 status=PASS
 [ "$FAIL_COUNT" -eq 0 ] || status=FAIL
-printf 'HIL1 {"board":"esp32-s31","status":"%s","test":"summary","level":"summary","pass":%u,"fail":%u,"skip":%u}\n' \
-	"$status" "$PASS_COUNT" "$FAIL_COUNT" "$SKIP_COUNT"
+printf 'HIL1 {"board":"esp32-s31","status":"%s","test":"summary","level":"summary","case":"%s","pass":%u,"fail":%u,"skip":%u}\n' \
+	"$status" "$CASE" "$PASS_COUNT" "$FAIL_COUNT" "$SKIP_COUNT"
 [ "$FAIL_COUNT" -eq 0 ]

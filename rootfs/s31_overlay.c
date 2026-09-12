@@ -6,11 +6,12 @@
 #include <errno.h>
 #include <fcntl.h>
 #include <libfdt.h>
-#include <linux/ioctl.h>
+#include <linux/esp32s31-overlay.h>
 #include <stdint.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <sys/file.h>
 #include <sys/ioctl.h>
 #include <sys/stat.h>
 #include <unistd.h>
@@ -20,26 +21,16 @@
 #define OVERLAY_PREFIX "esp32s31-overlay-"
 #define OVERLAY_SUFFIX ".dtbo"
 #define CURRENT_FILE "/run/s31-overlay.current"
+#define LOCK_FILE "/run/s31-overlay.lock"
 #define CONFIG_DIR "/etc/esp32-conf"
 #define PERSIST_FILE CONFIG_DIR "/overlays.conf"
-#define MAX_DTBO_SIZE (128U * 1024U)
-#define MAX_OVERLAYS 32
-#define NAME_LEN 32
+#define MAX_DTBO_SIZE S31_OVERLAY_MAX_SIZE
+#define MAX_OVERLAYS S31_OVERLAY_MAX_ACTIVE
+#define NAME_LEN S31_OVERLAY_NAME_LEN
 /* Persistent settings live in the merged root's JFFS2 upperdir. */
 #define CONFIG_LEN 2024
 #define DWC2_DRIVER_DIR "/sys/bus/platform/drivers/dwc2"
 #define DWC2_DEVICE "20300000.usb"
-
-#define S31_OVERLAY_IOC_MAGIC 'O'
-#define S31_OVERLAY_IOC_REMOVE_ALL _IO(S31_OVERLAY_IOC_MAGIC, 0)
-#define S31_OVERLAY_IOC_REMOVE_NAME _IOW(S31_OVERLAY_IOC_MAGIC, 2, \
-					 struct overlay_name)
-#define S31_OVERLAY_IOC_LIST _IOR(S31_OVERLAY_IOC_MAGIC, 3, \
-				  struct overlay_list)
-
-struct overlay_name { char name[NAME_LEN]; };
-struct overlay_item { int32_t id; char name[NAME_LEN]; uint64_t gpios; };
-struct overlay_list { uint32_t count; struct overlay_item items[MAX_OVERLAYS]; };
 
 static const char *overlay_dir(void)
 {
@@ -77,8 +68,7 @@ static int valid_gpio(unsigned int gpio)
 	       gpio != 58 && gpio != 59;
 }
 
-static int read_persist(char *config, size_t config_size, int *best_slot,
-			uint32_t *best_sequence)
+static int read_persist(char *config, size_t config_size)
 {
 	FILE *file;
 	char line[512], *equal, *name, *value;
@@ -90,16 +80,26 @@ static int read_persist(char *config, size_t config_size, int *best_slot,
 		return -1;
 	while (fgets(line, sizeof(line), file)) {
 		size_t length = strcspn(line, "\r\n");
+		if (length == sizeof(line) - 1 && !feof(file)) {
+			fclose(file);
+			errno = EOVERFLOW;
+			return -1;
+		}
 		line[length] = '\0';
 		if (!line[0] || line[0] == '#')
 			continue;
 		equal = strchr(line, '=');
-		if (!equal || strncmp(line, "overlay.", 8))
-			continue;
+		if (!equal || strncmp(line, "overlay.", 8)) {
+			fclose(file);
+			errno = EINVAL;
+			return -1;
+		}
 		*equal = '\0';
 		name = line + 8;
 		value = equal + 1;
 		if (!valid_name(name) || !*value ||
+		    strlen(name) != strcspn(value, " \t") ||
+		    strncmp(name, value, strlen(name)) ||
 		    used + strlen(value) + 2 > config_size) {
 			fclose(file);
 			errno = EINVAL;
@@ -107,9 +107,12 @@ static int read_persist(char *config, size_t config_size, int *best_slot,
 		}
 		used += snprintf(config + used, config_size - used, "%s\n", value);
 	}
+	if (ferror(file)) {
+		fclose(file);
+		errno = EIO;
+		return -1;
+	}
 	fclose(file);
-	*best_slot = -1;
-	*best_sequence = 0;
 	return 0;
 }
 
@@ -157,7 +160,7 @@ static int write_persist(const char *config)
 	return 0;
 }
 
-static int manager_list(struct overlay_list *list)
+static int manager_list(struct s31_overlay_list *list)
 {
 	int fd = open(OVERLAY_DEVICE, O_RDONLY), ret;
 
@@ -171,7 +174,7 @@ static int manager_list(struct overlay_list *list)
 
 static int manager_remove(const char *name)
 {
-	struct overlay_name requested = {};
+	struct s31_overlay_name requested = {};
 	int fd = open(OVERLAY_DEVICE, O_WRONLY), ret;
 
 	if (fd < 0)
@@ -186,7 +189,7 @@ static int manager_remove(const char *name)
 	return ret;
 }
 
-static int has_active_overlay(const struct overlay_list *list, const char *name)
+static int has_active_overlay(const struct s31_overlay_list *list, const char *name)
 {
 	uint32_t i;
 
@@ -451,8 +454,9 @@ static int read_current(char *config, size_t size)
 	if (!file)
 		return errno == ENOENT ? 0 : -1;
 	got = fread(config, 1, size - 1, file);
-	if (ferror(file)) {
+	if (ferror(file) || (got == size - 1 && fgetc(file) != EOF)) {
 		fclose(file);
+		errno = EOVERFLOW;
 		return -1;
 	}
 	config[got] = '\0';
@@ -655,12 +659,11 @@ static void usage(const char *program)
 		"  %s remove NAME|--all [--volatile]\n", program, program, program);
 }
 
-int main(int argc, char **argv)
+static int overlay_main(int argc, char **argv)
 {
 	char config[CONFIG_LEN] = "", persisted[CONFIG_LEN] = "", spec[512];
-	struct overlay_list active;
-	uint32_t sequence = 0;
-	int slot = -1, persist = 1, i, ret;
+	struct s31_overlay_list active;
+	int persist = 1, i, ret;
 
 	if (argc < 2) {
 		usage(argv[0]);
@@ -692,7 +695,7 @@ int main(int argc, char **argv)
 			printf("active: %s id=%d gpios=%016llx\n",
 			       active.items[i].name, active.items[i].id,
 			       (unsigned long long)active.items[i].gpios);
-		if (!read_persist(persisted, sizeof(persisted), &slot, &sequence))
+		if (!read_persist(persisted, sizeof(persisted)))
 			printf("persisted:\n%s", persisted[0] ? persisted : "  (none)\n");
 		else
 			puts("persisted: (none)");
@@ -701,7 +704,7 @@ int main(int argc, char **argv)
 	if (!strcmp(argv[1], "restore")) {
 		int usb_was_active = 0;
 
-		if (read_persist(config, sizeof(config), &slot, &sequence))
+		if (read_persist(config, sizeof(config)))
 			return errno == ENODATA || errno == ENODEV || errno == ENOENT ?
 				0 : 1;
 		if (!manager_list(&active))
@@ -752,6 +755,18 @@ int main(int argc, char **argv)
 			used += snprintf(spec + used, sizeof(spec) - used,
 					 "%s%s", " ", argv[i]);
 		}
+		if (read_current(config, sizeof(config)) ||
+		    update_config(config, sizeof(config), argv[2], spec)) {
+			perror("prepare active overlay set");
+			return 1;
+		}
+		if (persist) {
+			if ((read_persist(persisted, sizeof(persisted)) && errno != ENOENT) ||
+			    update_config(persisted, sizeof(persisted), argv[2], spec)) {
+				perror("prepare persistent overlay set");
+				return 1;
+			}
+		}
 		if (apply_spec(spec)) {
 			perror("apply overlay");
 			return 1;
@@ -762,10 +777,8 @@ int main(int argc, char **argv)
 			reprobe_usb();
 			return 1;
 		}
-		if (read_current(config, sizeof(config)) ||
-		    update_config(config, sizeof(config), argv[2], spec) ||
-		    write_current(config) || (persist && write_persist(config))) {
-			perror("record overlay set");
+		if (write_current(config) || (persist && write_persist(persisted))) {
+			perror("overlay applied, but recording state failed");
 			return 1;
 		}
 		return 0;
@@ -789,6 +802,20 @@ int main(int argc, char **argv)
 		if ((!name || !strcmp(name, "usb-device")) &&
 		    !manager_list(&active))
 			usb_was_active = has_active_overlay(&active, "usb-device");
+		if (read_current(config, sizeof(config)) ||
+		    (name ? update_config(config, sizeof(config), name, NULL) :
+		     (config[0] = '\0', 0))) {
+			perror("prepare active overlay set");
+			return 1;
+		}
+		if (persist) {
+			if ((read_persist(persisted, sizeof(persisted)) && errno != ENOENT) ||
+			    (name ? update_config(persisted, sizeof(persisted), name, NULL) :
+			     (persisted[0] = '\0', 0))) {
+				perror("prepare persistent overlay set");
+				return 1;
+			}
+		}
 		if (manager_remove(name)) {
 			perror("remove overlay");
 			return 1;
@@ -797,15 +824,32 @@ int main(int argc, char **argv)
 			perror("reprobe USB host");
 			return 1;
 		}
-		if (read_current(config, sizeof(config)) ||
-		    (name ? update_config(config, sizeof(config), name, NULL) :
-		     (config[0] = '\0', 0)) || write_current(config) ||
-		    (persist && write_persist(config))) {
-			perror("record overlay set");
+		if (write_current(config) || (persist && write_persist(persisted))) {
+			perror("overlay removed, but recording state failed");
 			return 1;
 		}
 		return 0;
 	}
 	usage(argv[0]);
 	return 2;
+}
+
+int main(int argc, char **argv)
+{
+	int fd, ret;
+
+	if (argc < 2 || (!strcmp(argv[1], "list") ||
+			!strcmp(argv[1], "routes") ||
+			!strcmp(argv[1], "parameters")))
+		return overlay_main(argc, argv);
+	fd = open(LOCK_FILE, O_RDWR | O_CREAT | O_CLOEXEC, 0600);
+	if (fd < 0 || flock(fd, LOCK_EX)) {
+		perror("lock overlay state");
+		if (fd >= 0)
+			close(fd);
+		return 1;
+	}
+	ret = overlay_main(argc, argv);
+	close(fd);
+	return ret;
 }

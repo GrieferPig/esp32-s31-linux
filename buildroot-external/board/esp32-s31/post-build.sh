@@ -155,7 +155,6 @@ rm -f \
 	"${target_dir}"/usr/lib/libgirepository-2.0.so* \
 	"${target_dir}"/usr/lib/libhistory.so* \
 	"${target_dir}"/usr/lib/libreadline.so* \
-	"${target_dir}"/usr/lib/libnl-route-3.so* \
 	"${target_dir}"/usr/lib/libnl-xfrm-3.so* \
 	"${target_dir}"/usr/lib/libnl-nf-3.so* \
 	"${target_dir}"/usr/lib/libnl-idiag-3.so* \
