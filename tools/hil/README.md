@@ -2,9 +2,9 @@
 
 The complete test contract, safety rules, commands, and evidence interpretation
 are documented in
-[`docs/en/contribute/testing-hil.md`](../../docs/en/contribute/testing-hil.md). Current
-status and every completed run are recorded in
+[`docs/en/contribute/testing-hil.md`](../../docs/en/contribute/testing-hil.md). Implementation status is recorded in
 [`docs/en/resources/support-matrix.md`](../../docs/en/resources/support-matrix.md).
+Keep local acceptance records separate from the reference documentation.
 
 The HIL system has three independently verifiable layers:
 
@@ -62,10 +62,11 @@ tools/hil/s31_hil.py --board both --case i2s-stress \
   --output logs/hil-i2s-stress.json
 ```
 
-SPI stress defaults to 4096-byte full-duplex transfers in all four modes at the
-verified 14 MHz request rate (13.333 MHz effective with the 80 MHz GPSPI
-parent). Override both dimensions for a boundary run; for
-example, the accepted 20 MHz modes-1/2 run is:
+SPI stress defaults to 4096-byte full-duplex transfers in all four modes at a
+5 MHz request rate. Earlier fixture characterization used a 14 MHz request
+(13.333 MHz effective with the 80 MHz GPSPI parent). That historical result
+does not change the CLI default. Override the rate explicitly for a boundary
+run; for example, the earlier 20 MHz modes-1/2 configuration was:
 
 ```sh
 tools/hil/s31_hil.py --board both --case spi-stress \
@@ -77,7 +78,7 @@ tools/hil/s31_hil.py --board both --case spi-stress \
 The ESP32-P4 v1.3 slave fixture cannot validate modes 0/3 at 20 MHz: the same
 fragmented transactions occur with the S31 running the ESP-IDF master baseline
 and persist across both P4 GPSPI instances and internal-edge sweeps. Keep the
-all-mode acceptance at the default 14 MHz request. At exact 20 MHz, modes 1/2
+historical all-mode acceptance at a 14 MHz request. At exact 20 MHz, modes 1/2
 are the hardware-qualified gate and require the tester's SCLK input hysteresis.
 For cache and direction diagnosis, `spi_direction_diag.py` additionally checks
 the P4 bit length and both endpoint CRCs on each individual transfer.
@@ -142,11 +143,11 @@ restores the pre-test BT service, and verifies that persistent Wi-Fi remains
 disabled with no profile. `c6-wifi-recover` is retained only for backup files
 created by the older reboot-persistent workflow.
 
-Immediately after every formal run ends, update
-`docs/en/resources/support-matrix.md`: update the feature status, validated operating
-point, known limit, and refresh date as needed. Failures and skips remain
-visible until superseded. USB device/gadget mode is explicitly outside this
-matrix; `usb-drive` is the included USB host test.
+After a formal run, retain a sanitized acceptance summary with its build
+identity, result, fixture and cleanup evidence in your local test records. Update
+`docs/en/resources/support-matrix.md` only if implementation status or a known
+limit changed. Keep failures and skips in the acceptance record. USB device/
+gadget mode is outside the standard suite; `usb-drive` covers USB host mode.
 
 For Wi-Fi-only suspend/reconnect acceptance, add `--wifi-suspend-cycles N`
 to the volatile `--case c6-wifi` run (1–20 cycles). Each cycle checks the
@@ -154,3 +155,28 @@ boot identity, a 128 KiB RAM checksum, both online harts, radio readiness,
 userspace reassociation, ICMP and 256 exact 1472-byte UDP echoes. This checks
 reconnection after timer wake, not a retained association or WoWLAN. It does
 not establish AP, Bluetooth or combo-mode recovery.
+
+
+## Host transport and result checks
+
+Serial transports live in `serial_transport.py`; the orchestrator owns test
+sequencing and board cleanup. Peer ports share one cleanup scope, including
+failures while opening the second port. Windows RPCs have bounded replies;
+the bridge reports its Windows PID before opening the COM port so timeout
+cleanup can terminate the actual worker as well as the WSL relay.
+
+`HIL1` records require a recognized status (`PASS`, `FAIL`, or `SKIP`) and
+nonempty board, test, and level fields. S31 summaries identify the requested
+case. Malformed records and mismatched summaries fail the run; saved counts
+retain skips separately and exclude summary records.
+
+Run the host regressions with:
+
+```sh
+S31_TEST_SANITIZERS=1 python3 -m unittest discover -s tools/tests -v
+```
+
+On WSL with Windows `python` available, also set `S31_TEST_WINDOWS_SERIAL=1`
+to exercise real Windows subprocess timeout cleanup. That optional test uses
+a deliberately silent helper and does not open a hardware COM port. Actual
+serial and board acceptance remain separate HIL runs.
