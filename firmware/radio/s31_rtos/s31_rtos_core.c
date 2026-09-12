@@ -15,7 +15,6 @@
 
 uint32_t s31_rtos_isr_depth;
 
-static volatile TickType_t s31_tick;
 static volatile uint32_t s31_scheduler_started;
 static volatile uint32_t s31_orphan_critical_depth;
 static volatile uint32_t s31_orphan_critical_flags;
@@ -136,11 +135,7 @@ void vPortYieldFromISR(void)
 
 TickType_t xTaskGetTickCount(void)
 {
-#ifdef S31_LINUX_SMODE
 	return s31_linux_tick_count();
-#else
-	return s31_tick;
-#endif
 }
 
 TickType_t s31_rtos_get_tick(void)
@@ -160,14 +155,10 @@ TickType_t xTaskGetTickCountFromISR(void)
  */
 void s31_rtos_hard_tick(void)
 {
-#ifndef S31_LINUX_SMODE
-	s31_tick++;
-#endif
 }
 
 void s31_rtos_tick(void)
 {
-#ifdef S31_LINUX_SMODE
 	extern void s31_linux_timers_tick(void);
 	extern void s31_radio_coex_worker_tick(void);
 
@@ -175,9 +166,6 @@ void s31_rtos_tick(void)
 	 * worker.  Time is read from the Linux bridge in s31_linux_timer.c. */
 	s31_linux_timers_tick();
 	s31_radio_coex_worker_tick();
-#else
-	s31_tick++;
-#endif
 }
 
 struct s31_tcb *s31_rtos_current(void)
@@ -562,7 +550,6 @@ void s31_rtos_init(void)
 	strncpy(s31_foreign_tcb.name, "radio-worker",
 		S31_TASK_NAME_LEN - 1);
 	s31_foreign_tcb.priority = 24;
-	s31_tick = 0;
 	s31_scheduler_started = 0;
 	s31_rtos_isr_depth = 0;
 	s31_orphan_critical_depth = 0;

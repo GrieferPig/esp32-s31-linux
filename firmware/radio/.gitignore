@@ -5,3 +5,7 @@
 nofreertos_link.txt
 linux-radio-localize.txt
 linux-radio-undefined.txt
+
+*.d
+.s31-build-config
+libnet80211.s31-linux.a

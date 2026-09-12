@@ -149,12 +149,6 @@ int64_t __wrap_esp_timer_get_time(void)
 	return (int64_t)s31_timer_now_us();
 }
 
-/* Legacy hard-IRQ advance hook.  Time is now read from the Linux monotonic
- * clock in s31_timer_now_us(), so there is no separate epoch to advance. */
-void s31_linux_timer_advance(void)
-{
-}
-
 void s31_linux_timers_tick(void)
 {
 	unsigned int callbacks = 0;

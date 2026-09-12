@@ -1,5 +1,6 @@
 # SPDX-License-Identifier: BSD-2-Clause
 # ESP32-S31 Linux S-mode Wi-Fi/Bluetooth payload.
+include ../../configs/build-versions.mk
 
 IDF_DEPS_DIR ?= idf_deps
 IDF_DEPS_ABS := $(abspath $(IDF_DEPS_DIR))
@@ -7,11 +8,10 @@ RADIO_BUILD  := $(IDF_DEPS_DIR)/build-radio
 RADIO_BUILD_ABS := $(abspath $(RADIO_BUILD))
 RADIO_SDKCONFIG := $(RADIO_BUILD)/config/sdkconfig.h
 IDF_ROOT     ?= $(HOME)/.espressif
-IDF_EXPORT   ?= $(firstword $(wildcard $(IDF_ROOT)/master/esp-idf/export.sh) $(shell find $(IDF_ROOT) -maxdepth 5 -type f -path '*/esp-idf/export.sh' 2>/dev/null | sort | head -n 1))
+IDF_EXPORT   ?= $(IDF_ROOT)/master/esp-idf/export.sh
 IDF_PATH     ?= $(patsubst %/export.sh,%,$(IDF_EXPORT))
-# Prefer a complete ESP-IDF toolchain: the newest installed compiler need not
-# carry the picolibc multilib used by this ILP32F payload.
-ESP_TOOLS    ?= $(shell find "$(IDF_ROOT)/tools/riscv32-esp-elf" -type f -path '*/bin/riscv32-esp-elf-gcc' 2>/dev/null | sort | while IFS= read -r cc; do d=$$(dirname "$$(dirname "$$cc")"); if test -d "$$d/picolibc/riscv32-esp-elf/lib/rv32imafc_zicsr_zifencei_zaamo_zalrsc/ilp32f"; then printf '%s' "$$d"; break; fi; done)
+# Match the compiler declared by the pinned IDF tools manifest.
+ESP_TOOLS ?= $(IDF_ROOT)/tools/riscv32-esp-elf/$(ESP_ELF_RELEASE)/riscv32-esp-elf
 
 # picolibc multilib matching the ilp32f radio world.
 PICOLIBC_LIB := $(ESP_TOOLS)/picolibc/riscv32-esp-elf/lib/rv32imafc_zicsr_zifencei_zaamo_zalrsc/ilp32f
@@ -24,10 +24,10 @@ IDF_CAPTURED_INCLUDES := $(shell sed -e 's|@IDF_PATH@|$(IDF_PATH)|g' -e 's|@RADI
 IDF_BOOT_LINKPATH := $(shell sed -e 's|@IDF_PATH@|$(IDF_PATH)|g' -e 's|@RADIO_BUILD@|$(RADIO_BUILD_ABS)|g' boot_linkpath.txt)
 IDF_NET80211 := $(IDF_PATH)/components/esp_wifi/lib/esp32s31/libnet80211.a
 LINUX_NET80211 := libnet80211.s31-linux.a
-# nofreertos_link.txt is generated as a prerequisite of linux_radio.raw.o.
-# Keep this recursive so the file is read when that recipe runs, rather than
-# while make parses the file before it has generated the closure.
-LINUX_NOFREERTOS_LINK = $(subst $(IDF_NET80211),$(LINUX_NET80211),$(shell sed 's|^esp-idf/|$(RADIO_BUILD)/esp-idf/|' nofreertos_link.txt))
+# Resolve one ordered archive set for both the linker and dependency graph.
+# radio-idf-deps must finish before entering this component Makefile.
+RADIO_ARCHIVES := $(shell python3 ../../tools/radio_archives.py boot_link.txt "$(IDF_PATH)" "$(RADIO_BUILD)")
+LINUX_NOFREERTOS_LINK := $(subst $(IDF_NET80211),$(LINUX_NET80211),$(RADIO_ARCHIVES))
 
 HEAP_WRAP_APIS := heap_caps_malloc heap_caps_free heap_caps_calloc \
 	heap_caps_realloc heap_caps_aligned_alloc heap_caps_aligned_calloc \
@@ -57,6 +57,7 @@ LINUX_WRAP_FLAGS := $(addprefix -Wl$(comma)--wrap=,$(LINUX_WRAP_APIS))
 all: linux-radio
 
 idf-check:
+	python3 ../../tools/check_build_versions.py --idf "$(IDF_PATH)" $(if $(filter 1,$(S31_ALLOW_UNPINNED)),--allow-unpinned)
 	@test -f "$(IDF_PATH)/export.sh" || { echo "ERROR: ESP-IDF export.sh not found under $(IDF_ROOT)" >&2; exit 1; }
 	@test -x "$(ESP_TOOLS)/bin/riscv32-esp-elf-gcc" || { echo "ERROR: ESP-IDF RISC-V toolchain with picolibc not found under $(IDF_ROOT)/tools" >&2; exit 1; }
 	@test -d "$(PICOLIBC_LIB)" && test -d "$(PICOLIBC_GCC)" || { echo "ERROR: required ILP32F picolibc multilib is missing" >&2; exit 1; }
@@ -75,7 +76,7 @@ RADIO_COEX_PRINTF_OBJ := s31_coex_printf.o
 
 linux-kbuild: idf-check linux_radio.kbuild.o
 	mkdir -p $(dir $(LINUX_RADIO_FW)) $(dir $(LINUX_RADIO_IMPORTS))
-	cp -f linux_radio.kbuild.o $(LINUX_RADIO_FW)
+	@cmp -s linux_radio.kbuild.o $(LINUX_RADIO_FW) || cp -f linux_radio.kbuild.o $(LINUX_RADIO_FW)
 	python3 ../../tools/gen_s31_radio_imports.py \
 		--nm $(ESP_TOOLS)/bin/riscv32-esp-elf-nm \
 		--linked-symbols $(LINUX_RADIO_LINKED_IMPORTS) \
@@ -154,29 +155,17 @@ S31RTOS_LINUX_OBJS := s31_rtos/s31_rtos_core.linux.o \
 # here so a clean/forced build cannot reach the linker before they exist.
 linux_radio.raw.o: $(S31RTOS_LINUX_OBJS)
 s31_coex_printf.o: $(IDF_PATH)/components/esp_coex/src/lib_printf.c
-	$(ESP_CC) $(ESP_CFLAGS) -c $< -o $@
+	$(ESP_CC) $(ESP_CFLAGS) -MMD -MP -c $< -o $@
 s31_rtos/%.o: s31_rtos/%.c s31_rtos/s31_rtos.h
-	$(ESP_CC) $(ESP_CFLAGS) -I s31_rtos -c $< -o $@
+	$(ESP_CC) $(ESP_CFLAGS) -MMD -MP -I s31_rtos -c $< -o $@
 
 s31_rtos/s31_rtos_core.linux.o: s31_rtos/s31_rtos_core.c s31_rtos/s31_rtos.h
-	$(ESP_CC) $(ESP_CFLAGS) -DS31_LINUX_SMODE -I s31_rtos -c $< -o $@
+	$(ESP_CC) $(ESP_CFLAGS) -MMD -MP -DS31_LINUX_SMODE -I s31_rtos -c $< -o $@
 
-# Preserve the minimal, previously working archive order, but only use
-# components produced by the matching radio-only IDF configuration.  Pulling
-# the full application closure into a relocatable Linux payload also drags in
-# IDF startup/restart code and linker-script boundary symbols that do not
-# belong in S mode.
-nofreertos_link.txt: boot_link.txt $(RADIO_BUILD)/build.ninja
-	@set -eu; : > $@; \
-	sed 's|@IDF_PATH@|$(IDF_PATH)|g' $< | while IFS= read -r archive; do \
-		case "$$archive" in \
-			esp-idf/freertos/libfreertos.a) continue ;; \
-			esp-idf/*.a) candidate="$(RADIO_BUILD)/$$archive" ;; \
-			/*.a) candidate="$$archive" ;; \
-			*) continue ;; \
-		esac; \
-	if [ -f "$$candidate" ]; then printf '%s\n' "$$archive" >> $@; fi; \
-	done
+# Keep a readable record of precisely the archives linked into the payload.
+nofreertos_link.txt: boot_link.txt $(RADIO_BUILD)/build.ninja .s31-build-config
+	@printf '%s\n' $(LINUX_NOFREERTOS_LINK) > $@.tmp
+	@cmp -s $@.tmp $@ && rm -f $@.tmp || mv $@.tmp $@
 
 ESP_CC      := $(ESP_TOOLS)/bin/riscv32-esp-elf-gcc
 ifeq ($(S31_WIFI_ONLY),1)
@@ -201,20 +190,40 @@ ESP_CFLAGS  := -mabi=ilp32f -march=rv32imafc_zicsr_zifencei_zaamo_zalrsc_xesploo
 # btdm_lp.c could be rebuilt with controller sleep enabled while this object
 # retained sleep_en=0, leaving the closed controller's sleep environment NULL.
 radio_stack.linux.o: radio_stack.c s31_rtos/s31_rtos.h Makefile $(RADIO_SDKCONFIG)
-	$(ESP_CC) $(ESP_CFLAGS) $(RADIO_STACK_DEFS) \
+	$(ESP_CC) $(ESP_CFLAGS) -MMD -MP $(RADIO_STACK_DEFS) \
 		-I s31_rtos -c $< -o $@
 
 s31_linux_locks.o: s31_linux_locks.c s31_rtos/s31_rtos.h
-	$(ESP_CC) $(ESP_CFLAGS) -DS31_LINUX_SMODE -I s31_rtos -c $< -o $@
+	$(ESP_CC) $(ESP_CFLAGS) -MMD -MP -DS31_LINUX_SMODE -I s31_rtos -c $< -o $@
 
 s31_linux_timer.o: s31_linux_timer.c s31_rtos/s31_rtos.h
-	$(ESP_CC) $(ESP_CFLAGS) -DS31_LINUX_SMODE -I s31_rtos -c $< -o $@
+	$(ESP_CC) $(ESP_CFLAGS) -MMD -MP -DS31_LINUX_SMODE -I s31_rtos -c $< -o $@
 
 s31_memcpy.o: s31_memcpy.c
-	$(ESP_CC) $(ESP_CFLAGS) -c $< -o $@
+	$(ESP_CC) $(ESP_CFLAGS) -MMD -MP -c $< -o $@
+
+# Check identity on every invocation, but preserve mtime when unchanged so a
+# no-op build remains a no-op. IDF headers are tracked by compiler depfiles.
+.PHONY: FORCE
+FORCE:
+
+.s31-build-config: FORCE
+	python3 ../../tools/write_build_stamp.py --output $@ \
+		--compiler "$(ESP_CC)" --repo "$(IDF_PATH)" \
+		--file "$(RADIO_SDKCONFIG)" --file idf_includes.rsp \
+		--file boot_flags.txt --file boot_linkpath.txt --file ../../configs/build-versions.mk \
+		--value="$(ESP_CFLAGS) $(RADIO_STACK_DEFS)" \
+		--value="$(HEAP_WRAP_FLAGS) $(LINUX_WRAP_FLAGS)" \
+		--value="$(LINUX_NOFREERTOS_LINK) $(PICOLIBC_LIB) $(PICOLIBC_GCC)"
+
+RADIO_LOCAL_OBJS := radio_stack.linux.o $(S31RTOS_LINUX_OBJS) $(RADIO_COEX_PRINTF_OBJ)
+$(RADIO_LOCAL_OBJS): .s31-build-config Makefile
+linux_radio.raw.o: $(LINUX_NOFREERTOS_LINK) .s31-build-config \
+	$(wildcard $(PICOLIBC_LIB)/libc.a $(PICOLIBC_LIB)/libm.a $(PICOLIBC_GCC)/libgcc.a)
+-include $(RADIO_LOCAL_OBJS:.o=.d)
 
 clean:
-	rm -f *.o s31_rtos/*.o \
+	rm -f *.o *.d s31_rtos/*.o s31_rtos/*.d .s31-build-config \
 		linux-radio-undefined.txt linux-radio-localize.txt \
 		nofreertos_link.txt undefined.txt $(LINUX_NET80211) \
 		.s31-net80211/ieee80211_api.o

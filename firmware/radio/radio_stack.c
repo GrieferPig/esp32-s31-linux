@@ -64,7 +64,6 @@ extern wifi_osi_funcs_t *g_osi_funcs_p;
 extern int32_t psa_crypto_init(void);
 #define S31_RADIO_FEATURE_WIFI (1U << 0)
 #define S31_RADIO_FEATURE_BLUETOOTH (1U << 1)
-#ifdef S31_LINUX_SMODE
 #define S31_PERIPH_WIFI_MODULE 5
 /* ESP-IDF calls this from esp_rtc_init() before its system-init table.  The
  * U-Boot -> Linux path intentionally skips IDF startup, but the modem power
@@ -549,9 +548,7 @@ extern void s31_radio_wifi_intr_set_isr(uint32_t logical_intr,
 					void (*handler)(void *), void *arg);
 extern void s31_radio_wifi_intr_mask(uint32_t mask, bool enable);
 
-#endif
 
-#ifdef S31_LINUX_SMODE
 static void s31_vhci_send_available(void)
 {
 	s31_radio_vhci_send_available();
@@ -1581,7 +1578,6 @@ void s31_radio_wifi_control_task(void *arg)
 done:
 	s31_radio_wifi_control_complete(rc);
 }
-#endif
 
 void s31_radio_stack_task(void *arg)
 {
@@ -1598,13 +1594,11 @@ void s31_radio_stack_task(void *arg)
 	rc = s31_radio_clock_handoff();
 	if (rc != 0) {
 		s31_linux_printf("[S31] clock handoff rc=%d\n", rc);
-		#ifdef S31_LINUX_SMODE
 		if (enable_wifi)
 			s31_radio_report_wifi_init(rc);
 		#ifndef S31_WIFI_ONLY
 		if (enable_bt)
 			s31_radio_report_bt_init(rc);
-		#endif
 		#endif
 		return;
 	}
@@ -1654,9 +1648,7 @@ void s31_radio_stack_task(void *arg)
 		rc = psa_crypto_init();
 		s31_linux_printf("[S31] psa_crypto_init rc=%d\n", rc);
 		if (rc != 0) {
-			#ifdef S31_LINUX_SMODE
 			s31_radio_report_wifi_init(rc);
-			#endif
 			return;
 		}
 		/* Keep the closed Wi-Fi library away from the M-mode CLIC window. */
@@ -1673,13 +1665,11 @@ void s31_radio_stack_task(void *arg)
 	rc = esp_coex_adapter_register(&g_coex_adapter_funcs);
 	if (rc != 0) {
 		s31_linux_printf("[S31] esp_coex_adapter_register rc=%d\n", rc);
-		#ifdef S31_LINUX_SMODE
 		if (enable_wifi)
 			s31_radio_report_wifi_init(rc);
 		#ifndef S31_WIFI_ONLY
 		if (enable_bt)
 			s31_radio_report_bt_init(rc);
-		#endif
 		#endif
 		return;
 	}
@@ -1692,13 +1682,11 @@ void s31_radio_stack_task(void *arg)
 	rc = coex_pre_init();
 	s31_linux_printf("[S31] coex_pre_init rc=%d\n", rc);
 	if (rc != 0) {
-		#ifdef S31_LINUX_SMODE
 		if (enable_wifi)
 			s31_radio_report_wifi_init(rc);
 		#ifndef S31_WIFI_ONLY
 		if (enable_bt)
 			s31_radio_report_bt_init(rc);
-		#endif
 		#endif
 		return;
 	}
@@ -1708,35 +1696,20 @@ void s31_radio_stack_task(void *arg)
 		if (rc == 0)
 			rc = esp_wifi_init(&wifi_cfg);
 		s31_linux_printf("[S31] esp_wifi_init rc=%d\n", rc);
-		#ifdef S31_LINUX_SMODE
 		if (rc == 0)
 			rc = esp_event_handler_register(WIFI_EVENT,
 							ESP_EVENT_ANY_ID,
 							s31_wifi_event, NULL);
 		s31_radio_report_wifi_init(rc);
-		#else
-		if (rc == 0) {
-			rc = esp_wifi_set_mode(WIFI_MODE_STA);
-			s31_linux_printf("[S31] esp_wifi_set_mode rc=%d\n", rc);
-			if (rc == 0) {
-				rc = esp_wifi_start();
-				s31_linux_printf("[S31] esp_wifi_start rc=%d\n", rc);
-			}
-		}
-		#endif
 		if (rc != 0)
 			return;
 	} else {
-		#ifdef S31_LINUX_SMODE
 		s31_radio_report_wifi_init(0);
-		#endif
 	}
 
 #ifndef S31_WIFI_ONLY
 	if (!enable_bt) {
-		#ifdef S31_LINUX_SMODE
 		s31_radio_report_bt_init(0);
-		#endif
 		return;
 	}
 	/* Keep IDF's configured S31 main-XTAL default of 100 kHz (40 MHz / 400).
@@ -1746,14 +1719,8 @@ void s31_radio_stack_task(void *arg)
 	 * so the closed controller is told that its sleep RTC runs at 0 Hz. */
 	rc = esp_bt_controller_init(&bt_cfg);
 	s31_linux_printf("[S31] esp_bt_controller_init rc=%d\n", rc);
-	#ifdef S31_LINUX_SMODE
 	s31_radio_report_bt_init(rc);
-	#endif
 	if (rc == 0) {
-	#ifndef S31_LINUX_SMODE
-		rc = esp_bt_controller_enable(BTDM_CONTROLLER_MODE_EFF);
-		s31_linux_printf("[S31] esp_bt_controller_enable rc=%d\n", rc);
-	#endif
 	}
 #endif
 
@@ -1777,14 +1744,12 @@ void s31_radio_bt_enable_task(void *arg)
 	 * callback.  pm_on_coex_start() already restarts the Wi-Fi coexistence
 	 * scheduler; restarting the closed coexist core again here corrupts that
 	 * freshly selected phase and can starve Wi-Fi while BTDM is idle. */
-	#ifdef S31_LINUX_SMODE
 	if (rc == 0) {
 		rc = esp_vhci_host_register_callback(&s31_vhci_callbacks);
 		s31_linux_printf("[S31] esp_vhci_host_register_callback rc=%d\n", rc);
 	}
 	s31_radio_report_bt_enable(rc);
 	s31_radio_heap_report("after-bt-enable");
-	#endif
 #endif
 }
 
@@ -1799,10 +1764,8 @@ void s31_radio_bt_disable_task(void *arg)
 	s31_rtos_use_internal_stacks();
 	rc = esp_bt_controller_disable();
 	s31_linux_printf("[S31] esp_bt_controller_disable rc=%d\n", rc);
-#ifdef S31_LINUX_SMODE
 	s31_radio_heap_report("after-bt-disable");
 	s31_radio_report_bt_disable(rc);
-#endif
 #endif
 }
 
@@ -1846,7 +1809,5 @@ void s31_radio_shutdown_task(void *arg)
 		modem_clock_module_mac_reset(S31_PERIPH_WIFI_MODULE);
 		s31_linux_printf("[S31] shutdown wifi MAC reset\n");
 	}
-#ifdef S31_LINUX_SMODE
 	s31_radio_report_shutdown(result);
-#endif
 }

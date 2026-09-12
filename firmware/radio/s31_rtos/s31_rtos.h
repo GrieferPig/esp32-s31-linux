@@ -99,7 +99,6 @@ struct s31_event_group {
 void s31_rtos_init(void);
 void s31_rtos_tick(void);             /* worker callback pass */
 void s31_rtos_hard_tick(void);        /* legacy hard-IRQ no-op */
-int s31_radio_tick_init(void);         /* legacy, unused */
 int s31_radio_tick_service(void);      /* called by Linux through SBI */
 void s31_radio_tick_handoff_to_linux(void);
 BaseType_t s31_rtos_in_isr(void);     /* xPortInIsrContext */

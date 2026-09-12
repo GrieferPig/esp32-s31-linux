@@ -100,9 +100,10 @@ def main() -> None:
         linked_symbols.intersection_update(symbols)
     content = render(symbols, args.elf, linked_symbols)
     args.output.parent.mkdir(parents=True, exist_ok=True)
-    temporary = args.output.with_suffix(args.output.suffix + ".tmp")
-    temporary.write_text(content, encoding="utf-8")
-    temporary.replace(args.output)
+    if not args.output.exists() or args.output.read_text(encoding="utf-8") != content:
+        temporary = args.output.with_suffix(args.output.suffix + ".tmp")
+        temporary.write_text(content, encoding="utf-8")
+        temporary.replace(args.output)
     print(f"radio-imports: {len(linked_symbols)} linked, "
           f"{len(symbols) - len(linked_symbols)} nullable -> {args.output}")
 

@@ -42,6 +42,7 @@ if [ "$mode" = release ]; then
 fi
 
 make -C "$project_dir" radio-fs
+make -C "$project_dir" build-manifest
 
 kernel_out="${S31_LINUX_OUT:-${project_dir}/build/linux-6.18}"
 radio_staging="${project_dir}/build/radiofs-staging"
@@ -65,6 +66,7 @@ cp "${project_dir}/firmware/radio/idf_deps/sdkconfig.defaults" "$staging/config/
 cp "${project_dir}/firmware/radio/idf_deps/sdkconfig.radio.defaults" "$staging/config/"
 cp "${project_dir}/firmware/radio/RADIO_BUNDLE_LICENSES.md" "$staging/"
 cp "${project_dir}/build/radio.sqfs" "$staging/"
+cp "${project_dir}/build/build-manifest.json" "$staging/"
 printf 'distribution-mode=%s\n' "$mode" >"$staging/MANIFEST"
 printf 'kernel-release=%s\n' \
 	"$(cat "${kernel_out}/include/config/kernel.release")" >>"$staging/MANIFEST"

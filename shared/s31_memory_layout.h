@@ -45,7 +45,6 @@
 #define S31_AHB_DESC_SIZE              0x00001000U
 #define S31_USB_LOCAL_BASE             0x2F076380U
 #define S31_USB_LOCAL_SIZE             0x00000040U
-#define S31_HART1_MAILBOX_BASE         0x2F0763A0U
 #define S31_UART_DMA_BASE              0x2F076400U
 #define S31_UART_DMA_SIZE              0x00002800U
 #define S31_HP_SHARED_END              0x2F078C00U
