@@ -21,24 +21,33 @@ Install `esptool`, Espressif's tool for flashing ESP32s:
 $ pip install esptool
 ```
 
-Then download the binaries in [Release](https://github.com/GrieferPig/esp32-s31-linux/releases), connect your board through USB-UART, and flash the board per the provided command below (change `/dev/ttyUSB0` to your actual serial device). The persist image is written only for a first installation; omit both `erase-flash` and `persist.jffs2` when updating an existing board so saved configuration is retained.
+Download all six slot images from the same [release](https://github.com/GrieferPig/esp32-s31-linux/releases)
+and verify them against its `SHA256SUMS`. Replace `BOARD_PORT` with the board's
+download port. On first installation only, run `esptool -p BOARD_PORT erase-flash`.
+An erased persist partition is a valid empty JFFS2 filesystem.
 
-```bash
-$ esptool -p /dev/ttyUSB0 -b 2000000 erase-flash
-$ esptool -p /dev/ttyUSB0 -b 2000000 write-flash \
+For both first installation and subsequent updates, write the six slots:
+
+```sh
+esptool -p BOARD_PORT -b 460800 write-flash \
     --flash-mode dio --flash-freq 80m --flash-size 16MB \
     0x002000 spl_app.bin \
     0x100000 u-boot.itb \
     0x300000 esp32s31_generic.dtb \
     0x310000 radio.sqfs \
     0x500000 xipImage \
-    0xB30000 persist.jffs2 \
     0xBD0000 rootfs.sqfs
 ```
 
+For updates, omit `erase-flash`. The six-slot write preserves persist and HIL
+scratch. The separately supplied `s31_full_flash.bin` is convenient for first
+installation at offset zero; writing it overwrites persist even without a
+separate persist payload. Older releases containing only that combined image
+cannot use the six-slot procedure without extracting their slots first.
+
 The authoritative addresses and artifact names are kept in
 [`configs/esp32s31-layout.cfg`](configs/esp32s31-layout.cfg). A source checkout
-can build and update a board with `make all`, `make persist`, and
+can build and update a board with `make all` and
 `make flash-all`; `flash-all` deliberately preserves the persist partition.
 
 ## Porting progress
@@ -105,9 +114,10 @@ can build and update a board with `make all`, `make persist`, and
 Wi-Fi AP/AP+STA, receive-only monitor and firmware PEAP/EAP-TLS provisioning,
 long I2C messages, DMA-backed SPI target transfers and configurable I2S/TDM
 DAIs are implemented with partial board acceptance. Open AP+STA passes both
-data paths; connected BLE recovery passes three suspend cycles, and both I2S
-controllers pass bidirectional S16_LE stereo checks at 8/16/48 kHz after
-clock synchronization. Enterprise authentication remains unverified. See the
+data paths in historical fixture tests. I2S has historical S16_LE stereo
+evidence at 8/16/48 kHz. Those observations do not certify a changed image;
+Bluetooth suspend recovery and enterprise authentication require identified
+acceptance records. See the
 [advanced Wi-Fi guide](https://grieferpig.github.io/esp32-s31-linux-docs/en/api-guides/wifi-advanced.html),
 [peripheral reference](https://grieferpig.github.io/esp32-s31-linux-docs/en/api-reference/peripherals/) and
 [support matrix](https://grieferpig.github.io/esp32-s31-linux-docs/en/resources/support-matrix.html) for limits. Radio core
@@ -132,7 +142,7 @@ D-Bus/GLib audio-control dependency chain are not selected. See
 Run `esp32-config` for the `dialog`-based configuration interface. Persistent
 policy lives in `/etc/esp32-conf`, while radio and GPIO operations continue
 to use the standard Linux tools above. See the
-[esp32-config reference](https://grieferpig.github.io/esp32-s31-linux-docs/en/resources/configuration.html).
+[esp32-config reference](https://grieferpig.github.io/esp32-s31-linux-docs/en/resources/esp32-config.html).
 
 ## Architecture notes
 
