@@ -1,0 +1,96 @@
+#!/usr/bin/env python3
+"""Check the shared SRAM contract and derive flash capacities from the slot map."""
+import argparse
+import re
+from pathlib import Path
+
+ROOT = Path(__file__).resolve().parents[1]
+SLOTS = ("SPL", "UBOOT_ITB", "DTB", "RADIO", "KERNEL", "PERSIST", "HIL_SCRATCH", "ROOTFS")
+
+def flash_layout(root=ROOT):
+    text = (root / "configs/esp32s31-layout.cfg").read_text()
+    values = {k: int(v, 0) for k, v in re.findall(r"^(SLOT_\w+|FLASH_SIZE)=(0x[0-9a-fA-F]+|[0-9]+)$", text, re.M)}
+    points = [values["SLOT_" + key] for key in SLOTS] + [values["FLASH_SIZE"]]
+    if any(a >= b or a < 0 or a % 0x2000 for a, b in zip(points, points[1:])):
+        raise ValueError("flash slots must be increasing and erase-block aligned")
+    return values, dict(zip(SLOTS, (b - a for a, b in zip(points, points[1:]))))
+
+def defines(text):
+    result = {}
+    for key, value in re.findall(r"^#define\s+(S31_\w+)\s+(\S+)", text, re.M):
+        if re.fullmatch(r"0x[0-9a-fA-F]+[UuLl]*", value):
+            result[key] = int(value.rstrip("UuLl"), 0)
+        elif value in result:
+            result[key] = result[value]
+    return result
+
+def check(root=ROOT):
+    slots, sizes = flash_layout(root)
+    shared = defines((root / "shared/s31_memory_layout.h").read_text())
+    radio = defines((root / "linux-esp32-s31/drivers/platform/esp32s31-radio-smode.c").read_text())
+    for key in ("HEAP_BASE", "HEAP_END", "HEAP_LOW_BASE", "HEAP_LOW_END", "HEAP2_BASE", "HEAP2_END"):
+        name = "S31_RADIO_" + key
+        if radio[name] != shared[name]:
+            raise ValueError(name + " differs between shared contract and radio driver")
+    if not shared["S31_RADIO_EXC_BASE"] <= radio["S31_RADIO_EXC_STACK_TOP"] < shared["S31_RADIO_EXC_END"]:
+        raise ValueError("radio exception stack is outside its reservation")
+    regions = [("S31_OPENSBI_RW_BASE", "S31_OPENSBI_RW_END"),
+               ("S31_RADIO_HEAP_LOW_BASE", "S31_RADIO_HEAP_LOW_END"),
+               ("S31_RADIO_HEAP_BASE", "S31_RADIO_HEAP_END"),
+               ("S31_RADIO_EXC_BASE", "S31_RADIO_EXC_END")]
+    spans = [(shared[a], shared[b]) for a, b in regions]
+    for name in ("AXI_DESC", "AHB_DESC", "USB_LOCAL", "UART_DMA"):
+        spans.append((shared["S31_" + name + "_BASE"], shared["S31_" + name + "_BASE"] + shared["S31_" + name + "_SIZE"]))
+    spans.append((shared["S31_RADIO_HEAP2_BASE"], shared["S31_RADIO_HEAP2_END"]))
+    if any(a >= b for a, b in spans) or any(a[1] > b[0] for a, b in zip(spans, spans[1:])):
+        raise ValueError("SRAM reservations overlap or are empty")
+    if spans[-2][1] != shared["S31_HP_SHARED_END"] or spans[-1][0] != shared["S31_HP_SHARED_END"]:
+        raise ValueError("UART DMA/high radio heap boundary differs")
+    dtsdir = root / "linux-esp32-s31/arch/riscv/boot/dts/espressif"
+    dts = (dtsdir / "esp32s31.dtsi").read_text()
+    for name in ("PSRAM", "AXI_DESC", "AHB_DESC", "USB_LOCAL"):
+        pattern = r"<0x0*%x\s+0x0*%x>" % (shared["S31_" + name + "_BASE"], shared["S31_" + name + "_SIZE"])
+        if not re.search(pattern, dts, re.I):
+            raise ValueError(name + " missing or different in DTS reg")
+    for overlay in dtsdir.glob("esp32s31-overlay-uart*-dma.dtso"):
+        if not re.search(r"<0x0*%x\s+0x0*%x>" % (shared["S31_UART_DMA_BASE"], shared["S31_UART_DMA_SIZE"]), overlay.read_text(), re.I):
+            raise ValueError(str(overlay.name) + " UART DMA reservation differs")
+    mappings = {"u-boot-fit": "UBOOT_ITB", "dtb": "DTB", "radio-bundle": "RADIO", "linux": "KERNEL", "persist": "PERSIST", "hil-scratch": "HIL_SCRATCH", "rootfs": "ROOTFS"}
+    for label, key in mappings.items():
+        match = re.search(r'label\s*=\s*"' + label + r'";\s*reg\s*=\s*<(0x[0-9a-fA-F]+)\s+(0x[0-9a-fA-F]+)>', dts)
+        actual = tuple(int(x, 0) for x in match.groups()) if match else None
+        expected = (slots["SLOT_" + key] - slots["SLOT_UBOOT_ITB"], sizes[key])
+        if actual != expected:
+            raise ValueError(f"DTS partition {label}: {actual} != slot map {expected}")
+    linker = (root / "linux-esp32-s31/arch/riscv/kernel/vmlinux-xip.lds.S").read_text()
+    start = int(re.search(r"\.s31_radio.data\s+(0x[0-9a-fA-F]+)", linker)[1], 0)
+    if start != shared["S31_RADIO_HEAP_BASE"]:
+        raise ValueError("kernel radio link address differs from shared contract")
+    makefile = (root / "Makefile").read_text()
+    start = int(re.search(r"FW_RW_START\s*\?=\s*(0x[0-9a-fA-F]+)", makefile)[1], 0)
+    if start != shared["S31_OPENSBI_RW_BASE"]:
+        raise ValueError("OpenSBI writable base differs from shared contract")
+    print("SRAM reservations and all 7 mapped flash partitions match the shared contracts")
+
+def main():
+    p = argparse.ArgumentParser(description=__doc__)
+    p.add_argument("--size", choices=SLOTS)
+    p.add_argument("--root", type=Path, default=ROOT)
+    p.add_argument("--image-slot", nargs=2, metavar=("SLOT", "IMAGE"))
+    a = p.parse_args()
+    try:
+        if a.image_slot:
+            key, name = a.image_slot
+            capacity = flash_layout(a.root)[1][key]
+            size = Path(name).stat().st_size
+            if not 0 < size <= capacity:
+                raise ValueError(f"{key} image size {size} exceeds capacity {capacity} or is empty")
+        elif a.size:
+            print(flash_layout(a.root)[1][a.size])
+        else:
+            check(a.root)
+    except (ValueError, KeyError, OSError) as e:
+        p.exit(1, "layout: " + str(e) + "\n")
+
+if __name__ == "__main__":
+    main()

@@ -1,18 +1,25 @@
 # Makefile for ESP32-S31 Linux
 
+include configs/build-versions.mk
+
+ifneq ($(filter download,$(MAKECMDGOALS)),)
+ifneq ($(words $(MAKECMDGOALS)),1)
+$(error Run make download separately before build targets)
+endif
+endif
+
+PORT ?= /dev/ttyUSB0
+BAUD ?= 2000000
+
 TOOLCHAIN_DIR := $(CURDIR)/toolchain
 CROSSTOOL_NG_DIR ?= $(abspath $(CURDIR)/../crosstool-NG)
-CROSSTOOL_CONFIG := $(CURDIR)/configs/riscv32-esp-linux-musl.config
 TOOLCHAIN_PREFIX := $(TOOLCHAIN_DIR)/riscv32-esp-linux-musl
-TOOLCHAIN_RELEASE_TAG ?= latest
 TOOLCHAIN_RELEASE_ASSET := riscv32-esp-linux-musl.tar.xz
 TOOLCHAIN_RELEASE_REPOSITORY ?= GrieferPig/crosstool-NG-s31
 TOOLCHAIN_RELEASE_API ?= https://api.github.com/repos/$(TOOLCHAIN_RELEASE_REPOSITORY)/releases/latest
 TOOLCHAIN_RELEASE_DOWNLOAD_BASE ?= https://github.com/$(TOOLCHAIN_RELEASE_REPOSITORY)/releases/download
 CROSS_COMPILE := $(TOOLCHAIN_PREFIX)/bin/riscv32-esp-linux-musl-
 CC := $(CROSS_COMPILE)gcc
-CPP := $(CROSS_COMPILE)cpp
-DTC := dtc
 JOBS ?= $(shell nproc)
 S31_BTSTACK_O2 ?= 0
 
@@ -23,10 +30,7 @@ S31_BTSTACK_O2 ?= 0
 # vector instructions.  Kernel and firmware code must remain integer-safe.
 S31_SAFE_ISA := rv32imabc_zicsr_zifencei_zaamo_zalrsc_zba_zbb_zbc_zbs
 S31_KERNEL_ISA := rv32imafbc_zicsr_zifencei_zaamo_zalrsc_zba_zbb_zbc_zbs
-S31_USER_ISA := rv32imafbc_zicsr_zifencei_zaamo_zalrsc_zba_zbb_zbc_zbs
-S31_COMMON_FLAGS := -mabi=ilp32 -mtune=esp-base
 S31_KERNEL_FLAGS := -mabi=ilp32f -mtune=esp-base
-S31_USER_FLAGS := -march=$(S31_USER_ISA) $(S31_COMMON_FLAGS)
 
 BUILD_DIR := $(CURDIR)/build
 OPENSBI_DIR := $(CURDIR)/opensbi-esp32-s31
@@ -49,7 +53,6 @@ TOOLCHAIN_ARCHIVE := $(BUILD_DIR)/downloads/$(TOOLCHAIN_RELEASE_ASSET)
 
 S31_LAYOUT_CFG := $(CURDIR)/configs/esp32s31-layout.cfg
 
-FW_PAYLOAD := $(BUILD_DIR)/fw_payload.bin
 XIP_IMAGE := $(BUILD_DIR)/xipImage
 UBOOT_ITB := $(BUILD_DIR)/u-boot.itb
 UBOOT_SPL_DTB := $(BUILD_DIR)/u-boot-spl-dtb.bin
@@ -59,26 +62,32 @@ RADIO_FS_IMG := $(BUILD_DIR)/radio.sqfs
 PERSIST_IMG := $(BUILD_DIR)/persist.jffs2
 
 IDF_ROOT ?= $(HOME)/.espressif
-# Keep the ESP-IDF dependency local to its installation root.  The master
-# checkout is preferred, with an installed alternate accepted as a fallback.
-IDF_EXPORT ?= $(firstword $(wildcard $(IDF_ROOT)/master/esp-idf/export.sh) $(wildcard $(IDF_PATH)/export.sh) $(shell find $(IDF_ROOT) -maxdepth 5 -type f -path '*/esp-idf/export.sh' 2>/dev/null | sort | head -n 1))
+# An explicit installation wins; never select an arbitrary installed checkout.
+IDF_EXPORT ?= $(firstword $(wildcard $(IDF_PATH)/export.sh) $(wildcard $(IDF_ROOT)/master/esp-idf/export.sh))
 
 .PHONY: all download toolchain toolchain-source idf-check opensbi uboot flash-image radio-linux-payload radio-idf-deps radio-module radio-package radio-fs radio-image linux coremark rootfs initramfs s31-pie-cases btstack-source btstack-notices \
 	buildroot-menuconfig buildroot-clean clean fullclean flash-opensbi flash-linux \
 	flash-dtb flash-radio flash-rootfs flash-existing-radio flash-existing-rootfs \
 	persist flash-persist bootloader flash-bootloader flash-all erase
 
-all: toolchain download uboot linux rootfs flash-image
+all: check-layout toolchain uboot linux rootfs flash-image
 
 $(BUILD_DIR) $(OPENSBI_OUT) $(LINUX_OUT) $(UBOOT_OUT) $(BUILDROOT_OUT) $(COREMARK_OUT):
 	mkdir -p $@
 
-download: toolchain
+# Source initialization is explicit and never runs concurrently with builds.
+download:
+	@if [ -n "$(filter-out download,$(MAKECMDGOALS))" ]; then echo "Run make download separately before build targets" >&2; exit 2; fi
 	@echo "--- Download ---"
 	git submodule update --init --recursive
 
 toolchain: | $(BUILD_DIR)
 	@set -eu; \
+	if [ "$(TOOLCHAIN_RELEASE_TAG)" = local ]; then \
+		test -x "$(CC)" || { echo "ERROR: no local toolchain installed" >&2; exit 1; }; \
+		echo "Using explicitly selected local toolchain at $(TOOLCHAIN_PREFIX)"; \
+		exit 0; \
+	fi; \
 	if [ -x "$(CC)" ] && [ "$(TOOLCHAIN_RELEASE_TAG)" = latest ]; then \
 		echo "Using installed toolchain at $(TOOLCHAIN_PREFIX)"; \
 		exit 0; \
@@ -97,7 +106,7 @@ toolchain: | $(BUILD_DIR)
 	if [ -z "$$installed_tag" ] && [ -d "$(TOOLCHAIN_PREFIX)" ]; then \
 		installed_tag=$$(find "$(TOOLCHAIN_PREFIX)" -maxdepth 1 -type f -name '.release-*' -printf '%f\n' 2>/dev/null | sed 's/^\.release-//' | head -n 1); \
 	fi; \
-	if [ "$$installed_tag" = "$$release_tag" ]; then \
+	if [ "$$installed_tag" = "$$release_tag" ] && [ -x "$(CC)" ]; then \
 		echo "Toolchain release $$release_tag is already installed"; \
 		exit 0; \
 	fi; \
@@ -133,14 +142,9 @@ toolchain-source:
 # coherent HP SRAM, leaving the retired loader area available to the radio.
 FW_TEXT_START ?= 0x40000400
 FW_RW_START ?= 0x2F00F000
-# SV32 XIP uses a 4-MiB leaf/megapage boundary.
-LINUX_XIP_ADDR ?= 0x40400000
-FW_JUMP_ADDR ?= $(LINUX_XIP_ADDR)
 OPENSBI_MAX_SIZE ?= 262144
 
-FDT_SRC := $(LINUX_DIR)/arch/riscv/boot/dts/espressif/esp32s31_generic.dts
 FDT_DTB := $(BUILD_DIR)/esp32s31_generic.dtb
-OPENSBI_FW_JUMP_BIN := $(OPENSBI_OUT)/platform/generic/firmware/fw_jump.bin
 OPENSBI_FW_DYNAMIC_BIN := $(OPENSBI_OUT)/platform/generic/firmware/fw_dynamic.bin
 OPENSBI_CONFIG_STAMP := $(OPENSBI_OUT)/.s31-link-config
 
@@ -194,11 +198,10 @@ uboot: idf-check opensbi | $(UBOOT_OUT)
 		--output $(SPL_APP_BIN) $$work/spl_wrapped.elf"
 
 RADIO_IDF_BUILD := $(RADIO_IDF_DEPS_DIR)/build-radio
-RADIO_PARTITION_SIZE := 1966080
-RADIO_PAYLOAD := $(BUILD_DIR)/radio-fw-payload.bin
 
 idf-check:
 	@test -f "$(IDF_EXPORT)" || { echo "ERROR: ESP-IDF export.sh not found under $(IDF_ROOT)" >&2; exit 1; }
+	python3 tools/check_build_versions.py --idf "$(dir $(IDF_EXPORT))" $(if $(filter 1,$(S31_ALLOW_UNPINNED)),--allow-unpinned)
 
 radio-idf-deps: idf-check
 	@echo "--- Build ESP-IDF radio dependency closure ---"
@@ -215,29 +218,10 @@ radio-idf-deps: idf-check
 		test -n \"\$$targets\" && \
 		ninja -C build-radio -j$(JOBS) \$$targets"
 
-RADIO_LINUX_CMDLINE := console=ttyS0,115200n8 rootfstype=squashfs ro init=/init
-
-radio-image: LINUX_CMDLINE := $(RADIO_LINUX_CMDLINE)
-radio-image: opensbi linux
-	@set -eu; \
-	RAW="$(BUILD_DIR)/radio-fw.raw"; \
-	DTB="$(BUILD_DIR)/radio-esp32s31.dtb"; \
-	cp "$(FDT_DTB)" "$$DTB"; \
-	cp "$(OPENSBI_FW_JUMP_BIN)" "$$RAW"; \
-	RAW_SIZE=$$(stat -c%s "$$RAW"); \
-	FDT_OFFSET=$$(( (RAW_SIZE + 7) & ~7 )); \
-	DTB_SIZE=$$(stat -c%s "$$DTB"); \
-	MAX_PAYLOAD_SIZE=$$(( $(RADIO_PARTITION_SIZE) - 4 )); \
-	if [ $$((FDT_OFFSET + DTB_SIZE)) -gt $$MAX_PAYLOAD_SIZE ]; then \
-		echo "ERROR: OpenSBI + DTB exceeds expanded partition"; exit 1; \
-	fi; \
-	cp "$$RAW" "$(RADIO_PAYLOAD)"; \
-	truncate -s $$FDT_OFFSET "$(RADIO_PAYLOAD)"; \
-	cat "$$DTB" >> "$(RADIO_PAYLOAD)"; \
-	truncate -s $$MAX_PAYLOAD_SIZE "$(RADIO_PAYLOAD)"; \
-	printf '%08x' $$FDT_OFFSET | sed 's/../& /g' | \
-		awk '{for (i=4;i>=1;i--) printf "%s", $$i}' | xxd -r -p >> "$(RADIO_PAYLOAD)"; \
-	echo "Radio payload: $$((FDT_OFFSET + DTB_SIZE)) bytes used, FDT offset $$FDT_OFFSET"
+# Retained only to make obsolete automation fail with a useful migration.
+radio-image:
+	@echo "ERROR: radio-image is retired; use radio-fs (radio.sqfs) or radio-package" >&2
+	@exit 2
 
 DEFCONFIG ?= esp32s31_defconfig
 LINUX_TARGET ?= xipImage
@@ -250,10 +234,10 @@ S31_LEAN_RADIO ?= 1
 # retain the rootfs and console arguments here as well.  Both HP harts start by
 # default; normal device IRQs remain pinned to hart 0 via irqaffinity=0.
 LINUX_CMDLINE ?= earlycon=esp32s31uart,mmio,0x2038a000,115200 console=ttyS0,115200n8 rootfstype=squashfs ro init=/init irqaffinity=0 esp32s31_idle=wfi
-LINUX_PARTITION_SIZE := 6488064
+LINUX_PARTITION_SIZE := $(shell python3 tools/check_s31_layout.py --size KERNEL)
 
 radio-linux-payload: radio-idf-deps
-	$(MAKE) -C $(CURDIR)/firmware/radio IDF_ROOT="$(IDF_ROOT)" \
+	$(MAKE) -C $(CURDIR)/firmware/radio IDF_ROOT="$(IDF_ROOT)" IDF_EXPORT="$(IDF_EXPORT)" \
 		IDF_DEPS_DIR="$(RADIO_IDF_DEPS_DIR)" \
 		S31_WIFI_ONLY=0 linux-kbuild
 
@@ -266,7 +250,7 @@ radio-module: linux
 radio-package:
 	+$(CURDIR)/tools/build_radio_bundle.sh
 
-RADIO_FS_PARTITION_SIZE ?= 2031616
+RADIO_FS_PARTITION_SIZE := $(shell python3 tools/check_s31_layout.py --size RADIO)
 radio-fs: linux rootfs
 	@echo "--- ESP32-S31 integrated radio bundle ---"
 	rm -rf $(BUILD_DIR)/radiofs-staging
@@ -300,11 +284,12 @@ radio-fs: linux rootfs
 		echo "ERROR: radio bundle exceeds its flash partition"; exit 1; \
 	fi
 
-linux: toolchain radio-linux-payload | $(LINUX_OUT)
+linux: check-layout toolchain radio-linux-payload | $(LINUX_OUT)
 	@echo "--- Linux ---"
 	$(MAKE) -C $(LINUX_DIR) O=$(LINUX_OUT) ARCH=riscv CROSS_COMPILE="$(CROSS_COMPILE)" $(DEFCONFIG)
 	$(LINUX_DIR)/scripts/config --file $(LINUX_OUT)/.config \
 		--disable BUILTIN_DTB \
+		--enable FILE_LOCKING \
 		--enable RISCV_ISA_C \
 		--disable RISCV_ISA_V \
 		--disable RISCV_ISA_V_DEFAULT_ENABLE \
@@ -428,8 +413,8 @@ coremark: rootfs | $(COREMARK_OUT)
 
 # Keep this decimal because POSIX test(1) and truncate(1) do not accept the
 # partition table's 0x-prefixed value.
-ROOTFS_PARTITION_SIZE ?= 4390912
-PERSIST_PARTITION_SIZE ?= 655360
+ROOTFS_PARTITION_SIZE := $(shell python3 tools/check_s31_layout.py --size ROOTFS)
+PERSIST_PARTITION_SIZE := $(shell python3 tools/check_s31_layout.py --size PERSIST)
 BUILDROOT_MAKE = S31_LEAN_RADIO=$(S31_LEAN_RADIO) \
 	$(MAKE) -C $(BUILDROOT_DIR) O=$(BUILDROOT_OUT) \
 	BR2_EXTERNAL=$(BUILDROOT_EXTERNAL) BR2_DL_DIR=$(BUILDROOT_DL_DIR) \
@@ -476,7 +461,7 @@ initramfs: linux rootfs
 
 # Generate an empty, NOR-compatible JFFS2 image for the persist partition.
 # This is separate from normal firmware updates so user data is not erased.
-persist: | $(BUILD_DIR)
+persist: check-layout | $(BUILD_DIR)
 	@command -v mkfs.jffs2 >/dev/null || { echo "ERROR: mkfs.jffs2 is required" >&2; exit 1; }
 	@staging=$$(mktemp -d "$(BUILD_DIR)/persist.XXXXXX"); \
 	trap 'rmdir "$$staging"' EXIT; \
@@ -499,63 +484,82 @@ fullclean: clean
 	@test ! -e $(TOOLCHAIN_DIR) || chmod -R u+w $(TOOLCHAIN_DIR)
 	rm -rf $(TOOLCHAIN_DIR)
 
-flash-image: uboot linux rootfs radio-fs
+flash-image: check-layout uboot linux rootfs radio-fs
 	@echo "--- Merge official U-Boot flash layout ---"
 	bash -c "source $(IDF_EXPORT) >/dev/null && \
 		$(CURDIR)/tools/gen_esp_flash_image.sh $(S31_LAYOUT_CFG) $(BUILD_DIR)"
+	$(MAKE) build-manifest
+	python3 tools/release_assets.py --prefix "$(BUILD_DIR)" --checksums
 
 # OpenSBI is embedded in U-Boot's FIT at the official 0x100000 slot.
 flash-opensbi: uboot
+	python3 tools/check_s31_layout.py --image-slot UBOOT_ITB "$(UBOOT_ITB)"
 	bash -c "source $(S31_LAYOUT_CFG) && source $(IDF_EXPORT) >/dev/null && \
-		esptool -p /dev/ttyUSB0 -b 2000000 write-flash \
+		esptool -p $(PORT) -b $(BAUD) write-flash \
 		\$$SLOT_UBOOT_ITB $(UBOOT_ITB)"
 
 flash-dtb: linux
+	python3 tools/check_s31_layout.py --image-slot DTB "$(FDT_DTB)"
 	bash -c "source $(S31_LAYOUT_CFG) && source $(IDF_EXPORT) >/dev/null && \
-		esptool -p /dev/ttyUSB0 -b 2000000 write-flash \$$SLOT_DTB $(FDT_DTB)"
+		esptool -p $(PORT) -b $(BAUD) write-flash \$$SLOT_DTB $(FDT_DTB)"
 
 flash-radio: radio-fs
+	python3 tools/check_s31_layout.py --image-slot RADIO "$(RADIO_FS_IMG)"
 	bash -c "source $(S31_LAYOUT_CFG) && source $(IDF_EXPORT) >/dev/null && \
-		esptool -p /dev/ttyUSB0 -b 2000000 write-flash \$$SLOT_RADIO $(RADIO_FS_IMG)"
+		esptool -p $(PORT) -b $(BAUD) write-flash \$$SLOT_RADIO $(RADIO_FS_IMG)"
 
 flash-linux: linux
+	python3 tools/check_s31_layout.py --image-slot DTB "$(FDT_DTB)"
+	python3 tools/check_s31_layout.py --image-slot KERNEL "$(XIP_IMAGE)"
 	bash -c "source $(S31_LAYOUT_CFG) && source $(IDF_EXPORT) >/dev/null && \
-		esptool -p /dev/ttyUSB0 -b 2000000 write-flash \
+		esptool -p $(PORT) -b $(BAUD) write-flash \
 		\$$SLOT_DTB $(FDT_DTB) \$$SLOT_KERNEL $(XIP_IMAGE)"
 
 flash-rootfs: rootfs
+	python3 tools/check_s31_layout.py --image-slot ROOTFS "$(ROOTFS_IMG)"
 	bash -c "source $(S31_LAYOUT_CFG) && source $(IDF_EXPORT) >/dev/null && \
-		esptool -p /dev/ttyUSB0 -b 2000000 write-flash \$$SLOT_ROOTFS $(ROOTFS_IMG)"
+		esptool -p $(PORT) -b $(BAUD) write-flash \$$SLOT_ROOTFS $(ROOTFS_IMG)"
 
 # Fast hardware iteration after an image has already passed its build target.
 # These targets never rebuild dependencies and fail before touching Flash when
 # the requested artifact is missing.
 flash-existing-radio:
+	python3 tools/check_s31_layout.py --image-slot RADIO "$(RADIO_FS_IMG)"
 	@test -s "$(RADIO_FS_IMG)"
 	bash -c "source $(S31_LAYOUT_CFG) && source $(IDF_EXPORT) >/dev/null && \
-		esptool -p /dev/ttyUSB0 -b 2000000 write-flash \$$SLOT_RADIO $(RADIO_FS_IMG)"
+		esptool -p $(PORT) -b $(BAUD) write-flash \$$SLOT_RADIO $(RADIO_FS_IMG)"
 
 flash-existing-rootfs:
+	python3 tools/check_s31_layout.py --image-slot ROOTFS "$(ROOTFS_IMG)"
 	@test -s "$(ROOTFS_IMG)"
 	bash -c "source $(S31_LAYOUT_CFG) && source $(IDF_EXPORT) >/dev/null && \
-		esptool -p /dev/ttyUSB0 -b 2000000 write-flash \$$SLOT_ROOTFS $(ROOTFS_IMG)"
+		esptool -p $(PORT) -b $(BAUD) write-flash \$$SLOT_ROOTFS $(ROOTFS_IMG)"
 
 flash-persist: persist
+	python3 tools/check_s31_layout.py --image-slot PERSIST "$(PERSIST_IMG)"
 	bash -c "source $(S31_LAYOUT_CFG) && source $(IDF_EXPORT) >/dev/null && \
-		esptool -p /dev/ttyUSB0 -b 2000000 write-flash \$$SLOT_PERSIST $(PERSIST_IMG)"
+		esptool -p $(PORT) -b $(BAUD) write-flash \$$SLOT_PERSIST $(PERSIST_IMG)"
 
 bootloader: uboot
 
 flash-bootloader: uboot
+	python3 tools/check_s31_layout.py --image-slot SPL "$(SPL_APP_BIN)"
+	python3 tools/check_s31_layout.py --image-slot UBOOT_ITB "$(UBOOT_ITB)"
 	@echo "--- Flash U-Boot SPL + FIT ---"
 	bash -c "source $(S31_LAYOUT_CFG) && source $(IDF_EXPORT) >/dev/null && \
-		esptool -p /dev/ttyUSB0 -b 2000000 write-flash \
+		esptool -p $(PORT) -b $(BAUD) write-flash \
 		\$$SLOT_SPL $(SPL_APP_BIN) \$$SLOT_UBOOT_ITB $(UBOOT_ITB)"
 
 flash-all: uboot linux rootfs radio-fs
+	python3 tools/check_s31_layout.py --image-slot SPL "$(SPL_APP_BIN)"
+	python3 tools/check_s31_layout.py --image-slot UBOOT_ITB "$(UBOOT_ITB)"
+	python3 tools/check_s31_layout.py --image-slot DTB "$(FDT_DTB)"
+	python3 tools/check_s31_layout.py --image-slot RADIO "$(RADIO_FS_IMG)"
+	python3 tools/check_s31_layout.py --image-slot KERNEL "$(XIP_IMAGE)"
+	python3 tools/check_s31_layout.py --image-slot ROOTFS "$(ROOTFS_IMG)"
 	@echo "--- Flash complete U-Boot/Linux image (persist preserved) ---"
 	bash -c "source $(S31_LAYOUT_CFG) && source $(IDF_EXPORT) >/dev/null && \
-		esptool -p /dev/ttyUSB0 -b 2000000 write-flash \
+		esptool -p $(PORT) -b $(BAUD) write-flash \
 		\$$SLOT_SPL $(SPL_APP_BIN) \
 		\$$SLOT_UBOOT_ITB $(UBOOT_ITB) \
 		\$$SLOT_DTB $(FDT_DTB) \
@@ -564,4 +568,17 @@ flash-all: uboot linux rootfs radio-fs
 		\$$SLOT_ROOTFS $(ROOTFS_IMG)"
 
 erase:
-	bash -c "source $(IDF_EXPORT) >/dev/null && esptool -p /dev/ttyUSB0 -b 2000000 erase-flash"
+	bash -c "source $(IDF_EXPORT) >/dev/null && esptool -p $(PORT) -b $(BAUD) erase-flash"
+
+.PHONY: check-layout check-host check-docs check-dt check-fast build-manifest
+check-layout:
+	python3 tools/check_s31_layout.py
+check-host: check-layout btstack-source
+	python3 -m unittest discover -s tools/tests -v
+check-docs:
+	$(MAKE) -C docs html SPHINXOPTS="-n -W --keep-going"
+check-dt:
+	python3 tools/check_s31_dt.py --cross-compile "$(CROSS_COMPILE)"
+check-fast: check-host check-docs check-dt
+build-manifest:
+	python3 tools/build_manifest.py --compiler "$(CC)" --idf "$(dir $(IDF_EXPORT))" --output "$(BUILD_DIR)/build-manifest.json"

@@ -8,15 +8,18 @@ permissions:
   contents: write
 
 jobs:
+  checks:
+    uses: ./.github/workflows/fast-checks.yml
+    permissions:
+      contents: read
   build-and-release:
+    needs: checks
     if: startsWith(github.event.head_commit.message, 'release:')
     runs-on: ubuntu-24.04
     timeout-minutes: 120
     env:
       IDF_PATH: ${{ github.workspace }}/.esp-idf
-      ESP_IDF_REF: a602e67b0bf9ee0806dc4e1df7afc9affedf5c33
       S31_LEAN_RADIO: 0
-      TOOLCHAIN_RELEASE_TAG: latest
 
     steps:
       - name: Check out source and submodules
@@ -31,6 +34,10 @@ jobs:
             bison bc build-essential ccache cpio device-tree-compiler flex gperf libffi-dev \
             libssl-dev ninja-build python3-pkg-resources python3-pyelftools rsync unzip xz-utils
 
+      - name: Read pinned dependency versions
+        run: |
+          python3 -c 'import sys; sys.path.insert(0, "tools"); from check_build_versions import versions; print("\n".join(k + "=" + v for k, v in versions().items()))' >> "$GITHUB_ENV"
+
       - name: Install ESP-IDF
         run: |
           git clone --filter=blob:none https://github.com/espressif/esp-idf.git "$IDF_PATH"
@@ -43,11 +50,7 @@ jobs:
           prefix="$GITHUB_WORKSPACE/toolchain/riscv32-esp-linux-musl"
           target=riscv32-esp-linux-musl
           resolved_tag="$(cat "$prefix/.release")"
-          latest_tag="$(curl --fail --location --retry 3 --silent --show-error \
-            https://api.github.com/repos/GrieferPig/crosstool-NG-s31/releases/latest \
-            | python3 -c 'import json, sys; print(json.load(sys.stdin)["tag_name"])')"
-          test -n "$resolved_tag"
-          test "$resolved_tag" = "$latest_tag"
+          test "$resolved_tag" = "$TOOLCHAIN_RELEASE_TAG"
           actual_version="$("$prefix/bin/$target-gcc" --version | head -n 1)"
           packaged_version="$(head -n 1 "$prefix/toolchain-version.txt")"
           test "$actual_version" = "$packaged_version"
@@ -68,8 +71,7 @@ jobs:
         run: |
           source "$IDF_PATH/export.sh"
           make TOOLCHAIN_RELEASE_TAG="$TOOLCHAIN_RELEASE_TAG" \
-            IDF_EXPORT="$IDF_PATH/export.sh" all
-          make TOOLCHAIN_RELEASE_TAG="$TOOLCHAIN_RELEASE_TAG" coremark
+            IDF_EXPORT="$IDF_PATH/export.sh" all coremark
 
       - name: Verify release images
         run: |
@@ -171,9 +173,10 @@ jobs:
           GH_TOKEN: ${{ github.token }}
           RELEASE_TAG: ${{ steps.release.outputs.tag }}
           RELEASE_TITLE: ${{ steps.release.outputs.title }}
-          FLASH_COMMAND: esptool -p /dev/ttyUSB0 -b 2000000 erase-flash && esptool -p /dev/ttyUSB0 -b 2000000 write-flash --flash-mode dio --flash-freq 80m --flash-size 16MB 0x0 s31_full_flash.bin
         run: |
+          (cd build && sha256sum --check SHA256SUMS)
+          mapfile -t assets < <(python3 tools/release_assets.py --prefix build)
           gh release create "$RELEASE_TAG" \
-            build/s31_full_flash.bin \
+            "${assets[@]}" \
             --title "$RELEASE_TITLE" \
-            --notes "$FLASH_COMMAND"
+            --notes-file configs/release-notes.md
