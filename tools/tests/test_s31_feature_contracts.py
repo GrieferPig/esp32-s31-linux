@@ -152,6 +152,33 @@ int main(void)
 
 
 class DriverContracts(unittest.TestCase):
+    def test_lp_sleep_abi_matches_opensbi(self):
+        protocol = (ROOT / "linux-esp32-s31/include/linux/soc/espressif/esp32s31-lp-protocol.h").read_text()
+        opensbi = (ROOT / "opensbi-esp32-s31/platform/generic/espressif/esp32s31/services.c").read_text()
+        linux_abi = re.search(r"#define S31_LP_ABI_VERSION\s+(\d+)U", protocol)
+        opensbi_abi = re.search(r"#define S31_LP_SLEEP_ABI_VERSION\s+(\d+)U", opensbi)
+        self.assertIsNotNone(linux_abi)
+        self.assertIsNotNone(opensbi_abi)
+        self.assertEqual(linux_abi.group(1), opensbi_abi.group(1))
+
+    def test_lp_mem_timer_starts_after_hp_asleep(self):
+        firmware = (ROOT / "firmware/lp/main/lp_core/main.c").read_text()
+        self.assertIsNotNone(re.search(
+            r"state == S31_LP_SLEEP_HP_ASLEEP.*?S31_LP_SLEEP_F_MEM.*?"
+            r"sleep_timer_arm_from_now\(\)",
+            firmware, re.S,
+        ))
+        arm_case = firmware[firmware.index("case S31_LP_CMD_SLEEP_ARM:"):
+                            firmware.index("case S31_LP_CMD_SLEEP_ABORT:")]
+        self.assertIn("S31_LP_SLEEP_F_DEEP_REBOOT", arm_case)
+        self.assertIn("sleep_timer_target = 0", arm_case)
+
+    def test_spi_controller_timeout_scales_with_transfer(self):
+        driver = (ROOT / "linux-esp32-s31/drivers/spi/spi-esp32s31.c").read_text()
+        self.assertIn("spi_controller_xfer_timeout(ctlr, xfer)", driver)
+        wait = function(driver, "esp32s31_spi_wait_transaction")
+        self.assertIn("msecs_to_jiffies(timeout_ms)", wait)
+
     def test_i2s_configuration(self):
         driver = (ROOT / "linux-esp32-s31/sound/soc/espressif/esp32s31-i2s.c").read_text()
         headers = "\n".join((ROOT / path).read_text() for path in (
