@@ -79,6 +79,8 @@ static void sleep_gpio_disarm(void)
 			continue;
 		ulp_lp_core_gpio_pullup_disable((lp_io_num_t)pin);
 		ulp_lp_core_gpio_pulldown_disable((lp_io_num_t)pin);
+		ulp_lp_core_gpio_wakeup_disable((lp_io_num_t)pin);
+		rtcio_ll_clear_edge_wakeup_latch(pin);
 		ulp_lp_core_gpio_input_disable((lp_io_num_t)pin);
 		rtcio_ll_function_select(pin, RTCIO_LL_FUNC_DIGITAL);
 	}
@@ -112,6 +114,23 @@ static void sleep_wake(uint32_t reason, uint32_t raw, uint64_t now)
 static void sleep_timer_fired(uint64_t now)
 {
 	sleep_wake(S31_LP_WAKE_TIMER, S31_LP_WAKE_TIMER, now);
+}
+
+static void sleep_timer_arm_from_now(void)
+{
+	uint64_t now = ulp_lp_core_lp_timer_get_cycle_count();
+	uint64_t duration_us;
+	uint64_t duration_ticks;
+
+	write_u64(&sleep_control->sleep_ticks_lo,
+		  &sleep_control->sleep_ticks_hi, now);
+	duration_us = read_u64(&sleep_control->deadline_lo,
+			       &sleep_control->deadline_hi);
+	duration_ticks = ulp_lp_core_lp_timer_calculate_sleep_ticks(duration_us);
+	sleep_timer_target = now + duration_ticks;
+	rtc_timer_ll_set_wakeup_time(1, sleep_timer_target);
+	ulp_lp_core_lp_timer_intr_enable(true);
+	sleep_control_update_crc();
 }
 
 void LP_CORE_ISR_ATTR ulp_lp_core_lp_timer_intr_handler(void)
@@ -157,6 +176,20 @@ static void gpio_wake_poll(void)
 	sleep_wake(S31_LP_WAKE_GPIO, triggered,
 		   ulp_lp_core_get_cpu_cycles());
 	(void)lp_core_mailbox_send(mailbox, S31_LP_MSG_WAKE, -1);
+}
+
+void LP_CORE_ISR_ATTR ulp_lp_core_lp_io_intr_handler(void)
+{
+	uint32_t triggered;
+
+	ulp_lp_core_gpio_clear_intr_status();
+	if (sleep_control->state != S31_LP_SLEEP_HP_ASLEEP)
+		return;
+	triggered = sleep_gpio_triggered();
+	if (!triggered)
+		return;
+	sleep_wake(S31_LP_WAKE_GPIO, triggered,
+		   ulp_lp_core_get_cpu_cycles());
 }
 
 static bool sleep_control_request_valid(uint32_t sequence)
@@ -294,14 +327,20 @@ static uint32_t sleep_command(uint32_t command, uint32_t sequence)
 		 * boot resets the chip before this interrupt, while a stalled PMU
 		 * transition gets an APPWR wake request instead of wedging forever. */
 		if (sleep_control->wake_mask & S31_LP_WAKE_TIMER) {
-			if (sleep_control->flags & S31_LP_SLEEP_F_DEEP_REBOOT)
+			if (sleep_control->flags & S31_LP_SLEEP_F_DEEP_REBOOT) {
 				duration_us += 5000000ULL;
-			duration_ticks =
-				ulp_lp_core_lp_timer_calculate_sleep_ticks(duration_us);
-			sleep_timer_target = now + duration_ticks;
-			rtc_timer_ll_set_wakeup_time(1, sleep_timer_target);
-			ulp_lp_core_lp_timer_intr_enable(true);
-			sleep_control_update_crc();
+				duration_ticks =
+					ulp_lp_core_lp_timer_calculate_sleep_ticks(duration_us);
+				sleep_timer_target = now + duration_ticks;
+				rtc_timer_ll_set_wakeup_time(1, sleep_timer_target);
+				ulp_lp_core_lp_timer_intr_enable(true);
+				sleep_control_update_crc();
+			} else {
+				/* Device suspend can take longer than the requested sleep.
+				 * Start the MEM timer only after OpenSBI publishes HP_ASLEEP,
+				 * so it cannot expire while Linux is still quiescing devices. */
+				sleep_timer_target = 0;
+			}
 		}
 		if (sleep_control->wake_mask & S31_LP_WAKE_GPIO) {
 			gpio_armed_mask = sleep_control->gpio_mask_lo;
@@ -318,13 +357,17 @@ static uint32_t sleep_command(uint32_t command, uint32_t sequence)
 				    S31_LP_SLEEP_F_GPIO_PULL_DOWN)
 					ulp_lp_core_gpio_pulldown_enable((lp_io_num_t)pin);
 				/*
-				 * This is a resident mailbox service, not an LP one-shot
-				 * program which requests LP sleep and restarts at its reset
-				 * vector.  Keep RTCIO wake interrupts disabled and poll the
-				 * level while APPWR is asleep; the LP core and RTC timer stay
-				 * running in that state.
+				 * APPWR sleep may clock-gate the resident LP loop.  Configure
+				 * RTCIO as an LP wake source after the input is known inactive;
+				 * its ISR records the GPIO reason and requests the APPWR wake.
+				 * The main loop still polls to cover the transition window.
 				 */
 			}
+			/* RTCIO input passes through an LP-domain synchronizer.  Let the
+			 * selected pad level settle before rejecting an already-active
+			 * request; otherwise a stale inactive sample can incorrectly arm a
+			 * level which will never produce the requested edge. */
+			ulp_lp_core_delay_us(100);
 			/* A level already active at ARM is not a wake transition. */
 			if (sleep_gpio_triggered()) {
 				sleep_gpio_disarm();
@@ -334,6 +377,17 @@ static uint32_t sleep_command(uint32_t command, uint32_t sequence)
 				sleep_control_set_result(S31_LP_SLEEP_REJECTED,
 						 S31_LP_SLEEP_ERR_WAKE_MASK);
 				return S31_LP_RSP_ERROR | sequence;
+			}
+			ulp_lp_core_gpio_clear_intr_status();
+			for (uint32_t pin = 0; pin < 8; pin++) {
+				gpio_int_type_t edge;
+
+				if (!(gpio_armed_mask & (1U << pin)))
+					continue;
+				rtcio_ll_clear_edge_wakeup_latch(pin);
+				edge = (sleep_control->gpio_level_lo & (1U << pin)) ?
+					GPIO_INTR_HIGH_LEVEL : GPIO_INTR_LOW_LEVEL;
+				ulp_lp_core_gpio_wakeup_enable((lp_io_num_t)pin, edge);
 			}
 		}
 		return S31_LP_RSP_SLEEP_ARMED | sequence;
@@ -416,6 +470,12 @@ int main(void)
 		uint32_t command;
 		uint32_t sequence;
 		uint32_t response;
+
+		if (sleep_control->state == S31_LP_SLEEP_HP_ASLEEP &&
+		    (sleep_control->flags & S31_LP_SLEEP_F_MEM) &&
+		    (sleep_control->wake_mask & S31_LP_WAKE_TIMER) &&
+		    !sleep_timer_target)
+			sleep_timer_arm_from_now();
 
 		/* Once a timer-only deep reboot is armed, stop issuing LP/HP mailbox
 		 * transactions and let RTC target 0 drive the PMU state machine.  A
