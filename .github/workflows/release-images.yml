@@ -23,7 +23,7 @@ jobs:
 
     steps:
       - name: Check out source and submodules
-        uses: actions/checkout@v4
+        uses: actions/checkout@main
         with:
           submodules: recursive
 
