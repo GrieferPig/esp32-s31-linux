@@ -85,8 +85,8 @@ linux-kbuild: idf-check linux_radio.kbuild.o
 $(LINUX_NET80211): $(IDF_NET80211)
 	cp $< $@
 
-linux_radio.raw.o: radio_stack.linux.o nofreertos_link.txt boot_flags.txt boot_linkpath.txt $(LINUX_NET80211) $(S31RTOS_LINUX_OBJS) $(RADIO_COEX_PRINTF_OBJ) Makefile ../../tools/demote_riscv_module_tls.py
-	$(ESP_CC) -nostdlib -r -Wl,--gc-sections $(HEAP_WRAP_FLAGS) $(LINUX_WRAP_FLAGS) \
+linux_radio.raw.o: radio_stack.linux.o nofreertos_link.txt boot_flags.txt boot_linkpath.txt $(LINUX_NET80211) $(S31RTOS_LINUX_OBJS) $(RADIO_COEX_PRINTF_OBJ) Makefile ../../tools/demote_riscv_module_tls.py prepare_xip_sections.py
+	$(ESP_CC) -nostdlib -r -Wl,--gc-sections -Wl,--unique=.iram1* -Wl,--unique=.wifi*iram* $(HEAP_WRAP_FLAGS) $(LINUX_WRAP_FLAGS) \
 		-Wl,--undefined=s31_radio_stack_task \
 		-Wl,--undefined=s31_radio_wifi_control_task \
 		-Wl,--undefined=s31_radio_wifi_try_send_interface \
@@ -117,6 +117,7 @@ linux_radio.raw.o: radio_stack.linux.o nofreertos_link.txt boot_flags.txt boot_l
 		$(LINUX_NOFREERTOS_LINK) \
 		-L$(PICOLIBC_LIB) -L$(PICOLIBC_GCC) -lc -lm -lgcc -o $@
 	python3 ../../tools/demote_riscv_module_tls.py $@
+	python3 prepare_xip_sections.py $@
 
 linux_radio.exposed.o: linux_radio.raw.o
 	$(ESP_TOOLS)/bin/riscv32-esp-elf-objcopy \

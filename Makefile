@@ -248,7 +248,7 @@ RADIO_FS_PARTITION_SIZE := $(shell python3 tools/check_s31_layout.py --size RADI
 radio-fs: linux rootfs
 	python3 tools/build_s31_radio_xip.py \
 		--prefix $(CROSS_COMPILE) --kernel $(LINUX_OUT)/vmlinux \
-		--payload $(BUILD_DIR)/esp32s31-radio-fw-v1.o \
+		--payload firmware/radio/linux_radio.localized.o \
 		--imports firmware/radio/linux-radio-linked-imports.txt --output $(RADIO_FS_IMG)
 
 
