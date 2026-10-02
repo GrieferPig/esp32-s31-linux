@@ -65,3 +65,7 @@ CONFIG_BTDM_CTRL_MODE_BTDM=y
 # same policy while validating Linux so sleep entry/exit cannot alter the RF
 # arbitration timing.
 # CONFIG_BT_CTRL_SLEEP_ENABLE is not set
+
+# Preserve all radio features, optimize the source-built IDF closure for size.
+CONFIG_COMPILER_OPTIMIZATION_SIZE=y
+# CONFIG_COMPILER_OPTIMIZATION_PERF is not set

@@ -202,7 +202,7 @@ uint32_t s31_linux_timer_next_due_us(void)
 {
 	struct esp_timer *timer;
 	uint64_t now_us = s31_timer_now_us();
-	uint64_t next_us = 10000;
+	uint64_t next_us = UINT32_MAX;
 
 	for (timer = s31_timers; timer; timer = timer->next) {
 		uint64_t delta;

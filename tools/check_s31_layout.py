@@ -70,6 +70,19 @@ def check(root=ROOT):
     start = int(re.search(r"FW_RW_START\s*\?=\s*(0x[0-9a-fA-F]+)", makefile)[1], 0)
     if start != shared["S31_OPENSBI_RW_BASE"]:
         raise ValueError("OpenSBI writable base differs from shared contract")
+    xip = defines((root / "linux-esp32-s31/drivers/platform/esp32s31-radio-xip.h").read_text())
+    if xip["S31_XIP_PHYS"] != 0x40000000 + slots["SLOT_RADIO"] - slots["SLOT_UBOOT_ITB"]:
+        raise ValueError("radio XIP physical mapping differs from flash slot")
+    if xip["S31_XIP_SLOT_SIZE"] != sizes["RADIO"]:
+        raise ValueError("radio XIP capacity differs from flash slot")
+    if (xip["S31_XIP_BASE"] - xip["S31_XIP_MAP_BASE"] !=
+            xip["S31_XIP_PHYS"] - xip["S31_XIP_MAP_PHYS"] or
+            xip["S31_XIP_BASE"] + sizes["RADIO"] >
+            xip["S31_XIP_MAP_BASE"] + xip["S31_XIP_MAP_SIZE"] or
+            xip["S31_XIP_MAP_SIZE"] != 0x400000 or
+            xip["S31_XIP_MAP_BASE"] % 0x400000 or
+            xip["S31_XIP_MAP_PHYS"] % 0x400000):
+        raise ValueError("radio XIP Sv32 leaf mapping is inconsistent")
     print("SRAM reservations and all 7 mapped flash partitions match the shared contracts")
 
 def main():

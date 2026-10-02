@@ -24,7 +24,6 @@
 #include "soc/rtc.h"
 #include "soc/rsa_reg.h"
 
-
 extern void s31_linux_printf(const char *fmt, ...);
 extern uint64_t s31_linux_wall_time_seconds(void);
 
@@ -49,8 +48,6 @@ extern void s31_rtos_use_internal_stacks(void);
 extern int s31_rtos_in_isr(void);
 extern int s31_rtos_can_yield(void);
 extern void s31_radio_wifi_rx_throttle(void);
-extern void s31_radio_timing_tx_done(bool status, const uint8_t *data,
-				     uint16_t length);
 /* These ROM-owned pointers live in retained SRAM.  A software reset from an
  * ESP-IDF image can leave them pointing at that image's flash/data mapping;
  * the ROM registration functions intentionally keep an existing adapter. */
@@ -548,7 +545,6 @@ extern void s31_radio_wifi_intr_set_isr(uint32_t logical_intr,
 					void (*handler)(void *), void *arg);
 extern void s31_radio_wifi_intr_mask(uint32_t mask, bool enable);
 
-
 static void s31_vhci_send_available(void)
 {
 	s31_radio_vhci_send_available();
@@ -723,7 +719,6 @@ int __wrap_lmacTxFrame(void *eb, uint32_t queue)
 	void *buffer;
 	uint32_t index;
 	uint32_t i;
-
 	s31_tx_desc_call_count++;
 	if (!s31_radio_ptr_is_hpsram(eb, 56)) {
 		s31_tx_desc_bad_eb_count++;
@@ -927,7 +922,6 @@ static void s31_wifi_tx_done(uint8_t interface, uint8_t *data,
 {
 	s31_wifi_tx_done_count++;
 
-	s31_radio_timing_tx_done(status, data, length ? *length : 0);
 	(void)interface;
 	(void)data;
 }
@@ -1017,6 +1011,8 @@ static void s31_wifi_monitor_rx(void *buffer, wifi_promiscuous_pkt_type_t type)
 	s31_radio_wifi_receive_aux(S31_WIFI_IF_MONITOR, packet->payload,
 		packet->rx_ctrl.sig_len, packet->rx_ctrl.channel, packet->rx_ctrl.rssi);
 }
+
+#include "s31_softmac.inc"
 
 static int s31_wifi_prepare(void)
 {
@@ -1349,6 +1345,8 @@ int s31_radio_wifi_try_send(uint8_t *frame, uint16_t length)
 
 int s31_radio_wifi_try_send_interface(uint8_t interface, uint8_t *frame, uint16_t length)
 {
+	if (interface == S31_WIFI_IF_SOFTMAC)
+		return s31_sm_send(frame, length);
 	if (interface == S31_WIFI_IF_STA)
 		return s31_radio_wifi_try_send(frame, length);
 	if (interface != S31_WIFI_IF_AP || !s31_wifi_ap_active)
@@ -1460,6 +1458,44 @@ void s31_radio_wifi_control_task(void *arg)
 	if (rc)
 		goto done;
 	switch (request->operation) {
+	case S31_WIFI_SOFTMAC_TX_HT_CAP:
+	case S31_WIFI_SOFTMAC_TX_AGG_CAP:
+	case S31_WIFI_SOFTMAC_TX_HE_CAP:
+	case S31_WIFI_SOFTMAC_TX_HE9_CAP:
+		rc = 0;
+		break;
+	case S31_WIFI_SOFTMAC_TX_PEER_ADD:
+		rc = s31_sm_tx_peer_add(request);
+		break;
+	case S31_WIFI_SOFTMAC_TX_PEER_DEL:
+	case S31_WIFI_SOFTMAC_TX_BA_ON:
+	case S31_WIFI_SOFTMAC_TX_BA_OFF:
+	case S31_WIFI_SOFTMAC_TX_BA_FLUSH:
+		rc = s31_sm_tx_ba_control(request);
+		break;
+	case S31_WIFI_SOFTMAC_START:
+		rc = s31_sm_start(request);
+		break;
+	case S31_WIFI_SOFTMAC_STOP:
+		rc = s31_sm_stop();
+		break;
+	case S31_WIFI_SOFTMAC_RX_BA_ADD:
+	case S31_WIFI_SOFTMAC_RX_BA_DEL:
+		rc = s31_sm_rx_ba(request);
+		break;
+	case S31_WIFI_SOFTMAC_EDCA:
+		rc = s31_sm_edca(request);
+		break;
+	case S31_WIFI_SOFTMAC_RX_KEY_ADD:
+	case S31_WIFI_SOFTMAC_RX_KEY_DEL:
+		rc = s31_sm_rx_key(request);
+		break;
+	case S31_WIFI_SOFTMAC_BSSID_FILTER:
+		rc = s31_sm_bssid_filter(request);
+		break;
+	case S31_WIFI_SOFTMAC_HE_BSS:
+		rc = s31_sm_he_bss(request);
+		break;
 	case S31_WIFI_EAP_WRITE:
 	case S31_WIFI_EAP_COMMIT:
 	case S31_WIFI_EAP_CLEAR:
@@ -1626,17 +1662,16 @@ void s31_radio_stack_task(void *arg)
 	 * it only for Wi-Fi+BT makes TCP ACK completions take seconds while the
 	 * controller is enabled, even though the Linux enqueue path is healthy. */
 	wifi_cfg.ampdu_tx_enable = 1;
-	/* TX buffer type/number follows sdkconfig.radio.defaults.  Static TX
-	 * avoids per-frame alloc/free churn but 16 buffers was too small for the
-	 * BT+WiFi ACK stream (esp_wifi_internal_tx rc=257); keep dynamic TX for
-	 * now while the TX completion stall is debugged. */
-	/* BA12 repeatedly stopped TCP receive after 0.75--3.5 MiB on this AP even
-	 * though the station remained associated.  BA6 completed full 50 MiB runs
-	 * and is also ESP-IDF's default without PSRAM-backed Wi-Fi allocations. */
+
 	wifi_cfg.rx_ba_win = 6;
-	/* TX_BA_WIN is a compile-time Kconfig, set via CONFIG_ESP_WIFI_TX_BA_WIN.
-	 * Keep the TX completion path healthy: shrinking TX buffers to 8 stalled
-	 * the download (rc=257) under ACK bursts. */
+ if (features & S31_RADIO_FEATURE_RX_LEAN16) {
+  wifi_cfg.static_rx_buf_num = 16;
+  wifi_cfg.dynamic_rx_buf_num = 32;
+  wifi_cfg.rx_ba_win = 32;
+ }
+ s31_linux_printf("[S31] native RX config static=%u dynamic=%u ba=%u\n",
+                  wifi_cfg.static_rx_buf_num,wifi_cfg.dynamic_rx_buf_num,wifi_cfg.rx_ba_win);
+
 	/* Re-register the OS adapter and rebuild the ROM callback dispatch table for
 	 * the relocated Linux module.  Both pointers live in retained HP SRAM.  The
 	 * dispatch table contains coex_core_* function addresses from the previous
@@ -1795,6 +1830,12 @@ void s31_radio_shutdown_task(void *arg)
 		if (rc != 0 && rc != ESP_ERR_WIFI_NOT_INIT && !result)
 			result = rc;
 		s31_linux_printf("[S31] shutdown wifi stop rc=%d\n", rc);
+		if (s31_sm_cb_registered) {
+			pp_unregister_tx_cb(S31_SM_CB_INDEX);
+			s31_sm_cb_registered = false;
+		}
+		s31_sm_active = false;
+		memset(s31_sm_flights, 0, sizeof(s31_sm_flights));
 		rc = esp_wifi_deinit();
 		if (rc != 0 && rc != ESP_ERR_WIFI_NOT_INIT && !result)
 			result = rc;

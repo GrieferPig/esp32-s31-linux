@@ -248,12 +248,18 @@ for dtbo in "${dtbo_dir}"/esp32s31-overlay-*.dtbo; do
 	cp "${dtbo}" "${install_dir}/"
 done
 
-# The large integrated radio module lives in the dedicated read-only
-# radio-bundle SquashFS between the base DTB and kernel slots. Remove stale
-# copies left by incremental builds so the compact rootfs stays independent.
+# Only the XIP radio module is installed in rootfs.
 find "${target_dir}/lib/modules" -type f \
 	\( -name 'esp32s31-radio*.ko' -o -name 'esp32s31-wifi.ko' -o \
 	   -name 'esp32s31-btdm.ko' \) -delete 2>/dev/null || true
+[ -f "${S31_RADIO_MODULE:-}" ] || { echo 'Missing XIP radio module' >&2; exit 1; }
+mkdir -p "${target_dir}/usr/lib/s31-radio"
+cp "${S31_RADIO_MODULE}" "${target_dir}/usr/lib/s31-radio/esp32s31-radio.ko"
+"${HOST_DIR}/bin/riscv32-esp-linux-musl-strip" --strip-debug \
+	"${target_dir}/usr/lib/s31-radio/esp32s31-radio.ko"
+xz --check=crc32 --lzma2=dict=64KiB -f "${target_dir}/usr/lib/s31-radio/esp32s31-radio.ko"
+rm -f "${target_dir}/usr/lib/s31-radio/s31-dma-ccm-net.ko.xz" \
+	"${target_dir}/etc/esp32-conf/softmac.conf"
 
 required_runtime='usr/sbin/s31-btstack-a2dp usr/sbin/s31-ext-test'
 

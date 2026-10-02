@@ -81,7 +81,7 @@ jobs:
             build/spl_app.bin \
             build/u-boot.itb \
             build/esp32s31_generic.dtb \
-            build/radio.sqfs \
+            build/radio.bin \
             build/xipImage \
             build/rootfs.sqfs \
             build/s31_full_flash.bin \
@@ -94,12 +94,12 @@ jobs:
           test -s build/spl_app.bin
           test -s build/u-boot.itb
           test -s build/esp32s31_generic.dtb
-          test -s build/radio.sqfs
+          test -s build/radio.bin
           test -s build/xipImage
           test -s build/rootfs.sqfs
           test -s build/s31_full_flash.bin
           test -s build/coremark/coremark.exe
-          python3 -c 'from pathlib import Path; radio = Path("build/radio.sqfs").read_bytes(); full = Path("build/s31_full_flash.bin").read_bytes(); offset = 0x310000; assert full[offset:offset + len(radio)] == radio, "radio bundle is not embedded at SLOT_RADIO"'
+          python3 -c 'from pathlib import Path; radio = Path("build/radio.bin").read_bytes(); full = Path("build/s31_full_flash.bin").read_bytes(); offset = 0x310000; assert full[offset:offset + len(radio)] == radio, "radio bundle is not embedded at SLOT_RADIO"'
           test ! -e bootloader
           test "$(cat build/btstack-source/.s31-btstack-version)" = \
             431d58d5613fd8fae38afe50282b25302de84bf7

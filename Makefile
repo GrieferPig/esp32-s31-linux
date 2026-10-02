@@ -58,14 +58,14 @@ UBOOT_ITB := $(BUILD_DIR)/u-boot.itb
 UBOOT_SPL_DTB := $(BUILD_DIR)/u-boot-spl-dtb.bin
 SPL_APP_BIN := $(BUILD_DIR)/spl_app.bin
 ROOTFS_IMG := $(BUILD_DIR)/rootfs.sqfs
-RADIO_FS_IMG := $(BUILD_DIR)/radio.sqfs
+RADIO_FS_IMG := $(BUILD_DIR)/radio.bin
 PERSIST_IMG := $(BUILD_DIR)/persist.jffs2
 
 IDF_ROOT ?= $(HOME)/.espressif
 # An explicit installation wins; never select an arbitrary installed checkout.
 IDF_EXPORT ?= $(firstword $(wildcard $(IDF_PATH)/export.sh) $(wildcard $(IDF_ROOT)/master/esp-idf/export.sh))
 
-.PHONY: all download toolchain toolchain-source idf-check opensbi uboot flash-image radio-linux-payload radio-idf-deps radio-module radio-package radio-fs radio-image linux coremark rootfs initramfs s31-pie-cases btstack-source btstack-notices \
+.PHONY: all download toolchain toolchain-source idf-check opensbi uboot flash-image radio-linux-payload radio-idf-deps radio-module radio-package radio-fs linux coremark rootfs initramfs s31-pie-cases btstack-source btstack-notices \
 	buildroot-menuconfig buildroot-clean clean fullclean flash-opensbi flash-linux \
 	flash-dtb flash-radio flash-rootfs flash-existing-radio flash-existing-rootfs \
 	persist flash-persist bootloader flash-bootloader flash-all erase
@@ -218,14 +218,8 @@ radio-idf-deps: idf-check
 		test -n \"\$$targets\" && \
 		ninja -C build-radio -j$(JOBS) \$$targets"
 
-# Retained only to make obsolete automation fail with a useful migration.
-radio-image:
-	@echo "ERROR: radio-image is retired; use radio-fs (radio.sqfs) or radio-package" >&2
-	@exit 2
-
 DEFCONFIG ?= esp32s31_defconfig
 LINUX_TARGET ?= xipImage
-S31_WIFI_ONLY ?= 0
 # The 16 MiB radio image keeps only the devices needed for Wi-Fi/Bluetooth,
 # the console, flash/persist and USB mass-storage swap.  Set this to 0 when
 # building an image intended to load the optional peripheral overlays.
@@ -248,47 +242,22 @@ radio-module: linux
 	@echo "External payload: $(BUILD_DIR)/esp32s31-radio-fw-v1.o"
 
 radio-package:
-	+$(CURDIR)/tools/build_radio_bundle.sh
+	+S31_LINUX_OUT=$(LINUX_OUT) CROSS_COMPILE=$(CROSS_COMPILE) $(CURDIR)/tools/build_radio_bundle.sh
 
 RADIO_FS_PARTITION_SIZE := $(shell python3 tools/check_s31_layout.py --size RADIO)
 radio-fs: linux rootfs
-	@echo "--- ESP32-S31 integrated radio bundle ---"
-	rm -rf $(BUILD_DIR)/radiofs-staging
-	mkdir -p $(BUILD_DIR)/radiofs-staging/module $(BUILD_DIR)/radiofs-staging/firmware \
-		$(BUILD_DIR)/radiofs-staging/overlays \
-		$(BUILD_DIR)/radiofs-staging/config
-	cp $(LINUX_OUT)/drivers/platform/esp32s31-radio.ko \
-		$(BUILD_DIR)/radiofs-staging/module/esp32s31-radio.ko
-	cp $(BUILD_DIR)/esp32s31-radio-fw-v1.o \
-		$(BUILD_DIR)/radiofs-staging/firmware/esp32s31-radio-fw-v1.o
-	$(CROSS_COMPILE)strip --strip-debug \
-		$(BUILD_DIR)/radiofs-staging/module/*.ko
-	# Keep the in-kernel XZ decoder's temporary dictionary small.  A 1 MiB
-	# dictionary leaves too few contiguous pages for the radio kthreads during
-	# early boot on the 16 MiB board; 256 KiB costs only a few KiB in flash.
-	xz --check=crc32 --lzma2=dict=256KiB -f \
-		$(BUILD_DIR)/radiofs-staging/module/*.ko
-	xz --check=crc32 --lzma2=dict=256KiB -f \
-		$(BUILD_DIR)/radiofs-staging/firmware/*.o
-	cp $(LINUX_OUT)/arch/riscv/boot/dts/espressif/esp32s31-overlay-radio-*.dtbo \
-		$(BUILD_DIR)/radiofs-staging/overlays/
-	cp firmware/radio/idf_deps/sdkconfig.defaults \
-		firmware/radio/idf_deps/sdkconfig.radio.defaults \
-		$(BUILD_DIR)/radiofs-staging/config/
-	cp firmware/radio/RADIO_BUNDLE_LICENSES.md $(BUILD_DIR)/radiofs-staging/
-	$(BUILDROOT_OUT)/host/bin/mksquashfs $(BUILD_DIR)/radiofs-staging \
-		$(RADIO_FS_IMG) -noappend -all-root -processors $(JOBS) -b 64K -comp xz
-	@size=$$(stat -c%s $(RADIO_FS_IMG)); \
-	echo "Radio bundle: $$size / $(RADIO_FS_PARTITION_SIZE) bytes ($$(( $(RADIO_FS_PARTITION_SIZE) - $$size )) bytes free)"; \
-	if [ $$size -gt $(RADIO_FS_PARTITION_SIZE) ]; then \
-		echo "ERROR: radio bundle exceeds its flash partition"; exit 1; \
-	fi
+	python3 tools/build_s31_radio_xip.py \
+		--prefix $(CROSS_COMPILE) --kernel $(LINUX_OUT)/vmlinux \
+		--payload $(BUILD_DIR)/esp32s31-radio-fw-v1.o \
+		--imports firmware/radio/linux-radio-linked-imports.txt --output $(RADIO_FS_IMG)
+
 
 linux: check-layout toolchain radio-linux-payload | $(LINUX_OUT)
 	@echo "--- Linux ---"
 	$(MAKE) -C $(LINUX_DIR) O=$(LINUX_OUT) ARCH=riscv CROSS_COMPILE="$(CROSS_COMPILE)" $(DEFCONFIG)
 	$(LINUX_DIR)/scripts/config --file $(LINUX_OUT)/.config \
 		--disable BUILTIN_DTB \
+		--disable LOCALVERSION_AUTO \
 		--enable FILE_LOCKING \
 		--enable RISCV_ISA_C \
 		--disable RISCV_ISA_V \
@@ -385,11 +354,15 @@ linux: check-layout toolchain radio-linux-payload | $(LINUX_OUT)
 	fi
 	$(LINUX_DIR)/scripts/config --file $(LINUX_OUT)/.config \
 		--enable BT_ESP32S31 --enable ESP32S31_WIFI
+	$(LINUX_DIR)/scripts/config --file $(LINUX_OUT)/.config \
+		--enable MAC80211 --enable ESP32S31_WIFI_SOFTMAC \
+		--enable CC_OPTIMIZE_FOR_PERFORMANCE --disable CC_OPTIMIZE_FOR_SIZE
 	@if [ -n "$(LINUX_CMDLINE)" ]; then \
 		$(LINUX_DIR)/scripts/config --file $(LINUX_OUT)/.config \
 			--set-str CMDLINE "$(LINUX_CMDLINE)"; \
 	fi
 	$(MAKE) -C $(LINUX_DIR) O=$(LINUX_OUT) ARCH=riscv CROSS_COMPILE="$(CROSS_COMPILE)" olddefconfig
+	$(LINUX_DIR)/scripts/config --file $(LINUX_OUT)/.config --enable ESP32S31_RADIO_XIP
 	# Force the single radio link unit to observe the generated payload ABI.
 	rm -f \
 		$(LINUX_OUT)/drivers/platform/esp32s31-radio-*.o \
@@ -397,7 +370,8 @@ linux: check-layout toolchain radio-linux-payload | $(LINUX_OUT)
 		$(LINUX_OUT)/drivers/platform/esp32s31-radio.o \
 		$(LINUX_OUT)/drivers/platform/esp32s31-radio.ko
 	$(MAKE) -C $(LINUX_DIR) O=$(LINUX_OUT) ARCH=riscv CROSS_COMPILE="$(CROSS_COMPILE)" \
-		KCFLAGS="-march=$(S31_KERNEL_ISA) $(S31_KERNEL_FLAGS)" -j$(JOBS) $(LINUX_TARGET) modules dtbs
+		LOCALVERSION= KCFLAGS="-march=$(S31_KERNEL_ISA) $(S31_KERNEL_FLAGS)" \
+		-j$(JOBS) $(LINUX_TARGET) modules dtbs
 	cp -v $(LINUX_OUT)/arch/riscv/boot/$(LINUX_TARGET) $(XIP_IMAGE)
 	@size=$$(stat -c%s $(XIP_IMAGE)); \
 	if [ $$size -gt $(LINUX_PARTITION_SIZE) ]; then \
@@ -415,7 +389,7 @@ coremark: rootfs | $(COREMARK_OUT)
 # partition table's 0x-prefixed value.
 ROOTFS_PARTITION_SIZE := $(shell python3 tools/check_s31_layout.py --size ROOTFS)
 PERSIST_PARTITION_SIZE := $(shell python3 tools/check_s31_layout.py --size PERSIST)
-BUILDROOT_MAKE = S31_LEAN_RADIO=$(S31_LEAN_RADIO) \
+BUILDROOT_MAKE = S31_RADIO_MODULE=$(LINUX_OUT)/drivers/platform/esp32s31-radio.ko S31_LEAN_RADIO=$(S31_LEAN_RADIO) \
 	$(MAKE) -C $(BUILDROOT_DIR) O=$(BUILDROOT_OUT) \
 	BR2_EXTERNAL=$(BUILDROOT_EXTERNAL) BR2_DL_DIR=$(BUILDROOT_DL_DIR) \
 	S31_DTBO_DIR=$(LINUX_OUT)/arch/riscv/boot/dts/espressif

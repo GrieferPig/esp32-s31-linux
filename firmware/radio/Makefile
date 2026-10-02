@@ -173,7 +173,7 @@ RADIO_STACK_DEFS := -DS31_LINUX_SMODE -DS31_WIFI_ONLY
 else
 RADIO_STACK_DEFS := -DS31_LINUX_SMODE
 endif
-ESP_CFLAGS  := -mabi=ilp32f -march=rv32imafc_zicsr_zifencei_zaamo_zalrsc_xesploop_xespv2p2 \
+ESP_CFLAGS  := -Os -mabi=ilp32f -march=rv32imafc_zicsr_zifencei_zaamo_zalrsc_xesploop_xespv2p2 \
 		-mtune=esp-base -ffunction-sections -fdata-sections \
 		-fno-stack-protector -fno-builtin -ffreestanding -std=gnu11 -Wall \
 	-specs=picolibc.specs \
@@ -189,7 +189,7 @@ ESP_CFLAGS  := -mabi=ilp32f -march=rv32imafc_zicsr_zifencei_zaamo_zalrsc_xesploo
 # be rebuilt whenever the IDF configuration changes.  Without this dependency,
 # btdm_lp.c could be rebuilt with controller sleep enabled while this object
 # retained sleep_en=0, leaving the closed controller's sleep environment NULL.
-radio_stack.linux.o: radio_stack.c s31_rtos/s31_rtos.h Makefile $(RADIO_SDKCONFIG)
+radio_stack.linux.o: radio_stack.c s31_softmac.inc s31_softmac_tx_agg.inc s31_softmac_tx_reports.inc ../../linux-esp32-s31/include/linux/esp32s31-radio-control.h s31_rtos/s31_rtos.h Makefile $(RADIO_SDKCONFIG)
 	$(ESP_CC) $(ESP_CFLAGS) -MMD -MP $(RADIO_STACK_DEFS) \
 		-I s31_rtos -c $< -o $@
 

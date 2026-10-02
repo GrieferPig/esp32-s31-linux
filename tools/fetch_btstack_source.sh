@@ -5,7 +5,7 @@ set -eu
 version=431d58d5613fd8fae38afe50282b25302de84bf7
 project_dir=$(CDPATH= cd -- "$(dirname -- "$0")/.." && pwd)
 output_dir=${1:-${project_dir}/build/btstack-source}
-build_dir=${project_dir}/build
+build_dir=$(realpath -m "${project_dir}/build")
 
 resolved_output=$(realpath -m "$output_dir")
 case "$resolved_output" in

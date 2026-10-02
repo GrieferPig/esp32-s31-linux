@@ -47,7 +47,6 @@ s31_radio_report_bt_enable
 s31_radio_report_bt_init
 s31_radio_report_wifi_init
 s31_radio_report_shutdown
-s31_radio_timing_tx_done
 s31_radio_vhci_receive
 s31_radio_vhci_send_available
 s31_radio_wifi_connected
