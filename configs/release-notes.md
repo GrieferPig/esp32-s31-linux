@@ -18,3 +18,5 @@ The slot update preserves persist (`0xB30000–0xBC0000`) and HIL scratch
 (`0xBC0000–0xBD0000`). A contiguous full-image write overwrites both ranges.
 The combined image `s31_full_flash.bin` is also provided for first installations;
 erasing flash first removes existing persist data.
+
+Fresh installations enable Wi-Fi and Bluetooth automatically at boot. Existing saved radio settings are preserved during upgrades.

@@ -62,6 +62,13 @@ stop_radio()
 start_radio()
 {
 	grep -qw 's31.radio_autoload=0' /proc/cmdline && return 0
+	# This script runs before the rcS services. Create first-boot defaults now
+	# so the radio module is loaded before the Bluetooth service starts.
+	. /usr/lib/esp32-config/common.sh || return 1
+	ensure_config || {
+		echo 'ESP32-S31 radio configuration initialization failed' >&2
+		return 1
+	}
 	wifi=0
 	bluetooth=0
 	have_wifi=0

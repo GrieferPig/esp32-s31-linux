@@ -188,6 +188,7 @@ class RadioStartup(unittest.TestCase):
                 (root / 'dev').mkdir()
                 (root / 'dev/null').symlink_to('/dev/null')
                 put('proc/cmdline')
+                put('usr/lib/esp32-config/common.sh', '#!/bin/sh\nensure_config() { :; }\n')
                 put('proc/modules', 'esp32s31_radio 1 0 - Live 0\n' if loaded else '')
                 put('proc/device-tree/soc/radio/status', 'okay\n')
                 put('proc/device-tree/soc/radio/wifi/status', 'okay\n')

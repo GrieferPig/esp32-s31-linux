@@ -89,9 +89,9 @@ ensure_config()
 	create_file_if_missing "$SYSTEM_CONF" 0600 \
 		"hostname=${current_hostname}" || return 1
 	create_file_if_missing "$WIFI_CONF" 0600 \
-		'enabled=0' 'interface=wlan0' 'dhcp=1' || return 1
+		'enabled=1' 'interface=wlan0' 'dhcp=1' || return 1
 	create_file_if_missing "$BT_CONF" 0600 \
-		'enabled=0' 'index=0' 'le=1' || return 1
+		'enabled=1' 'index=0' 'le=1' || return 1
 }
 
 
