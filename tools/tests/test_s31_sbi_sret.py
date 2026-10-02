@@ -145,3 +145,13 @@ class SbiSretTest(unittest.TestCase):
     def test_direct_wfi_uses_recovery_and_returns_with_irqs_disabled(self):
         for status in (0x20, 0x22, 0x120, 0x122):
             self.execute(True, status, wfi=True)
+
+    def test_direct_wfi_does_not_consume_wake_before_sleep(self):
+        # Verify the real compiled helper, not a parallel source model: the
+        # idle core enters IRQ-disabled and no enable may precede the ecall.
+        program = self.programs[True, True]
+        sleep = next(i for i, (_, op, _) in enumerate(program) if op == "ecall")
+        self.assertTrue(any(op == "csrci" and args == "sstatus,2"
+                            for _, op, args in program[:sleep]))
+        self.assertFalse(any(op == "csrsi" and args == "sstatus,2"
+                             for _, op, args in program[:sleep]))
