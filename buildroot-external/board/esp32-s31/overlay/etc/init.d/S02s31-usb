@@ -3,10 +3,11 @@
 libdir="${ESP32_CONFIG_LIB_DIR:-/usr/lib/esp32-config}"
 . "$libdir/common.sh"
 . "$libdir/storage.sh"
+. "$libdir/usb.sh"
 
 case "${1:-}" in
-    start) storage_swap_apply 1 ;;
-    stop) storage_swap_stop ;;
-    restart) storage_swap_stop && storage_swap_apply 1 ;;
+    start) usb_apply ;;
+    stop) usb_stop ;;
+    restart) usb_stop && usb_apply ;;
     *) echo "Usage: $0 {start|stop|restart}" >&2; exit 2 ;;
 esac

@@ -1,75 +1,60 @@
 #!/bin/sh
-# udhcpc script edited by Tim Riker <Tim@Rikers.org>
+# Apply DHCP leases, while preserving esp32-config's manual DNS policy.
 
-RESOLV_CONF="/etc/resolv.conf"
+config_lib="${ESP32_CONFIG_LIB_DIR:-/usr/lib/esp32-config}"
+. "${config_lib}/common.sh" || exit 1
+. "${config_lib}/network.sh" || exit 1
 
-[ -n "$1" ] || { echo "Error: should be called from udhcpc"; exit 1; }
+[ -n "${1:-}" ] && valid_interface "${interface:-}" || exit 1
+managed=0
+[ "$interface" != "$(conf_get "$WIFI_CONF" interface wlan0)" ] || managed=1
 
-NETMASK=""
-if [ -x /sbin/ip ]; then
-	[ -n "$subnet" ] && NETMASK="/$subnet"
-else
-	[ -n "$subnet" ] && NETMASK="netmask $subnet"
+# A late callback from an old client must not overwrite a newly selected
+# static address or revive a disabled Wi-Fi interface.
+if [ "$managed" = 1 ]; then
+	[ "$(conf_get "$WIFI_CONF" enabled 0)" = 1 ] || exit 0
+	[ "$(conf_get "$WIFI_CONF" dhcp 1)" = 1 ] || exit 0
 fi
-BROADCAST="broadcast +"
-[ -n "$broadcast" ] && BROADCAST="broadcast $broadcast"
 
 case "$1" in
 	deconfig)
-		echo "Clearing IP addresses on $interface, upping it"
-		if [ -x /sbin/ip ]; then
-			ip -4 addr flush dev $interface
-			ip link set dev $interface up
-		else
-			ifconfig $interface 0.0.0.0
-		fi
+		ip -4 addr flush dev "$interface" || exit 1
+		ip link set dev "$interface" up || exit 1
 		;;
-
-	renew|bound)
-		echo "Setting IP address $ip on $interface"
-		if [ -x /sbin/ip ]; then
-			ip addr add $ip$NETMASK $BROADCAST dev $interface
-		else
-			ifconfig $interface $ip $NETMASK $BROADCAST
+	bound|renew)
+		network_valid_host "${ip:-}" || exit 1
+		prefix=32
+		if [ -n "${subnet:-}" ]; then
+			network_valid_ipv4 "$subnet" || exit 1
+			prefix="$(awk -v mask="$subnet" 'BEGIN {
+				split(mask, a, "."); count=0; zero=0
+				for (i=1;i<=4;i++) for (bit=128;bit>=1;bit/=2) {
+					set=int(a[i]/bit)%2
+					if (set) { if (zero) exit 1; count++ } else zero=1
+				}
+				print count
+			}' </dev/null)" || exit 1
 		fi
-
-		if [ -n "$router" ] ; then
-			echo "Deleting routers"
-			while route del default gw 0.0.0.0 dev $interface ; do
-				:
-			done
-
-			metric=0
-			for i in $router ; do
-				echo "Adding router $i"
-				if [ "$subnet" = "255.255.255.255" ]; then
-	# special case for /32 subnets:
-	# /32 instructs kernel to always use routing for all outgoing packets
-	# (they can never be sent to local subnet - there is no local subnet for /32).
-	# Used in datacenters, avoids the need for private ip-addresses between two hops.
-					ip route add $i dev $interface
-				fi
-				route add default gw $i dev $interface metric $((metric++))
-			done
+		current="$(ip -4 address show dev "$interface" 2>/dev/null | awk '/ inet / { print $2 }')"
+		if ! printf '%s\n' "$current" | grep -qxF "${ip}/${prefix}"; then
+			ip -4 addr flush dev "$interface" || exit 1
+			ip addr add "${ip}/${prefix}" broadcast + dev "$interface" || exit 1
 		fi
-
-		# If the file is a symlink somewhere (like /etc/resolv.conf
-		# pointing to /run/resolv.conf), make sure things work.
-		if test -L "$RESOLV_CONF"; then
-			# If it's a dangling symlink, try to create the target.
-			test -e "$RESOLV_CONF" || touch "$RESOLV_CONF"
-		fi
-		realconf=$(readlink -f "$RESOLV_CONF" 2>/dev/null || echo "$RESOLV_CONF")
-		echo "Recreating $realconf"
-		tmpfile="$realconf-$$"
-		> "$tmpfile"
-		[ -n "$domain" ] && echo "search $domain" >> "$tmpfile"
-		for i in $dns ; do
-			echo " Adding DNS server $i"
-			echo "nameserver $i" >> "$tmpfile"
+		ip -4 route flush dev "$interface" scope global 2>/dev/null || true
+		metric=0
+		set -f
+		for gateway in ${router:-}; do
+			network_valid_host "$gateway" || continue
+			[ "$prefix" != 32 ] || ip route replace "${gateway}/32" dev "$interface" || exit 1
+			ip route add default via "$gateway" dev "$interface" metric "$metric" || exit 1
+			metric=$((metric + 1))
 		done
-		mv "$tmpfile" "$realconf"
+		if [ "$managed" = 1 ] && [ "$(conf_get "$WIFI_CONF" dns_mode auto)" = manual ]; then
+			network_write_dns "$(conf_get "$WIFI_CONF" dns_servers '')" || exit 1
+		else
+			network_write_dns "${dns:-}" "${domain:-}" || exit 1
+		fi
 		;;
+	*) exit 0 ;;
 esac
-
 exit 0

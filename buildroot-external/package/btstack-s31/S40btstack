@@ -1,25 +1,50 @@
 #!/bin/sh
 
-pidfile=/run/s31-btstack-a2dp.pid
-logfile=/run/s31-btstack-a2dp.log
+run_dir="${S31_BTSTACK_RUN_DIR:-/run}"
+pidfile="${run_dir}/s31-btstack-a2dp.pid"
+logfile="${run_dir}/s31-btstack-a2dp.log"
+reset_log="${run_dir}/s31-btstack-pairing-reset.log"
 bt_conf="${S31_BTSTACK_CONFIG:-/etc/esp32-conf/bluetooth.conf}"
-executable=/usr/sbin/s31-btstack-a2dp
+executable="${S31_BTSTACK_EXECUTABLE:-/usr/sbin/s31-btstack-a2dp}"
+hci_device="${S31_HCI_DEVICE:-/dev/s31-hci}"
+mode_file="${S31_BTSTACK_MODE_FILE:-/sys/module/esp32s31_radio/parameters/mode}"
+cmdline="${S31_BTSTACK_CMDLINE:-/proc/cmdline}"
+data_dir="${S31_BTSTACK_DATA_DIR:-/var/lib/btstack}"
+proc_dir="${S31_BTSTACK_PROC_DIR:-/proc}"
 
 recovery_mode()
 {
-	grep -qw 's31.radio_autoload=0' /proc/cmdline 2>/dev/null
+	grep -qw 's31.radio_autoload=0' "$cmdline" 2>/dev/null
+}
+
+config_value()
+{
+	sed -n "s/^${1}=//p" "$bt_conf" 2>/dev/null | tail -n 1
 }
 
 enabled()
 {
-	[ "$(sed -n 's/^enabled=//p' "$bt_conf" 2>/dev/null | tail -n 1)" = 1 ]
+	[ "$(config_value enabled)" = 1 ]
+}
+
+load_name()
+{
+	local bytes clean
+	device_name="$(config_value name)"
+	[ -n "$device_name" ] || device_name='S31 Radio'
+	bytes="$(printf '%s' "$device_name" | LC_ALL=C wc -c)"
+	clean="$(printf '%s' "$device_name" | LC_ALL=C tr -d '\000-\037\177')"
+	[ "$bytes" -le 29 ] && [ "$device_name" = "$clean" ] || {
+		echo 'BTstack: invalid device name (use 1 to 29 bytes, without controls)' >&2
+		return 1
+	}
 }
 
 wait_controller()
 {
-	count=0
+	local count=0
 	while [ "$count" -lt 100 ]; do
-		[ -c /dev/s31-hci ] && return 0
+		[ -c "$hci_device" ] && return 0
 		sleep 0.1
 		count=$((count + 1))
 	done
@@ -28,61 +53,148 @@ wait_controller()
 
 running()
 {
-	[ -r "$pidfile" ] && kill -0 "$(cat "$pidfile")" 2>/dev/null
+	local pid target
+	[ -r "$pidfile" ] || return 1
+	pid="$(cat "$pidfile")"
+	case "$pid" in ''|*[!0-9]*) return 1 ;; esac
+	kill -0 "$pid" 2>/dev/null || return 1
+	target="$(readlink -f "$executable")"
+	[ "$(readlink "${proc_dir}/${pid}/exe" 2>/dev/null)" = "$target" ]
 }
 
-case "$1" in
-start)
+start_service()
+{
+	local reset="${1:-0}" coex=0 pid
 	recovery_mode && {
 		echo 'BTstack: skipped by s31.radio_autoload=0 recovery mode'
-		exit 0
+		return 0
 	}
-	enabled || exit 0
-	running && exit 0
-        wait_controller || {
-                echo 'BTstack: direct-HCI controller endpoint is not ready' >&2
-                exit 1
-        }
-	mkdir -p /var/lib/btstack
-	chmod 0700 /var/lib/btstack
-	rm -f "$pidfile" "$logfile"
-	coex=0
-	[ "$(cat /sys/module/esp32s31_radio/parameters/mode 2>/dev/null)" = combo ] && coex=1
-	S31_HCI_DEVICE=/dev/s31-hci \
-		S31_BTSTACK_COEX="$coex" \
-		"$executable" -u 0 -l none >>"$logfile" 2>&1 &
+	enabled || return 0
+	running && return 0
+	[ -x "$executable" ] || {
+		echo 'BTstack: service is not installed' >&2
+		return 1
+	}
+	load_name || return 1
+	wait_controller || {
+		echo 'BTstack: direct-HCI controller endpoint is not ready' >&2
+		return 1
+	}
+	mkdir -p "$run_dir" "$data_dir" || return 1
+	chmod 0700 "$data_dir" || return 1
+	rm -f "$pidfile"
+	: >"$logfile" || return 1
+	chmod 0600 "$logfile"
+	[ "$(cat "$mode_file" 2>/dev/null)" = combo ] && coex=1
+	set -- -u 0 -l none
+	[ "$reset" = 1 ] && set -- "$@" -r
+	S31_HCI_DEVICE="$hci_device" \
+		S31_BTSTACK_COEX="$coex" S31_BTSTACK_NAME="$device_name" \
+		"$executable" "$@" >>"$logfile" 2>&1 &
 	pid=$!
-	printf '%s\n' "$pid" >"$pidfile"
+	printf '%s\n' "$pid" >"$pidfile" || {
+		kill "$pid" 2>/dev/null || true
+		return 1
+	}
+	# A live PID confirms service startup; HCI startup may still be in progress.
 	sleep 1
-	if ! kill -0 "$pid" 2>/dev/null; then
-		echo 'BTstack: A2DP sink exited during startup' >&2
+	if ! running; then
+		echo 'BTstack: service exited during startup' >&2
 		cat "$logfile" >&2
 		rm -f "$pidfile"
-		exit 1
-	fi
-	echo 'BTstack: A2DP sink and BLE GATT peripheral ready on /dev/s31-hci'
-	;;
-stop)
-	if running; then
-		start-stop-daemon --stop --quiet --retry TERM/5/KILL/1 \
-			--pidfile "$pidfile" --exec "$executable" || true
-	fi
-	rm -f "$pidfile"
-	;;
-restart)
-	"$0" stop
-	"$0" start
-	;;
-status)
-	if running; then
-		echo 'BTstack A2DP sink is running.'
-	else
-		echo 'BTstack A2DP sink is stopped.'
 		return 1
 	fi
+	echo 'BTstack: service started'
+}
+
+stop_service()
+{
+	local signal pid count limit
+	# BusyBox start-stop-daemon ignores --retry schedules. Wait explicitly;
+	# SIGINT gives BTstack time to close its TLV database and power HCI down.
+	for signal in INT TERM KILL; do
+		running || break
+		pid="$(cat "$pidfile")"
+		kill -s "$signal" "$pid" 2>/dev/null || true
+		count=0
+		limit=10
+		[ "$signal" != INT ] || limit=50
+		while running && [ "$count" -lt "$limit" ]; do
+			sleep 0.1
+			count=$((count + 1))
+		done
+	done
+	if running; then
+		echo 'BTstack: service did not stop' >&2
+		return 1
+	fi
+	rm -f "$pidfile"
+}
+
+clear_pairings()
+{
+	local count=0 result=1
+	enabled && running || {
+		echo 'BTstack: enable and start Bluetooth before clearing pairings' >&2
+		return 1
+	}
+	stop_service || return 1
+	if start_service 1; then
+		while [ "$count" -lt 100 ]; do
+			if grep -qx 'S31_PAIRING_RESET=ok' "$logfile"; then
+				result=0
+				break
+			fi
+			grep -qx 'S31_PAIRING_RESET=failed' "$logfile" && break
+			running || break
+			sleep 0.1
+			count=$((count + 1))
+		done
+	fi
+	# Normal startup replaces the service log; keep reset diagnostics separately.
+	[ ! -r "$logfile" ] || cp "$logfile" "$reset_log"
+	stop_service || return 1
+	start_service || {
+		echo 'BTstack: Bluetooth did not restart; check the service log' >&2
+		return 1
+	}
+	if [ "$result" -ne 0 ]; then
+		echo "BTstack: pairing reset was not confirmed; see ${reset_log}" >&2
+		return 1
+	fi
+	echo 'BTstack: saved pairings cleared'
+}
+
+case "${1:-}" in
+status)
+	if running; then
+		echo 'Bluetooth service is running.'
+	else
+		echo 'Bluetooth service is stopped.'
+		exit 1
+	fi
+	exit 0
+	;;
+start|stop|restart|clear-pairings)
+	# Serialize operations; never start a reset instance with another owner alive.
+	umask 077
+	mkdir -p "$run_dir" || exit 1
+	lock="${run_dir}/s31-btstack.lock"
+	mkdir "$lock" 2>/dev/null || {
+		echo 'BTstack: another service operation is in progress' >&2
+		exit 1
+	}
+	trap 'rmdir "$lock" 2>/dev/null || true' EXIT
+	trap 'exit 1' HUP INT TERM
+	case "$1" in
+		start) start_service ;;
+		stop) stop_service ;;
+		restart) stop_service && start_service ;;
+		clear-pairings) clear_pairings ;;
+	esac
 	;;
 *)
-	echo "Usage: $0 {start|stop|restart|status}" >&2
+	echo "Usage: $0 {start|stop|restart|status|clear-pairings}" >&2
 	exit 1
 	;;
 esac

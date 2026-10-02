@@ -55,9 +55,10 @@ def main():
     p.add_argument("--compiler", type=Path, required=True)
     p.add_argument("--idf", type=Path, required=True)
     p.add_argument("--output", type=Path, required=True)
+    p.add_argument("--kernel-config", type=Path, default=ROOT / "build/linux-6.18/.config")
     a = p.parse_args()
     repos = [".", "linux-esp32-s31", "opensbi-esp32-s31", "u-boot-esp32-s31", "buildroot", "docs"]
-    configs = ["configs/build-versions.mk", "configs/esp32s31-layout.cfg", "build/linux-6.18/.config", "build/buildroot/.config", "firmware/radio/idf_deps/build-radio/sdkconfig", "firmware/radio/.s31-build-config"]
+    configs = ["configs/build-versions.mk", "configs/esp32s31-layout.cfg", str(a.kernel_config.relative_to(ROOT) if a.kernel_config.is_absolute() and a.kernel_config.is_relative_to(ROOT) else a.kernel_config), "build/buildroot/.config", "firmware/radio/idf_deps/build-radio/sdkconfig", "firmware/radio/.s31-build-config"]
     artifacts = ["spl_app.bin", "u-boot.itb", "esp32s31_generic.dtb", "xipImage", "rootfs.sqfs", "radio.bin", "radio.json", "esp32s31-radio-fw-v1.o", "s31_full_flash.bin"]
     data = {"schema_version": 1, "expected_dependencies": versions(), "sources": {name: revision(ROOT / name) for name in repos}, "idf": revision(a.idf), "compiler": {"version": subprocess.check_output([str(a.compiler), "--version"], text=True).splitlines()[0], "sha256": digest(a.compiler), "installed_release": (a.compiler.parent.parent / ".release").read_text().strip() if (a.compiler.parent.parent / ".release").exists() else None}, "configs": {name: digest(ROOT / name) for name in configs if (ROOT / name).is_file()}, "artifacts": {name: digest(ROOT / "build" / name) for name in artifacts if (ROOT / "build" / name).is_file()}}
     a.output.parent.mkdir(parents=True, exist_ok=True)

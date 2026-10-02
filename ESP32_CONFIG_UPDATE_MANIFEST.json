@@ -1,0 +1,1258 @@
+{
+  "format": "esp32-config-source-update-1",
+  "main_repository": "GrieferPig/esp32-s31-linux",
+  "main_baseline_commit": "a6b62c6426f06f00ff3be7ee8e6ab1c67a1ff104",
+  "kernel_baseline_commit": "bd15992071dc9496b9f14b5a765dfa23a71d289b",
+  "documentation_baseline": {
+    "filename": "docs-new.zip",
+    "sha256": "dabc731fb1e151beeeec897f59672aadbc50f3b9aacab1a45e77e5834b96cddc",
+    "remote_documentation_used": false
+  },
+  "contents": {
+    "modified_main_files": 12,
+    "new_main_files": 31,
+    "complete_documentation_files": 129,
+    "changed_documentation_files": 26
+  },
+  "validation": {
+    "python_tests": 128,
+    "python_passed": 127,
+    "python_skipped": 1,
+    "gpio_host_and_menu_passed": true,
+    "gpio_ipc_skipped": true,
+    "strict_sphinx_builds": [
+      "en",
+      "zh_CN",
+      "landing"
+    ],
+    "html_pages": 125,
+    "local_links_checked": 4556,
+    "target_cross_build_performed": false,
+    "board_validation_performed": false
+  },
+  "files": [
+    {
+      "path": "ESP32_CONFIG_UPDATE.md",
+      "role": "update-notes",
+      "size": 6708,
+      "mode": "0644",
+      "sha256": "39c4464115cf362cec558579abae26c865125cd0cbf15d072bcf37c79b4c6fec"
+    },
+    {
+      "path": "Makefile",
+      "role": "modified",
+      "size": 25556,
+      "mode": "0644",
+      "sha256": "6017442df70a26f5f10a7686380bcbf33ac26c884ff2e1d694547ac2598e4a7b",
+      "baseline_git_blob": "ada570c29cfdb21ef38b3d78f39cb4a43001a006"
+    },
+    {
+      "path": "buildroot-external/board/esp32-s31/busybox.fragment",
+      "role": "modified",
+      "size": 475,
+      "mode": "0644",
+      "sha256": "5a2d3ed99507fb6ded420839820a53bd737fbc82bcb37ceaacbadf34b1abd527",
+      "baseline_git_blob": "971f3bc870524d6ca0046190e9e544933d5cbe92"
+    },
+    {
+      "path": "buildroot-external/board/esp32-s31/overlay/etc/init.d/S00s31-radio",
+      "role": "modified",
+      "size": 4756,
+      "mode": "0755",
+      "sha256": "b56b5891c5ed55493c2156f3187378972bec8342b663a9c41c8018105e9579a1",
+      "baseline_git_blob": "faf7390e205320bcc38b937bdd921c0ddf49bb03"
+    },
+    {
+      "path": "buildroot-external/board/esp32-s31/overlay/etc/init.d/S01s31-swap",
+      "role": "modified",
+      "size": 319,
+      "mode": "0755",
+      "sha256": "23ef294148b14e9f0b903839b77a18a76b77f1b3b28de8e2dc730819ae39f38a",
+      "baseline_git_blob": "1c09911e6e50022442c9cb564b97b9a9b874796c"
+    },
+    {
+      "path": "buildroot-external/board/esp32-s31/overlay/etc/init.d/S02s31-usb",
+      "role": "new",
+      "size": 298,
+      "mode": "0755",
+      "sha256": "338de60e3c7aa5e06a98e20fc8c1e8283dabd3e48456da1cc0de21700c205384"
+    },
+    {
+      "path": "buildroot-external/board/esp32-s31/overlay/etc/init.d/S06s31-storage",
+      "role": "new",
+      "size": 323,
+      "mode": "0755",
+      "sha256": "b28911cfcdfcec9ca69f1454b1f9bb9ebd39ce985b405cb10ca6a61b17961a0e"
+    },
+    {
+      "path": "buildroot-external/board/esp32-s31/overlay/etc/init.d/S46s31-gpio",
+      "role": "new",
+      "size": 1384,
+      "mode": "0755",
+      "sha256": "65a2513ca5a78e2225d26ef032fdb5ab96a5d885aaa7e67eab140329dcf0eaa8"
+    },
+    {
+      "path": "buildroot-external/board/esp32-s31/overlay/etc/init.d/S47esp32-time",
+      "role": "new",
+      "size": 199,
+      "mode": "0755",
+      "sha256": "ded0604ecfefa633f2d8979f517401ffd86cfefb324d7286cbe10b838382e2d3"
+    },
+    {
+      "path": "buildroot-external/board/esp32-s31/overlay/etc/init.d/S95esp32-userapp",
+      "role": "new",
+      "size": 308,
+      "mode": "0755",
+      "sha256": "0f2e97b1c83926b84838f840f4d3160e23542173a9053c7df1d87196b5dafd0a"
+    },
+    {
+      "path": "buildroot-external/board/esp32-s31/overlay/init",
+      "role": "modified",
+      "size": 7987,
+      "mode": "0755",
+      "sha256": "965e6b7efc7097538202724a2024a96e7d51580f06d5fb5ba64ebbbced497bf2",
+      "baseline_git_blob": "d5bbb86b2a6f8194dda699328dc6d24e43373f9d"
+    },
+    {
+      "path": "buildroot-external/board/esp32-s31/overlay/usr/lib/esp32-config/bluetooth.sh",
+      "role": "new",
+      "size": 6534,
+      "mode": "0644",
+      "sha256": "059689bdffc54eaadcdeeb30ec2f02ccc92ad7e94b9eddb4c3c5f3b30b558ddf"
+    },
+    {
+      "path": "buildroot-external/board/esp32-s31/overlay/usr/lib/esp32-config/common.sh",
+      "role": "new",
+      "size": 12652,
+      "mode": "0644",
+      "sha256": "06d62e55e39c63528ce2f8c512eac787fea0b697cd825e9151bb9f11a347ba97"
+    },
+    {
+      "path": "buildroot-external/board/esp32-s31/overlay/usr/lib/esp32-config/gpio.sh",
+      "role": "new",
+      "size": 5727,
+      "mode": "0644",
+      "sha256": "720525d8640297630fd8332fcfb556396496944d2c32e36931205f4303ba7a63"
+    },
+    {
+      "path": "buildroot-external/board/esp32-s31/overlay/usr/lib/esp32-config/interfaces.sh",
+      "role": "new",
+      "size": 12240,
+      "mode": "0644",
+      "sha256": "8c240eeaeb8e46414c7eef00caf02737e0b10c34325693c372045700e566b329"
+    },
+    {
+      "path": "buildroot-external/board/esp32-s31/overlay/usr/lib/esp32-config/maintenance.sh",
+      "role": "new",
+      "size": 10701,
+      "mode": "0644",
+      "sha256": "6bf789db7b685dd64b390725cfafff6159207551eae575fb96081f87f48c4292"
+    },
+    {
+      "path": "buildroot-external/board/esp32-s31/overlay/usr/lib/esp32-config/network.sh",
+      "role": "new",
+      "size": 36961,
+      "mode": "0644",
+      "sha256": "a122c3b74da4def7ca5f679772e77a210685173388bf9b36c2573a5e7c08a682"
+    },
+    {
+      "path": "buildroot-external/board/esp32-s31/overlay/usr/lib/esp32-config/storage.sh",
+      "role": "new",
+      "size": 19507,
+      "mode": "0644",
+      "sha256": "93557763d2d58d9aa6d16f510fc12dd159e14bca9b615a873eddd1ac0036feb2"
+    },
+    {
+      "path": "buildroot-external/board/esp32-s31/overlay/usr/lib/esp32-config/system.sh",
+      "role": "new",
+      "size": 18548,
+      "mode": "0644",
+      "sha256": "9d16a4daa411e85ca273933e7ae861a5a912683463028d0b0096a18a14821660"
+    },
+    {
+      "path": "buildroot-external/board/esp32-s31/overlay/usr/lib/esp32-config/usb-console.sh",
+      "role": "new",
+      "size": 729,
+      "mode": "0644",
+      "sha256": "b933c5a42fa8068209aa2de7ce6aa494742dfb5ae3c0a1186cca38994e4448be"
+    },
+    {
+      "path": "buildroot-external/board/esp32-s31/overlay/usr/lib/esp32-config/usb.sh",
+      "role": "new",
+      "size": 15149,
+      "mode": "0644",
+      "sha256": "220e66dec6491c2c2662f316bbdbc07fe0aa6d1c640ab953cb571f63124b8f43"
+    },
+    {
+      "path": "buildroot-external/board/esp32-s31/overlay/usr/sbin/esp32-config",
+      "role": "modified",
+      "size": 6808,
+      "mode": "0755",
+      "sha256": "516c64dc870e06e2f30b429114d7704f5e6153354f071a607a4f19dd3123c87e",
+      "baseline_git_blob": "ba3c463dd65ae178e4e4bef0feef331ea17da6b9"
+    },
+    {
+      "path": "buildroot-external/board/esp32-s31/overlay/usr/share/udhcpc/default.script",
+      "role": "modified",
+      "size": 2088,
+      "mode": "0755",
+      "sha256": "3cddc045ec3ca96a0cf81456d96c38a2d7fc830fd3da8bf7ae6d65de1101c834",
+      "baseline_git_blob": "49b429ecd3d8f547ebc6741b5548d29e7ae2e302"
+    },
+    {
+      "path": "buildroot-external/board/esp32-s31/post-build.sh",
+      "role": "modified",
+      "size": 10680,
+      "mode": "0755",
+      "sha256": "071b1b3f57967abf42a8492e8a01ed1d46d377540af150600c1a1b6a5036640b",
+      "baseline_git_blob": "1ce0b905117524efc0072656d17444e901e70325"
+    },
+    {
+      "path": "buildroot-external/configs/esp32s31_rootfs_defconfig",
+      "role": "modified",
+      "size": 3115,
+      "mode": "0644",
+      "sha256": "ba021faeaf575e55df0bd8fec62a626ffc9e7347ddab9848ccf708788538bff8",
+      "baseline_git_blob": "0719d65331182db714bb8ddd9e4d64fc1eec911f"
+    },
+    {
+      "path": "buildroot-external/package/btstack-s31/0021-linux-configure-device-name-and-reset-pairings-once.patch",
+      "role": "new",
+      "size": 7961,
+      "mode": "0644",
+      "sha256": "28745e42265f810858cd8a96179e0e201b02625491b7c0013209dabee0e06262"
+    },
+    {
+      "path": "buildroot-external/package/btstack-s31/S40btstack",
+      "role": "modified",
+      "size": 4991,
+      "mode": "0755",
+      "sha256": "4a6f8c0ba61c7e04b987ffc87877153c0bb18414a7e3007df375476aa4bb3718",
+      "baseline_git_blob": "241b92cabbca502e7fca732f5969bd32f533359d"
+    },
+    {
+      "path": "buildroot-external/package/s31-tools/s31-tools.mk",
+      "role": "modified",
+      "size": 4041,
+      "mode": "0644",
+      "sha256": "54819db079af328720176ec70565d351b1001f535e99b6968a5c677005bdf069",
+      "baseline_git_blob": "ae53d63cf582b56b75fafac38cc5fd9523a59688"
+    },
+    {
+      "path": "configs/esp32-config-timezones.list",
+      "role": "new",
+      "size": 206,
+      "mode": "0644",
+      "sha256": "73ef401892961f1d1e100f11714c21146497f6bfd34c0b38618d6be4fe88f8f9"
+    },
+    {
+      "path": "docs/.github/workflows/docs.yml",
+      "role": "documentation-baseline",
+      "size": 1451,
+      "mode": "0644",
+      "sha256": "812f3c9b82f1def2a5d7ad4bc54eb5ef1b8e4147c262e7a08d416f524e1ef1be"
+    },
+    {
+      "path": "docs/.gitignore",
+      "role": "documentation-baseline",
+      "size": 33,
+      "mode": "0644",
+      "sha256": "761dce64c5ae5065c17124cb1339fb3870a683e3ba68027678821943203793f0"
+    },
+    {
+      "path": "docs/Makefile",
+      "role": "documentation-baseline",
+      "size": 1275,
+      "mode": "0644",
+      "sha256": "59698e187a5c163ae445cbffed78cea2ae232b75cf2deea68098abbc7c263a95"
+    },
+    {
+      "path": "docs/README.md",
+      "role": "documentation-baseline",
+      "size": 1497,
+      "mode": "0644",
+      "sha256": "3885855e4f3df6578590effb5aa043b99f0cc6f80ffcef0ae696e6d561ab7216"
+    },
+    {
+      "path": "docs/_static/language-selector.css",
+      "role": "documentation-baseline",
+      "size": 574,
+      "mode": "0644",
+      "sha256": "ef6153a6a54d54d16c6868bd7ea6499249bd79c286db8d9e9ec75597cac89d78"
+    },
+    {
+      "path": "docs/_static/language-selector.js",
+      "role": "documentation-baseline",
+      "size": 614,
+      "mode": "0644",
+      "sha256": "c60d8092b0cbb7c724e97b5d37b9795d63437ab91061f658ede212e727494c2f"
+    },
+    {
+      "path": "docs/_templates/layout.html",
+      "role": "documentation-baseline",
+      "size": 714,
+      "mode": "0644",
+      "sha256": "d0a3b9bf3d4febeeb5633e556568a92ecb7418ae278704dd623faa89d8a8984a"
+    },
+    {
+      "path": "docs/bootlog.png",
+      "role": "documentation-baseline",
+      "size": 143743,
+      "mode": "0644",
+      "sha256": "3814e295a8a2330707b8939af3c1b832b99b9a09c38010f3666a4bb52c2fef07"
+    },
+    {
+      "path": "docs/conf.py",
+      "role": "documentation-baseline",
+      "size": 3305,
+      "mode": "0644",
+      "sha256": "6b258a0f64fc309e865a32032ffdbc08dbec38e4774897d842dbff7ae63a7995"
+    },
+    {
+      "path": "docs/en/api-guides/adding-a-driver.md",
+      "role": "documentation-baseline",
+      "size": 6967,
+      "mode": "0644",
+      "sha256": "11c57c7f85e181497d4c141d9d4e8665638b603615fbea5b7b3e970e3b3253ac"
+    },
+    {
+      "path": "docs/en/api-guides/adding-a-userspace-tool.md",
+      "role": "documentation-baseline",
+      "size": 6602,
+      "mode": "0644",
+      "sha256": "3c04f127ee7c7d251d768b254aba939c4f79345b4bcf07aca44e31bdb0f5fec9"
+    },
+    {
+      "path": "docs/en/api-guides/adding-an-overlay.md",
+      "role": "documentation-baseline",
+      "size": 3856,
+      "mode": "0644",
+      "sha256": "4768b0f9c152c513a7f314bd6c721250b8e1141c7a3bfb51760329c4884432df"
+    },
+    {
+      "path": "docs/en/api-guides/debugging.md",
+      "role": "documentation-baseline",
+      "size": 4751,
+      "mode": "0644",
+      "sha256": "e879bcfa1d13fc79492957553e140d6f5ec8c0151bb5e05a6b6c8967cb38fdf1"
+    },
+    {
+      "path": "docs/en/api-guides/dma-and-cache.md",
+      "role": "documentation-baseline",
+      "size": 6390,
+      "mode": "0644",
+      "sha256": "f20bbd1afd8c243f2246350fc0c9c6c9026a3d90285c0857e32b276e733a69e3"
+    },
+    {
+      "path": "docs/en/api-guides/index.md",
+      "role": "documentation-baseline",
+      "size": 268,
+      "mode": "0644",
+      "sha256": "5db050aa4d389aeb4e73e33cf2abe44c79301d0d8e6f67f5557262fde34d3772"
+    },
+    {
+      "path": "docs/en/api-guides/lp-firmware-development.md",
+      "role": "documentation-baseline",
+      "size": 4538,
+      "mode": "0644",
+      "sha256": "849e568a7c963b86103acfc2622956b354c289038018df38c79daaecb894dbf5"
+    },
+    {
+      "path": "docs/en/api-guides/power-management.md",
+      "role": "documentation-baseline",
+      "size": 8488,
+      "mode": "0644",
+      "sha256": "d442eec5d099bb0f4d65a076f579a3e036914753febc6015f267b7fdf4e73a04"
+    },
+    {
+      "path": "docs/en/api-guides/radio-payload-development.md",
+      "role": "documentation-baseline",
+      "size": 5437,
+      "mode": "0644",
+      "sha256": "f137bba63c0d12946adc1a6e6b8fb37ceef86130e3f4fd00285aa953a72d6dbc"
+    },
+    {
+      "path": "docs/en/api-guides/wifi-advanced.md",
+      "role": "updated-documentation",
+      "size": 6564,
+      "mode": "0644",
+      "sha256": "202861e04bb587c8593926d74687372191086f69397db1c58099c4207ea21905"
+    },
+    {
+      "path": "docs/en/api-reference/index.md",
+      "role": "documentation-baseline",
+      "size": 212,
+      "mode": "0644",
+      "sha256": "0421b3e35ac051302e482dbfd883bd0ac8ea3ff8d05c6af5d1bef317ea94c33d"
+    },
+    {
+      "path": "docs/en/api-reference/lp-core/index.md",
+      "role": "documentation-baseline",
+      "size": 5920,
+      "mode": "0644",
+      "sha256": "740c827c98dac59e6fa7c74cdcb46db71f4f5f2ed5ff015911bee50d91f8f89a"
+    },
+    {
+      "path": "docs/en/api-reference/peripherals/index.md",
+      "role": "documentation-baseline",
+      "size": 9810,
+      "mode": "0644",
+      "sha256": "04b0421f87e5754a6a917ab5a910ed0073034b5664c1fb9b39cbe55817bb5d8c"
+    },
+    {
+      "path": "docs/en/api-reference/radio/architecture.md",
+      "role": "documentation-baseline",
+      "size": 3948,
+      "mode": "0644",
+      "sha256": "9405d6e99af531640c0f9394ce05d422b614bae62c56c91fd4e4681d07abfc25"
+    },
+    {
+      "path": "docs/en/api-reference/radio/index.md",
+      "role": "documentation-baseline",
+      "size": 4436,
+      "mode": "0644",
+      "sha256": "91d68a3a121659dec13c09ba407353ba5f92991c92ab705ef763cbddb6dbaf0f"
+    },
+    {
+      "path": "docs/en/api-reference/radio/wifi-protocol.md",
+      "role": "documentation-baseline",
+      "size": 3260,
+      "mode": "0644",
+      "sha256": "37666629ac4534c7acadb6664c848d44b1f1d9f8b9cbf9fefbc43f7921ff7bed"
+    },
+    {
+      "path": "docs/en/api-reference/system/boot-chain.md",
+      "role": "documentation-baseline",
+      "size": 3152,
+      "mode": "0644",
+      "sha256": "10ddf4175e7b23ffe364ac06ad5e03a71dbe0257b6dd44393740383c6a64cca0"
+    },
+    {
+      "path": "docs/en/api-reference/system/clock-reset-power.md",
+      "role": "documentation-baseline",
+      "size": 3139,
+      "mode": "0644",
+      "sha256": "ce847744147a5e8ff4943dcf903e8e73d7f8b13baddc508c58f73bd7c9615099"
+    },
+    {
+      "path": "docs/en/api-reference/system/index.md",
+      "role": "documentation-baseline",
+      "size": 207,
+      "mode": "0644",
+      "sha256": "89abb808f9bfbc6f8acfa075eba7182f94d864343f3d2364cf324069390958f5"
+    },
+    {
+      "path": "docs/en/api-reference/system/interrupts-smp.md",
+      "role": "documentation-baseline",
+      "size": 3192,
+      "mode": "0644",
+      "sha256": "298268383a1157c42293ba29e84a20b90666cf1e72533131ac57efb01952fa53"
+    },
+    {
+      "path": "docs/en/api-reference/system/overview.md",
+      "role": "documentation-baseline",
+      "size": 2317,
+      "mode": "0644",
+      "sha256": "51dd593ef914bd82fe8914ae31998d2a77a2f9633971c3bbd8f43a5cec73c183"
+    },
+    {
+      "path": "docs/en/api-reference/userspace/index.md",
+      "role": "documentation-baseline",
+      "size": 5461,
+      "mode": "0644",
+      "sha256": "76250788ef25e4106a6e2955940b0a42f5245cdac77d3ead887c9a6d7c36bbae"
+    },
+    {
+      "path": "docs/en/contribute/development-setup.md",
+      "role": "documentation-baseline",
+      "size": 3405,
+      "mode": "0644",
+      "sha256": "23c1c3a02dab5d24857e32c0e41f127ba81549d68f05d986374e512a01a9d5ae"
+    },
+    {
+      "path": "docs/en/contribute/index.md",
+      "role": "documentation-baseline",
+      "size": 288,
+      "mode": "0644",
+      "sha256": "80ab346fa0c91445096be18a46c9db5522f9ae636da6c10caa4df5f823919661"
+    },
+    {
+      "path": "docs/en/contribute/release-and-legal.md",
+      "role": "documentation-baseline",
+      "size": 2851,
+      "mode": "0644",
+      "sha256": "2a7c8de11ac394086d597e7c7fb75287a15e54a03050d4b1e8d651015bca4f68"
+    },
+    {
+      "path": "docs/en/contribute/submodule-workflow.md",
+      "role": "documentation-baseline",
+      "size": 1751,
+      "mode": "0644",
+      "sha256": "f9587296013a8d72c5d907f865e58d1f54d5267e69670a84f8932f6e366d0ed6"
+    },
+    {
+      "path": "docs/en/contribute/testing-hil.md",
+      "role": "documentation-baseline",
+      "size": 5368,
+      "mode": "0644",
+      "sha256": "117be509f50bc60973a95ed451e76559c8918a18619bd12161dca0182780c95a"
+    },
+    {
+      "path": "docs/en/contribute/writing-documentation.md",
+      "role": "documentation-baseline",
+      "size": 4063,
+      "mode": "0644",
+      "sha256": "63cd1486793bad28aaaa0a4d977accc8348f2826b2c09a7904225e9a54be2fd9"
+    },
+    {
+      "path": "docs/en/get-started/build-from-source.md",
+      "role": "documentation-baseline",
+      "size": 5107,
+      "mode": "0644",
+      "sha256": "c0dd78eed268db15d6a0f2feb579440338ff0af237148488bea527213528482a"
+    },
+    {
+      "path": "docs/en/get-started/build-profiles.md",
+      "role": "updated-documentation",
+      "size": 5241,
+      "mode": "0644",
+      "sha256": "670a8dbc7789a0b07375d3f12849dca36009c36a175f58f9828930da95bcf94d"
+    },
+    {
+      "path": "docs/en/get-started/flash-and-first-boot.md",
+      "role": "updated-documentation",
+      "size": 7223,
+      "mode": "0644",
+      "sha256": "87242b7abbb3765ed0b4c2d3d7c16ba4fc730d4eb42b3025988131ff85226efe"
+    },
+    {
+      "path": "docs/en/get-started/index.md",
+      "role": "documentation-baseline",
+      "size": 231,
+      "mode": "0644",
+      "sha256": "257e3894f1697ca5b4314b77a703620bebff74512d9acea8a31a2d6ffbacd728"
+    },
+    {
+      "path": "docs/en/get-started/introduction.md",
+      "role": "documentation-baseline",
+      "size": 1032,
+      "mode": "0644",
+      "sha256": "73837ea22be7db2bb5d552a013433ad162ba0e549b3d4a18fd231896c0813e90"
+    },
+    {
+      "path": "docs/en/hw-reference/clock-tree.md",
+      "role": "documentation-baseline",
+      "size": 4106,
+      "mode": "0644",
+      "sha256": "0260a80ecbc12110148c16e43dc40f9789c0da83b0dbd90cd5aba0c0e7e86adf"
+    },
+    {
+      "path": "docs/en/hw-reference/flash-layout.md",
+      "role": "documentation-baseline",
+      "size": 2225,
+      "mode": "0644",
+      "sha256": "5a3d9f63874069f769755199fc1175ef8b56129ee5a22057333f58bd41df39f6"
+    },
+    {
+      "path": "docs/en/hw-reference/index.md",
+      "role": "documentation-baseline",
+      "size": 412,
+      "mode": "0644",
+      "sha256": "bc0f45308534eb1e1f4159ded127d9a0dd5e6ddccd01f7ec12c9a2bc806ac1f0"
+    },
+    {
+      "path": "docs/en/hw-reference/interrupt-routing.md",
+      "role": "documentation-baseline",
+      "size": 3052,
+      "mode": "0644",
+      "sha256": "ecfe3de6be9369929dd62a51af31cd3081ead13bc0db8cf5a9f493916fd476b1"
+    },
+    {
+      "path": "docs/en/hw-reference/isa.md",
+      "role": "documentation-baseline",
+      "size": 4799,
+      "mode": "0644",
+      "sha256": "c8f990f89d8da3fcadd843b5d7d2a26c856737bbb921d0dbf8df823e5e24c506"
+    },
+    {
+      "path": "docs/en/hw-reference/memory-map.md",
+      "role": "documentation-baseline",
+      "size": 2522,
+      "mode": "0644",
+      "sha256": "559ddff1e9503d45213cec3a524c72d3f9e402ba0d043d62669f5cb12f895c17"
+    },
+    {
+      "path": "docs/en/hw-reference/modules-and-boards.md",
+      "role": "documentation-baseline",
+      "size": 6797,
+      "mode": "0644",
+      "sha256": "5ffe7c5f3b7b6873880ae08436f9a4f6658fb6c5a3e39b58d12c8a9abbb9e1f3"
+    },
+    {
+      "path": "docs/en/hw-reference/power-domains.md",
+      "role": "documentation-baseline",
+      "size": 4138,
+      "mode": "0644",
+      "sha256": "19a0e15da6d1b90693a7109f5cc3c4862cc2df9e517d897462629966fb272e8d"
+    },
+    {
+      "path": "docs/en/index.md",
+      "role": "documentation-baseline",
+      "size": 951,
+      "mode": "0644",
+      "sha256": "3d9bc3521f4c81c6a863052e832983bf428a2658f81003aea16a8a6085300db7"
+    },
+    {
+      "path": "docs/en/resources/cli-reference.md",
+      "role": "updated-documentation",
+      "size": 4377,
+      "mode": "0644",
+      "sha256": "c8fc6269d94552a9c91deade318014b10e98a1331f5d3ccc7a50d3480f969767"
+    },
+    {
+      "path": "docs/en/resources/configuration.md",
+      "role": "updated-documentation",
+      "size": 5367,
+      "mode": "0644",
+      "sha256": "da5c40708c26fc3119e22ac414255205de7c7c969a83b0ca5e1a713e9236851a"
+    },
+    {
+      "path": "docs/en/resources/devicetree-binding-index.md",
+      "role": "documentation-baseline",
+      "size": 2324,
+      "mode": "0644",
+      "sha256": "ba588a03d776f53d97cd3eac53cbf76233feabe556dc441363872229ea8baab9"
+    },
+    {
+      "path": "docs/en/resources/esp32-config.md",
+      "role": "updated-documentation",
+      "size": 8925,
+      "mode": "0644",
+      "sha256": "1afd81214d0a471c8374e36d0883389c939f85d8166b2a43be20516c05b5c236"
+    },
+    {
+      "path": "docs/en/resources/glossary.md",
+      "role": "documentation-baseline",
+      "size": 1896,
+      "mode": "0644",
+      "sha256": "44af5fdfecd79f109ea8f1712474532097e0edb76e3ef25395186977153301ec"
+    },
+    {
+      "path": "docs/en/resources/index.md",
+      "role": "documentation-baseline",
+      "size": 263,
+      "mode": "0644",
+      "sha256": "b22da1240d4326544af43be3ea3c7409d42b20659666d78388a17f1169cce9c4"
+    },
+    {
+      "path": "docs/en/resources/kconfig-reference.md",
+      "role": "documentation-baseline",
+      "size": 3080,
+      "mode": "0644",
+      "sha256": "d0ae3a6058a11fd83a6af30a9ce8aadd3cfd45cf631cb2befe5ebc435b73f995"
+    },
+    {
+      "path": "docs/en/resources/make-reference.md",
+      "role": "documentation-baseline",
+      "size": 5924,
+      "mode": "0644",
+      "sha256": "962ec83a1bf0df7641e1ee2d74e253419fda0dcafcb2600ab5df787badaf9ea5"
+    },
+    {
+      "path": "docs/en/resources/overlay-catalog.md",
+      "role": "updated-documentation",
+      "size": 7294,
+      "mode": "0644",
+      "sha256": "316c1389f2c0c417c9f9225139b1232d193e78195f9ed142aa3c0993bed5ec5f"
+    },
+    {
+      "path": "docs/en/resources/support-matrix.md",
+      "role": "documentation-baseline",
+      "size": 8796,
+      "mode": "0644",
+      "sha256": "8208e09b0de6264924c4e69f55a174628584a4b1cfe7f049ebf1129d98a3c224"
+    },
+    {
+      "path": "docs/en/user-guides/audio.md",
+      "role": "documentation-baseline",
+      "size": 7178,
+      "mode": "0644",
+      "sha256": "a6a7d507a02abd55186797ec5fc58dbeb046f7323dd8a1ae02d79c7be28fb2be"
+    },
+    {
+      "path": "docs/en/user-guides/index.md",
+      "role": "updated-documentation",
+      "size": 510,
+      "mode": "0644",
+      "sha256": "2df9f55066c09e683b2d7aa6b3e2d4c89e8e4a180a570e9048ce476acb08a197"
+    },
+    {
+      "path": "docs/en/user-guides/memory-and-storage.md",
+      "role": "updated-documentation",
+      "size": 3110,
+      "mode": "0644",
+      "sha256": "02fbe9f8ce59b214063545f108283835ffdc07f626dcdb4141291336760e1a27"
+    },
+    {
+      "path": "docs/en/user-guides/networking.md",
+      "role": "updated-documentation",
+      "size": 8896,
+      "mode": "0644",
+      "sha256": "88123519c6784e14ece871ca0c5980e9281773fcd7ba2418d10737bb0f463dbb"
+    },
+    {
+      "path": "docs/en/user-guides/peripherals.md",
+      "role": "updated-documentation",
+      "size": 12443,
+      "mode": "0644",
+      "sha256": "53bc8c56452a1c5f0dc80eb03e842f3e0f6e18b0707377557eb616f51f2486d7"
+    },
+    {
+      "path": "docs/en/user-guides/system-settings.md",
+      "role": "updated-documentation",
+      "size": 3982,
+      "mode": "0644",
+      "sha256": "e9ca0153caa772ebca0028e451e717b586322e177bb70a3b36cac60e15882c7d"
+    },
+    {
+      "path": "docs/en/user-guides/usb-gadget.md",
+      "role": "updated-documentation",
+      "size": 6542,
+      "mode": "0644",
+      "sha256": "0c32f08d16462f19bb65af2106d431313f4020f7e9248d25b8ac6053d81ed923"
+    },
+    {
+      "path": "docs/index.md",
+      "role": "documentation-baseline",
+      "size": 221,
+      "mode": "0644",
+      "sha256": "456afa21cd95f10420f4a22d047f64451bb40324b47318c9df424f0c681f5c1f"
+    },
+    {
+      "path": "docs/requirements.txt",
+      "role": "documentation-baseline",
+      "size": 105,
+      "mode": "0644",
+      "sha256": "c9a773918944ab21e54c452e9b4e0798dc65670e3a17d60da4e6b209f91cc86d"
+    },
+    {
+      "path": "docs/zh_CN/api-guides/adding-a-driver.md",
+      "role": "documentation-baseline",
+      "size": 6780,
+      "mode": "0644",
+      "sha256": "a6bb69bed53847155602a1d767a3e27191d8a8e0063b35e7826dd2f622997653"
+    },
+    {
+      "path": "docs/zh_CN/api-guides/adding-a-userspace-tool.md",
+      "role": "documentation-baseline",
+      "size": 6332,
+      "mode": "0644",
+      "sha256": "1ad76fd3790f716532bd4977eb109f668774fe0354be69299b3b7eef94de00da"
+    },
+    {
+      "path": "docs/zh_CN/api-guides/adding-an-overlay.md",
+      "role": "documentation-baseline",
+      "size": 3684,
+      "mode": "0644",
+      "sha256": "f82640ada126526c9fb11c2a26f82cb7b8703adad91d4c682f7ada83c8a96dea"
+    },
+    {
+      "path": "docs/zh_CN/api-guides/debugging.md",
+      "role": "documentation-baseline",
+      "size": 4555,
+      "mode": "0644",
+      "sha256": "18cb43794c908506d49b250a1d5291c4d842d6bcc05c9df49255bb5e551f1073"
+    },
+    {
+      "path": "docs/zh_CN/api-guides/dma-and-cache.md",
+      "role": "documentation-baseline",
+      "size": 6168,
+      "mode": "0644",
+      "sha256": "269a9e833668ef6ae6d4b21e07ce7e149baa7851f05230e210dd51ea2d5cf0f5"
+    },
+    {
+      "path": "docs/zh_CN/api-guides/index.md",
+      "role": "documentation-baseline",
+      "size": 273,
+      "mode": "0644",
+      "sha256": "1e66c2bb6d2f88490ec976888fe9191cfc356fd1f241a495aa433fde31986aca"
+    },
+    {
+      "path": "docs/zh_CN/api-guides/lp-firmware-development.md",
+      "role": "documentation-baseline",
+      "size": 4343,
+      "mode": "0644",
+      "sha256": "e24555d1014cb055f6532331a9b1372bab57b6938aecbdb96e40255b3d0cc789"
+    },
+    {
+      "path": "docs/zh_CN/api-guides/power-management.md",
+      "role": "documentation-baseline",
+      "size": 7987,
+      "mode": "0644",
+      "sha256": "3c09d9be08db43b5939cd4fb27c899bdca811a48a982402b459ea72428d17f66"
+    },
+    {
+      "path": "docs/zh_CN/api-guides/radio-payload-development.md",
+      "role": "documentation-baseline",
+      "size": 5065,
+      "mode": "0644",
+      "sha256": "49a18d648d1be37b0b0c8d47d87d58ee30115c41f2b1603e613d6c1004fdf1e4"
+    },
+    {
+      "path": "docs/zh_CN/api-guides/wifi-advanced.md",
+      "role": "updated-documentation",
+      "size": 5989,
+      "mode": "0644",
+      "sha256": "f374358419587e1fc924f86b23f6927b6a654efd07ce3d34c54e9f980459f88b"
+    },
+    {
+      "path": "docs/zh_CN/api-reference/index.md",
+      "role": "documentation-baseline",
+      "size": 188,
+      "mode": "0644",
+      "sha256": "ac5d615984ad2f1b8f1a57f36dc63c5e0e5959935ae6bb6ca8f1832e76369614"
+    },
+    {
+      "path": "docs/zh_CN/api-reference/lp-core/index.md",
+      "role": "documentation-baseline",
+      "size": 5607,
+      "mode": "0644",
+      "sha256": "a5f71fc8936f6e6b4fcd18e8e83dee2d90fa6f35bb5dc37b0b68bcd6586acb2f"
+    },
+    {
+      "path": "docs/zh_CN/api-reference/peripherals/index.md",
+      "role": "documentation-baseline",
+      "size": 9288,
+      "mode": "0644",
+      "sha256": "03639fbe83371cc3c89eabbdcadf0b573b66007486a8ced345ce7213b83a6eac"
+    },
+    {
+      "path": "docs/zh_CN/api-reference/radio/architecture.md",
+      "role": "documentation-baseline",
+      "size": 3553,
+      "mode": "0644",
+      "sha256": "ebb9aacaaf1c2cb77a0c2b3fa0c8e5b743b65bab874f24c84a77b850973c182d"
+    },
+    {
+      "path": "docs/zh_CN/api-reference/radio/index.md",
+      "role": "documentation-baseline",
+      "size": 4120,
+      "mode": "0644",
+      "sha256": "4acab65a6ee389db0d4ba937e896adbac2b9220d1939ce80025b90314654cace"
+    },
+    {
+      "path": "docs/zh_CN/api-reference/radio/wifi-protocol.md",
+      "role": "documentation-baseline",
+      "size": 2999,
+      "mode": "0644",
+      "sha256": "f3cb350e82866facc2b91acd811c6fe4798252dfc62b6365d684b593164733e4"
+    },
+    {
+      "path": "docs/zh_CN/api-reference/system/boot-chain.md",
+      "role": "documentation-baseline",
+      "size": 2937,
+      "mode": "0644",
+      "sha256": "be67ea6fe3c61b40c17ef05d383025ac16bcb80b7706c4760f0e1ce89d474d3b"
+    },
+    {
+      "path": "docs/zh_CN/api-reference/system/clock-reset-power.md",
+      "role": "documentation-baseline",
+      "size": 2937,
+      "mode": "0644",
+      "sha256": "2b8d49d4adc19708111a3eafbf34210cfefa7a2e1edf6dce067ad36216dfc50d"
+    },
+    {
+      "path": "docs/zh_CN/api-reference/system/index.md",
+      "role": "documentation-baseline",
+      "size": 211,
+      "mode": "0644",
+      "sha256": "42bb262719dc6ab130adb31210fb170603974512dcee6114863bae726a09b527"
+    },
+    {
+      "path": "docs/zh_CN/api-reference/system/interrupts-smp.md",
+      "role": "documentation-baseline",
+      "size": 3016,
+      "mode": "0644",
+      "sha256": "41f1c90ab91d9455a667528b1eafa7560734ae8c17c57761f80bd34853e14fad"
+    },
+    {
+      "path": "docs/zh_CN/api-reference/system/overview.md",
+      "role": "documentation-baseline",
+      "size": 2126,
+      "mode": "0644",
+      "sha256": "fb90dceb680ac9dde3bb293eca5c0af71427ad1a3d22913a447344eb019ec026"
+    },
+    {
+      "path": "docs/zh_CN/api-reference/userspace/index.md",
+      "role": "documentation-baseline",
+      "size": 5178,
+      "mode": "0644",
+      "sha256": "78bf2bcca25f55d497de2ef8dab94744c575dddf08dec8a8431159a87a897993"
+    },
+    {
+      "path": "docs/zh_CN/contribute/development-setup.md",
+      "role": "documentation-baseline",
+      "size": 3235,
+      "mode": "0644",
+      "sha256": "d681068332fa966ebbae48d611ba965ae501d2157779dd77d1975e750c3a02d5"
+    },
+    {
+      "path": "docs/zh_CN/contribute/index.md",
+      "role": "documentation-baseline",
+      "size": 246,
+      "mode": "0644",
+      "sha256": "7d90807a97ecb535559de39f88560afa9e985993b9f4f02f667399ec9e27cd71"
+    },
+    {
+      "path": "docs/zh_CN/contribute/release-and-legal.md",
+      "role": "documentation-baseline",
+      "size": 2509,
+      "mode": "0644",
+      "sha256": "4f646a76794d4561a94d5c82c9c2a284d655e7a6ecd9c4d9720f4f0ef2e29b8c"
+    },
+    {
+      "path": "docs/zh_CN/contribute/submodule-workflow.md",
+      "role": "documentation-baseline",
+      "size": 1637,
+      "mode": "0644",
+      "sha256": "06102e23b2d40363bb115fcb6d4397d7893b6abb46867cd885c0a1b20a8ee72b"
+    },
+    {
+      "path": "docs/zh_CN/contribute/testing-hil.md",
+      "role": "documentation-baseline",
+      "size": 5077,
+      "mode": "0644",
+      "sha256": "cff47348eab828c7a77830447471504dedd116e932980ad4024b393f6f7aa75b"
+    },
+    {
+      "path": "docs/zh_CN/contribute/writing-documentation.md",
+      "role": "documentation-baseline",
+      "size": 3701,
+      "mode": "0644",
+      "sha256": "faf47fb8fcd7640988df21e449e111f6bf6d87d3ea3f43c0429f37d1813daeb1"
+    },
+    {
+      "path": "docs/zh_CN/get-started/build-from-source.md",
+      "role": "documentation-baseline",
+      "size": 4955,
+      "mode": "0644",
+      "sha256": "8188389a782cad7a57465cee26b65b779279a47b4e43b047180df67da9debdbd"
+    },
+    {
+      "path": "docs/zh_CN/get-started/build-profiles.md",
+      "role": "updated-documentation",
+      "size": 5106,
+      "mode": "0644",
+      "sha256": "4abd5d883e15fd6d1d7f6109275330eedb6c4059e4edfdef5b8984cf668c6ae1"
+    },
+    {
+      "path": "docs/zh_CN/get-started/flash-and-first-boot.md",
+      "role": "updated-documentation",
+      "size": 6947,
+      "mode": "0644",
+      "sha256": "0e5ef72ca7a91e351872b1b83fcc43c678aec1d53b0c90a32bf13c2bdb312839"
+    },
+    {
+      "path": "docs/zh_CN/get-started/index.md",
+      "role": "documentation-baseline",
+      "size": 207,
+      "mode": "0644",
+      "sha256": "6f16c3bcda29ce3b3d5b6588dd809f98a97366fb6a72d566c4924d28f5617332"
+    },
+    {
+      "path": "docs/zh_CN/get-started/introduction.md",
+      "role": "documentation-baseline",
+      "size": 961,
+      "mode": "0644",
+      "sha256": "55733afccbb670653e3ab1e419b76ea5244af56dde65714b79dbf0be5e475326"
+    },
+    {
+      "path": "docs/zh_CN/hw-reference/clock-tree.md",
+      "role": "documentation-baseline",
+      "size": 3934,
+      "mode": "0644",
+      "sha256": "db7bc20a185e937f9b33e21eff848b8caae3a1095bb2059d9947f7f86e5de7c5"
+    },
+    {
+      "path": "docs/zh_CN/hw-reference/flash-layout.md",
+      "role": "documentation-baseline",
+      "size": 2150,
+      "mode": "0644",
+      "sha256": "1e2782b00d662eaddf8fd308ac270e477f29c3fb84329f13e794ec238da39e8b"
+    },
+    {
+      "path": "docs/zh_CN/hw-reference/index.md",
+      "role": "documentation-baseline",
+      "size": 377,
+      "mode": "0644",
+      "sha256": "64b20d78d98243b1d7d76bf16552d9961ac812a391c92d3932fd83c5075f9e7c"
+    },
+    {
+      "path": "docs/zh_CN/hw-reference/interrupt-routing.md",
+      "role": "documentation-baseline",
+      "size": 2990,
+      "mode": "0644",
+      "sha256": "da0f15909d71c7b7a7a29d367878955368b9448de7824be7b0ce56bd0ab9b2cc"
+    },
+    {
+      "path": "docs/zh_CN/hw-reference/isa.md",
+      "role": "documentation-baseline",
+      "size": 4411,
+      "mode": "0644",
+      "sha256": "9105ffd50a083b83ba0638fa739cb94f57eec8ffb20f399f065392e12cb93207"
+    },
+    {
+      "path": "docs/zh_CN/hw-reference/memory-map.md",
+      "role": "documentation-baseline",
+      "size": 2449,
+      "mode": "0644",
+      "sha256": "cf82d1910ba9bcdf358721b6d110a55418ea88b50d3cb8004983ec91f784fe55"
+    },
+    {
+      "path": "docs/zh_CN/hw-reference/modules-and-boards.md",
+      "role": "documentation-baseline",
+      "size": 6592,
+      "mode": "0644",
+      "sha256": "96a7cca18174d4e72bb210d58738c1384e92e8bf90950e8a80e5b2d54deea250"
+    },
+    {
+      "path": "docs/zh_CN/hw-reference/power-domains.md",
+      "role": "documentation-baseline",
+      "size": 4029,
+      "mode": "0644",
+      "sha256": "1b8f743658f5751681a3b30bd4b5a992deb90dce08dd377c7ce4ad100d19baa2"
+    },
+    {
+      "path": "docs/zh_CN/index.md",
+      "role": "documentation-baseline",
+      "size": 893,
+      "mode": "0644",
+      "sha256": "31c62e44ad548db828497a25ee9c9bb42d0c3f8e2b016b038428b38881dcf305"
+    },
+    {
+      "path": "docs/zh_CN/resources/cli-reference.md",
+      "role": "updated-documentation",
+      "size": 4358,
+      "mode": "0644",
+      "sha256": "574d27bb49250ea1ea44093d62a2fa71b0bf7cbca4aaef97e588ed61128ea8fb"
+    },
+    {
+      "path": "docs/zh_CN/resources/configuration.md",
+      "role": "updated-documentation",
+      "size": 5012,
+      "mode": "0644",
+      "sha256": "c7c00bc8305c22b8b0ac609c2906bf4c46a7b3d3378c674bed75f4a9443a27fe"
+    },
+    {
+      "path": "docs/zh_CN/resources/devicetree-binding-index.md",
+      "role": "documentation-baseline",
+      "size": 2205,
+      "mode": "0644",
+      "sha256": "d4880eedbaadadbd06cd79418fdd7fd91a604983d860f7eacddb2fe7b4653a29"
+    },
+    {
+      "path": "docs/zh_CN/resources/esp32-config.md",
+      "role": "updated-documentation",
+      "size": 8393,
+      "mode": "0644",
+      "sha256": "3ffe6db125eed63a324e9e5589888086f9c83d44d753030da78a4ef364b1e9f0"
+    },
+    {
+      "path": "docs/zh_CN/resources/glossary.md",
+      "role": "documentation-baseline",
+      "size": 1771,
+      "mode": "0644",
+      "sha256": "d313eaa03e452b8f2d58e40a9e1512cdca0254b03b21b2bf8bc341537405dd78"
+    },
+    {
+      "path": "docs/zh_CN/resources/index.md",
+      "role": "documentation-baseline",
+      "size": 245,
+      "mode": "0644",
+      "sha256": "d956d80cba5f5c910cb6505922e7d99b323bca56f95babe0da3e83c6df9947ab"
+    },
+    {
+      "path": "docs/zh_CN/resources/kconfig-reference.md",
+      "role": "documentation-baseline",
+      "size": 2941,
+      "mode": "0644",
+      "sha256": "e137effab09d50b5093781b8020ab553c5e8f75433355b53b2a98ec82c5744b3"
+    },
+    {
+      "path": "docs/zh_CN/resources/make-reference.md",
+      "role": "documentation-baseline",
+      "size": 5684,
+      "mode": "0644",
+      "sha256": "2c24894740d5c3ae9cd4729a677a7c96c8ffd49b1a5915a34069c4d116e4c6f1"
+    },
+    {
+      "path": "docs/zh_CN/resources/overlay-catalog.md",
+      "role": "updated-documentation",
+      "size": 6917,
+      "mode": "0644",
+      "sha256": "5ca873955db83db4f40465e965d6a7c77ba4d98cd155c41fe562b808be82b26e"
+    },
+    {
+      "path": "docs/zh_CN/resources/support-matrix.md",
+      "role": "documentation-baseline",
+      "size": 8305,
+      "mode": "0644",
+      "sha256": "7940c8fdf89b56cbbca7ee37003994cf9e901eeca8dc3f055cb173b8e3630024"
+    },
+    {
+      "path": "docs/zh_CN/user-guides/audio.md",
+      "role": "documentation-baseline",
+      "size": 7131,
+      "mode": "0644",
+      "sha256": "0a99c643f6140824a61c4e10a25c04b095c8f1b7a9c1db62688033288bff193e"
+    },
+    {
+      "path": "docs/zh_CN/user-guides/index.md",
+      "role": "updated-documentation",
+      "size": 440,
+      "mode": "0644",
+      "sha256": "3c4b89a8c4acfeb7f032238e65d52ab218d6ce19d6fa382d4af9ced6a3a1d0b2"
+    },
+    {
+      "path": "docs/zh_CN/user-guides/memory-and-storage.md",
+      "role": "updated-documentation",
+      "size": 2922,
+      "mode": "0644",
+      "sha256": "8bbd220a488b8cfeb8bfb4a503412f74a7b3511dd30f1116c8e284c879145a07"
+    },
+    {
+      "path": "docs/zh_CN/user-guides/networking.md",
+      "role": "updated-documentation",
+      "size": 8272,
+      "mode": "0644",
+      "sha256": "a3111f06fc021614cafab55145ece849dab0ea46769330ceae580c9ff226a8c5"
+    },
+    {
+      "path": "docs/zh_CN/user-guides/peripherals.md",
+      "role": "updated-documentation",
+      "size": 12233,
+      "mode": "0644",
+      "sha256": "c065a49d85535385f4835d3a01af3bc0ee83ecdac42f586df671510bebc76617"
+    },
+    {
+      "path": "docs/zh_CN/user-guides/system-settings.md",
+      "role": "updated-documentation",
+      "size": 3783,
+      "mode": "0644",
+      "sha256": "b952a1e8a288ad27271efa1d329e620a3750f79e0ddc6bf34f586db1835dfd6c"
+    },
+    {
+      "path": "docs/zh_CN/user-guides/usb-gadget.md",
+      "role": "updated-documentation",
+      "size": 6248,
+      "mode": "0644",
+      "sha256": "e27d13cdb53db242402cae5ba8d53837f06ba6eee3a040ea7377bb31891b5849"
+    },
+    {
+      "path": "rootfs/s31_config_archive.c",
+      "role": "new",
+      "size": 4513,
+      "mode": "0644",
+      "sha256": "15126fedfecf983d61d4f6c4de6bd6a2b6bd08c0e49e17e376957f57cbdbda21"
+    },
+    {
+      "path": "rootfs/s31_gpio.c",
+      "role": "new",
+      "size": 21057,
+      "mode": "0644",
+      "sha256": "d0ef26fb22c946366ddbb5eaf1b8a7a0af9cd25b7a05a660cc50d78a3cde20c0"
+    },
+    {
+      "path": "rootfs/s31_overlay.c",
+      "role": "modified",
+      "size": 37094,
+      "mode": "0644",
+      "sha256": "bb0360e8b7f65463ae2fa62e3447943d312a48bc1d6fbe6b819074fadc46f293",
+      "baseline_git_blob": "df826dd8a5152d2456040c972053a8a8ffc3fada"
+    },
+    {
+      "path": "tests/esp32-config/test-gpio-menu.sh",
+      "role": "new",
+      "size": 3163,
+      "mode": "0755",
+      "sha256": "2ee7e9238db6a15635697bd6e527213e8983802aa620810be7ae8ab55b58adef"
+    },
+    {
+      "path": "tests/esp32-config/test-gpio.sh",
+      "role": "new",
+      "size": 927,
+      "mode": "0755",
+      "sha256": "b77beaa247fad151f595ac7ee219987029c6610fede69f9f333567447e38c066"
+    },
+    {
+      "path": "tests/esp32-config/test_gpio.c",
+      "role": "new",
+      "size": 11396,
+      "mode": "0644",
+      "sha256": "b27afad864bd9cb244e1deae8bd1f62881b06239c9902c6f3ff8a4b9688f6902"
+    },
+    {
+      "path": "tests/test_esp32_config_storage.py",
+      "role": "new",
+      "size": 14603,
+      "mode": "0644",
+      "sha256": "e3ecfad40084cb0370dc7bd48f26201d24f2095048a4acaca8fadd27d7f4b9c7"
+    },
+    {
+      "path": "tools/build_esp32_config_assets.py",
+      "role": "new",
+      "size": 6939,
+      "mode": "0755",
+      "sha256": "ca6898afd7a06b42c70b19c0b7b037db4e11a2c46f5928ad462c60ae46851d02"
+    },
+    {
+      "path": "tools/tests/test_esp32_config_assets.py",
+      "role": "new",
+      "size": 5408,
+      "mode": "0644",
+      "sha256": "7617053e4b8f692b0c34be4e59fe159b09704f951614e774d183885a8bce92f9"
+    },
+    {
+      "path": "tools/tests/test_esp32_config_bluetooth.py",
+      "role": "new",
+      "size": 15613,
+      "mode": "0644",
+      "sha256": "e342f244a348faf2c5aed1847c78d08d873857716dd138226f99e9106c53040c"
+    },
+    {
+      "path": "tools/tests/test_esp32_config_frontend.py",
+      "role": "new",
+      "size": 12068,
+      "mode": "0644",
+      "sha256": "ae1bf7fa5284e65a660d2db0b87aaf8eedabfd23d105e1c80d47054dca13ab4e"
+    },
+    {
+      "path": "tools/tests/test_esp32_config_interfaces.py",
+      "role": "new",
+      "size": 9186,
+      "mode": "0644",
+      "sha256": "9f86a8284253250c77665dcd4fbb9a498c6c6823495c84ca4b6213e2a7adae7b"
+    },
+    {
+      "path": "tools/tests/test_esp32_config_network.py",
+      "role": "new",
+      "size": 14655,
+      "mode": "0644",
+      "sha256": "7a333a3916179ffb12bcb98c23017095dde5b0a4715467c05c9755e37362cf4e"
+    },
+    {
+      "path": "tools/tests/test_esp32_config_system.py",
+      "role": "new",
+      "size": 13648,
+      "mode": "0644",
+      "sha256": "bfe46ead0e11454dc091337582c9f42771a8b0cc1887500acc5e379f8d9ab1a3"
+    },
+    {
+      "path": "tools/tests/test_s31_overlay_describe.py",
+      "role": "new",
+      "size": 21324,
+      "mode": "0644",
+      "sha256": "9a2ef9bc21fb674a47c3e337e73ae423a51f6b83e6300217da31d15090204940"
+    }
+  ]
+}

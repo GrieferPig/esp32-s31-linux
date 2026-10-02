@@ -1,0 +1,189 @@
+From: ESP32-S31 Linux <s31-linux@example.invalid>
+Subject: [PATCH] linux: configure a shared Bluetooth name and reset pairings once
+
+Use S31_BTSTACK_NAME for Classic discovery, GAP Device Name and the complete
+BLE scan-response name. Keep the name literal for the S31 transport build.
+Report a completed pairing reset to the service and consume -r once so
+controller recovery cannot erase newly paired keys.
+
+diff --git a/example/a2dp_sink_demo.c b/example/a2dp_sink_demo.c
+--- a/example/a2dp_sink_demo.c
++++ b/example/a2dp_sink_demo.c
+@@ -318,19 +318,41 @@
+ static void stdin_process(char cmd);
+ #endif
+ 
++/* Keep one literal name across Classic discovery, BLE scan response and GAP.
++ * Legacy scan responses have 31 bytes, of which two describe the name field. */
++#define S31_BTSTACK_NAME_MAX 29
++static char s31_device_name[S31_BTSTACK_NAME_MAX + 1] = "S31 Radio";
++
++static void s31_load_device_name(void){
++    const char * name = getenv("S31_BTSTACK_NAME");
++    if (name == NULL) return;
++    size_t length = strlen(name);
++    if (length == 0 || length > S31_BTSTACK_NAME_MAX){
++        fprintf(stderr, "BTstack: invalid device name length; using S31 Radio\n");
++        return;
++    }
++    for (size_t i = 0; i < length; ++i){
++        uint8_t c = (uint8_t) name[i];
++        if (c < 0x20 || c == 0x7f){
++            fprintf(stderr, "BTstack: control character in device name; using S31 Radio\n");
++            return;
++        }
++    }
++    memcpy(s31_device_name, name, length + 1);
++}
++
+ #ifdef ENABLE_BLE
+-static const uint8_t s31_ble_name[] = "S31 Radio";
+ static const uint8_t s31_ble_value[] = "ready";
+ static const uint8_t s31_ble_adv_data[] = {
+     0x02, BLUETOOTH_DATA_TYPE_FLAGS, 0x06,
+     0x05, BLUETOOTH_DATA_TYPE_COMPLETE_LIST_OF_16_BIT_SERVICE_CLASS_UUIDS,
+           0x00, 0x18, 0x10, 0xff,
+-    0x0a, BLUETOOTH_DATA_TYPE_COMPLETE_LOCAL_NAME,
+-          'S', '3', '1', ' ', 'R', 'a', 'd', 'i', 'o',
+ };
++static uint8_t s31_ble_scan_response[31];
+ 
+ static void s31_ble_setup(void){
+     bd_addr_t null_addr = { 0 };
++    uint8_t name_length = (uint8_t) strlen(s31_device_name);
+ 
+     sm_set_io_capabilities(IO_CAPABILITY_NO_INPUT_NO_OUTPUT);
+     sm_set_authentication_requirements(0);
+@@ -340,7 +362,7 @@
+     att_db_util_add_characteristic_uuid16(
+         ORG_BLUETOOTH_CHARACTERISTIC_GAP_DEVICE_NAME,
+         ATT_PROPERTY_READ, ATT_SECURITY_NONE, ATT_SECURITY_NONE,
+-        (uint8_t *) s31_ble_name, sizeof(s31_ble_name) - 1u);
++        (uint8_t *) s31_device_name, name_length);
+     att_db_util_add_service_uuid16(ORG_BLUETOOTH_SERVICE_GENERIC_ATTRIBUTE);
+     att_db_util_add_service_uuid16(0xff10);
+     att_db_util_add_characteristic_uuid16(
+@@ -348,16 +370,22 @@
+         (uint8_t *) s31_ble_value, sizeof(s31_ble_value) - 1u);
+     att_server_init(att_db_util_get_address(), NULL, NULL);
+ 
++    s31_ble_scan_response[0] = name_length + 1;
++    s31_ble_scan_response[1] = BLUETOOTH_DATA_TYPE_COMPLETE_LOCAL_NAME;
++    memcpy(&s31_ble_scan_response[2], s31_device_name, name_length);
+     gap_advertisements_set_params(0x00a0, 0x00a0, 0, 0, null_addr,
+                                   0x07, 0x00);
+     gap_advertisements_set_data(sizeof(s31_ble_adv_data),
+                                 (uint8_t *) s31_ble_adv_data);
++    gap_scan_response_set_data(name_length + 2, s31_ble_scan_response);
+     gap_advertisements_enable(1);
+-    printf("BLE GAP/GATT: advertising as S31 Radio, service 0xff10\n");
++    printf("BLE GAP/GATT: advertising as %s, service 0xff10\n", s31_device_name);
+ }
+ #endif
+ 
+ static int setup_demo(void){
++
++    s31_load_device_name();
+ 
+     // init protocols
+     l2cap_init();
+@@ -439,10 +467,8 @@
+ 
+     // Configure GAP - discovery / connection
+ 
+-    // - Set local name with a template Bluetooth address, that will be automatically
+-    //   replaced with an actual address once it is available, i.e. when BTstack boots
+-    //   up and starts talking to a Bluetooth module.
+-    gap_set_local_name("A2DP Sink Demo 00:00:00:00:00:00");
++    // - Use the same configured name as BLE and the GAP Device Name.
++    gap_set_local_name(s31_device_name);
+ 
+     // - Allow to show up in Bluetooth inquiry
+     gap_discoverable_control(1);
+diff --git a/port/linux/main.c b/port/linux/main.c
+--- a/port/linux/main.c
++++ b/port/linux/main.c
+@@ -43,6 +43,7 @@
+ //
+ // *****************************************************************************
+ 
++#include <errno.h>
+ #include <stdint.h>
+ #include <stdio.h>
+ #include <stdlib.h>
+@@ -100,19 +101,24 @@
+     switch (hci_event_packet_get_type(packet)){
+         case BTSTACK_EVENT_STATE:
+             switch(btstack_event_state_get_state(packet)){
+-                case HCI_STATE_WORKING:
++                case HCI_STATE_WORKING: {
++                    const bool reset_requested = tlv_reset;
++                    bool reset_ok = true;
++                    /* A recovery event must not erase keys learned after -r. */
++                    tlv_reset = false;
+                     gap_local_bd_addr(local_addr);
+                     printf("BTstack up and running on %s.\n", bd_addr_to_str(local_addr));
+                     btstack_strcpy(tlv_db_path, sizeof(tlv_db_path), TLV_DB_PATH_PREFIX);
+                     btstack_strcat(tlv_db_path, sizeof(tlv_db_path), bd_addr_to_str_with_delimiter(local_addr, '-'));
+                     btstack_strcat(tlv_db_path, sizeof(tlv_db_path), TLV_DB_PATH_POSTFIX);
+                     printf("TLV path: %s", tlv_db_path);
+-                    if (tlv_reset){
++                    if (reset_requested){
+                         int rc = unlink(tlv_db_path);
+-                        if (rc == 0) {
++                        reset_ok = (rc == 0 || errno == ENOENT);
++                        if (reset_ok) {
+                             printf(", reset ok");
+                         } else {
+-                            printf(", reset failed with result = %d", rc);
++                            printf(", reset failed: %s", strerror(errno));
+                         }
+                     }
+                     printf("\n");
+@@ -124,7 +130,12 @@
+ #ifdef ENABLE_BLE
+                     le_device_db_tlv_configure(tlv_impl, &tlv_context);
+ #endif
+-                    break;
++                    if (reset_requested){
++                        printf("S31_PAIRING_RESET=%s\n", reset_ok ? "ok" : "failed");
++                        fflush(stdout);
++                    }
++                    break;
++                }
+                 case HCI_STATE_OFF:
+                     btstack_tlv_posix_deinit(&tlv_context);
+                     if (!shutdown_triggered) break;
+diff --git a/src/hci.c b/src/hci.c
+--- a/src/hci.c
++++ b/src/hci.c
+@@ -1779,7 +1779,9 @@
+     // if shorter than DEVICE_NAME_LEN, it's implicitly NULL-terminated by memset call
+     (void)memcpy(&packet[3], hci_stack->local_name, bytes_to_copy);
+     // expand '00:00:00:00:00:00' in name with bd_addr
++#ifndef S31_BTSTACK_TRANSPORT_ONLY
+     btstack_replace_bd_addr_placeholder(&packet[3], bytes_to_copy, hci_stack->local_bd_addr);
++#endif
+     hci_send_prepared_cmd_packet();
+ }
+ 
+@@ -1807,7 +1809,9 @@
+             memcpy(&packet[offset], data, size);
+             // update name item
+             if ((data_type == BLUETOOTH_DATA_TYPE_SHORTENED_LOCAL_NAME) || (data_type == BLUETOOTH_DATA_TYPE_COMPLETE_LOCAL_NAME)){
++#ifndef S31_BTSTACK_TRANSPORT_ONLY
+                 btstack_replace_bd_addr_placeholder(&packet[offset], size, hci_stack->local_bd_addr);
++#endif
+             }
+             offset += size;
+         }
+@@ -1818,7 +1822,9 @@
+         packet[offset++] = BLUETOOTH_DATA_TYPE_COMPLETE_LOCAL_NAME;
+         (void)memcpy(&packet[6], hci_stack->local_name, bytes_to_copy);
+         // expand '00:00:00:00:00:00' in name with bd_addr
++#ifndef S31_BTSTACK_TRANSPORT_ONLY
+         btstack_replace_bd_addr_placeholder(&packet[offset], bytes_to_copy, hci_stack->local_bd_addr);
++#endif
+     }
+     hci_send_prepared_cmd_packet();
+ }

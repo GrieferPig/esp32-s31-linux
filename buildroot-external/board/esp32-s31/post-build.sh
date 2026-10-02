@@ -236,6 +236,11 @@ chmod 0600 "${target_dir}/etc/wpa_supplicant.conf"
 
 script_dir="$(CDPATH= cd -- "$(dirname -- "$0")" && pwd)"
 project_dir="$(CDPATH= cd -- "${script_dir}/../../.." && pwd)"
+python3 "${project_dir}/tools/build_esp32_config_assets.py" \
+	--target-dir "$target_dir" \
+	--kernel-config "${S31_KERNEL_CONFIG:-${project_dir}/build/linux-6.18/.config}" \
+	--timezone-source "${HOST_DIR:-${project_dir}/build/buildroot/host}/share/zoneinfo/posix" \
+	--timezones-list "${project_dir}/configs/esp32-config-timezones.list"
 dtbo_dir="${S31_DTBO_DIR:-${project_dir}/build/linux-6.18/arch/riscv/boot/dts/espressif}"
 install_dir="${target_dir}/usr/lib/s31-overlays"
 
@@ -261,7 +266,7 @@ xz --check=crc32 --lzma2=dict=64KiB -f "${target_dir}/usr/lib/s31-radio/esp32s31
 rm -f "${target_dir}/usr/lib/s31-radio/s31-dma-ccm-net.ko.xz" \
 	"${target_dir}/etc/esp32-conf/softmac.conf"
 
-required_runtime='usr/sbin/s31-btstack-a2dp usr/sbin/s31-ext-test'
+required_runtime='usr/sbin/s31-btstack-a2dp usr/sbin/s31-ext-test usr/sbin/s31-gpio usr/sbin/s31-config-archive usr/sbin/esp32-config'
 
 for required in ${required_runtime}; do
 	[ -x "${target_dir}/${required}" ] || {

@@ -45,6 +45,10 @@ define S31_TOOLS_BUILD_CMDS
 		$(@D)/s31_modload.c -o $(@D)/s31-modload
 	$(TARGET_CC) $(TARGET_CFLAGS) $(TARGET_LDFLAGS) \
 		$(@D)/s31_hil_io.c -o $(@D)/s31-hil-io
+	$(TARGET_CC) $(TARGET_CFLAGS) $(TARGET_LDFLAGS) \
+		$(@D)/s31_gpio.c -o $(@D)/s31-gpio
+	$(TARGET_CC) $(TARGET_CFLAGS) $(TARGET_LDFLAGS) \
+		$(@D)/s31_config_archive.c -o $(@D)/s31-config-archive
 	$(TARGET_CC) $(TARGET_CFLAGS) $(TARGET_LDFLAGS) -pthread \
 		$(@D)/s31_tlb_stress.c -o $(@D)/s31-tlb-stress
 endef
@@ -69,6 +73,10 @@ define S31_TOOLS_INSTALL_TARGET_CMDS
 		$(TARGET_DIR)/usr/sbin/s31-modload
 	$(INSTALL) -D -m 0755 $(@D)/s31-hil-io \
 		$(TARGET_DIR)/usr/sbin/s31-hil-io
+	$(INSTALL) -D -m 0755 $(@D)/s31-gpio \
+		$(TARGET_DIR)/usr/sbin/s31-gpio
+	$(INSTALL) -D -m 0755 $(@D)/s31-config-archive \
+		$(TARGET_DIR)/usr/sbin/s31-config-archive
 	$(INSTALL) -D -m 0755 $(@D)/s31-tlb-stress \
 		$(TARGET_DIR)/usr/sbin/s31-tlb-stress
 	$(INSTALL) -D -m 0755 \

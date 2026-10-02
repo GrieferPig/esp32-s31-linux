@@ -1,0 +1,10 @@
+# Retained IANA zones. Source groups are selected in the Buildroot defconfig.
+Etc/UTC
+America/Los_Angeles
+America/New_York
+Europe/London
+Europe/Berlin
+Asia/Shanghai
+Asia/Tokyo
+Asia/Kolkata
+Australia/Sydney

@@ -1,1203 +1,203 @@
 #!/bin/sh
-
-# ESP32-S31 configuration frontend. Persistent policy uses the standard /etc
-# hierarchy and is retained by the root OverlayFS writable layer.
-
+# Persistent ESP32-S31 configuration. Modules define actions without applying
+# settings merely because the frontend was opened.
 set -u
 
-PATH="${PATH:-/usr/sbin:/usr/bin:/sbin:/bin}"
-export PATH
-
-CONF_DIR="${ESP32_CONFIG_DIR:-/etc/esp32-conf}"
-RUN_DIR="${ESP32_CONFIG_RUN_DIR:-/run/esp32-config}"
-WIFI_CONF="${CONF_DIR}/wifi.conf"
-WIFI_PROFILE="${CONF_DIR}/wpa_supplicant.conf"
-BT_CONF="${CONF_DIR}/bluetooth.conf"
-SYSTEM_CONF="${CONF_DIR}/system.conf"
-
-die()
-{
-	printf 'esp32-config: %s\n' "$*" >&2
-	exit 1
-}
-
-warn()
-{
-	printf 'esp32-config: %s\n' "$*" >&2
-}
-
-have()
-{
-	command -v "$1" >/dev/null 2>&1
-}
-
-display_ascii()
-{
-	local original="$1" cleaned
-	cleaned="$(printf '%s' "$original" | LC_ALL=C tr -cd '\040-\176')"
-	if [ "$cleaned" = "$original" ]; then
-		printf '%s' "$cleaned"
-	elif [ -n "$cleaned" ]; then
-		printf '%s [non-ASCII characters hidden]' "$cleaned"
-	else
-		printf '%s' '[non-ASCII text]'
-	fi
-}
-
-sanitize_output()
-{
-	local source="$1" destination="$2" escape
-	escape="$(printf '\033')"
-	# Strip common ANSI control sequences first, then keep only characters that
-	# are dependable on a small serial console. Non-ASCII network names are
-	# labelled by the higher-level summaries instead of leaking broken glyphs.
-	LC_ALL=C sed "s/${escape}\\[[0-9;?]*[ -\/]*[@-~]//g; s/\r$//" "$source" |
-		LC_ALL=C tr -cd '\011\012\040-\176' >"$destination"
-}
-
-require_root()
-{
-	[ "$(id -u)" -eq 0 ] || die "this operation must be run as root"
-}
-
-create_file_if_missing()
-{
-	local file="$1" mode="$2" temporary
-	shift 2
-	[ -e "$file" ] && return 0
-	temporary="$(mktemp "${file}.tmp.XXXXXX")" || return 1
-	if ! printf '%s\n' "$@" >"$temporary"; then
-		rm -f "$temporary"
-		return 1
-	fi
-	chmod "$mode" "$temporary" || {
-		rm -f "$temporary"
-		return 1
+ESP32_CONFIG_LIB_DIR="${ESP32_CONFIG_LIB_DIR:-/usr/lib/esp32-config}"
+for module in common network bluetooth gpio storage usb system maintenance interfaces; do
+	[ -r "$ESP32_CONFIG_LIB_DIR/$module.sh" ] || {
+		printf 'esp32-config: missing configuration module %s\n' "$module" >&2
+		exit 1
 	}
-	mv "$temporary" "$file"
-}
+	. "$ESP32_CONFIG_LIB_DIR/$module.sh"
+done
 
-ensure_config()
+show_status()
 {
-	local current_hostname
-	umask 077
-	mkdir -p "$CONF_DIR" "$RUN_DIR" /run/wpa_supplicant || return 1
-	chmod 0700 "$CONF_DIR" "$RUN_DIR" /run/wpa_supplicant 2>/dev/null || true
-	current_hostname="$(hostname 2>/dev/null || printf '%s' esp32-s31)"
-	create_file_if_missing "$SYSTEM_CONF" 0600 \
-		"hostname=${current_hostname}" || return 1
-	create_file_if_missing "$WIFI_CONF" 0600 \
-		'enabled=0' 'interface=wlan0' 'dhcp=1' || return 1
-	create_file_if_missing "$BT_CONF" 0600 \
-		'enabled=0' 'index=0' 'le=1' || return 1
-}
-
-conf_get()
-{
-	local file="$1" key="$2" default_value="$3" value
-	value="$(sed -n "s/^${key}=//p" "$file" 2>/dev/null | tail -n 1)"
-	[ -n "$value" ] && printf '%s\n' "$value" || printf '%s\n' "$default_value"
-}
-
-conf_set()
-{
-	local file="$1" key="$2" value="$3" temporary
-	case "$key" in
-		''|*[!a-z0-9_]* ) return 1 ;;
-	esac
-	case "$value" in
-		*'
-'* ) return 1 ;;
-	esac
-	temporary="$(mktemp "${file}.tmp.XXXXXX")" || return 1
-	if ! awk -v wanted="$key" -v replacement="$value" '
-		BEGIN { found = 0 }
-		index($0, wanted "=") == 1 {
-			if (!found) print wanted "=" replacement
-			found = 1
-			next
-		}
-		{ print }
-		END { if (!found) print wanted "=" replacement }
-	' "$file" >"$temporary"; then
-		rm -f "$temporary"
-		return 1
-	fi
-	chmod 0600 "$temporary" || {
-		rm -f "$temporary"
-		return 1
-	}
-	mv "$temporary" "$file"
-}
-
-valid_enabled()
-{
-	[ "$1" = 0 ] || [ "$1" = 1 ]
-}
-
-valid_interface()
-{
-	case "$1" in
-		''|*[!A-Za-z0-9_.:-]* ) return 1 ;;
-	esac
-}
-
-valid_index()
-{
-	case "$1" in
-		''|*[!0-9]* ) return 1 ;;
-	esac
-}
-
-wifi_pidfile()
-{
-	local interface="$1"
-	printf '%s/wpa_supplicant.%s.pid\n' "$RUN_DIR" "$interface"
-}
-
-dhcp_pidfile()
-{
-	local interface="$1"
-	printf '%s/udhcpc.%s.pid\n' "$RUN_DIR" "$interface"
-}
-
-radio_prepare()
-{
-	local wifi_enabled bluetooth_enabled have_wifi have_bluetooth profile old
-	wifi_enabled="$(conf_get "$WIFI_CONF" enabled 0)"
-	bluetooth_enabled="$(conf_get "$BT_CONF" enabled 0)"
-	have_wifi=0
-	have_bluetooth=0
-	grep -qx okay /proc/device-tree/soc/radio/wifi/status 2>/dev/null &&
-		have_wifi=1
-	grep -qx okay /proc/device-tree/soc/radio/bluetooth/status 2>/dev/null &&
-		have_bluetooth=1
-	case "${wifi_enabled}:${bluetooth_enabled}" in
-	1:1) profile=radio-combo ;;
-	1:0) profile=radio-wifi ;;
-	0:1) profile=radio-bluetooth ;;
-	*) return 1 ;;
-	esac
-	if [ "${wifi_enabled}:${bluetooth_enabled}" != \
-	     "${have_wifi}:${have_bluetooth}" ] &&
-	   ! grep -q '^esp32s31_radio ' /proc/modules 2>/dev/null; then
-		for old in radio-combo radio-wifi radio-bluetooth; do
-			s31-overlay remove "$old" >/dev/null 2>&1 || true
-		done
-		s31-overlay apply "$profile" || return 1
-	fi
-	/etc/init.d/S00s31-radio start
-}
-
-stop_managed_pid()
-{
-	local pidfile="$1" expected="$2" pid count
-	[ -r "$pidfile" ] || return 0
-	pid="$(sed -n '1p' "$pidfile")"
-	case "$pid" in
-		''|*[!0-9]* ) pid='' ;;
-	esac
-	if [ -n "$pid" ] && kill -0 "$pid" 2>/dev/null; then
-		if [ "$(sed -n '1p' "/proc/${pid}/comm" 2>/dev/null)" = "$expected" ]; then
-			kill "$pid" 2>/dev/null || true
-			count=0
-			while kill -0 "$pid" 2>/dev/null && [ "$count" -lt 5 ]; do
-				sleep 1
-				count=$((count + 1))
-			done
-		else
-			warn "ignoring stale pid file ${pidfile}"
-		fi
-	fi
-	rm -f "$pidfile"
-}
-
-wifi_stop()
-{
-	local interface
-	ensure_config || return 1
-	interface="$(conf_get "$WIFI_CONF" interface wlan0)"
-	valid_interface "$interface" || {
-		warn "invalid Wi-Fi interface in ${WIFI_CONF}"
-		return 1
-	}
-	stop_managed_pid "$(dhcp_pidfile "$interface")" udhcpc
-	stop_managed_pid "$(wifi_pidfile "$interface")" wpa_supplicant
-	if have ip && ip link show dev "$interface" >/dev/null 2>&1; then
-		ip -4 addr flush dev "$interface" 2>/dev/null || true
-		ip link set dev "$interface" down 2>/dev/null || true
-	fi
-}
-
-wifi_apply()
-{
-	local enabled interface dhcp pidfile dhcp_log count state
-	require_root
-	ensure_config || return 1
-	enabled="$(conf_get "$WIFI_CONF" enabled 0)"
-	interface="$(conf_get "$WIFI_CONF" interface wlan0)"
-	dhcp="$(conf_get "$WIFI_CONF" dhcp 1)"
-	valid_enabled "$enabled" || {
-		warn "invalid enabled value in ${WIFI_CONF}"
-		return 1
-	}
-	valid_interface "$interface" || {
-		warn "invalid interface in ${WIFI_CONF}"
-		return 1
-	}
-	valid_enabled "$dhcp" || {
-		warn "invalid DHCP policy in ${WIFI_CONF}"
-		return 1
-	}
-	if [ "$enabled" = 0 ]; then
-		wifi_stop
-		printf 'Wi-Fi disabled.\n'
-		return 0
-	fi
-	radio_prepare || {
-		warn "cannot enable the integrated radio overlay/module"
-		return 1
-	}
-	[ -s "$WIFI_PROFILE" ] || {
-		warn "Wi-Fi is enabled but ${WIFI_PROFILE} is missing"
-		return 1
-	}
-	for command_name in ip wpa_supplicant wpa_cli; do
-		have "$command_name" || {
-			warn "missing standard tool: ${command_name}"
-			return 1
-		}
-	done
-	if [ "$dhcp" = 1 ] && ! have udhcpc; then
-		warn "missing standard tool: udhcpc"
-		return 1
-	fi
-	wifi_stop || return 1
-	ip link show dev "$interface" >/dev/null 2>&1 || {
-		warn "Wi-Fi interface ${interface} is not present"
-		return 1
-	}
-	ip link set dev "$interface" up || return 1
-	pidfile="$(wifi_pidfile "$interface")"
-	if ! wpa_supplicant -B -D nl80211 -i "$interface" \
-		-c "$WIFI_PROFILE" -P "$pidfile"; then
-		warn "wpa_supplicant failed to start"
-		return 1
-	fi
-	if [ "$dhcp" = 1 ]; then
-		pidfile="$(dhcp_pidfile "$interface")"
-		dhcp_log="${RUN_DIR}/udhcpc.${interface}.log"
-		rm -f "$pidfile" "$dhcp_log"
-		# The fullmac link and IPv4 address remain valid after the client exits.
-		# Quit after acquiring the lease to avoid a permanent daemon on the
-		# 16 MiB radio profile; reapplying Wi-Fi obtains a fresh lease.
-		udhcpc -b -q -i "$interface" -p "$pidfile" -t 5 -T 2 \
-			>"$dhcp_log" 2>&1 &
-	fi
-	count=0
-	state=''
-	while [ "$count" -lt 20 ]; do
-		state="$(wpa_cli -p /run/wpa_supplicant -i "$interface" status 2>/dev/null |
-			sed -n 's/^wpa_state=//p')"
-		[ "$state" = COMPLETED ] && break
-		sleep 1
-		count=$((count + 1))
-	done
-	if [ "$state" != COMPLETED ]; then
-		warn "Wi-Fi association is still pending; managed workers remain active"
-		return 1
-	fi
-	if [ "$dhcp" = 1 ]; then
-		count=0
-		while [ "$count" -lt 15 ]; do
-			if ip -4 address show dev "$interface" 2>/dev/null |
-				grep -q ' inet '; then
-					printf 'Wi-Fi connected on %s; DHCP lease acquired.\n' "$interface"
-				return 0
-			fi
-			sleep 1
-			count=$((count + 1))
-		done
-		warn "Wi-Fi associated; DHCP is still pending (see ${dhcp_log})"
-		return 1
-	fi
-	printf 'Wi-Fi connected on %s.\n' "$interface"
-}
-
-wifi_status()
-{
-	local enabled interface runtime state ssid address profile
-	ensure_config || return 1
-	enabled="$(conf_get "$WIFI_CONF" enabled 0)"
-	interface="$(conf_get "$WIFI_CONF" interface wlan0)"
-	[ "$enabled" = 1 ] && profile='Enabled' || profile='Disabled'
-	printf 'Saved setting : %s\n' "$profile"
-	printf 'Interface     : %s\n' "$interface"
-	runtime=''
-	if have wpa_cli; then
-		runtime="$(wpa_cli -p /run/wpa_supplicant -i "$interface" status 2>/dev/null || true)"
-	fi
-	state="$(printf '%s\n' "$runtime" | sed -n 's/^wpa_state=//p')"
-	ssid="$(printf '%s\n' "$runtime" | sed -n 's/^ssid=//p')"
-	address="$(printf '%s\n' "$runtime" | sed -n 's/^ip_address=//p')"
-	case "$state" in
-		COMPLETED )
-			printf 'Connection    : Connected\n'
-			printf 'Network name  : %s\n' "$(display_ascii "$ssid")"
-			[ -n "$address" ] && printf 'IPv4 address  : %s\n' "$address"
-			;;
-		SCANNING|ASSOCIATING|ASSOCIATED|4WAY_HANDSHAKE|GROUP_HANDSHAKE )
-			printf 'Connection    : Connecting\n'
-			;;
-		* )
-			[ "$enabled" = 1 ] && printf 'Connection    : Not connected\n' ||
-				printf 'Connection    : Off\n'
-			;;
-	esac
-	[ -s "$WIFI_PROFILE" ] && printf 'Network saved : Yes\n' ||
-		printf 'Network saved : No\n'
-}
-
-wifi_scan()
-{
-	local interface enabled result=0 raw clean
-	require_root
-	ensure_config || return 1
-	interface="$(conf_get "$WIFI_CONF" interface wlan0)"
-	enabled="$(conf_get "$WIFI_CONF" enabled 0)"
-	valid_interface "$interface" || return 1
-	have iw || die "iw is not installed"
-	ip link set dev "$interface" up || return 1
-	raw="$(mktemp "${RUN_DIR}/wifi-scan.XXXXXX")" || return 1
-	clean="${raw}.clean"
-	if have wpa_cli && [ -e "/run/wpa_supplicant/${interface}" ]; then
-		wpa_cli -p /run/wpa_supplicant -i "$interface" scan >/dev/null || result=1
-		sleep 2
-		wpa_cli -p /run/wpa_supplicant -i "$interface" scan_results 2>/dev/null |
-			awk -F '\t' '
-				function display_ssid(value, cleaned) {
-					cleaned = value
-					gsub(/\\x[[:xdigit:]][[:xdigit:]]/, "", cleaned)
-					if (cleaned != value) {
-						if (cleaned == "")
-							return "[non-ASCII network]"
-						return cleaned " [non-ASCII characters hidden]"
-					}
-					return value
-				}
-				NR == 1 { next }
-				NF >= 5 {
-					security = ($4 == "[ESS]") ? "Open" : "Secured"
-					printf "%-5s dBm  %-7s  %s\\n", $3, security, display_ssid($5)
-				}
-			' >"$raw" || result=1
-	else
-		iw dev "$interface" scan | awk '
-			function display_ssid(value, cleaned) {
-				cleaned = value
-				gsub(/\\x[[:xdigit:]][[:xdigit:]]/, "", cleaned)
-				if (cleaned != value) {
-					if (cleaned == "")
-						return "[non-ASCII network]"
-					return cleaned " [non-ASCII characters hidden]"
-				}
-				return value
-			}
-			/^BSS / { signal = ""; security = "Unknown"; ssid = "" }
-			/^[[:space:]]*signal:/ { signal = $2 " " $3 }
-			/^[[:space:]]*capability:/ {
-				security = index($0, "Privacy") ? "Secured" : "Open"
-			}
-			/^[[:space:]]*SSID:/ {
-				ssid = $0; sub(/^[[:space:]]*SSID:[[:space:]]*/, "", ssid)
-				printf "%-10s  %-7s  %s\n", signal, security, display_ssid(ssid)
-			}
-		' >"$raw" || result=1
-	fi
-	sanitize_output "$raw" "$clean"
-	if [ -s "$clean" ]; then
-		printf 'Signal     Security  Network name\n'
-		printf '%s\n' '---------------------------------------------'
-		cat "$clean"
-	else
-		printf 'No Wi-Fi networks were found. Try again in a few seconds.\n'
-		result=1
-	fi
-	rm -f "$raw" "$clean"
-	[ "$enabled" = 1 ] || ip link set dev "$interface" down 2>/dev/null || true
-	return "$result"
-}
-
-read_secret()
-{
-	local saved_stty
-	SECRET=''
-	# Interactive callers get hidden input.  Automation can provide the same
-	# three-line configure protocol on stdin without requiring a controlling
-	# terminal; the value is still consumed only by wpa_passphrase and is not
-	# retained in plaintext.
-	if [ ! -t 0 ]; then
-		IFS= read -r SECRET
-		return $?
-	fi
-	saved_stty="$(stty -g)" || return 1
-	trap 'stty "$saved_stty" 2>/dev/null || true' 0 1 2 3 15
-	stty -echo || return 1
-	IFS= read -r SECRET
-	stty "$saved_stty"
-	trap - 0 1 2 3 15
-	printf '\n'
-}
-
-wifi_save_profile()
-{
-	local ssid="$1" first="$2" raw temporary
-	require_root
-	ensure_config || return 1
-	have wpa_passphrase || die "wpa_passphrase is not installed"
-	[ -n "$ssid" ] || die "SSID must not be empty"
-	[ "${#first}" -ge 8 ] && [ "${#first}" -le 63 ] ||
-		die "passphrase must contain 8 to 63 characters"
-	raw="$(mktemp "${CONF_DIR}/wpa.raw.XXXXXX")" || return 1
-	temporary="$(mktemp "${WIFI_PROFILE}.tmp.XXXXXX")" || {
-		rm -f "$raw"
-		return 1
-	}
-	if ! printf '%s\n' "$first" | wpa_passphrase "$ssid" >"$raw"; then
-		first=''
-		rm -f "$raw" "$temporary"
-		return 1
-	fi
-	first=''
-	{
-		printf '%s\n' \
-			'ctrl_interface=/run/wpa_supplicant' \
-			'update_config=0' \
-			'ap_scan=1'
-		sed '/^[[:space:]]*#psk=/d' "$raw"
-	} >"$temporary"
-	rm -f "$raw"
-	chmod 0600 "$temporary" || {
-		rm -f "$temporary"
-		return 1
-	}
-	mv "$temporary" "$WIFI_PROFILE" || return 1
-	conf_set "$WIFI_CONF" enabled 1 || return 1
-	printf 'Wi-Fi profile saved in %s; plaintext passphrase was not retained.\n' \
-		"$WIFI_PROFILE"
-}
-
-wifi_configure()
-{
-	local ssid first second
-	printf 'SSID: '
-	IFS= read -r ssid
-	printf 'Passphrase (8-63 characters): '
-	read_secret || return 1
-	first="$SECRET"
-	printf 'Repeat passphrase: '
-	read_secret || return 1
-	second="$SECRET"
-	SECRET=''
-	[ "$first" = "$second" ] || die "passphrases do not match"
-	wifi_save_profile "$ssid" "$first"
-	first=''
-	second=''
-}
-
-bt_apply()
-{
-	local enabled index
-	require_root
-	ensure_config || return 1
-	enabled="$(conf_get "$BT_CONF" enabled 0)"
-	index="$(conf_get "$BT_CONF" index 0)"
-	valid_enabled "$enabled" && valid_index "$index" || {
-		warn "invalid Bluetooth policy in ${BT_CONF}"
-		return 1
-	}
-	[ -x /usr/sbin/s31-btstack-a2dp ] || {
-		warn "missing BTstack direct-HCI service"
-		return 1
-	}
-	if [ "$enabled" = 0 ]; then
-		[ -x /etc/init.d/S40btstack ] &&
-			/etc/init.d/S40btstack stop >/dev/null 2>&1 || true
-		have rfkill && rfkill block bluetooth 2>/dev/null || true
-		printf 'Bluetooth disabled.\n'
-		return 0
-	fi
-	# BLE is part of the single BTDM/BTstack host and cannot be independently
-	# disabled without creating a configuration that userspace cannot honor.
-	conf_set "$BT_CONF" le 1 || return 1
-	radio_prepare || {
-		warn "cannot enable the integrated radio overlay/module"
-		return 1
-	}
-	have rfkill && rfkill unblock bluetooth || true
-	/etc/init.d/S40btstack start || return 1
-	[ -r /run/s31-btstack-a2dp.pid ] &&
-		kill -0 "$(cat /run/s31-btstack-a2dp.pid)" 2>/dev/null || {
-		warn "BTstack A2DP sink did not remain running"
-		return 1
-	}
-	printf 'Bluetooth controller hci%s enabled in BTstack A2DP sink mode.\n' "$index"
-	return 0
-}
-
-bt_info()
-{
-	local index enabled
-	ensure_config || return 1
-	index="$(conf_get "$BT_CONF" index 0)"
-	enabled="$(conf_get "$BT_CONF" enabled 0)"
-	[ "$enabled" = 1 ] && printf 'Saved setting : Enabled\n' ||
-		printf 'Saved setting : Disabled\n'
-	printf 'Controller    : hci%s\n' "$index"
-	[ "$enabled" = 1 ] && printf 'Low Energy    : GAP/GATT peripheral enabled\n' ||
-		printf 'Low Energy    : Inactive with Bluetooth\n'
-	printf 'Backend       : BTstack direct-HCI A2DP + BLE\n'
-	if [ -r /run/s31-btstack-a2dp.pid ] &&
-	   kill -0 "$(cat /run/s31-btstack-a2dp.pid)" 2>/dev/null; then
-		printf 'Service       : Running\n'
-	else
-		printf 'Service       : Stopped\n'
-		return 1
-	fi
-}
-
-bt_scan()
-{
-	local enabled
-	require_root
-	ensure_config || return 1
-	enabled="$(conf_get "$BT_CONF" enabled 0)"
-	[ "$enabled" = 1 ] || die "Bluetooth policy is disabled; enable it first"
-	die "the compact BTstack host provides a BLE peripheral, not a scanner"
-}
-
-valid_hostname()
-{
-	[ "${#1}" -le 63 ] || return 1
-	case "$1" in
-		''|-*|*-|*..*|*[!A-Za-z0-9.-]* ) return 1 ;;
-	esac
-}
-
-system_apply()
-{
-	local configured_hostname
-	require_root
-	ensure_config || return 1
-	configured_hostname="$(conf_get "$SYSTEM_CONF" hostname esp32-s31)"
-	valid_hostname "$configured_hostname" || {
-		warn "invalid hostname in ${SYSTEM_CONF}"
-		return 1
-	}
-	hostname "$configured_hostname"
-}
-
-system_hostname()
-{
-	local requested="${1:-}"
-	require_root
-	ensure_config || return 1
-	if [ -z "$requested" ]; then
-		printf 'Hostname: '
-		IFS= read -r requested
-	fi
-	valid_hostname "$requested" || die "invalid hostname"
-	conf_set "$SYSTEM_CONF" hostname "$requested" || return 1
-	system_apply
-	printf 'Hostname set to %s.\n' "$requested"
-}
-
-valid_chip()
-{
-	local suffix
-	case "$1" in
-		gpiochip* ) suffix="${1#gpiochip}" ;;
-		* ) return 1 ;;
-	esac
-	valid_index "$suffix"
-}
-
-valid_line()
-{
-	case "$1" in
-		''|*[!0-9]* ) return 1 ;;
-	esac
-}
-
-safe_s31_line()
-{
-	local chip="$1" line="$2"
-	valid_chip "$chip" && valid_line "$line" || return 1
-	[ "$chip" = gpiochip0 ] || return 0
-	[ "$line" -lt 62 ] || return 1
-	case "$line" in
-		26|27|28|29|30|31|32|33|34|41|58|59 ) return 1 ;;
-	esac
-}
-
-gpio_get()
-{
-	local chip="$1" line="$2"
-	safe_s31_line "$chip" "$line" || die "unsafe or invalid GPIO line"
-	gpioinfo -c "$chip" "$line"
-	gpioget -c "$chip" "$line"
-}
-
-gpio_pulse_cleanup()
-{
-	local chip="$1" line="$2" pid="$3"
-	kill "$pid" 2>/dev/null || true
-	wait "$pid" 2>/dev/null || true
-	# This GPIO driver retains the last direction after a request is released.
-	# Briefly request the line as input so an output test cannot leave it driven.
-	gpioget -c "$chip" "$line" >/dev/null 2>&1
-}
-
-gpio_pulse()
-{
-	local chip="$1" line="$2" value="$3" seconds="${4:-3}" pid remaining
-	require_root
-	safe_s31_line "$chip" "$line" || die "unsafe or invalid GPIO line"
-	[ "$value" = 0 ] || [ "$value" = 1 ] || die "GPIO value must be 0 or 1"
-	case "$seconds" in
-		''|*[!0-9]* ) die "duration must be an integer" ;;
-	esac
-	[ "$seconds" -ge 1 ] && [ "$seconds" -le 30 ] ||
-		die "duration must be between 1 and 30 seconds"
-	gpioinfo -c "$chip" "$line" || return 1
-	printf 'Driving %s line %s to %s for %s seconds.\n' \
-		"$chip" "$line" "$value" "$seconds"
-	gpioset -c "$chip" -C esp32-config-test "${line}=${value}" &
-	pid=$!
-	trap 'gpio_pulse_cleanup "$chip" "$line" "$pid"' 0
-	trap 'exit 1' 1 2 3 15
-	sleep 1
-	if ! kill -0 "$pid" 2>/dev/null; then
-		gpio_pulse_cleanup "$chip" "$line" "$pid" || true
-		trap - 0 1 2 3 15
-		return 1
-	fi
-	remaining=$((seconds - 1))
-	[ "$remaining" -gt 0 ] && sleep "$remaining"
-	if ! gpio_pulse_cleanup "$chip" "$line" "$pid"; then
-		trap - 0 1 2 3 15
-		die "GPIO request released but the line could not be returned to input"
-	fi
-	trap - 0 1 2 3 15
-	printf 'GPIO request released; the line was returned to input.\n'
+	printf 'Hostname: %s\n\n' "$(hostname 2>/dev/null)"
+	maintenance_pending_message
+	system_time_status
+	printf '\nSTARTUP PROGRAM\n'
+	system_userapp_status
+	printf '\nNETWORK\n'
+	network_status
+	printf '\nBLUETOOTH\n'
+	bt_info
+	printf '\nINTERFACES\n'
+	s31-overlay status || true
+	printf '\nGPIO (current / saved)\n'
+	gpio_status || true
+	printf '\nMEMORY\n'
+	free
+	printf '\nSTORAGE\n'
+	storage_status
+	printf '\nUSB\n'
+	usb_status
 }
 
 apply_all()
 {
-	local result=0
-	system_apply || result=1
-	wifi_apply || result=1
-	# Apply both policies independently; a missing Wi-Fi profile must not keep
-	# the compact BTstack host from completing controller setup.
-	bt_apply || result=1
-	return "$result"
-}
-
-radio_reload_and_apply_all()
-{
-	# The single radio module cannot change controller ownership while either
-	# frontend is active.  Stop both users first, reload with the mode derived
-	# from the saved policy, then restore the enabled services.
-	wifi_stop || return 1
-	[ -x /etc/init.d/S40btstack ] &&
-		/etc/init.d/S40btstack stop >/dev/null 2>&1 || true
-	/etc/init.d/S00s31-radio restart || return 1
-	apply_all
-}
-
-show_status()
-{
+	local result=0 step code
+	require_root
 	ensure_config || return 1
-	printf 'SYSTEM\n'
-	printf 'Hostname      : %s\n' "$(hostname 2>/dev/null)"
-	printf 'Saved hostname: %s\n' "$(conf_get "$SYSTEM_CONF" hostname esp32-s31)"
-	printf 'Settings      : %s\n' "$CONF_DIR"
-	printf '\nWI-FI\n'
-	wifi_status
-	printf '\nBLUETOOTH\n'
-	bt_info 2>/dev/null || printf 'Controller unavailable.\n'
-	printf '\nHARDWARE INTERFACES\n'
-	s31-overlay status 2>/dev/null || printf 'Overlay manager unavailable.\n'
-}
-
-ui_prepare_terminal()
-{
-	local size rows columns
-	TERM="${TERM:-vt100}"
-	[ "$TERM" = dumb ] && TERM=vt100
-	size="$(stty size 2>/dev/null || true)"
-	rows="${size%% *}"
-	columns="${size#* }"
-	case "$rows" in ''|0|*[!0-9]*) rows=24 ;; esac
-	case "$columns" in ''|0|*[!0-9]*) columns=80 ;; esac
-	LINES="${LINES:-$rows}"
-	COLUMNS="${COLUMNS:-$columns}"
-	LC_ALL=C
-	LANG=C
-	NCURSES_NO_UTF8_ACS=1
-	export TERM LINES COLUMNS LC_ALL LANG NCURSES_NO_UTF8_ACS
-}
-
-ui_dialog()
-{
-	dialog --ascii-lines --no-shadow --backtitle 'ESP32-S31 Setup' "$@"
-}
-
-ui_wait_for_startup()
-{
-	local count=0
-	[ -e /run/rcS.log ] || return 0
-	[ -e /run/rcS.done ] && return 0
-	ui_dialog --title 'System startup' --infobox \
-		'Finishing system startup. Please wait...' 6 58
-	while [ ! -e /run/rcS.done ] && [ "$count" -lt 45 ]; do
-		sleep 1
-		count=$((count + 1))
+	# Radio reconfiguration owns its Bluetooth-before-Wi-Fi ordering. This does
+	# not run the user application or replace the active DT overlay collection.
+	for step in system_apply system_extra_apply radio_reload_and_apply_all gpio_apply usb_apply storage_apply; do
+		"$step"
+		code=$?
+		case "$code" in
+			0) ;;
+			2) [ "$result" -ne 0 ] || result=2 ;;
+			*) result=1 ;;
+		esac
 	done
-	[ -e /run/rcS.done ] || ui_dialog --title 'System startup' --msgbox \
-		'Startup is taking longer than expected. You may continue, or inspect /run/rcS.log for details.' 9 68
-}
-
-ui_error()
-{
-	ui_dialog --title 'Something went wrong' --msgbox "$1" 9 66
-}
-
-ui_show_command()
-{
-	local title="$1" output clean result
-	shift
-	output="$(mktemp "${RUN_DIR}/dialog.XXXXXX")" || return 1
-	clean="${output}.clean"
-	# Run in a subshell so a validation helper can abort one action without
-	# terminating the dialog session itself.
-	( "$@" ) >"$output" 2>&1
-	result=$?
-	sanitize_output "$output" "$clean"
-	if [ ! -s "$clean" ]; then
-		printf '%s\n' 'No information was returned.' >"$clean"
-	fi
-	if [ "$result" -ne 0 ]; then
-		printf '\nThe operation did not complete (error %s).\n' "$result" >>"$clean"
-	fi
-	ui_dialog --title "$title" --exit-label Back --textbox "$clean" 20 74
-	rm -f "$output" "$clean"
 	return "$result"
-}
-
-ui_run_action()
-{
-	local title="$1" busy="$2" success="$3" output clean result
-	shift 3
-	output="$(mktemp "${RUN_DIR}/action.XXXXXX")" || return 1
-	clean="${output}.clean"
-	ui_dialog --title "$title" --infobox "$busy" 6 62
-	( "$@" ) >"$output" 2>&1
-	result=$?
-	sanitize_output "$output" "$clean"
-	if [ "$result" -eq 0 ]; then
-		ui_dialog --title "$title" --msgbox "$success" 8 64
-	else
-		{
-			printf '%s\n\n' 'The operation could not be completed.'
-			[ -s "$clean" ] && cat "$clean"
-		} >"${clean}.message"
-		mv "${clean}.message" "$clean"
-		ui_dialog --title "$title - details" --exit-label Back --textbox "$clean" 20 74
-	fi
-	rm -f "$output" "$clean"
-	return "$result"
-}
-
-wifi_setup_wizard()
-{
-	local ssid first second current
-	current="$(wpa_cli -p /run/wpa_supplicant -i \
-		"$(conf_get "$WIFI_CONF" interface wlan0)" status 2>/dev/null |
-		sed -n 's/^ssid=//p')"
-	ssid="$(ui_dialog --stdout --title 'Wi-Fi network' --inputbox \
-		'Enter the Wi-Fi network name (SSID).' 9 64 "$(display_ascii "$current")")" || return
-	[ -n "$ssid" ] || { ui_error 'The network name cannot be empty.'; return; }
-	first="$(ui_dialog --stdout --title 'Wi-Fi password' --insecure --passwordbox \
-		'Enter the password (8 to 63 characters).' 9 64)" || return
-	second="$(ui_dialog --stdout --title 'Confirm Wi-Fi password' --insecure --passwordbox \
-		'Enter the same password again.' 9 64)" || { first=''; return; }
-	if [ "$first" != "$second" ]; then
-		first=''
-		second=''
-		ui_error 'The two passwords do not match. Nothing was changed.'
-		return
-	fi
-	if ui_run_action 'Save Wi-Fi network' \
-		'Saving the network securely...' \
-		'The network was saved. The plain-text password was not stored.' \
-		wifi_save_profile "$ssid" "$first"; then
-		first=''
-		second=''
-		if ui_dialog --title 'Connect now?' --yesno \
-			'Connect to this network and request an IP address now?' 9 64; then
-			ui_run_action 'Connect Wi-Fi' \
-				'Connecting. This can take up to 35 seconds...' \
-				'Wi-Fi is connected and the setting will be restored at boot.' \
-				wifi_apply
-		fi
-	else
-		first=''
-		second=''
-	fi
-}
-
-wifi_menu()
-{
-	local choice
-	while :; do
-		choice="$(ui_dialog --stdout --title 'Wi-Fi' --cancel-label Back \
-			--menu 'Choose an action. Saved settings are restored at boot.' 18 72 8 \
-			1 'Set network name and password' \
-			2 'Scan for nearby networks' \
-			3 'Turn Wi-Fi on' \
-			4 'Turn Wi-Fi off' \
-			5 'View Wi-Fi status')" || return
-		case "$choice" in
-			1 ) wifi_setup_wizard ;;
-			2 ) ui_dialog --title 'Wi-Fi scan' --infobox 'Scanning for nearby networks...' 6 54; ui_show_command 'Nearby Wi-Fi networks' wifi_scan ;;
-			3 ) conf_set "$WIFI_CONF" enabled 1; ui_run_action 'Turn Wi-Fi on' 'Reloading the radio and connecting. This can take up to 35 seconds...' 'Wi-Fi is on and will be enabled at boot.' radio_reload_and_apply_all ;;
-			4 )
-				if ui_dialog --title 'Turn Wi-Fi off?' --yesno \
-					'This disconnects the current Wi-Fi network. Continue?' 9 62; then
-					conf_set "$WIFI_CONF" enabled 0
-					ui_run_action 'Turn Wi-Fi off' 'Reloading the radio without Wi-Fi...' 'Wi-Fi is off and will stay off after reboot.' radio_reload_and_apply_all
-				fi
-				;;
-			5 ) ui_show_command 'Wi-Fi status' wifi_status ;;
-		esac
-	done
-}
-
-bt_menu()
-{
-	local choice
-	while :; do
-		choice="$(ui_dialog --stdout --title 'Bluetooth' --cancel-label Back \
-			--menu 'Choose an action. Saved settings are restored at boot.' 17 72 7 \
-			1 'Turn Bluetooth on' \
-			2 'Turn Bluetooth off' \
-			3 'View BLE peripheral details' \
-			4 'View Bluetooth status')" || return
-		case "$choice" in
-			1 ) conf_set "$BT_CONF" enabled 1; ui_run_action 'Turn Bluetooth on' 'Reloading the radio and starting Bluetooth...' 'Bluetooth is on and will be enabled at boot.' radio_reload_and_apply_all ;;
-			2 )
-				if ui_dialog --title 'Turn Bluetooth off?' --yesno 'Disconnect Bluetooth devices and turn the controller off?' 9 64; then
-					conf_set "$BT_CONF" enabled 0
-					ui_run_action 'Turn Bluetooth off' 'Reloading the radio without Bluetooth...' 'Bluetooth is off and will stay off after reboot.' radio_reload_and_apply_all
-				fi
-				;;
-			3 ) ui_show_command 'BLE peripheral details' bt_info ;;
-			4 ) ui_show_command 'Bluetooth status' bt_info ;;
-		esac
-	done
-}
-
-ui_choose_profile()
-{
-	local source="$1" title="$2" profiles count profile selected
-	profiles="$(mktemp "${RUN_DIR}/profiles.XXXXXX")" || return 1
-	case "$source" in
-		available ) s31-overlay list >"$profiles" 2>/dev/null ;;
-		active )
-			s31-overlay status 2>/dev/null |
-				sed -n 's/^active: \([^[:space:]]*\).*/\1/p' >"$profiles"
-			;;
-		*) rm -f "$profiles"; return 1 ;;
-	esac
-	set -- --stdout --title "$title" --cancel-label Back --menu \
-		'Select an interface profile.' 18 70 9
-	count=0
-	while IFS= read -r profile; do
-		[ -n "$profile" ] || continue
-		set -- "$@" "$profile" "Use the ${profile} profile"
-		count=$((count + 1))
-	done <"$profiles"
-	rm -f "$profiles"
-	if [ "$source" = active ] && [ "$count" -gt 1 ]; then
-		set -- "$@" all 'Disable every active interface profile'
-	fi
-	[ "$count" -gt 0 ] || {
-		ui_error "No ${source} interface profiles were found."
-		return 1
-	}
-	selected="$(ui_dialog "$@")" || return 1
-	[ "$source" = active ] && [ "$selected" = all ] && selected=--all
-	printf '%s\n' "$selected"
-}
-
-overlay_choices()
-{
-	local name="$1" found=0
-	if s31-overlay routes "$name" 2>/dev/null; then
-		found=1
-	fi
-	if s31-overlay parameters "$name" 2>/dev/null; then
-		found=1
-	fi
-	[ "$found" -eq 1 ]
-}
-
-overlay_menu()
-{
-	local choice specification name routes parameters bus_width current_width custom_routes
-	while :; do
-		choice="$(ui_dialog --stdout --title 'Hardware Interfaces' --cancel-label Back \
-			--menu 'Configure optional peripherals, parameters, and GPIO routes.' 18 74 8 \
-			1 'View the current hardware setup' \
-			2 'List available interface profiles' \
-			3 'Show configurable choices for a profile' \
-			4 'Enable an interface profile' \
-			5 'Disable an interface profile')" || return
-		case "$choice" in
-			1 ) ui_show_command 'Current hardware setup' s31-overlay status ;;
-			2 ) ui_show_command 'Available interface profiles' s31-overlay list ;;
-			3 )
-				name="$(ui_choose_profile available 'Choose an interface')" || continue
-				ui_show_command 'Configurable choices' overlay_choices "$name"
-				;;
-			4 )
-				name="$(ui_choose_profile available 'Enable an interface')" || continue
-				routes="$(s31-overlay routes "$name" 2>/dev/null || true)"
-				parameters="$(s31-overlay parameters "$name" 2>/dev/null || true)"
-				specification=''
-				if printf '%s\n' "$parameters" | grep -q '^bus-width='; then
-					current_width="$(printf '%s\n' "$parameters" |
-						sed -n 's/^bus-width=\([0-9][0-9]*\).*/\1/p' | head -n 1)"
-					case "$current_width" in 1|4) ;; *) current_width=4 ;; esac
-					bus_width="$(ui_dialog --stdout --default-item "$current_width" \
-						--title 'SDMMC bus width' --cancel-label Back \
-						--menu 'Choose the width that matches the connected data wires.' 13 70 4 \
-						1 '1-bit: CLK, CMD, and DAT0' \
-						4 '4-bit: CLK, CMD, and DAT0-DAT3')" || continue
-					specification="bus-width=${bus_width}"
-				fi
-				if [ -n "$routes" ] && ! ui_dialog --title 'Use default GPIO pins?' --yesno \
-					"Use the default GPIO assignments for ${name}?\n\nChoose No only if you need different pins." 11 68; then
-					ui_show_command "GPIO choices for ${name}" s31-overlay routes "$name"
-					custom_routes="$(ui_dialog --stdout --title 'Custom GPIO pins' --inputbox \
-						'Enter only overrides, for example: tx=35 rx=36' 10 68)" || continue
-					specification="${specification}${specification:+ }${custom_routes}"
-				fi
-				set -- "$name"
-				if [ -n "$specification" ]; then
-					set -f
-					set -- "$@" $specification
-					set +f
-				fi
-				ui_run_action 'Enable interface' 'Checking pins and applying the profile...' \
-					'The interface is enabled and will be restored at boot.' s31-overlay apply "$@"
-				;;
-			5 )
-				name="$(ui_choose_profile active 'Disable an interface')" || continue
-				if ui_dialog --title 'Disable interface?' --yesno \
-					"Disable ${name}? Programs using it may stop working." 9 66; then
-					ui_run_action 'Disable interface' 'Removing the interface profile...' \
-						'The interface profile was removed.' s31-overlay remove "$name"
-				fi
-				;;
-		esac
-	done
-}
-
-gpio_menu()
-{
-	local choice chip line value seconds
-	while :; do
-		choice="$(ui_dialog --stdout --title 'GPIO Test' --cancel-label Back \
-			--menu 'GPIO output tests are temporary and return the pin to input.' 18 74 8 \
-			1 'List GPIO controllers' \
-			2 'View lines and their current use' \
-			3 'Read one GPIO input' \
-			4 'Run a short GPIO output test')" || return
-		case "$choice" in
-			1 ) ui_show_command 'GPIO controllers' gpiodetect ;;
-			2 )
-				chip="$(ui_dialog --stdout --title 'GPIO lines' --inputbox 'Controller name' 9 54 gpiochip0)" || continue
-				valid_chip "$chip" || { ui_error 'Use a controller name such as gpiochip0.'; continue; }
-				ui_show_command 'GPIO lines' gpioinfo -c "$chip"
-				;;
-			3 )
-				chip="$(ui_dialog --stdout --title 'Read GPIO input' --inputbox 'Controller name' 9 54 gpiochip0)" || continue
-				line="$(ui_dialog --stdout --title 'Read GPIO input' --inputbox 'GPIO line number' 9 54)" || continue
-				ui_show_command 'GPIO input value' gpio_get "$chip" "$line"
-				;;
-			4 )
-				chip="$(ui_dialog --stdout --title 'GPIO output test' --inputbox 'Controller name' 9 54 gpiochip0)" || continue
-				line="$(ui_dialog --stdout --title 'GPIO output test' --inputbox 'GPIO line number' 9 54)" || continue
-				value="$(ui_dialog --stdout --title 'GPIO output test' --menu 'Choose the output level.' 12 52 3 0 'Low (0 volts)' 1 'High (3.3 volts)')" || continue
-				seconds="$(ui_dialog --stdout --title 'GPIO output test' --inputbox 'Test duration in seconds (1 to 30)' 9 56 3)" || continue
-				if ui_dialog --title 'Confirm GPIO output' --yesno \
-					"Drive ${chip} line ${line} ${value} for ${seconds} seconds?\n\nCheck your wiring before continuing." 11 64; then
-					ui_run_action 'GPIO output test' 'Running the bounded output test...' \
-						'The test finished and the GPIO line was returned to input.' \
-						gpio_pulse "$chip" "$line" "$value" "$seconds"
-				fi
-				;;
-		esac
-	done
-}
-
-system_menu()
-{
-	local choice requested
-	while :; do
-		choice="$(ui_dialog --stdout --title 'System Options' --cancel-label Back \
-			--menu 'Change the name used to identify this board.' 14 66 5 \
-			1 'Change the hostname' \
-			2 'View the current hostname')" || return
-		case "$choice" in
-			2 ) ui_show_command 'Hostname' sh -c \
-				'printf "Runtime: %s\nConfigured: %s\n" "$(hostname)" "$(sed -n "s/^hostname=//p" "$1")"' sh "$SYSTEM_CONF" ;;
-			1 )
-				requested="$(ui_dialog --stdout --title 'Change hostname' --inputbox \
-					'Use letters, numbers, dots or hyphens.' 9 60 \
-					"$(conf_get "$SYSTEM_CONF" hostname esp32-s31)")" || continue
-				ui_run_action 'Change hostname' 'Applying the new hostname...' \
-					"The hostname is now ${requested} and will be restored at boot." \
-					system_hostname "$requested"
-				;;
-		esac
-	done
-}
-
-help_page()
-{
-	ui_dialog --title 'About esp32-config' --msgbox \
-		'Use Up/Down to select an item, Enter to open it, and Esc to go back.\n\nChanges marked as saved are restored automatically at boot. Wi-Fi passwords are stored only as derived keys. GPIO output tests are temporary and safety-bounded.\n\nAdvanced command-line controls remain available through: esp32-config --help' \
-		16 72
 }
 
 main_menu()
 {
 	local choice
-	require_root
-	ensure_config || die "cannot initialize ${CONF_DIR}"
-	have dialog || die "dialog is not installed"
-	[ -t 0 ] && [ -t 1 ] && [ -t 2 ] || die "interactive menu requires a terminal"
-	ui_prepare_terminal
-	ui_wait_for_startup
 	while :; do
 		choice="$(ui_dialog --stdout --clear --title 'ESP32-S31 Configuration' \
-			--cancel-label Finish --menu 'Use arrow keys to choose an option, then press Enter.' 21 76 10 \
-			1 'System Options       Change the board name' \
-			2 'Wireless LAN         Set up or control Wi-Fi' \
-			3 'Bluetooth            Enable, disable or scan' \
-			4 'Hardware Interfaces  Configure peripherals and pins' \
-			5 'GPIO Test            Safely inspect and test GPIO' \
-			6 'System Status        View a simple status summary' \
-			7 'Apply Saved Settings Apply all settings now' \
-			8 'About                 Help and safety information')" || break
+			--cancel-label Finish --menu \
+			"$(display_ascii "$(hostname 2>/dev/null)")\nChoose a setting. Changes are saved when you apply them.\n$(maintenance_pending_message)${UI_NOTICE:+\n$UI_NOTICE}" 20 76 6 \
+			1 'System            Hostname, password, time, startup program' \
+			2 'Network           Wi-Fi, IPv4 address and DNS' \
+			3 'Bluetooth         Radio, device name and saved pairings' \
+			4 'Interfaces        Peripherals, GPIO and USB' \
+			5 'Memory & storage  Swap and removable storage' \
+			6 'Maintenance       Backup, restore and reset settings')" || return 0
+		UI_NOTICE=''
 		case "$choice" in
-			1 ) system_menu ;;
-			2 ) wifi_menu ;;
-			3 ) bt_menu ;;
-			4 ) overlay_menu ;;
-			5 ) gpio_menu ;;
-			6 ) ui_show_command 'System status' show_status ;;
-			7 ) ui_run_action 'Apply saved settings' \
-				'Applying settings. Network changes can take up to 40 seconds...' \
-				'All saved settings were applied successfully.' apply_all ;;
-			8 ) help_page ;;
+			1) system_menu ;;
+			2) network_menu ;;
+			3) bt_menu ;;
+			4) interfaces_menu ;;
+			5) storage_menu ;;
+			6) maintenance_menu ;;
 		esac
 	done
+}
+
+run_menu()
+{
+	require_root
+	ensure_config || die "cannot initialize $CONF_DIR"
+	have dialog || die 'dialog is not installed'
+	[ -t 0 ] && [ -t 1 ] && [ -t 2 ] || die 'interactive menu requires a terminal'
+	ui_prepare_terminal
+	ui_wait_for_startup
+	"$1"
 	ui_dialog --clear
 	printf '\033[2J\033[H'
 }
 
 usage()
 {
-	cat <<'EOF'
+	cat <<'HELP'
 Usage:
-  esp32-config                         interactive menu
+  esp32-config                         interactive configuration menu
   esp32-config status
-  esp32-config apply [all|system|wifi|bluetooth]
-  esp32-config stop
+  esp32-config apply [all|system|wifi|bluetooth|gpio|storage|usb]
+  esp32-config stop                     stop managed Wi-Fi clients
   esp32-config system hostname [NAME]
-  esp32-config wifi status|scan|configure|enable|disable
-  esp32-config bluetooth info|scan|enable|disable
+  esp32-config system password
+  esp32-config system time status|sync|set 'YYYY-MM-DD HH:MM:SS'
+  esp32-config system time configure ZONE NTP_ENABLED SERVER
+  esp32-config system autostart status|enable|disable|start|stop
+  esp32-config system autostart configure EXECUTABLE [ARG ...]
+  esp32-config wifi status|scan|configure|enable|disable|forget
+  esp32-config wifi connect SSID [psk|open]
+  esp32-config wifi configure-hex SSID_HEX [psk|open]
+  esp32-config network status
+  esp32-config network dhcp [auto|manual [DNS ...]]
+  esp32-config network static ADDRESS PREFIX GATEWAY_OR_- [DNS ...]
+  esp32-config bluetooth status|info|enable|disable|restart|clear-pairings
+  esp32-config bluetooth name [NAME]
+  esp32-config gpio list|apply|reset
+  esp32-config gpio set LINE application|low|high
+  esp32-config gpio set LINE input [none|up|down]
+  esp32-config gpio read LINE
+  esp32-config storage status|mount|unmount
+  esp32-config storage swap enable DEVICE_OR_UUID
+  esp32-config storage swap disable
+  esp32-config storage configure DEVICE_OR_UUID PATH AUTOSTART READONLY
+  esp32-config storage autostart 0|1
+  esp32-config usb status
+  esp32-config usb configure host|serial|network [SERIAL_LOGIN [IP/PREFIX]]
+  esp32-config maintenance backup|restore ARCHIVE.tar
+  esp32-config maintenance reset SECTION
   esp32-config overlay COMMAND [ARG ...]
+
+Use SECTION menu to open a category directly (system, network, wifi,
+bluetooth, interfaces, gpio, storage, usb, maintenance).
+
+Wi-Fi connect reads one password from standard input; open networks do
+not need a password. The legacy nonterminal wifi configure command reads
+SSID, password and confirmation on three lines and only saves the profile.
+Persistent settings are in /etc/esp32-conf. Restore/reset take effect at
+restart. Applying all settings does not start the configured user program.
+
+Legacy diagnostic commands remain available outside the configuration menu:
   esp32-config gpio info [CHIP]
   esp32-config gpio get CHIP LINE
   esp32-config gpio pulse CHIP LINE VALUE [SECONDS]
-
-Persistent files are stored in /etc/esp32-conf. GPIO output tests are
-bounded to 30 seconds and are never persisted.
-EOF
+HELP
 }
 
-case "${1:-}" in
-	''|menu ) main_menu ;;
-	status ) show_status ;;
-	apply )
-		case "${2:-all}" in
-			all ) apply_all ;;
-			system ) system_apply ;;
-			wifi ) wifi_apply ;;
-			bluetooth|bt ) bt_apply ;;
-			* ) usage; exit 2 ;;
-		esac
-		;;
-	stop ) wifi_stop ;;
-	system )
-		case "${2:-}" in
-			hostname ) system_hostname "${3:-}" ;;
-			* ) usage; exit 2 ;;
-		esac
-		;;
-	wifi )
-		case "${2:-}" in
-			status ) wifi_status ;;
-			scan ) wifi_scan ;;
-			configure ) wifi_configure ;;
-			enable ) ensure_config && conf_set "$WIFI_CONF" enabled 1 && radio_reload_and_apply_all ;;
-			disable ) ensure_config && conf_set "$WIFI_CONF" enabled 0 && radio_reload_and_apply_all ;;
-			* ) usage; exit 2 ;;
-		esac
-		;;
-	bluetooth|bt )
-		case "${2:-}" in
-			info ) bt_info ;;
-			scan ) bt_scan ;;
-			enable ) ensure_config && conf_set "$BT_CONF" enabled 1 && radio_reload_and_apply_all ;;
-			disable ) ensure_config && conf_set "$BT_CONF" enabled 0 && radio_reload_and_apply_all ;;
-			* ) usage; exit 2 ;;
-		esac
-		;;
-	overlay )
-		shift
-		[ "$#" -gt 0 ] || { usage; exit 2; }
-		s31-overlay "$@"
-		;;
-	gpio )
-		case "${2:-}" in
-			info )
+command="${1:-menu}"
+[ "$#" -eq 0 ] || shift
+case "$command" in
+	-h|--help|help) usage; exit 0 ;;
+	menu) [ "$#" -eq 0 ] || { usage; exit 2; }; run_menu main_menu; exit $? ;;
+esac
+# Configuration can contain credentials and these commands can affect hardware.
+require_root
+if [ "${1:-}" = menu ]; then
+	[ "$#" -eq 1 ] || { usage; exit 2; }
+	case "$command" in
+		system) run_menu system_menu ;; network) run_menu network_menu ;;
+		wifi) run_menu wifi_menu ;; bluetooth|bt) run_menu bt_menu ;;
+		interfaces) run_menu interfaces_menu ;; gpio) run_menu gpio_menu ;;
+		storage) run_menu storage_menu ;; usb) run_menu usb_menu ;;
+		maintenance) run_menu maintenance_menu ;;
+		*) usage; exit 2 ;;
+	esac
+	exit $?
+fi
+case "$command" in
+	status) [ "$#" -eq 0 ] || { usage; exit 2; }; show_status ;;
+	apply)
+		[ "$#" -le 1 ] || { usage; exit 2; }
+		ensure_config || exit 1
+		case "${1:-all}" in
+			all) apply_all ;;
+			system) system_apply && system_extra_apply ;;
+			wifi) wifi_apply ;;
+			bluetooth|bt) bt_apply ;;
+			gpio) gpio_apply ;;
+			storage) storage_apply ;;
+			usb) usb_apply ;;
+			*) usage; exit 2 ;;
+		esac ;;
+	stop) [ "$#" -eq 0 ] || { usage; exit 2; }; wifi_stop ;;
+	system) system_cli "$@" ;;
+	wifi) wifi_cli "$@" ;;
+	network) network_cli "$@" ;;
+	bluetooth|bt) bluetooth_cli "$@" ;;
+	gpio)
+		case "${1:-}" in
+			info)
+				[ "$#" -le 2 ] || { usage; exit 2; }
 				gpiodetect
-				if [ "$#" -ge 3 ]; then
-					valid_chip "$3" || die "invalid GPIO chip"
-					gpioinfo -c "$3"
-				fi
-				;;
-			get ) [ "$#" -eq 4 ] || { usage; exit 2; }; gpio_get "$3" "$4" ;;
-			pulse ) [ "$#" -ge 5 ] && [ "$#" -le 6 ] || { usage; exit 2; }; gpio_pulse "$3" "$4" "$5" "${6:-3}" ;;
-			* ) usage; exit 2 ;;
-		esac
-		;;
-	-h|--help|help ) usage ;;
-	* ) usage; exit 2 ;;
+				if [ "$#" -ge 2 ]; then valid_chip "$2" || die 'invalid GPIO chip'; gpioinfo -c "$2"; fi ;;
+			get) [ "$#" -eq 3 ] || { usage; exit 2; }; gpio_get "$2" "$3" ;;
+			pulse) [ "$#" -ge 4 ] && [ "$#" -le 5 ] || { usage; exit 2; }; gpio_pulse "$2" "$3" "$4" "${5:-3}" ;;
+			*) gpio_cli "$@" ;;
+		esac ;;
+	storage) storage_cli "$@" ;;
+	usb) usb_cli "$@" ;;
+	maintenance) maintenance_cli "$@" ;;
+	overlay) [ "$#" -gt 0 ] || { usage; exit 2; }; s31-overlay "$@" ;;
+	*) usage; exit 2 ;;
 esac

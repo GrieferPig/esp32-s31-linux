@@ -5,6 +5,7 @@ wifi_status=/proc/device-tree/soc/radio/wifi/status
 bluetooth_status=/proc/device-tree/soc/radio/bluetooth/status
 module_name=esp32s31_radio
 overlay_option=
+config_dir="${ESP32_CONFIG_DIR:-/etc/esp32-conf}"
 
 case "${S31_RADIO_VOLATILE_MODE:-}" in
 wifi|bt|combo) overlay_option=--volatile ;;
@@ -70,8 +71,8 @@ start_radio()
 	bt) bluetooth=1 ;;
 	combo) wifi=1; bluetooth=1 ;;
 	*)
-		setting_enabled /etc/esp32-conf/wifi.conf && wifi=1
-		setting_enabled /etc/esp32-conf/bluetooth.conf && bluetooth=1
+		setting_enabled "$config_dir/wifi.conf" && wifi=1
+		setting_enabled "$config_dir/bluetooth.conf" && bluetooth=1
 		;;
 	esac
 	node_enabled "$wifi_status" && have_wifi=1

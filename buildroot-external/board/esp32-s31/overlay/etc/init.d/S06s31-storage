@@ -5,8 +5,8 @@ libdir="${ESP32_CONFIG_LIB_DIR:-/usr/lib/esp32-config}"
 . "$libdir/storage.sh"
 
 case "${1:-}" in
-    start) storage_swap_apply 1 ;;
-    stop) storage_swap_stop ;;
-    restart) storage_swap_stop && storage_swap_apply 1 ;;
+    start) storage_mount_apply 1 ;;
+    stop) storage_mount_stop ;;
+    restart) storage_mount_stop && storage_mount_apply 1 ;;
     *) echo "Usage: $0 {start|stop|restart}" >&2; exit 2 ;;
 esac

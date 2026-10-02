@@ -163,6 +163,22 @@ chmod 0600 "$config_dir"/*.conf 2>/dev/null || true
 rm -f /etc/init.d/S03s31-overlay /etc/init.d/S04s31-radio \
 	/etc/init.d/S35esp32-config
 
+# Managed USB mode replaces the older raw usb-device overlay selection. Keep
+# one persistent owner so an old selection cannot re-enable gadget mode before
+# swap and storage start. Preserve every unrelated overlay entry.
+if [ -f "$config_dir/usb.conf" ] && [ -f "$config_dir/overlays.conf" ]; then
+	usb_migration="$(mktemp "$config_dir/overlays.conf.XXXXXX")"
+	if [ -n "$usb_migration" ] &&
+	   sed '/^overlay\.usb-device=/d' "$config_dir/overlays.conf" >"$usb_migration" &&
+	   chmod 0600 "$usb_migration" &&
+	   mv "$usb_migration" "$config_dir/overlays.conf"; then
+		:
+	else
+		rm -f "$usb_migration"
+		echo 'Could not migrate the saved USB mode' >&2
+	fi
+fi
+
 # Restore the persisted DT overlay before loading the composite module.  The
 # selection is recorded in /run for diagnostics and all later policy calls.
 /usr/sbin/s31-overlay restore ||

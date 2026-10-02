@@ -1,0 +1,47 @@
+#!/bin/sh
+# Restore GPIO after the overlay and radio startup scripts.
+
+CONF_DIR="${ESP32_CONFIG_DIR:-/etc/esp32-conf}"
+RUN_DIR="${ESP32_CONFIG_RUN_DIR:-/run/esp32-config}"
+export ESP32_CONFIG_DIR="$CONF_DIR" ESP32_CONFIG_RUN_DIR="$RUN_DIR"
+
+start_manager()
+{
+	local count=0
+	s31-gpio ping >/dev/null 2>&1 && return 0
+	umask 077
+	mkdir -p "$CONF_DIR" "$RUN_DIR" || return 1
+	chmod 0700 "$CONF_DIR" "$RUN_DIR" || return 1
+	(trap '' HUP; exec s31-gpio serve) </dev/null >>"${RUN_DIR}/gpio.log" 2>&1 &
+	while [ "$count" -lt 3 ]; do
+		s31-gpio ping >/dev/null 2>&1 && return 0
+		sleep 1
+		count=$((count + 1))
+	done
+	cat "${RUN_DIR}/gpio.log" >&2
+	return 1
+}
+
+case "${1:-}" in
+	start )
+		# No resident helper is needed on a board with no GPIO assignments.
+		[ -f "${CONF_DIR}/gpio.conf" ] || exit 0
+		s31-gpio check "${CONF_DIR}/gpio.conf" || exit 1
+		awk '$1 !~ /^#/ && ($2 == "input" || $2 == "low" || $2 == "high") {found=1} END {exit !found}' \
+			"${CONF_DIR}/gpio.conf" || exit 0
+		start_manager && s31-gpio apply
+		;;
+	ensure ) start_manager ;;
+	stop )
+		s31-gpio ping >/dev/null 2>&1 || exit 0
+		s31-gpio stop || exit 1
+		count=0
+		while s31-gpio ping >/dev/null 2>&1; do
+			[ "$count" -lt 3 ] || exit 1
+			sleep 1
+			count=$((count + 1))
+		done
+		;;
+	reload|restart ) start_manager && s31-gpio apply ;;
+	* ) echo "Usage: $0 {start|stop|reload|restart|ensure}" >&2; exit 1 ;;
+esac

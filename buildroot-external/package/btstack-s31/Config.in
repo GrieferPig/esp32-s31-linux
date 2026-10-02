@@ -10,11 +10,3 @@ config BR2_PACKAGE_BTSTACK_S31
 	  BTstack is licensed for personal/non-commercial use. Commercial use
 	  requires a separate license from BlueKitchen GmbH. This package is
 	  therefore intended only for experimental non-commercial images.
-
-config BR2_PACKAGE_BTSTACK_S31_OPTIMIZE_O2
-	bool "optimize the BTstack appliance for throughput (-O2)"
-	depends on BR2_PACKAGE_BTSTACK_S31
-	help
-	  Compile only the small BTstack userspace appliance with -O2 for
-	  controlled CPU/size A/B measurements. The default remains -Os until
-	  the on-board A2DP acceptance run proves a net benefit.

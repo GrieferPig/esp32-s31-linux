@@ -21,7 +21,6 @@ TOOLCHAIN_RELEASE_DOWNLOAD_BASE ?= https://github.com/$(TOOLCHAIN_RELEASE_REPOSI
 CROSS_COMPILE := $(TOOLCHAIN_PREFIX)/bin/riscv32-esp-linux-musl-
 CC := $(CROSS_COMPILE)gcc
 JOBS ?= $(shell nproc)
-S31_BTSTACK_O2 ?= 0
 
 # Keep ordinary userspace on scalar RISC-V/FPU/Zb code.  Xesploop state is
 # preserved for explicit tests, but it cannot be safely left live across all
@@ -151,7 +150,7 @@ OPENSBI_CONFIG_STAMP := $(OPENSBI_OUT)/.s31-link-config
 opensbi: toolchain | $(OPENSBI_OUT)
 	@echo "--- OpenSBI ---"
 	@set -eu; \
-	desired='FW_TEXT_START=$(FW_TEXT_START) FW_RW_START=$(FW_RW_START) ISA=$(S31_SAFE_ISA)'; \
+	desired='FW_TEXT_START=$(FW_TEXT_START) FW_RW_START=$(FW_RW_START) ISA=$(S31_SAFE_ISA) OPT=-Os'; \
 	actual=$$(cat "$(OPENSBI_CONFIG_STAMP)" 2>/dev/null || true); \
 	if [ "$$actual" != "$$desired" ]; then \
 		echo "OpenSBI link configuration changed; rebuilding its output tree"; \
@@ -212,9 +211,9 @@ radio-idf-deps: idf-check
 		-D 'SDKCONFIG_DEFAULTS=$(RADIO_IDF_DEPS_DIR)/sdkconfig.defaults;$(RADIO_IDF_DEPS_DIR)/sdkconfig.radio.defaults' \
 		reconfigure && \
 		targets=\$$(comm -12 \
-			<(sed -n 's|^\(esp-idf/.*\\.a\)$$|\1|p' ../boot_link.txt | sort -u) \
+			<(sed -n 's|^\(esp-idf/.*\.a\)$$|\1|p' <(tr -d '\r' < ../boot_link.txt) | sort -u) \
 			<(ninja -C build-radio -t targets all | \
-			  sed -n 's|^\(esp-idf/.*\\.a\):.*|\1|p' | sort -u)) && \
+			  sed -n 's|^\(esp-idf/.*\.a\):.*|\1|p' | sort -u)) && \
 		test -n \"\$$targets\" && \
 		ninja -C build-radio -j$(JOBS) \$$targets"
 
@@ -234,6 +233,9 @@ radio-linux-payload: radio-idf-deps
 	$(MAKE) -C $(CURDIR)/firmware/radio IDF_ROOT="$(IDF_ROOT)" IDF_EXPORT="$(IDF_EXPORT)" \
 		IDF_DEPS_DIR="$(RADIO_IDF_DEPS_DIR)" \
 		S31_WIFI_ONLY=0 linux-kbuild
+	# Retain external XIP payload imports when trimming unused kernel exports.
+	$(CROSS_COMPILE)nm --undefined-only firmware/radio/linux_radio.localized.o | \
+		awk '{print $$NF}' | sort -u > $(BUILD_DIR)/radio-kernel-symbols.txt
 
 radio-module: linux
 	@test -f "$(LINUX_OUT)/drivers/platform/esp32s31-radio.ko"
@@ -355,8 +357,12 @@ linux: check-layout toolchain radio-linux-payload | $(LINUX_OUT)
 	$(LINUX_DIR)/scripts/config --file $(LINUX_OUT)/.config \
 		--enable BT_ESP32S31 --enable ESP32S31_WIFI
 	$(LINUX_DIR)/scripts/config --file $(LINUX_OUT)/.config \
-		--enable MAC80211 --enable ESP32S31_WIFI_SOFTMAC \
-		--enable CC_OPTIMIZE_FOR_PERFORMANCE --disable CC_OPTIMIZE_FOR_SIZE
+		--enable MAC80211 --enable ESP32S31_WIFI_SOFTMAC
+	$(LINUX_DIR)/scripts/config --file $(LINUX_OUT)/.config \
+		--disable CC_OPTIMIZE_FOR_PERFORMANCE --enable CC_OPTIMIZE_FOR_SIZE
+	$(LINUX_DIR)/scripts/config --file $(LINUX_OUT)/.config \
+		--enable TRIM_UNUSED_KSYMS \
+		--set-str UNUSED_KSYMS_WHITELIST "$(BUILD_DIR)/radio-kernel-symbols.txt"
 	@if [ -n "$(LINUX_CMDLINE)" ]; then \
 		$(LINUX_DIR)/scripts/config --file $(LINUX_OUT)/.config \
 			--set-str CMDLINE "$(LINUX_CMDLINE)"; \
@@ -390,6 +396,7 @@ coremark: rootfs | $(COREMARK_OUT)
 ROOTFS_PARTITION_SIZE := $(shell python3 tools/check_s31_layout.py --size ROOTFS)
 PERSIST_PARTITION_SIZE := $(shell python3 tools/check_s31_layout.py --size PERSIST)
 BUILDROOT_MAKE = S31_RADIO_MODULE=$(LINUX_OUT)/drivers/platform/esp32s31-radio.ko S31_LEAN_RADIO=$(S31_LEAN_RADIO) \
+	S31_KERNEL_CONFIG=$(LINUX_OUT)/.config \
 	$(MAKE) -C $(BUILDROOT_DIR) O=$(BUILDROOT_OUT) \
 	BR2_EXTERNAL=$(BUILDROOT_EXTERNAL) BR2_DL_DIR=$(BUILDROOT_DL_DIR) \
 	S31_DTBO_DIR=$(LINUX_OUT)/arch/riscv/boot/dts/espressif
@@ -414,9 +421,13 @@ rootfs: linux toolchain s31-pie-cases btstack-source lp-firmware | $(BUILDROOT_O
 	$(BUILDROOT_MAKE) esp32s31_rootfs_defconfig
 	$(BUILDROOT_MAKE) toolchain-external-custom-rebuild
 	$(BUILDROOT_MAKE) toolchain-external-rebuild
+	# Re-merge the board fragment so existing build directories gain the
+	# date/time and volume-identification applets used by esp32-config.
+	$(BUILDROOT_MAKE) busybox-reconfigure
 	$(BUILDROOT_MAKE) esp-simd-rebuild
 	$(BUILDROOT_MAKE) s31-tools-rebuild
-	$(BUILDROOT_MAKE) coremark-rebuild
+	$(BUILDROOT_MAKE) coremark-dirclean
+	$(BUILDROOT_MAKE) coremark
 	# Rebuild the pinned, self-contained direct-HCI BTstack appliance after
 	# package patch or configuration changes.
 	$(BUILDROOT_MAKE) btstack-s31-dirclean
@@ -555,4 +566,4 @@ check-dt:
 	python3 tools/check_s31_dt.py --cross-compile "$(CROSS_COMPILE)"
 check-fast: check-host check-docs check-dt
 build-manifest:
-	python3 tools/build_manifest.py --compiler "$(CC)" --idf "$(dir $(IDF_EXPORT))" --output "$(BUILD_DIR)/build-manifest.json"
+	python3 tools/build_manifest.py --compiler "$(CC)" --idf "$(dir $(IDF_EXPORT))" --kernel-config "$(LINUX_OUT)/.config" --output "$(BUILD_DIR)/build-manifest.json"

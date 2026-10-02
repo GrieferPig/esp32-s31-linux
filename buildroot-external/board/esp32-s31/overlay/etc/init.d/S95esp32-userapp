@@ -1,0 +1,9 @@
+#!/bin/sh
+case "${1:-}" in
+start) /usr/sbin/esp32-config system autostart boot ;;
+stop) /usr/sbin/esp32-config system autostart stop ;;
+restart|reload)
+	/usr/sbin/esp32-config system autostart stop &&
+		/usr/sbin/esp32-config system autostart boot ;;
+*) echo "Usage: $0 {start|stop|restart}"; exit 1 ;;
+esac
