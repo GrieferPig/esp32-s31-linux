@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""List and checksum the artifacts published by the image workflow."""
+"""Generate checksums for image artifacts used in release validation."""
 import argparse
 import hashlib
 from pathlib import Path
