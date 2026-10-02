@@ -182,7 +182,7 @@ class RadioStartup(unittest.TestCase):
                         path.chmod(0o755)
                     return path
                 script = source
-                for prefix in ('/sys', '/proc', '/run', '/dev', '/etc', '/usr/sbin'):
+                for prefix in ('/sys', '/proc', '/run', '/dev', '/etc', '/usr/lib', '/usr/sbin'):
                     script = script.replace(prefix + '/', tmp + prefix + '/')
                 put('start', script, True)
                 (root / 'dev').mkdir()
@@ -196,6 +196,7 @@ class RadioStartup(unittest.TestCase):
                 put('proc/mounts', 'source ' + tmp + '/run/s31-radio squashfs ro 0 0\n')
                 put('run/s31-radio/module/esp32s31-radio.ko.xz', 'module')
                 put('run/s31-radio/firmware/esp32s31-radio-fw-v1.o.xz', 'payload')
+                put('usr/lib/s31-radio/esp32s31-radio.ko.xz', 'module')
                 (root / 'sys/class/net/wlan0').mkdir(parents=True)
                 if ready:
                     put('sys/bus/platform/drivers/esp32s31-radio/soc:radio/radio_health', 'abi=1 state=2 wifi_init=0\n')

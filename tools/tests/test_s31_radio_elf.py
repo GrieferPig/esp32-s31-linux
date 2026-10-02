@@ -1,8 +1,6 @@
 #!/usr/bin/env python3
-"""Run the kernel loader's pure ELF preflight on valid and malformed inputs."""
-import os
+"""Exercise the current radio XIP header preflight against malformed layouts."""
 from pathlib import Path
-import struct
 import subprocess
 import tempfile
 import unittest
@@ -10,131 +8,102 @@ import unittest
 ROOT = Path(__file__).resolve().parents[2]
 
 
-def fixture():
-    data = bytearray(400)
-    ident = b"\x7fELF\x01\x01\x01" + bytes(9)
-    struct.pack_into("<16sHHIIIIIHHHHHH", data, 0, ident, 1, 243, 1, 0, 0, 200, 0, 52, 0, 0, 40, 5, 0)
-    data[52:60] = bytes(8)  # alloc/executable section
-    data[60:66] = b"\0name\0"
-    struct.pack_into("<IIIBBH", data, 96, 1, 0, 8, 0x12, 0, 1)
-    struct.pack_into("<IIi", data, 112, 0, (1 << 8) | 18, 0)  # 8-byte CALL
-    sections = [
-        (0,) * 10,
-        (0, 1, 6, 0, 52, 8, 0, 0, 4, 0),
-        (0, 3, 0, 0, 60, 6, 0, 0, 1, 0),
-        (0, 2, 0, 0, 80, 32, 2, 1, 4, 16),
-        (0, 4, 0, 0, 112, 12, 3, 1, 4, 12),
-    ]
-    for i, s in enumerate(sections):
-        struct.pack_into("<10I", data, 200 + 40 * i, *s)
-    return data
-
-
-class RadioElf(unittest.TestCase):
+class RadioXipHeader(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
-        cls.temp = tempfile.TemporaryDirectory(prefix="s31-elf-test-")
+        cls.temp = tempfile.TemporaryDirectory(prefix="s31-xip-test-")
         cls.work = Path(cls.temp.name)
         source = r"""
-#include <elf.h>
 #include <stdbool.h>
 #include <stdint.h>
 #include <stddef.h>
-#include <errno.h>
-#include <string.h>
 #include <stdio.h>
-#include <stdlib.h>
-typedef uint8_t u8;
+#include <string.h>
 typedef uint32_t u32;
-#include "esp32s31-radio-elf.h"
-int main(int argc, char **argv) {
-    if (argc == 1) {
-        char bad[4] = {'A', 'A', 'A', 'A'};
-        Elf32_Shdr s[2] = {{0}, {.sh_flags=SHF_ALLOC|SHF_EXECINSTR, .sh_addr=0x1000, .sh_size=8}};
-        Elf32_Sym sym = {.st_shndx=1, .st_value=0x1000};
-        if (s31_fw_string_valid(bad, 4, 1)) return 1;
-        if (!s31_fw_export_valid(&sym, s, 2, true, false)) return 2;
-        sym.st_value=0x1008;
-        if (s31_fw_export_valid(&sym, s, 2, true, false)) return 3;
-        sym.st_value=0x1000; sym.st_shndx=SHN_ABS;
-        if (s31_fw_export_valid(&sym, s, 2, false, false)) return 4;
-        sym.st_shndx=1;
-        if (s31_fw_export_valid(&sym, s, 2, false, true)) return 5;
-        return 0;
-    }
-    FILE *f = fopen(argv[1], "rb");
-    if (!f) return 2;
-    fseek(f, 0, SEEK_END); long n=ftell(f); rewind(f);
-    void *data=malloc(n ? n : 1);
-    if (!data || fread(data, 1, n, f) != (size_t)n) return 2;
-    fclose(f);
-    int result=s31_fw_validate_elf(data, n);
-    free(data);
-    if (result) fprintf(stderr, "invalid ELF: %d\n", result);
-    return result ? 1 : 0;
+typedef uint8_t u8;
+#include "esp32s31-radio-xip.h"
+
+#define RAM_BASE 0x10000U
+static void valid_header(struct s31_xip_header *h)
+{
+    unsigned int i;
+    memset(h, 0, sizeof(*h));
+    h->magic = S31_XIP_MAGIC;
+    h->version = 2;
+    h->abi = 1;
+    h->image_size = 12288;
+    h->base = S31_XIP_BASE;
+    h->ram = RAM_BASE;
+    h->ram_capacity = S31_XIP_RAM_SIZE;
+    h->data_offset = 8192;
+    h->data_size = 256;
+    h->bss_offset = 256;
+    h->bss_size = 64;
+    h->vectors_offset = 0;
+    h->export_count = S31_XIP_EXPORTS;
+    h->wifi_iram_offset = 4096;
+    h->wifi_iram_size = 64;
+    for (i = 0; i < S31_XIP_EXPORTS - 1; i++)
+        h->exports[i] = S31_XIP_BASE + 5000;
+    h->exports[22] = RAM_BASE + 256;
+}
+#define INVALID(change) do { valid_header(&h); change; if (s31_xip_valid(&h, RAM_BASE)) { fprintf(stderr, "unexpectedly accepted: %s\\n", #change); return __LINE__; } } while (0)
+int main(void)
+{
+    struct s31_xip_header h;
+    valid_header(&h);
+    if (!s31_xip_valid(&h, RAM_BASE)) return 1;
+    if (s31_xip_valid(&h, RAM_BASE + 4)) return 2;
+    INVALID(h.magic = 0);
+    INVALID(h.version = 1);
+    INVALID(h.abi = 2);
+    INVALID(h.image_size = S31_XIP_HEADER_SIZE);
+    INVALID(h.image_size = S31_XIP_SLOT_SIZE + 1);
+    INVALID(h.base++);
+    INVALID(h.ram_capacity++);
+    INVALID(h.export_count--);
+    INVALID(h.import_count = S31_XIP_MAX_IMPORTS + 1);
+    INVALID(h.data_offset = S31_XIP_HEADER_SIZE - 1);
+    INVALID(h.data_offset = h.image_size);
+    INVALID(h.bss_offset++);
+    INVALID(h.vectors_offset = h.data_size - 191);
+    INVALID(h.wifi_iram_size = 0);
+    INVALID(h.wifi_iram_size = S31_XIP_WIFI_IRAM_CAPACITY + 1);
+    INVALID(h.wifi_iram_offset = h.data_offset);
+    INVALID(h.exports[0] |= 1);
+    INVALID(h.exports[0] = S31_XIP_BASE + h.data_offset);
+    INVALID(h.exports[22] = RAM_BASE + h.bss_offset + h.bss_size);
+    valid_header(&h);
+    h.import_count = 1;
+    h.imports[0].offset = 4;
+    strcpy(h.imports[0].name, "esp32s31_radio_import");
+    if (!s31_xip_valid(&h, RAM_BASE)) return 3;
+    INVALID(h.import_count = 1; h.imports[0].offset = h.data_size; strcpy(h.imports[0].name, "symbol"));
+    INVALID(h.import_count = 1; h.imports[0].offset = 1; strcpy(h.imports[0].name, "symbol"));
+    INVALID(h.import_count = 1; h.imports[0].offset = 4; strcpy(h.imports[0].name, "symbol"); h.imports[0].name[0] = 0);
+    valid_header(&h);
+    h.import_count = 2;
+    h.imports[0].offset = 4;
+    h.imports[1].offset = 8;
+    strcpy(h.imports[0].name, "same");
+    strcpy(h.imports[1].name, "same");
+    if (s31_xip_valid(&h, RAM_BASE)) return 4;
+    return 0;
 }
 """
         (cls.work / "validate.c").write_text(source)
-        flags = ["-fsanitize=address,undefined", "-fno-omit-frame-pointer"] if os.environ.get("S31_TEST_SANITIZERS") else []
-        subprocess.run(["cc", "-O1", "-g", "-Wall", "-Werror", *flags,
-                        "-I" + str(ROOT / "linux-esp32-s31/drivers/platform"),
-                        str(cls.work / "validate.c"), "-o", str(cls.work / "validate")], check=True)
+        subprocess.run([
+            "cc", "-O1", "-g", "-Wall", "-Werror",
+            "-I" + str(ROOT / "linux-esp32-s31/drivers/platform"),
+            str(cls.work / "validate.c"), "-o", str(cls.work / "validate")
+        ], check=True)
 
     @classmethod
     def tearDownClass(cls):
         cls.temp.cleanup()
 
-    def check_elf(self, data, valid):
-        (self.work / "input.o").write_bytes(data)
-        p = subprocess.run([str(self.work / "validate"), str(self.work / "input.o")], capture_output=True, text=True)
-        self.assertEqual(p.returncode, 0 if valid else 1, p.stderr)
-        self.assertNotIn("Sanitizer", p.stderr)
-
-    def test_valid_elf_and_export_bounds(self):
-        self.check_elf(fixture(), True)
+    def test_valid_and_malformed_xip_headers(self):
         subprocess.run([str(self.work / "validate")], check=True)
-
-    def test_malformed_elf(self):
-        cases = {
-            "bad class": (4, "B", 2),
-            "section table truncated": (32, "I", 392),
-            "section alignment overflow": (240 + 32, "I", 0x80000000),
-            "image size overflow": (240 + 20, "I", 0xffffffff),
-            "section outside file": (240 + 16, "I", 399),
-            "missing string terminator": (65, "B", 65),
-            "symbol name out of bounds": (96, "I", 6),
-            "symbol section out of bounds": (96 + 14, "H", 8),
-            "symbol value beyond section": (96 + 4, "I", 9),
-            "symbol size beyond section": (96 + 8, "I", 9),
-            "string table wrong type": (280 + 4, "I", 8),
-            "allocated symbol metadata": (320 + 8, "I", 2),
-            "allocated relocation metadata": (360 + 8, "I", 2),
-            "symbol entry size": (320 + 36, "I", 12),
-            "symbol table remainder": (320 + 20, "I", 31),
-            "relocation symbol": (116, "I", (3 << 8) | 18),
-            "call crosses end": (112, "I", 4),
-            "unknown relocation": (116, "I", (1 << 8) | 255),
-            "unbounded uleb relocation": (116, "I", (1 << 8) | 60),
-            "relocation sh_link": (360 + 24, "I", 2),
-            "relocation target section": (360 + 28, "I", 9),
-            "relocation entry size": (360 + 36, "I", 8),
-            "relocation remainder": (360 + 20, "I", 11),
-            "relocation alignment": (360 + 16, "I", 113),
-        }
-        for name, (offset, fmt, value) in cases.items():
-            with self.subTest(name=name):
-                data = fixture()
-                struct.pack_into("<" + fmt, data, offset, value)
-                self.check_elf(data, False)
-        for length in (0, 4, 51, 199, 399):
-            with self.subTest(truncated=length):
-                self.check_elf(fixture()[:length], False)
-
-    def test_existing_payload_when_available(self):
-        p = ROOT / "build/esp32s31-radio-fw-v1.o"
-        if not p.is_file():
-            self.skipTest("optional real payload not built; synthetic valid ELF always tested")
-        self.check_elf(p.read_bytes(), True)
 
 
 if __name__ == "__main__":

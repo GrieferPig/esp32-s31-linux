@@ -64,7 +64,7 @@ IDF_ROOT ?= $(HOME)/.espressif
 # An explicit installation wins; never select an arbitrary installed checkout.
 IDF_EXPORT ?= $(firstword $(wildcard $(IDF_PATH)/export.sh) $(wildcard $(IDF_ROOT)/master/esp-idf/export.sh))
 
-.PHONY: all download toolchain toolchain-source idf-check opensbi uboot flash-image radio-linux-payload radio-idf-deps radio-module radio-package radio-fs linux coremark rootfs initramfs s31-pie-cases btstack-source btstack-notices \
+.PHONY: all download toolchain toolchain-source idf-check opensbi uboot flash-image radio-linux-payload radio-idf-deps radio-module radio-package radio-fs radio-image linux coremark rootfs initramfs s31-pie-cases btstack-source btstack-notices \
 	buildroot-menuconfig buildroot-clean clean fullclean flash-opensbi flash-linux \
 	flash-dtb flash-radio flash-rootfs flash-existing-radio flash-existing-rootfs \
 	persist flash-persist bootloader flash-bootloader flash-all erase
@@ -252,6 +252,11 @@ radio-fs: linux rootfs
 		--prefix $(CROSS_COMPILE) --kernel $(LINUX_OUT)/vmlinux \
 		--payload firmware/radio/linux_radio.localized.o \
 		--imports firmware/radio/linux-radio-linked-imports.txt --output $(RADIO_FS_IMG)
+
+# Keep the former target name as a clear error for existing scripts.
+radio-image:
+	@echo "radio-image is retired; use radio-fs to build the matched bundle" >&2
+	@false
 
 
 linux: check-layout toolchain radio-linux-payload | $(LINUX_OUT)
