@@ -30,7 +30,7 @@ For a detailed overview of the porting progress, refer to [the support matrix](h
 | Status | Meaning |
 |---|---|
 | 🟢 Stable | Fully supported and tested |
-| 🟡 Experimental | Supported; may have limitations or require further testing |
+| 🟡 Experimental | Supported and mostly working; may have limitations or require further testing |
 | 🟠 WIP | Driver exists, but full functionality is work in progress |
 | 🔴 Unsupported | Not implemented or supported |
 
