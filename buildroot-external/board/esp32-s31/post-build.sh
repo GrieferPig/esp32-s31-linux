@@ -4,6 +4,17 @@ set -eu
 
 target_dir="$1"
 
+# LP firmware is generated in the output tree. Overlay installation here runs after
+# Buildroot's static overlay, replacing any legacy payload in an old target.
+: "${S31_OVERLAY_DIR:?Set S31_OVERLAY_DIR to the build staging overlay}"
+for firmware in s31-lp-core.elf s31-lp-core.bin; do
+	[ -f "${S31_OVERLAY_DIR}/lib/firmware/esp32s31/${firmware}" ] || {
+		echo "Missing staged LP firmware: ${firmware}" >&2
+		exit 1
+	}
+done
+cp -a "${S31_OVERLAY_DIR}/." "${target_dir}/"
+
 chmod 0755 "${target_dir}/init"
 
 # The cross-toolchain includes G++, but this compact image has no C++ target
@@ -48,7 +59,7 @@ rm -f \
 
 # candump/cansend cover the normal SocketCAN receive/transmit path.  The rest
 # of can-utils targets protocol labs, gateways, logging conversion, or test
-# traffic generators; omit those from the 4 MiB production rootfs.
+# traffic generators; omit those from the 6 MiB production rootfs.
 rm -f \
 	"${target_dir}/usr/bin/asc2log" \
 	"${target_dir}/usr/bin/bcmserver" \
@@ -203,15 +214,7 @@ rm -rf \
 	"${target_dir}/var/lib/bluetooth" \
 	"${target_dir}/var/lib/dbus"
 
-# The default 16 MiB radio appliance keeps diagnostics in the kernel ring and
-# runs no scheduled jobs.  Avoid three idle BusyBox daemons and their private
-# stacks; the general-purpose profile retains the normal Buildroot services.
-if [ "${S31_LEAN_RADIO:-1}" = 1 ]; then
-	rm -f \
-		"${target_dir}/etc/init.d/S01syslogd" \
-		"${target_dir}/etc/init.d/S02klogd" \
-		"${target_dir}/etc/init.d/S50crond"
-fi
+# Full builds retain the normal Buildroot logging and scheduled-job services.
 
 rm -rf \
 	"${target_dir}/tmp" \
@@ -234,9 +237,8 @@ ln -s /proc/mounts "${target_dir}/etc/mtab"
 ln -s /run/resolv.conf "${target_dir}/etc/resolv.conf"
 chmod 0600 "${target_dir}/etc/wpa_supplicant.conf"
 
-script_dir="$(CDPATH= cd -- "$(dirname -- "$0")" && pwd)"
-project_dir="$(CDPATH= cd -- "${script_dir}/../../.." && pwd)"
-dtbo_dir="${S31_DTBO_DIR:-${project_dir}/build/linux-6.18/arch/riscv/boot/dts/espressif}"
+: "${S31_DTBO_DIR:?Set S31_DTBO_DIR to the build kernel DT overlay directory}"
+dtbo_dir="${S31_DTBO_DIR}"
 install_dir="${target_dir}/usr/lib/s31-overlays"
 
 mkdir -p "${install_dir}"

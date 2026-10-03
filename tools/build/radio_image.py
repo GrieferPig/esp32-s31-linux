@@ -13,14 +13,18 @@ import hashlib
 import json
 from pathlib import Path
 import re
+import shutil
 import struct
 import subprocess
 import zlib
+import sys
+sys.path.insert(0, str(Path(__file__).resolve().parents[2]))
+from tools.build.toolchain_identity import identify as toolchain_identity
 
 MAGIC = 0x58313353  # S31X
-BASE = 0xBE210000
+BASE = 0xBE06E000
 HEADER_SIZE = 4096
-SLOT_SIZE = 0x1F0000
+SLOT_SIZE = 0x180000
 RAM_SIZE = 40960
 # Leave a gap after the 4 MiB flash vmalloc reservation and its guard page.
 WIFI_IRAM_BASE = 0xBE420000
@@ -101,7 +105,36 @@ def run(*args):
     subprocess.run([str(a) for a in args], check=True)
 
 
+def input_identity(args):
+    root = Path(__file__).resolve().parents[2]
+    files = {'kernel_vmlinux': args.kernel, 'kernel_module': args.module,
+             'radio_payload': args.payload, 'radio_imports': args.imports,
+             'builder': Path(__file__), 'toolchain_identity': root / 'tools/build/toolchain_identity.py', 'layout': root / 'configs/esp32s31-layout.cfg',
+             'wifi_sram_symbols': root / 'firmware/radio/wifi_sram_symbols.txt'}
+    for tool in ('gcc', 'ld', 'objcopy'):
+        executable = shutil.which(args.prefix + tool)
+        if executable is None:
+            raise ValueError('missing radio build tool: ' + args.prefix + tool)
+        files['tool_' + tool] = Path(executable)
+    identity = {name: hashlib.sha256(path.read_bytes()).hexdigest() for name, path in files.items()}
+    identity['toolchain'] = toolchain_identity(files['tool_gcc'])['sha256']
+    return identity
+
+
 def build(args):
+    identity = input_identity(args)
+    report_path = args.output.with_suffix('.json')
+    if args.output.is_file() and report_path.is_file():
+        try:
+            previous = json.loads(report_path.read_text())
+            if (previous.get('build_inputs') == identity and
+                    previous.get('binding') == {name + '_sha256': identity[name] for name in
+                        ('kernel_vmlinux', 'kernel_module', 'radio_payload', 'radio_imports')} and
+                    previous.get('sha256') == hashlib.sha256(args.output.read_bytes()).hexdigest()):
+                print('Radio image inputs unchanged: ' + str(args.output))
+                return
+        except (ValueError, OSError):
+            pass
     out = args.output.parent
     out.mkdir(parents=True, exist_ok=True)
     prefix = args.prefix
@@ -112,7 +145,7 @@ def build(args):
     linked = {line.strip() for line in args.imports.read_text().splitlines()
               if line.strip() and not line.startswith('#')}
     # Fixed production placement; missing targets fail rather than fall back to flash.
-    manifest = Path(__file__).resolve().parent.parent / 'firmware/radio/wifi_sram_symbols.txt'
+    manifest = Path(__file__).resolve().parents[2] / 'firmware/radio/wifi_sram_symbols.txt'
     requested = sorted(set(line.split('#', 1)[0].strip()
                            for line in manifest.read_text().splitlines()) - {''})
     selection = select_iram_sections(Elf(args.payload), requested)
@@ -254,7 +287,14 @@ def build(args):
                   ram_capacity=RAM_SIZE, wifi_iram_bytes=iram_size,
                   wifi_iram_offset=iram_offset, imports=functions, nullable_imports=nullable,
                   exports=dict(zip(EXPORTS, exports)),
-                  sha256=hashlib.sha256(header + body).hexdigest())
+                  sha256=hashlib.sha256(header + body).hexdigest(),
+                  build_inputs=identity,
+                  binding={
+                      'kernel_vmlinux_sha256': identity['kernel_vmlinux'],
+                      'kernel_module_sha256': identity['kernel_module'],
+                      'radio_payload_sha256': identity['radio_payload'],
+                      'radio_imports_sha256': identity['radio_imports'],
+                  })
     import_obj = Elf(out / 'radio-xip-imports.o')
     idx = import_obj.section_names.index(imports_section)
     report['imports_iram_bytes'] = import_obj.sections[idx][5]
@@ -272,6 +312,7 @@ def main():
     p = argparse.ArgumentParser(description=__doc__)
     p.add_argument('--prefix', required=True)
     p.add_argument('--kernel', required=True, type=Path)
+    p.add_argument('--module', required=True, type=Path)
     p.add_argument('--payload', required=True, type=Path)
     p.add_argument('--imports', required=True, type=Path)
     p.add_argument('--output', required=True, type=Path)

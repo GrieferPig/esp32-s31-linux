@@ -11,12 +11,17 @@ if [[ -z "${IDF_PATH:-}" ]]; then
 	exit 1
 fi
 
-output=${1:-"$(dirname "$0")/s31_pie_cases.inc"}
+if [[ $# -ne 1 || "$1" != /* ]]; then
+	echo "Usage: $0 /absolute/output/directory/s31_pie_cases.inc" >&2
+	exit 2
+fi
+output=$1
+mkdir -p "$(dirname "$output")"
 source_file="$IDF_PATH/components/esp_gdbstub/test_gdbstub_host/rv_decode/xesppie.S"
 cc=$(command -v riscv32-esp-elf-gcc)
 objcopy=$(command -v riscv32-esp-elf-objcopy)
 readelf=$(command -v riscv32-esp-elf-readelf)
-work_dir=$(mktemp -d)
+work_dir=$(mktemp -d "$(dirname "$output")/.pie-cases.XXXXXX")
 trap 'rm -rf "$work_dir"' EXIT
 
 test -r "$source_file"

@@ -2,25 +2,30 @@
 
 set -eu
 
-version=431d58d5613fd8fae38afe50282b25302de84bf7
-project_dir=$(CDPATH= cd -- "$(dirname -- "$0")/.." && pwd)
-output_dir=${1:-${project_dir}/build/btstack-source}
-build_dir=$(realpath -m "${project_dir}/build")
-
+project_dir=$(CDPATH= cd -- "$(dirname -- "$0")/../.." && pwd)
+version=$(sed -n 's/^BTSTACK_REF[[:space:]]*[:?]*=[[:space:]]*//p' "${project_dir}/configs/build-versions.mk")
+[ -n "$version" ] || { echo 'Missing BTSTACK_REF dependency lock' >&2; exit 1; }
+build_dir=$(realpath -m "${S31_CACHE_ROOT:-${project_dir}/cache}/sources")
+output_dir=${1:-${build_dir}/btstack}
 resolved_output=$(realpath -m "$output_dir")
 case "$resolved_output" in
 	"${build_dir}"/*) ;;
-	*)
-		echo "Refusing BTstack source output outside ${build_dir}: ${resolved_output}" >&2
-		exit 1
-		;;
+	*) echo "Refusing BTstack source output outside ${build_dir}: ${resolved_output}" >&2; exit 1 ;;
 esac
+mkdir -p "$build_dir"
+exec 9>"${build_dir}/.btstack.lock"
+flock 9
 
 if [ -r "${resolved_output}/.s31-btstack-version" ] &&
    [ "$(cat "${resolved_output}/.s31-btstack-version")" = "$version" ] &&
    [ -f "${resolved_output}/example/a2dp_sink_demo.c" ] &&
    [ -f "${resolved_output}/platform/linux/hci_transport_linux.c" ]; then
 	exit 0
+fi
+
+if [ -e "$resolved_output" ]; then
+	echo "Refusing to replace an unverified existing source tree: $resolved_output" >&2
+	exit 1
 fi
 
 mkdir -p "$build_dir"
@@ -61,7 +66,5 @@ mkdir -p "$staged"
 	(cd "$staged" && tar -xf -)
 printf '%s\n' "$version" >"${staged}/.s31-btstack-version"
 
-if [ -e "$resolved_output" ]; then
-	rm -rf "$resolved_output"
-fi
+mkdir -p "$(dirname -- "$resolved_output")"
 mv "$staged" "$resolved_output"

@@ -346,6 +346,6 @@ s31_pie_run_one:
 	.p2align 2
 .Lpie_cases:
 #define PIE_CASE(opcode, name) .word opcode ; ret
-#include "s31_pie_cases.inc"
+#include <s31_pie_cases.inc>
 #undef PIE_CASE
 	.size s31_pie_run_one, .-s31_pie_run_one

@@ -50,6 +50,7 @@ def verify_compiler(prefix: Path, work_dir: Path, repo_root: Path) -> None:
         "-march=rv32imafbc_zicsr_zifencei_zaamo_zalrsc_zba_zbb_zbc_zbs_xesploop_xespv2p2",
         "-mabi=ilp32",
         "-mespv-spec=2p2",
+        "-I" + str(repo_root / "rootfs"),
         "-c",
         str(repo_root / "rootfs" / "s31_ext_test.S"),
         "-o",

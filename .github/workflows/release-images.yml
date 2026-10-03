@@ -19,7 +19,7 @@ jobs:
     timeout-minutes: 120
     env:
       IDF_PATH: ${{ github.workspace }}/.esp-idf
-      S31_LEAN_RADIO: 0
+      HOST_PYTHON: /usr/bin/python3
 
     steps:
       - name: Check out source and submodules
@@ -32,22 +32,24 @@ jobs:
           sudo apt-get update
           sudo apt-get install -y \
             bison bc build-essential ccache cpio device-tree-compiler flex gperf libffi-dev \
-            libssl-dev ninja-build python3-pkg-resources python3-pyelftools rsync unzip xz-utils
+            libssl-dev ninja-build python3-pkg-resources python3-pyelftools python3-dev swig rsync unzip xz-utils squashfs-tools
 
       - name: Read pinned dependency versions
         run: |
-          python3 -c 'import sys; sys.path.insert(0, "tools"); from check_build_versions import versions; print("\n".join(k + "=" + v for k, v in versions().items()))' >> "$GITHUB_ENV"
+          echo "OUT=out" >> "$GITHUB_ENV"
+          python3 -c 'import sys; sys.path.insert(0, "."); from tools.checks.versions import versions; print("\n".join(k + "=" + v for k, v in versions().items()))' >> "$GITHUB_ENV"
 
       - name: Install ESP-IDF
         run: |
           git clone --filter=blob:none https://github.com/espressif/esp-idf.git "$IDF_PATH"
           git -C "$IDF_PATH" checkout "$ESP_IDF_REF"
+          git -C "$IDF_PATH" submodule update --init --recursive
           "$IDF_PATH/install.sh" esp32s31
 
       - name: Install and verify pinned toolchain
         run: |
-          make TOOLCHAIN_RELEASE_TAG="$TOOLCHAIN_RELEASE_TAG" toolchain
-          prefix="$GITHUB_WORKSPACE/toolchain/riscv32-esp-linux-musl"
+          make TOOLCHAIN_RELEASE_TAG="$TOOLCHAIN_RELEASE_TAG" toolchain-fetch btstack-source
+          prefix="$GITHUB_WORKSPACE/cache/toolchains/riscv32-esp-linux-musl"
           target=riscv32-esp-linux-musl
           resolved_tag="$(cat "$prefix/.release")"
           test "$resolved_tag" = "$TOOLCHAIN_RELEASE_TAG"
@@ -58,16 +60,19 @@ jobs:
           grep -q '^CT_PATCH_ORDER="bundled"$' "$prefix/crosstool-ng.config"
           grep -q '  packages/gcc/git-0dbf5849/0001-xesploop.patch$' "$prefix/s31-patch-sha256.txt"
           grep -q '  packages/gcc/git-0dbf5849/0002-riscv-xesploop-reject-early-exit-loops.patch$' "$prefix/s31-patch-sha256.txt"
-          mkdir -p build/toolchain-verify
-          python3 -c 'from pathlib import Path; from tools.wait_s31_toolchain_and_test import verify_compiler, verify_libc_scalar; p=Path("toolchain/riscv32-esp-linux-musl"); w=Path("build/toolchain-verify"); verify_compiler(p, w, Path.cwd()); verify_libc_scalar(p, w, Path.cwd())'
+          mkdir -p $OUT/reports/toolchain-verify
+          python3 -c 'import os; from pathlib import Path; from tools.checks.toolchain import verify_compiler, verify_libc_scalar; p=Path("cache/toolchains/riscv32-esp-linux-musl"); w=(Path(os.environ["OUT"]) / "reports/toolchain-verify"); verify_compiler(p, w, Path.cwd()); verify_libc_scalar(p, w, Path.cwd())'
           libc="$prefix/$target/sysroot/usr/lib/libc.so"
-          "$prefix/bin/$target-objdump" -d "$libc" > build/toolchain-verify/libc-disassembly.txt
+          "$prefix/bin/$target-objdump" -d "$libc" > $OUT/reports/toolchain-verify/libc-disassembly.txt
           for symbol in memcpy memchr memrchr memcmp strcmp; do
-            grep -q "<${symbol}>:" build/toolchain-verify/libc-disassembly.txt
+            grep -q "<${symbol}>:" $OUT/reports/toolchain-verify/libc-disassembly.txt
           done
-          ! grep -q 'esp\.' build/toolchain-verify/libc-disassembly.txt
+          ! grep -q 'esp\.' $OUT/reports/toolchain-verify/libc-disassembly.txt
 
-      - name: Build full image with radio bundle
+      - name: Prepare rootfs source cache
+        run: make fetch-rootfs
+
+      - name: Build full board image with radio bundle
         run: |
           source "$IDF_PATH/export.sh"
           make TOOLCHAIN_RELEASE_TAG="$TOOLCHAIN_RELEASE_TAG" \
@@ -78,39 +83,39 @@ jobs:
           set -ex
           echo "=== Build Artifacts ==="
           ls -lh \
-            build/spl_app.bin \
-            build/u-boot.itb \
-            build/esp32s31_generic.dtb \
-            build/radio.bin \
-            build/xipImage \
-            build/rootfs.sqfs \
-            build/s31_full_flash.bin \
-            build/coremark/coremark.exe
+            $OUT/images/spl_app.bin \
+            $OUT/images/u-boot.itb \
+            $OUT/images/esp32s31_generic.dtb \
+            $OUT/images/radio.bin \
+            $OUT/images/xipImage \
+            $OUT/images/rootfs.sqfs \
+            $OUT/images/s31_full_flash.bin \
+            $OUT/staging/coremark/coremark.exe
           echo "=== esptool ==="
           source "$IDF_PATH/export.sh"
           esptool version
-          esptool --chip esp32s31 image-info build/spl_app.bin
+          esptool --chip esp32s31 image-info $OUT/images/spl_app.bin
           echo "=== Core checks ==="
-          test -s build/spl_app.bin
-          test -s build/u-boot.itb
-          test -s build/esp32s31_generic.dtb
-          test -s build/radio.bin
-          test -s build/xipImage
-          test -s build/rootfs.sqfs
-          test -s build/s31_full_flash.bin
-          test -s build/coremark/coremark.exe
-          python3 -c 'from pathlib import Path; radio = Path("build/radio.bin").read_bytes(); full = Path("build/s31_full_flash.bin").read_bytes(); offset = 0x310000; assert full[offset:offset + len(radio)] == radio, "radio bundle is not embedded at SLOT_RADIO"'
+          test -s $OUT/images/spl_app.bin
+          test -s $OUT/images/u-boot.itb
+          test -s $OUT/images/esp32s31_generic.dtb
+          test -s $OUT/images/radio.bin
+          test -s $OUT/images/xipImage
+          test -s $OUT/images/rootfs.sqfs
+          test -s $OUT/images/s31_full_flash.bin
+          test -s $OUT/staging/coremark/coremark.exe
+          python3 -c 'import os; from pathlib import Path; radio = (Path(os.environ["OUT"]) / "images/radio.bin").read_bytes(); full = (Path(os.environ["OUT"]) / "images/s31_full_flash.bin").read_bytes(); from tools.checks.layout import flash_layout; offset = flash_layout()[0]["SLOT_RADIO"]; assert full[offset:offset + len(radio)] == radio, "radio bundle is not embedded at SLOT_RADIO"'
           test ! -e bootloader
-          test "$(cat build/btstack-source/.s31-btstack-version)" = \
-            431d58d5613fd8fae38afe50282b25302de84bf7
-          test -x build/buildroot/target/usr/sbin/s31-btstack-a2dp
-          ! grep -q '^BR2_PACKAGE_BLUEZ5_UTILS=y$' build/buildroot/.config
-          ! grep -q '^BR2_PACKAGE_DBUS=y$' build/buildroot/.config
-          ! grep -q '^BR2_PACKAGE_LIBGLIB2=y$' build/buildroot/.config
-          "$GITHUB_WORKSPACE/toolchain/riscv32-esp-linux-musl/bin/riscv32-esp-linux-musl-readelf" \
-            -d build/buildroot/target/usr/sbin/s31-btstack-a2dp > build/btstack-dynamic.txt
-          test "$(grep -c '(NEEDED)' build/btstack-dynamic.txt)" -eq 1
-          grep -q 'Shared library: \[libc.so\]' build/btstack-dynamic.txt
+          test "$(cat cache/sources/btstack/.s31-btstack-version)" = \
+            "$BTSTACK_REF"
+          test -x $OUT/buildroot/target/usr/sbin/s31-btstack-a2dp
+          ! grep -q '^BR2_PACKAGE_BLUEZ5_UTILS=y$' $OUT/buildroot/.config
+          ! grep -q '^BR2_PACKAGE_DBUS=y$' $OUT/buildroot/.config
+          ! grep -q '^BR2_PACKAGE_LIBGLIB2=y$' $OUT/buildroot/.config
+          "$GITHUB_WORKSPACE/cache/toolchains/riscv32-esp-linux-musl/bin/riscv32-esp-linux-musl-readelf" \
+            -d $OUT/buildroot/target/usr/sbin/s31-btstack-a2dp > $OUT/reports/btstack-dynamic.txt
+          test "$(grep -c '(NEEDED)' $OUT/reports/btstack-dynamic.txt)" -eq 1
+          grep -q 'Shared library: \[libc.so\]' $OUT/reports/btstack-dynamic.txt
           for retired in \
             usr/libexec/bluetooth/bluetoothd \
             usr/libexec/dbus-daemon-launch-helper \
@@ -119,27 +124,27 @@ jobs:
             etc/bluetooth etc/dbus-1 \
             usr/share/dbus-1 usr/share/xml/dbus-1 usr/share/glib-2.0 \
             var/lib/bluetooth var/lib/dbus; do
-            test ! -e "build/buildroot/target/$retired"
+            test ! -e "$OUT/buildroot/target/$retired"
           done
-          test -z "$(find build/buildroot/target/lib build/buildroot/target/usr/lib \
+          test -z "$(find $OUT/buildroot/target/lib $OUT/buildroot/target/usr/lib \
             -maxdepth 2 \( -name 'libbluetooth.so*' -o -name 'libdbus-1.so*' \
             -o -name 'libgio-2.0.so*' -o -name 'libglib-2.0.so*' \
             -o -name 'libgmodule-2.0.so*' -o -name 'libgobject-2.0.so*' \
             -o -name 'libgthread-2.0.so*' \) -print)"
-          test -f firmware/radio/idf_deps/build-radio/build.ninja
-          test -s build/linux-6.18/drivers/platform/esp32s31-radio.ko
-          test -s build/esp32s31-radio-fw-v1.o
-          grep -q '^CONFIG_ESP32S31_RADIO_SMODE_DRIVER=m$' build/linux-6.18/.config
-          grep -q '^CONFIG_ESP32S31_RADIO_BLOBS=y$' build/linux-6.18/.config
-          grep -q '^CONFIG_ESP32S31_WIFI=y$' build/linux-6.18/.config
-          grep -q '^CONFIG_BT_ESP32S31=y$' build/linux-6.18/.config
-          grep -q '^CONFIG_FW_LOADER_COMPRESS_XZ=y$' build/linux-6.18/.config
-          test ! -e build/linux-6.18/drivers/net/wireless/espressif/esp32s31-wifi.ko
-          test ! -e build/linux-6.18/drivers/bluetooth/esp32s31-btdm.ko
-          ! "$GITHUB_WORKSPACE/toolchain/riscv32-esp-linux-musl/bin/riscv32-esp-linux-musl-nm" \
-            build/linux-6.18/drivers/platform/esp32s31-radio.ko | \
+          test -f $OUT/idf-radio/build.ninja
+          test -s $OUT/linux/drivers/platform/esp32s31-radio.ko
+          test -s $OUT/generated/esp32s31-radio-fw-v1.o
+          grep -q '^CONFIG_ESP32S31_RADIO_SMODE_DRIVER=m$' $OUT/linux/.config
+          grep -q '^CONFIG_ESP32S31_RADIO_BLOBS=y$' $OUT/linux/.config
+          grep -q '^CONFIG_ESP32S31_WIFI=y$' $OUT/linux/.config
+          grep -q '^CONFIG_BT_ESP32S31=y$' $OUT/linux/.config
+          grep -q '^CONFIG_FW_LOADER_COMPRESS_XZ=y$' $OUT/linux/.config
+          test ! -e $OUT/linux/drivers/net/wireless/espressif/esp32s31-wifi.ko
+          test ! -e $OUT/linux/drivers/bluetooth/esp32s31-btdm.ko
+          ! "$GITHUB_WORKSPACE/cache/toolchains/riscv32-esp-linux-musl/bin/riscv32-esp-linux-musl-nm" \
+            $OUT/linux/drivers/platform/esp32s31-radio.ko | \
             grep -qE ' (esp_wifi_|esp_bt_|s31_radio_fw_abi_version)'
-          grep -q '^CONFIG_ESP32S31_COPROC_CONTEXT=y$' build/linux-6.18/.config
+          grep -q '^CONFIG_ESP32S31_COPROC_CONTEXT=y$' $OUT/linux/.config
           for config in \
             CONFIG_I2C_ESP32S31=y \
             CONFIG_SPI_ESP32S31=y \
@@ -150,11 +155,13 @@ jobs:
             CONFIG_STMMAC_ETH=y \
             CONFIG_MMC_DW_PLTFM=y \
             CONFIG_VFAT_FS=y; do
-            grep -q "^${config}$" build/linux-6.18/.config
+            grep -q "^${config}$" $OUT/linux/.config
           done
-          "$GITHUB_WORKSPACE/toolchain/riscv32-esp-linux-musl/bin/riscv32-esp-linux-musl-objdump" \
-            -d build/buildroot/target/usr/lib/libc.so > build/release-libc-disassembly.txt
-          ! grep -q 'esp\.' build/release-libc-disassembly.txt
+          "$GITHUB_WORKSPACE/cache/toolchains/riscv32-esp-linux-musl/bin/riscv32-esp-linux-musl-objdump" \
+            -d $OUT/buildroot/target/usr/lib/libc.so > $OUT/reports/release-libc-disassembly.txt
+          ! grep -q 'esp\.' $OUT/reports/release-libc-disassembly.txt
+          python3 tools/release/manifest.py --output-root $OUT \
+            --verify $OUT/images/build-manifest.json
           echo "All core artifacts verified OK"
 
       - name: Prepare release metadata
@@ -174,8 +181,8 @@ jobs:
           RELEASE_TAG: ${{ steps.release.outputs.tag }}
           RELEASE_TITLE: ${{ steps.release.outputs.title }}
         run: |
-          (cd build && sha256sum --check SHA256SUMS)
-          mapfile -t assets < <(python3 tools/release_assets.py --prefix build)
+          (cd dist/current && sha256sum --check SHA256SUMS)
+          mapfile -t assets < <(python3 tools/release/assets.py --prefix dist/current)
           gh release create "$RELEASE_TAG" \
             "${assets[@]}" \
             --title "$RELEASE_TITLE" \

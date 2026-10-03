@@ -555,12 +555,10 @@ static int s31_vhci_receive(uint8_t *data, uint16_t len)
 	return s31_radio_vhci_receive(data, len);
 }
 
-#ifndef S31_WIFI_ONLY
 static const esp_vhci_host_callback_t s31_vhci_callbacks = {
 	.notify_host_send_available = s31_vhci_send_available,
 	.notify_host_recv = s31_vhci_receive,
 };
-#endif
 
 enum s31_wifi_pending_operation {
 	S31_WIFI_PENDING_NONE,
@@ -1620,10 +1618,8 @@ void s31_radio_stack_task(void *arg)
 	wifi_init_config_t wifi_cfg = WIFI_INIT_CONFIG_DEFAULT();
 	uintptr_t features = (uintptr_t)arg;
 	bool enable_wifi = (features & S31_RADIO_FEATURE_WIFI) != 0;
-#ifndef S31_WIFI_ONLY
 	esp_bt_controller_config_t bt_cfg = BT_CONTROLLER_INIT_CONFIG_DEFAULT();
 	bool enable_bt = (features & S31_RADIO_FEATURE_BLUETOOTH) != 0;
-#endif
 	int rc;
 
 	pmu_init();
@@ -1632,10 +1628,8 @@ void s31_radio_stack_task(void *arg)
 		s31_linux_printf("[S31] clock handoff rc=%d\n", rc);
 		if (enable_wifi)
 			s31_radio_report_wifi_init(rc);
-		#ifndef S31_WIFI_ONLY
 		if (enable_bt)
 			s31_radio_report_bt_init(rc);
-		#endif
 		return;
 	}
 	if (s31_linux_pmu_reclaim_after_radio_init)
@@ -1702,10 +1696,8 @@ void s31_radio_stack_task(void *arg)
 		s31_linux_printf("[S31] esp_coex_adapter_register rc=%d\n", rc);
 		if (enable_wifi)
 			s31_radio_report_wifi_init(rc);
-		#ifndef S31_WIFI_ONLY
 		if (enable_bt)
 			s31_radio_report_bt_init(rc);
-		#endif
 		return;
 	}
 	/*
@@ -1719,10 +1711,8 @@ void s31_radio_stack_task(void *arg)
 	if (rc != 0) {
 		if (enable_wifi)
 			s31_radio_report_wifi_init(rc);
-		#ifndef S31_WIFI_ONLY
 		if (enable_bt)
 			s31_radio_report_bt_init(rc);
-		#endif
 		return;
 	}
 	if (enable_wifi) {
@@ -1742,7 +1732,6 @@ void s31_radio_stack_task(void *arg)
 		s31_radio_report_wifi_init(0);
 	}
 
-#ifndef S31_WIFI_ONLY
 	if (!enable_bt) {
 		s31_radio_report_bt_init(0);
 		return;
@@ -1757,7 +1746,6 @@ void s31_radio_stack_task(void *arg)
 	s31_radio_report_bt_init(rc);
 	if (rc == 0) {
 	}
-#endif
 
 }
 
@@ -1766,9 +1754,6 @@ void s31_radio_stack_task(void *arg)
  * therefore a distinct second-stage task. */
 void s31_radio_bt_enable_task(void *arg)
 {
-#ifdef S31_WIFI_ONLY
-	(void)arg;
-#else
 	int rc;
 
 	(void)arg;
@@ -1785,14 +1770,10 @@ void s31_radio_bt_enable_task(void *arg)
 	}
 	s31_radio_report_bt_enable(rc);
 	s31_radio_heap_report("after-bt-enable");
-#endif
 }
 
 void s31_radio_bt_disable_task(void *arg)
 {
-#ifdef S31_WIFI_ONLY
-	(void)arg;
-#else
 	int rc;
 
 	(void)arg;
@@ -1801,7 +1782,6 @@ void s31_radio_bt_disable_task(void *arg)
 	s31_linux_printf("[S31] esp_bt_controller_disable rc=%d\n", rc);
 	s31_radio_heap_report("after-bt-disable");
 	s31_radio_report_bt_disable(rc);
-#endif
 }
 
 void s31_radio_shutdown_task(void *arg)
@@ -1810,7 +1790,6 @@ void s31_radio_shutdown_task(void *arg)
 	int result = 0;
 	int rc;
 
-#ifndef S31_WIFI_ONLY
 	if (features & S31_RADIO_FEATURE_BLUETOOTH) {
 		rc = esp_bt_controller_disable();
 		if (rc != 0 && rc != ESP_ERR_INVALID_STATE && !result)
@@ -1821,7 +1800,6 @@ void s31_radio_shutdown_task(void *arg)
 			result = rc;
 		s31_linux_printf("[S31] shutdown bt deinit rc=%d\n", rc);
 	}
-#endif
 	if (features & S31_RADIO_FEATURE_WIFI) {
 		esp_event_handler_unregister(WIFI_EVENT, ESP_EVENT_ANY_ID,
 					     s31_wifi_event);

@@ -3,7 +3,7 @@
 set -eu
 
 port=${1:-/dev/ttyUSB0}
-output=${2:-build/backup-flash.bin}
+output=${2:-out/reports/backup-flash.bin}
 chunk_dir="${output}.chunks"
 
 mkdir -p "$chunk_dir"

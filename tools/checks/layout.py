@@ -4,16 +4,30 @@ import argparse
 import re
 from pathlib import Path
 
-ROOT = Path(__file__).resolve().parents[1]
-SLOTS = ("SPL", "UBOOT_ITB", "DTB", "RADIO", "KERNEL", "PERSIST", "HIL_SCRATCH", "ROOTFS")
+ROOT = Path(__file__).resolve().parents[2]
+SLOTS = ("SPL", "UBOOT_ITB", "DTB", "RADIO", "PERSIST", "KERNEL", "ROOTFS")
 
 def flash_layout(root=ROOT):
     text = (root / "configs/esp32s31-layout.cfg").read_text()
-    values = {k: int(v, 0) for k, v in re.findall(r"^(SLOT_\w+|FLASH_SIZE)=(0x[0-9a-fA-F]+|[0-9]+)$", text, re.M)}
+    values = {k: int(v, 0) for k, v in re.findall(r"^(SLOT_\w+|SIZE_\w+|FLASH_SIZE)=(0x[0-9a-fA-F]+|[0-9]+)$", text, re.M)}
+    if {key for key in values if key.startswith("SLOT_")} != {"SLOT_" + key for key in SLOTS}:
+        raise ValueError("flash layout must contain exactly the seven compact slots")
     points = [values["SLOT_" + key] for key in SLOTS] + [values["FLASH_SIZE"]]
     if any(a >= b or a < 0 or a % 0x2000 for a, b in zip(points, points[1:])):
         raise ValueError("flash slots must be increasing and erase-block aligned")
-    return values, dict(zip(SLOTS, (b - a for a, b in zip(points, points[1:]))))
+    sizes = dict(zip(SLOTS, (b - a for a, b in zip(points, points[1:]))))
+    sizes["SPL"] = values["SIZE_SPL"]
+    expected = {"SPL": 48 * 1024, "UBOOT_ITB": 320 * 1024,
+                "DTB": 64 * 1024, "RADIO": 1536 * 1024,
+                "KERNEL": 6144 * 1024, "ROOTFS": 6144 * 1024,
+                "PERSIST": 2120 * 1024}
+    if sizes != expected or values["SLOT_SPL"] != 0x2000:
+        raise ValueError("compact flash partition capacities differ from contract")
+    if values["SLOT_UBOOT_ITB"] - (values["SLOT_SPL"] + sizes["SPL"]) != 0:
+        raise ValueError("SPL and FIT must be contiguous without alignment padding")
+    if values["FLASH_SIZE"] != 0x1000000 or values["SLOT_KERNEL"] != 0x400000:
+        raise ValueError("Linux XIP must be 4 MiB aligned within 16 MiB flash")
+    return values, sizes
 
 def defines(text):
     result = {}
@@ -55,23 +69,25 @@ def check(root=ROOT):
     for overlay in dtsdir.glob("esp32s31-overlay-uart*-dma.dtso"):
         if not re.search(r"<0x0*%x\s+0x0*%x>" % (shared["S31_UART_DMA_BASE"], shared["S31_UART_DMA_SIZE"]), overlay.read_text(), re.I):
             raise ValueError(str(overlay.name) + " UART DMA reservation differs")
-    mappings = {"u-boot-fit": "UBOOT_ITB", "dtb": "DTB", "radio-bundle": "RADIO", "linux": "KERNEL", "persist": "PERSIST", "hil-scratch": "HIL_SCRATCH", "rootfs": "ROOTFS"}
+    mappings = {"spl": "SPL", "u-boot-fit": "UBOOT_ITB", "dtb": "DTB", "radio-bundle": "RADIO", "linux": "KERNEL", "persist": "PERSIST", "rootfs": "ROOTFS"}
     for label, key in mappings.items():
         match = re.search(r'label\s*=\s*"' + label + r'";\s*reg\s*=\s*<(0x[0-9a-fA-F]+)\s+(0x[0-9a-fA-F]+)>', dts)
         actual = tuple(int(x, 0) for x in match.groups()) if match else None
-        expected = (slots["SLOT_" + key] - slots["SLOT_UBOOT_ITB"], sizes[key])
+        expected = (slots["SLOT_" + key], sizes[key])
         if actual != expected:
             raise ValueError(f"DTS partition {label}: {actual} != slot map {expected}")
+    if "hil-scratch" in dts or not re.search(r"reg = <0x40000000 0x01000000>", dts):
+        raise ValueError("DTS must expose the full identity-mapped flash without HIL scratch")
     linker = (root / "linux-esp32-s31/arch/riscv/kernel/vmlinux-xip.lds.S").read_text()
     start = int(re.search(r"\.s31_radio.data\s+(0x[0-9a-fA-F]+)", linker)[1], 0)
     if start != shared["S31_RADIO_HEAP_BASE"]:
         raise ValueError("kernel radio link address differs from shared contract")
-    makefile = (root / "Makefile").read_text()
+    makefile = "\n".join(path.read_text() for path in [root / "Makefile", *sorted((root / "mk").glob("*.mk"))])
     start = int(re.search(r"FW_RW_START\s*\?=\s*(0x[0-9a-fA-F]+)", makefile)[1], 0)
     if start != shared["S31_OPENSBI_RW_BASE"]:
         raise ValueError("OpenSBI writable base differs from shared contract")
     xip = defines((root / "linux-esp32-s31/drivers/platform/esp32s31-radio-xip.h").read_text())
-    if xip["S31_XIP_PHYS"] != 0x40000000 + slots["SLOT_RADIO"] - slots["SLOT_UBOOT_ITB"]:
+    if xip["S31_XIP_PHYS"] != 0x40000000 + slots["SLOT_RADIO"]:
         raise ValueError("radio XIP physical mapping differs from flash slot")
     if xip["S31_XIP_SLOT_SIZE"] != sizes["RADIO"]:
         raise ValueError("radio XIP capacity differs from flash slot")
@@ -83,7 +99,7 @@ def check(root=ROOT):
             xip["S31_XIP_MAP_BASE"] % 0x400000 or
             xip["S31_XIP_MAP_PHYS"] % 0x400000):
         raise ValueError("radio XIP Sv32 leaf mapping is inconsistent")
-    print("SRAM reservations and all 7 mapped flash partitions match the shared contracts")
+    print("SRAM reservations and all mapped flash partitions match the shared contracts")
 
 def main():
     p = argparse.ArgumentParser(description=__doc__)

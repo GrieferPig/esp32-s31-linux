@@ -5,6 +5,7 @@ Requires the local btstack-source fetched by the normal rootfs build.
 Controller/transport behavior is covered separately by the connected BLE HIL.
 """
 from pathlib import Path
+import os
 import re
 import subprocess
 import tempfile
@@ -18,8 +19,9 @@ class HardwareErrorRecovery(unittest.TestCase):
         with tempfile.TemporaryDirectory() as directory:
             work = Path(directory)
             (work / 'src').mkdir()
-            source = ROOT / 'build/btstack-source/src/hci.c'
-            self.assertTrue(source.exists(), 'run make btstack-source first')
+            source = Path(os.environ.get('S31_BTSTACK_SOURCE', ROOT / 'cache/sources/btstack')) / 'src/hci.c'
+            if not source.exists():
+                self.skipTest('pinned BTstack source unavailable; run make fetch or set S31_BTSTACK_SOURCE')
             (work / 'src/hci.c').write_bytes(source.read_bytes())
             patch = ROOT / 'buildroot-external/package/btstack-s31/0020-hci-reinitialize-after-controller-hardware-error.patch'
             subprocess.run(['patch', '--batch', '-p1', '-i', str(patch)],

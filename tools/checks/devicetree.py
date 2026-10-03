@@ -9,7 +9,7 @@ import re
 import subprocess
 import tempfile
 
-ROOT = Path(__file__).resolve().parents[1]
+ROOT = Path(__file__).resolve().parents[2]
 
 def main():
     p = argparse.ArgumentParser(description=__doc__)

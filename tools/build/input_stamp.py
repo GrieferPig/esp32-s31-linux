@@ -5,6 +5,9 @@ import hashlib
 import json
 from pathlib import Path
 import subprocess
+import sys
+sys.path.insert(0, str(Path(__file__).resolve().parent))
+from toolchain_identity import identify as toolchain_identity
 
 
 def main():
@@ -20,6 +23,7 @@ def main():
         with path.open("rb") as stream:
             identity["files"][str(path.resolve())] = hashlib.file_digest(stream, "sha256").hexdigest()
     if a.compiler:
+        identity["toolchain"] = toolchain_identity(a.compiler)
         identity["compiler"] = subprocess.check_output([a.compiler, "--version"], text=True).splitlines()[0]
     if a.repo:
         identity["revision"] = subprocess.check_output(["git", "-C", str(a.repo), "rev-parse", "HEAD"], text=True).strip()

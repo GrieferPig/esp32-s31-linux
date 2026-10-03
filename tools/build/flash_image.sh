@@ -12,8 +12,8 @@
 
 set -euo pipefail
 
-CFG="${1:?usage: gen_esp_flash_image.sh <layout.cfg> <images_dir>}"
-IMAGES_DIR="${2:?usage: gen_esp_flash_image.sh <layout.cfg> <images_dir>}"
+CFG="${1:?usage: tools/build/flash_image.sh <layout.cfg> <images_dir>}"
+IMAGES_DIR="${2:?usage: tools/build/flash_image.sh <layout.cfg> <images_dir>}"
 
 [ -f "$CFG" ] || { echo "ERROR: layout cfg not found: $CFG" >&2; exit 1; }
 # shellcheck disable=SC1090
@@ -22,6 +22,7 @@ source "$CFG"
 : "${CHIP:?CHIP not set in $CFG}"
 : "${ESPTOOL_FLASH:?ESPTOOL_FLASH not set in $CFG}"
 : "${SLOT_SPL:?SLOT_SPL not set in $CFG}"
+: "${SIZE_SPL:?SIZE_SPL not set in $CFG}"
 : "${SLOT_UBOOT_ITB:?SLOT_UBOOT_ITB not set in $CFG}"
 : "${SLOT_DTB:?SLOT_DTB not set in $CFG}"
 : "${SLOT_RADIO:?SLOT_RADIO not set in $CFG}"
@@ -63,20 +64,21 @@ check_slot()
 	local image=$1 start=$2 end=$3 size capacity
 	size=$(stat -c%s "$image")
 	capacity=$((end - start))
-	if (( size > capacity )); then
+	if (( size == 0 || size > capacity )); then
 		echo "ERROR: $image is $size bytes, slot capacity is $capacity bytes" >&2
 		exit 1
 	fi
 }
 
-check_slot "$SPL_APP_BIN" "$((SLOT_SPL))" "$((SLOT_UBOOT_ITB))"
+check_slot "$SPL_APP_BIN" "$((SLOT_SPL))" "$((SLOT_SPL + SIZE_SPL))"
 check_slot "$UBOOT_ITB" "$((SLOT_UBOOT_ITB))" "$((SLOT_DTB))"
 check_slot "$BASE_DTB" "$((SLOT_DTB))" "$((SLOT_RADIO))"
-check_slot "$RADIO_IMAGE" "$((SLOT_RADIO))" "$((SLOT_KERNEL))"
-check_slot "$KERNEL_IMAGE" "$((SLOT_KERNEL))" "$((SLOT_PERSIST))"
+check_slot "$RADIO_IMAGE" "$((SLOT_RADIO))" "$((SLOT_PERSIST))"
+check_slot "$KERNEL_IMAGE" "$((SLOT_KERNEL))" "$((SLOT_ROOTFS))"
 check_slot "$ROOTFS_IMAGE" "$((SLOT_ROOTFS))" "$((FLASH_SIZE))"
 
-# Persist is not merged: firmware images and flash-all preserve user data.
+# Persist has no input payload, but combined-image padding overwrites it.
+# Only slot-wise flash-all on the same layout preserves existing user data.
 # shellcheck disable=SC2086
 "$ESPTOOL" --chip "$CHIP" merge-bin -o "$OUT_IMAGE" --format raw \
 	$ESPTOOL_FLASH \

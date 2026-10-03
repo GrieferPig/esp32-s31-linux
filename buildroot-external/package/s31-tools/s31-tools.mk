@@ -11,9 +11,14 @@ S31_TOOLS_LICENSE = GPL-2.0-only
 S31_TOOLS_DEPENDENCIES = dtc esp-simd
 S31_TOOLS_INSTALL_STAGING = YES
 S31_TOOLS_OVERLAY_UAPI = $(BR2_EXTERNAL_ESP32_S31_PATH)/../linux-esp32-s31/include/uapi/linux/esp32s31-overlay.h
+# The facade passes a build-specific generated directory. Keep the fallback
+# inside Buildroot O for direct package builds, never in the source checkout.
+S31_GENERATED_DIR ?= $(BASE_DIR)/../generated
+S31_TOOLS_GENERATED_CFLAGS = -I$(S31_GENERATED_DIR)
 S31_TOOLS_EXT_CFLAGS = -march=rv32imafbc_zicsr_zifencei_zaamo_zalrsc_zba_zbb_zbc_zbs_xesploop_xespv2p2 -mespv-spec=2p2
 
 define S31_TOOLS_BUILD_CMDS
+	test -r "$(S31_GENERATED_DIR)/s31_pie_cases.inc"
 	$(INSTALL) -D -m 0644 $(S31_TOOLS_OVERLAY_UAPI) $(@D)/include/linux/esp32s31-overlay.h
 	$(TARGET_CC) $(TARGET_CFLAGS) $(TARGET_LDFLAGS) \
 		$(@D)/segfault.c -o $(@D)/segfault
@@ -23,16 +28,16 @@ define S31_TOOLS_BUILD_CMDS
 		$(@D)/membench.c -o $(@D)/membench
 	$(TARGET_CC) $(TARGET_CFLAGS) $(TARGET_LDFLAGS) \
 		$(@D)/s31_crypto_test.c -o $(@D)/s31-crypto-test
-	$(TARGET_CC) $(TARGET_CFLAGS) $(S31_TOOLS_EXT_CFLAGS) -c $(@D)/s31_ext_test.S \
+	$(TARGET_CC) $(TARGET_CFLAGS) $(S31_TOOLS_EXT_CFLAGS) $(S31_TOOLS_GENERATED_CFLAGS) -c $(@D)/s31_ext_test.S \
 		-o $(@D)/s31_ext_test.o
-	$(TARGET_CC) $(TARGET_CFLAGS) $(S31_TOOLS_EXT_CFLAGS) $(TARGET_LDFLAGS) \
+	$(TARGET_CC) $(TARGET_CFLAGS) $(S31_TOOLS_EXT_CFLAGS) $(S31_TOOLS_GENERATED_CFLAGS) $(TARGET_LDFLAGS) \
 		$(@D)/s31_ext_test.c $(@D)/s31_ext_test.o \
 		-L$(STAGING_DIR)/usr/lib -lesp-simd -o $(@D)/s31-ext-test
 	$(TARGET_CC) $(TARGET_CFLAGS) $(TARGET_LDFLAGS) \
 		-fno-builtin-memcpy -fno-builtin-memset \
 		-fno-builtin-memmove $(@D)/s31_libc_test.c \
 		-o $(@D)/s31-libc-test
-	$(TARGET_CC) $(TARGET_CFLAGS) $(S31_TOOLS_EXT_CFLAGS) $(TARGET_LDFLAGS) \
+	$(TARGET_CC) $(TARGET_CFLAGS) $(S31_TOOLS_EXT_CFLAGS) $(S31_TOOLS_GENERATED_CFLAGS) $(TARGET_LDFLAGS) \
 		$(@D)/s31_mem_compare.c -L$(STAGING_DIR)/usr/lib -lesp-simd \
 		-o $(@D)/s31-mem-compare
 	$(TARGET_CC) $(TARGET_CFLAGS) $(TARGET_LDFLAGS) -fno-builtin \
@@ -72,7 +77,7 @@ define S31_TOOLS_INSTALL_TARGET_CMDS
 	$(INSTALL) -D -m 0755 $(@D)/s31-tlb-stress \
 		$(TARGET_DIR)/usr/sbin/s31-tlb-stress
 	$(INSTALL) -D -m 0755 \
-		$(BR2_EXTERNAL_ESP32_S31_PATH)/../tools/cpu_sample.sh \
+		$(BR2_EXTERNAL_ESP32_S31_PATH)/../rootfs/s31-cpu-sample \
 		$(TARGET_DIR)/usr/sbin/s31-cpu-sample
 endef
 

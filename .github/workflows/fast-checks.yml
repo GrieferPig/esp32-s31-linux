@@ -21,6 +21,8 @@ jobs:
           /tmp/s31-checks/bin/pip install -r docs/requirements.txt dtschema==2026.6
           echo /tmp/s31-checks/bin >> "$GITHUB_PATH"
       - name: Host regressions and strict documentation
-        run: make check-host check-docs
+        run: |
+          make btstack-source
+          make check-host check-docs
       - name: Device tree and binding diagnostics
-        run: python3 tools/check_s31_dt.py --cross-compile riscv64-linux-gnu-
+        run: python3 tools/checks/devicetree.py --cross-compile riscv64-linux-gnu-

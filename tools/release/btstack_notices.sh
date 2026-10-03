@@ -2,11 +2,12 @@
 
 set -eu
 
-version=431d58d5613fd8fae38afe50282b25302de84bf7
-project_dir=$(CDPATH= cd -- "$(dirname -- "$0")/.." && pwd)
-build_dir=${project_dir}/build
-source_dir=${1:-${build_dir}/btstack-source}
-output=${2:-${build_dir}/btstack-s31-notices.tar.xz}
+project_dir=$(CDPATH= cd -- "$(dirname -- "$0")/../.." && pwd)
+version=$(sed -n 's/^BTSTACK_REF[[:space:]]*[:?]*=[[:space:]]*//p' "${project_dir}/configs/build-versions.mk")
+[ -n "$version" ] || { echo 'Missing BTSTACK_REF dependency lock' >&2; exit 1; }
+build_dir=$(realpath -m "${S31_OUTPUT_ROOT:-${project_dir}/out}")
+source_dir=${1:-${project_dir}/cache/sources/btstack}
+output=${2:-${build_dir}/images/btstack-s31-notices.tar.xz}
 package_dir=${project_dir}/buildroot-external/package/btstack-s31
 
 resolved_output=$(realpath -m "$output")
@@ -32,7 +33,7 @@ esac
 }
 
 mkdir -p "$(dirname -- "$resolved_output")"
-temporary=$(mktemp -d "${build_dir}/btstack-notices.XXXXXX")
+temporary=$(mktemp -d "$(dirname -- "$resolved_output")/.btstack-notices.XXXXXX")
 staging=${temporary}/btstack-s31-notices
 trap 'rm -rf "$temporary"' EXIT HUP INT TERM
 
@@ -54,5 +55,6 @@ printf '%s\n' \
 	'use under the included license; commercial use requires a separate license.' \
 	>"${staging}/SOURCE.txt"
 
-tar -C "$temporary" -cJf "$resolved_output" btstack-s31-notices
+tar -C "$temporary" -cJf "${temporary}/notices.tar.xz" btstack-s31-notices
+mv -f "${temporary}/notices.tar.xz" "$resolved_output"
 printf 'BTstack notice bundle: %s\n' "$resolved_output"

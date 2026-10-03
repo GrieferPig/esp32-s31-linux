@@ -4,13 +4,16 @@
 #
 ################################################################################
 
-BTSTACK_S31_VERSION = 431d58d5613fd8fae38afe50282b25302de84bf7
-BTSTACK_S31_SITE = $(BR2_EXTERNAL_ESP32_S31_PATH)/../build/btstack-source
+include $(BR2_EXTERNAL_ESP32_S31_PATH)/../configs/build-versions.mk
+
+BTSTACK_S31_VERSION = $(BTSTACK_REF)
+S31_BTSTACK_SOURCE ?= $(BR2_EXTERNAL_ESP32_S31_PATH)/../cache/sources/btstack
+BTSTACK_S31_SITE = $(abspath $(S31_BTSTACK_SOURCE))
 BTSTACK_S31_SITE_METHOD = local
 BTSTACK_S31_LICENSE = BTstack License (non-commercial)
 BTSTACK_S31_LICENSE_FILES = LICENSE
 
-ifneq ($(filter y 1,$(BR2_PACKAGE_BTSTACK_S31_OPTIMIZE_O2) $(S31_BTSTACK_O2)),)
+ifeq ($(BR2_PACKAGE_BTSTACK_S31_OPTIMIZE_O2),y)
 BTSTACK_S31_OPTIMIZATION = -O2
 else
 BTSTACK_S31_OPTIMIZATION = -Os

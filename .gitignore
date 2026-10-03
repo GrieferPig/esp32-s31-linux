@@ -26,3 +26,10 @@ __pycache__/
 *.py[cod]
 /buildroot-external/board/esp32-s31/overlay/lib/firmware/esp32s31/s31-lp-core.elf
 /buildroot-external/board/esp32-s31/overlay/lib/firmware/esp32s31/s31-lp-core.bin
+/out/
+/cache/
+/dist/
+/local.mk
+!/tools/build/
+
+!/mk/*.mk

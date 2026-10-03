@@ -47,13 +47,13 @@ def set_config_value(config: str, key: str, value: str) -> str:
 
 
 def remove_partial_downloads(repo_root: Path) -> None:
-    # ct-ng itself stores source archives in build/downloads, while its
+    # ct-ng itself stores source archives in cache/downloads, while its
     # binutils wrapper bootstrap writes Rust downloads below the ct-ng work
     # directory.  Neither is usable once interrupted; let their respective
     # downloaders fetch a complete copy on the next run.
     for downloads in (
-        repo_root / "build" / "downloads",
-        repo_root / "build" / "crosstool-ng" / ".build",
+        repo_root / "cache" / "downloads",
+        repo_root / "cache" / "build" / "crosstool-ng" / ".build",
     ):
         if not downloads.exists():
             continue
@@ -111,7 +111,7 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument(
         "--ct-ng-dir",
         type=Path,
-        default=Path(__file__).resolve().parents[2] / "crosstool-NG",
+        default=Path(__file__).resolve().parents[3] / "crosstool-NG",
         help="crosstool-NG checkout (default: ../crosstool-NG)",
     )
     parser.add_argument(
@@ -125,6 +125,9 @@ def parse_args() -> argparse.Namespace:
         action="store_true",
         help="replace an existing installed toolchain",
     )
+    parser.add_argument("--prefix", type=Path, help="installation directory (default: cache/toolchains/riscv32-esp-linux-musl)")
+    parser.add_argument("--work-dir", type=Path, help="native ct-ng build directory")
+    parser.add_argument("--sources-dir", type=Path, help="shared source download cache")
     return parser.parse_args()
 
 
@@ -133,7 +136,7 @@ def main() -> int:
     if args.jobs < 1:
         raise SystemExit("--jobs must be at least 1")
 
-    repo_root = Path(__file__).resolve().parent.parent
+    repo_root = Path(__file__).resolve().parents[2]
     ctng_dir = args.ct_ng_dir.resolve()
     config_source = repo_root / "configs" / f"{TARGET}.config"
     kernel_dir = repo_root / "linux-esp32-s31"
@@ -141,9 +144,9 @@ def main() -> int:
     gcc_patch_dir = ctng_dir / "packages" / "gcc" / GCC_PATCH_VERSION
     musl_patch_dir = ctng_dir / "packages" / "musl" / MUSL_VERSION
     required_gcc_patches = tuple(gcc_patch_dir / name for name in REQUIRED_GCC_PATCHES)
-    prefix = repo_root / "toolchain" / TARGET
-    work_dir = repo_root / "build" / "crosstool-ng"
-    sources_dir = repo_root / "build" / "toolchain-src"
+    prefix = (args.prefix or repo_root / "cache" / "toolchains" / TARGET).resolve()
+    work_dir = (args.work_dir or repo_root / "cache" / "build" / "crosstool-ng").resolve()
+    sources_dir = (args.sources_dir or repo_root / "cache" / "downloads" / "toolchain-src").resolve()
 
     for path, description in (
         (ctng_dir / "bootstrap", "crosstool-NG checkout"),
@@ -227,7 +230,8 @@ def main() -> int:
     run([str(gcc), "--version"], cwd=work_dir)
     verification_dir = work_dir / "s31-patch-verification"
     verification_dir.mkdir(exist_ok=True)
-    from wait_s31_toolchain_and_test import verify_compiler
+    sys.path.insert(0, str(repo_root))
+    from tools.checks.toolchain import verify_compiler
 
     verify_compiler(prefix, verification_dir, repo_root)
 
@@ -248,7 +252,7 @@ def main() -> int:
 
     marker = prefix / ".source-build"
     marker.write_text(
-        "Built locally by tools/build_linux_toolchain.py\n"
+        "Built locally by tools/build/toolchain.py\n"
         f"config_sha256={hashlib.sha256(generated_config.read_bytes()).hexdigest()}\n"
         f"ct_ng_dir={ctng_dir}\n"
     )
