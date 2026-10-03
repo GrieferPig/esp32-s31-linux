@@ -2,13 +2,10 @@
 
 MMU RV32 Linux running natively on an ESP32-S31 microcontroller.
 
-Module tested: ESP32-S31-WROOM-3 E1H16R16V (ESP32-S31 Coreboard/Korvo).
-
-<p align="center">
-  <img src="https://raw.githubusercontent.com/GrieferPig/esp32-s31-linux-docs/main/bootlog.png"
-       alt="Linux booted on an ESP32-S31 development board"
-       width="850">
-</p>
+Target module: ESP32-S31-WROOM-3 E1H16R16V (ESP32-S31 Coreboard/Korvo).
+Hardware validation of the current image is pending. The emulator reaches
+read-only recovery because persistent-flash erase fails; this does not
+establish working persistence or a successful normal boot.
 
 > **WARNING: Experimental**
 > Definitely not something you want for production.
@@ -16,6 +13,34 @@ Module tested: ESP32-S31-WROOM-3 E1H16R16V (ESP32-S31 Coreboard/Korvo).
 ## Quick Start
 
 Flash the precompiled image in [Releases](https://github.com/GrieferPig/esp32-s31-linux/releases). For more info, visit the [get started guide](https://grieferpig.github.io/esp32-s31-linux-docs/en/get-started/).
+
+## Build locally
+
+GNU Make is the public build interface. Start with `make help` and `make doctor`,
+then run `make fetch` to prepare pinned dependencies and `make image` to build.
+Every build uses the full board configuration, including all peripheral drivers.
+`DEBUG=1` adds diagnostic information without changing the feature set.
+
+Native component outputs live in `out/{linux,u-boot,opensbi,buildroot,radio,lp}`;
+generated configuration, staging, reports, and final `images/` also live in `out/`.
+Downloads and toolchains live in `cache/`; `make clean` removes the current build
+outputs and retains caches. Existing historical output directories are never
+used as inputs or migrated automatically. Set host paths and jobs in `local.mk`.
+
+The full kernel uses size optimization and unused-export trimming. Its current
+6,282,188-byte XIP image fits the 6 MiB kernel slot with only 9,268 bytes spare.
+Every build enforces the size limit; no peripheral is silently removed.
+
+`make image` publishes a verified matched set atomically under `dist/`, with
+`dist/current` pointing to the complete immutable result. The manifest
+binds the kernel, radio module, payload, import contract, and radio image hashes.
+A packaging command never silently builds missing inputs.
+
+Device operations are separate: `make flash-existing-all PORT=/dev/ttyUSB0`
+uses only the verified immutable `dist/current` image set and preserves persist on an unchanged
+layout. Partial updates fail closed because the installed companions are unknown.
+The combined installation image overwrites persist. Build and host validation do
+not establish a successful hardware boot.
 
 ## Documentation
 
@@ -40,7 +65,8 @@ For a detailed overview of the porting progress, refer to [the support matrix](h
 |---|---|
 | Linux, Sv32 MMU, and flash XIP | 🟢 Stable |
 | Dual-core SMP | 🟢 Stable |
-| Persistent root filesystem | 🟢 Stable |
+| Read-only SquashFS root | 🟢 Stable |
+| Writable persistent overlay | 🟡 Experimental; erase/write validation pending |
 | LP firmware and mailbox | 🟡 Experimental |
 | Power management | 🟠 WIP |
 

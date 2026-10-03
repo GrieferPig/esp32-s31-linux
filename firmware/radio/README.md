@@ -3,13 +3,15 @@
 `make all` builds Linux, rootfs and the matched flash-XIP radio image. The
 Linux module is installed in rootfs; `build/radio.bin` contains the prelinked
 radio code and its pristine writable-data template. Kernel and radio image
-must be built and deployed together. Layout and image CRC checks reject a
-mismatch before executing radio code.
+must be built and deployed together. Layout and image CRC checks reject
+incompatible layouts or corrupt images before executing radio code; they do
+not establish that every artifact came from the same build.
 
 The Wi-Fi frontend is a single-STA mac80211 bridge using native MAC CCMP,
 bounded TX aggregation, and Linux RX replay/reorder checks. Runtime mode
-selection enables Wi-Fi, Bluetooth, or both. Wi-Fi uses 16 static RX buffers,
-32 dynamic RX buffers, a 16-frame TX aggregation cap, and a 48-block RX cache.
+selection enables Wi-Fi, Bluetooth, or both. Wi-Fi-only mode uses 16 static and
+32 dynamic RX buffers; combo mode uses 10 static and 32 dynamic RX buffers.
+The current TX aggregation cap is 16 frames and the RX cache limit is 48 blocks.
 No throughput claim follows from a successful build.
 
 The firmware uses the ESP-IDF revision and compiler pinned in

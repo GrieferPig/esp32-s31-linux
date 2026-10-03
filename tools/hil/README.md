@@ -9,7 +9,7 @@ Keep local acceptance records separate from the reference documentation.
 The HIL system has three independently verifiable layers:
 
 - `s31-hil-agent` in the Buildroot rootfs validates S31 firmware and runs
-  SDMMC, USB host, MTD/XIP, LP-core, SMP/IRQ/GDMA, and fixture cleanup. Its
+  SDMMC, USB host, read-only MTD inventory, LP-core, SMP/IRQ/GDMA, and fixture cleanup. Its
   `HIL1` JSON lines label probe, electrical, data, and destructive evidence
   separately.
 - `esp32p4-tester` is the Waveshare P4 firmware.  It keeps every fixture GPIO
@@ -17,17 +17,21 @@ The HIL system has three independently verifiable layers:
 - `s31_hil.py` drives both serial consoles and stores the machine-readable
   results on the host.
 
-Build and flash the standard kernel, rootfs, and radio bundle as a matched set:
+Build the standard kernel, rootfs, and radio XIP image as a matched set:
 
 ```sh
-S31_LEAN_RADIO=0 make -j8 linux rootfs radio-fs
+make -j8 linux rootfs radio-fs
 ```
+
+This command only builds. Follow the
+[flashing guide](../../docs/en/get-started/flash-and-first-boot.md) to write the
+matched component images to the board.
 
 The implemented P0-P2 cases, excluding USB device/gadget mode, are:
 
 ```text
 gpio uart i2c spi pwm-pcnt i2s c6-wifi c6-ble
-ethernet sdmmc usb-drive mtd lp-core smp-irq-dma
+ethernet sdmmc usb-drive lp-core smp-irq-dma
 ```
 
 The four-wire cases use the guarded P4 responders and receiver-first host
@@ -63,10 +67,9 @@ tools/hil/s31_hil.py --board both --case i2s-stress \
 ```
 
 SPI stress defaults to 4096-byte full-duplex transfers in all four modes at a
-5 MHz request rate. Earlier fixture characterization used a 14 MHz request
-(13.333 MHz effective with the 80 MHz GPSPI parent). That historical result
-does not change the CLI default. Override the rate explicitly for a boundary
-run; for example, the earlier 20 MHz modes-1/2 configuration was:
+5 MHz request rate. The all-mode fixture gate uses a 14 MHz request
+(13.333 MHz effective with the 80 MHz GPSPI parent). Override the rate
+explicitly for a boundary run; for example, the 20 MHz modes-1/2 configuration:
 
 ```sh
 tools/hil/s31_hil.py --board both --case spi-stress \
@@ -78,7 +81,7 @@ tools/hil/s31_hil.py --board both --case spi-stress \
 The ESP32-P4 v1.3 slave fixture cannot validate modes 0/3 at 20 MHz: the same
 fragmented transactions occur with the S31 running the ESP-IDF master baseline
 and persist across both P4 GPSPI instances and internal-edge sweeps. Keep the
-historical all-mode acceptance at a 14 MHz request. At exact 20 MHz, modes 1/2
+all-mode fixture gate at a 14 MHz request. At exact 20 MHz, modes 1/2
 are the hardware-qualified gate and require the tester's SCLK input hysteresis.
 For cache and direction diagnosis, `spi_direction_diag.py` additionally checks
 the P4 bit length and both endpoint CRCs on each individual transfer.
@@ -119,11 +122,23 @@ tools/hil/s31_hil.py --board s31 --case usb-drive
 tools/hil/s31_hil.py --board s31 --case usb-drive --allow-usb-write
 ```
 
+Use a dedicated test configuration: `c6-wifi` requires persistent Wi-Fi
+disabled, no `/etc/esp32-conf/wpa_supplicant.conf`, and no running supplicant.
+Back up a profile before preparing that state. `c6-ble` requires both persistent
+Wi-Fi and Bluetooth disabled and leaves its temporary Bluetooth runtime
+stopped; it does not restore an arbitrary previous session.
+
 The P4/C6 Wi-Fi case creates WPA2 SoftAP `S31-HIL-P4` on the fixture itself.
 It uses only an ephemeral S31 profile, temporarily pauses BTstack, then checks
 association, DHCP, ICMP, and 64 exact 1472-byte UDP uplink/echo-downlink
 packets. The P4 counters must report 94208 bytes and zero pattern or echo
-errors. `--wifi-ap-open` is available only to isolate authentication faults:
+errors. `--wifi-ap-open` is available only to isolate authentication faults.
+
+Flash HIL coverage is limited to the read-only MTD partition inventory in the
+`firmware` case. No case erases or programs flash, and there is no dedicated
+flash-test partition.
+
+Run the applicable case:
 
 ```sh
 tools/hil/s31_hil.py --board both --case c6-wifi --peer-connected \
@@ -132,7 +147,6 @@ tools/hil/s31_hil.py --board both --case c6-wifi --wifi-ap-open \
   --peer-connected --output logs/hil-c6-wifi-open.json
 tools/hil/s31_hil.py --board both --case c6-ble --peer-connected \
   --output logs/hil-c6-ble.json
-tools/hil/s31_hil.py --board s31 --case mtd --output logs/hil-mtd.json
 tools/hil/s31_hil.py --board s31 --case lp-core --output logs/hil-lp-core.json
 tools/hil/s31_hil.py --board s31 --case smp-irq-dma \
   --output logs/hil-smp-irq-dma.json
@@ -140,8 +154,7 @@ tools/hil/s31_hil.py --board s31 --case smp-irq-dma \
 
 The Wi-Fi finalizer removes `/tmp` profiles and the volatile radio overlay,
 restores the pre-test BT service, and verifies that persistent Wi-Fi remains
-disabled with no profile. `c6-wifi-recover` is retained only for backup files
-created by the older reboot-persistent workflow.
+disabled with no profile.
 
 After a formal run, retain a sanitized acceptance summary with its build
 identity, result, fixture and cleanup evidence in your local test records. Update
@@ -149,12 +162,14 @@ identity, result, fixture and cleanup evidence in your local test records. Updat
 limit changed. Keep failures and skips in the acceptance record. USB device/
 gadget mode is outside the standard suite; `usb-drive` covers USB host mode.
 
-For Wi-Fi-only suspend/reconnect acceptance, add `--wifi-suspend-cycles N`
-to the volatile `--case c6-wifi` run (1–20 cycles). Each cycle checks the
-boot identity, a 128 KiB RAM checksum, both online harts, radio readiness,
-userspace reassociation, ICMP and 256 exact 1472-byte UDP echoes. This checks
-reconnection after timer wake, not a retained association or WoWLAN. It does
-not establish AP, Bluetooth or combo-mode recovery.
+The `--wifi-suspend-cycles N` option adds a diagnostic suspend/reconnect
+sequence to the volatile `--case c6-wifi` run (1–20 cycles). It checks boot
+identity, a 128 KiB RAM checksum, both online harts, radio readiness, userspace
+reassociation, ICMP, and 256 exact 1472-byte UDP echoes. Current SoftMAC rejects
+suspend while running and has no active-connection replay implementation;
+the existence of this test is not evidence that current Wi-Fi recovery passes.
+It also does not establish retained association, WoWLAN, AP, Bluetooth, or
+combo-mode recovery.
 
 
 ## Host transport and result checks
@@ -173,8 +188,12 @@ retain skips separately and exclude summary records.
 Run the host regressions with:
 
 ```sh
-S31_TEST_SANITIZERS=1 python3 -m unittest discover -s tools/tests -v
+S31_TEST_SANITIZERS=1 make check-host
 ```
+
+`check-host` validates the layout and fetches the pinned BTstack source before
+discovering all host tests. If invoking unittest directly, run
+`make btstack-source` first.
 
 On WSL with Windows `python` available, also set `S31_TEST_WINDOWS_SERIAL=1`
 to exercise real Windows subprocess timeout cleanup. That optional test uses
