@@ -24,8 +24,7 @@ Every build uses the full board configuration, including all peripheral drivers.
 Native component outputs live in `out/{linux,u-boot,opensbi,buildroot,radio,lp}`;
 generated configuration, staging, reports, and final `images/` also live in `out/`.
 Downloads and toolchains live in `cache/`; `make clean` removes the current build
-outputs and retains caches. Existing historical output directories are never
-used as inputs or migrated automatically. Set host paths and jobs in `local.mk`.
+outputs and retains caches. Set host paths and jobs in `local.mk`.
 
 The full kernel uses size optimization and unused-export trimming. Its current
 6,282,188-byte XIP image fits the 6 MiB kernel slot with only 9,268 bytes spare.

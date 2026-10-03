@@ -1,11 +1,12 @@
 # ESP32-S31 radio
 
 `make all` builds Linux, rootfs and the matched flash-XIP radio image. The
-Linux module is installed in rootfs; `build/radio.bin` contains the prelinked
+Linux module is installed in rootfs; `out/images/radio.bin` contains the prelinked
 radio code and its pristine writable-data template. Kernel and radio image
 must be built and deployed together. Layout and image CRC checks reject
-incompatible layouts or corrupt images before executing radio code; they do
-not establish that every artifact came from the same build.
+incompatible layouts or corrupt images before executing radio code. The
+`make image` publication and device targets additionally verify the build
+manifest and kernel/module/payload binding before using the matched set.
 
 The Wi-Fi frontend is a single-STA mac80211 bridge using native MAC CCMP,
 bounded TX aggregation, and Linux RX replay/reorder checks. Runtime mode

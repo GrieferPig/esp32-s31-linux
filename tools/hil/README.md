@@ -188,12 +188,14 @@ retain skips separately and exclude summary records.
 Run the host regressions with:
 
 ```sh
+make btstack-source
 S31_TEST_SANITIZERS=1 make check-host
 ```
 
-`check-host` validates the layout and fetches the pinned BTstack source before
-discovering all host tests. If invoking unittest directly, run
-`make btstack-source` first.
+`btstack-source` prepares the pinned source used by the BTstack regression.
+`check-host` validates the layout and discovers all host tests without
+downloading sources; its BTstack test is skipped when that source is absent.
+The same preparation is required when invoking unittest directly.
 
 On WSL with Windows `python` available, also set `S31_TEST_WINDOWS_SERIAL=1`
 to exercise real Windows subprocess timeout cleanup. That optional test uses
