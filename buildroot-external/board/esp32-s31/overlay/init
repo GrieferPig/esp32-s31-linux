@@ -17,6 +17,42 @@ mount -t proc proc /proc 2>/dev/null || true
 mount -t sysfs sysfs /sys 2>/dev/null || true
 mount -t devpts devpts /dev/pts 2>/dev/null || true
 
+# The immutable root contains these mountpoints. Recovery must prepare the
+# same writable runtime directories as a successful pivot; otherwise BusyBox
+# init cannot start rcS or preserve its diagnostics on a read-only SquashFS.
+mount_volatile_dir()
+{
+	_volatile_path="$1"
+	_volatile_options="$2"
+	mountpoint -q "$_volatile_path" && return 0
+	if ! mount -t tmpfs -o "$_volatile_options" tmpfs "$_volatile_path"; then
+		echo "S31 init: failed to mount volatile $_volatile_path" >&2
+		return 1
+	fi
+}
+
+prepare_volatile_dirs()
+{
+	_volatile_failed=0
+	if mount_volatile_dir /run mode=0755,nosuid,nodev; then
+		mkdir -p /run/lock /run/seedrng && chmod 0700 /run/seedrng ||
+			_volatile_failed=1
+	else
+		_volatile_failed=1
+	fi
+	mount_volatile_dir /tmp mode=1777,nosuid,nodev || _volatile_failed=1
+	mount_volatile_dir /var/log mode=0755,nosuid,nodev || _volatile_failed=1
+	return "$_volatile_failed"
+}
+
+enter_recovery()
+{
+	echo 'S31 recovery: using read-only root; persistent settings unavailable' >&2
+	prepare_volatile_dirs ||
+		echo 'S31 recovery: some volatile directories are unavailable' >&2
+	exec /sbin/init
+}
+
 # The rootfs is SquashFS. Keep the writable JFFS2 store in the early-boot
 # staging tree while the overlay is assembled. After pivot_root the staging
 # tree is detached; only the merged root remains visible. Identify the store by
@@ -38,7 +74,7 @@ done
 
 if [ -z "$persist_dev" ]; then
 	echo "S31 overlay: persist MTD block device not found" >&2
-	exec /sbin/init
+	enter_recovery
 fi
 
 # /mnt is part of the immutable root, so use a temporary mount there for the
@@ -46,12 +82,12 @@ fi
 # filesystem and does not need a separate mkfs operation on the target.
 mount -t tmpfs -o mode=0755,nosuid,nodev tmpfs /mnt || {
 	echo "S31 overlay: failed to allocate staging tmpfs" >&2
-	exec /sbin/init
+	enter_recovery
 }
 mkdir -p /mnt/store /mnt/newroot
 if ! mount -t jffs2 "$persist_dev" /mnt/store; then
 	echo "S31 overlay: failed to mount persist as JFFS2" >&2
-	exec /sbin/init
+	enter_recovery
 fi
 
 mkdir -p /mnt/store/upper /mnt/store/work
@@ -110,13 +146,13 @@ if ! mount -t overlay overlay \
 	-o lowerdir=/,upperdir=/mnt/store/upper,workdir=/mnt/store/work,\
 index=off,redirect_dir=off /mnt/newroot; then
 	echo "S31 overlay: failed to mount overlayfs" >&2
-	exec /sbin/init
+	enter_recovery
 fi
 
 mkdir -p /mnt/newroot/oldroot
 if ! pivot_root /mnt/newroot /mnt/newroot/oldroot; then
 	echo "S31 overlay: pivot_root failed" >&2
-	exec /sbin/init
+	enter_recovery
 fi
 cd /
 umount -l /oldroot 2>/dev/null || true
@@ -127,11 +163,8 @@ mount -t devtmpfs devtmpfs /dev 2>/dev/null || true
 mount -t proc proc /proc 2>/dev/null || true
 mount -t sysfs sysfs /sys 2>/dev/null || true
 mount -t devpts devpts /dev/pts 2>/dev/null || true
-mount -t tmpfs -o mode=0755,nosuid,nodev tmpfs /run 2>/dev/null || true
-mount -t tmpfs -o mode=1777,nosuid,nodev tmpfs /tmp 2>/dev/null || true
-mount -t tmpfs -o mode=0755,nosuid,nodev tmpfs /var/log 2>/dev/null || true
-mkdir -p /run/lock
-mkdir -m 0700 /run/seedrng
+prepare_volatile_dirs ||
+	echo 'S31 init: some volatile directories are unavailable' >&2
 
 # Configuration belongs in the standard /etc hierarchy and is retained by the
 # root OverlayFS writable layer.
