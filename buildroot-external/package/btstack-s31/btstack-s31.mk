@@ -4,8 +4,6 @@
 #
 ################################################################################
 
-include $(BR2_EXTERNAL_ESP32_S31_PATH)/../configs/build-versions.mk
-
 BTSTACK_S31_VERSION = $(BTSTACK_REF)
 S31_BTSTACK_SOURCE ?= $(BR2_EXTERNAL_ESP32_S31_PATH)/../cache/sources/btstack
 BTSTACK_S31_SITE = $(abspath $(S31_BTSTACK_SOURCE))

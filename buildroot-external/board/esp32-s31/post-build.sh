@@ -272,7 +272,7 @@ xz --check=crc32 --lzma2=dict=64KiB -f "${target_dir}/usr/lib/s31-radio/esp32s31
 rm -f "${target_dir}/usr/lib/s31-radio/s31-dma-ccm-net.ko.xz" \
 	"${target_dir}/etc/esp32-conf/softmac.conf"
 
-required_runtime='usr/sbin/s31-btstack-a2dp usr/sbin/s31-ext-test usr/sbin/s31-gpio usr/sbin/s31-config-archive usr/sbin/esp32-config'
+required_runtime='usr/sbin/s31-btstack-a2dp etc/init.d/S40btstack usr/sbin/s31-ext-test usr/sbin/s31-gpio usr/sbin/s31-config-archive usr/sbin/esp32-config'
 
 for required in ${required_runtime}; do
 	[ -x "${target_dir}/${required}" ] || {
