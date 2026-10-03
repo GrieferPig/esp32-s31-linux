@@ -7,6 +7,12 @@ Hardware and emulator validation of the current merged image are pending.
 Persistent-flash erase and LP firmware remain unresolved validation limitations;
 working persistence and a successful normal boot have not been established.
 
+<p align="center">
+  <img src="https://raw.githubusercontent.com/GrieferPig/esp32-s31-linux-docs/main/bootlog.png"
+       alt="Historical Linux boot log on an ESP32-S31 development board"
+       width="850">
+</p>
+
 > **WARNING: Experimental**
 > Definitely not something you want for production.
 
