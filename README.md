@@ -49,12 +49,15 @@ not establish a successful hardware boot.
 
 For a detailed overview of the porting progress, refer to [the support matrix](https://grieferpig.github.io/esp32-s31-linux-docs/en/resources/support-matrix.html).
 
+These statuses describe implementation and build integration. Runtime validation
+of the current image remains pending for every feature below.
+
 ### Legend
 
 | Status | Meaning |
 |---|---|
-| 🟢 Stable | Fully supported and tested |
-| 🟡 Experimental | Supported and mostly working; may have limitations or require further testing |
+| 🟢 Integrated | Implemented and included in the full board build |
+| 🟡 Experimental | Implementation available; limitations and runtime validation remain |
 | 🟠 WIP | Driver exists, but full functionality is work in progress |
 | 🔴 Unsupported | Not implemented or supported |
 
@@ -62,9 +65,9 @@ For a detailed overview of the porting progress, refer to [the support matrix](h
 
 | Feature | Status |
 |---|---|
-| Linux, Sv32 MMU, and flash XIP | 🟢 Stable |
-| Dual-core SMP | 🟢 Stable |
-| Read-only SquashFS root | 🟢 Stable |
+| Linux, Sv32 MMU, and flash XIP | 🟢 Integrated |
+| Dual-core SMP | 🟢 Integrated |
+| Read-only SquashFS root | 🟢 Integrated |
 | Writable persistent overlay | 🟡 Experimental; erase/write validation pending |
 | LP firmware and mailbox | 🟡 Experimental |
 | Power management | 🟠 WIP |
@@ -80,7 +83,7 @@ For a detailed overview of the porting progress, refer to [the support matrix](h
 
 | Feature | Status |
 |---|---|
-| GPIO and UART | 🟢 Stable |
+| GPIO and UART | 🟢 Integrated |
 | I2C0/I2C1 | 🟡 Experimental |
 | GPSPI2/GPSPI3 host | 🟡 Experimental |
 | GPSPI target | 🟡 Experimental |
@@ -102,4 +105,4 @@ For a detailed overview of the porting progress, refer to [the support matrix](h
 
 I noticed folks on [Hacker News](https://news.ycombinator.com/item?id=49087499) questioning the use of AI-generated code. For transparency:
 
-- Yes, it is heavily agent-assisted. It do work on real S31 dev boards (there's console output above and binary releases to prove that.) I understand the esp32 microcontroller architecture to some extent, but I barely know how to port Linux to other RISC-V platforms; what I did is to tell the agent something like "Go implement an IPC transport that uses a shared SRAM buffer and an IPC interrupt doorbell" or "sdmmc uses designware ip; search esp-idf usage and port the existing Linux driver over." An AI agent on its own would never discover S31's bespoke hardware behavior without my guidance, for example, that the register `mcliccfg` has writable bits, despite esp-idf saying otherwise. However I admit that AI assistance is the direct reason why I am able to progress this fast, and I did learn a lot about kernel development during the process.
+- Yes, it is heavily agent-assisted. I understand the esp32 microcontroller architecture to some extent, but I barely know how to port Linux to other RISC-V platforms; what I did is to tell the agent something like "Go implement an IPC transport that uses a shared SRAM buffer and an IPC interrupt doorbell" or "sdmmc uses designware ip; search esp-idf usage and port the existing Linux driver over." An AI agent on its own would never discover S31's bespoke hardware behavior without my guidance, for example, that the register `mcliccfg` has writable bits, despite esp-idf saying otherwise. However I admit that AI assistance is the direct reason why I am able to progress this fast, and I did learn a lot about kernel development during the process.

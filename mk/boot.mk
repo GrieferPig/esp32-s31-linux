@@ -39,9 +39,12 @@ opensbi: toolchain | $(OPENSBI_OUT)
 
 uboot: idf-check opensbi | $(UBOOT_OUT) $(IMAGES_DIR)
 	@echo "--- U-Boot SPL + proper ---"
-	# Host Python is explicit; do not replace the host tool PATH with /usr/bin.
+	# Binman uses an env shebang, so PYTHON3 alone does not select its interpreter.
+	# A Python-only shim preserves the remaining host-tool and ESP-IDF PATH.
 	python3 $(ROOT)/tools/build/configure.py native --kind uboot --source "$(UBOOT_DIR)" --output "$(UBOOT_OUT)" --defconfig espressif_esp32s31_defconfig --fragment "$(ROOT)/configs/uboot.config" --compiler "$(CC)" --cross "$(CROSS_COMPILE)"
-	PYTHONPATH="$(UBOOT_PYTHONPATH)$${PYTHONPATH:+:$$PYTHONPATH}" $(MAKE) -C $(UBOOT_DIR) O=$(UBOOT_OUT) ARCH=riscv \
+	PYTHONPATH="$(UBOOT_PYTHONPATH)$${PYTHONPATH:+:$$PYTHONPATH}" python3 $(ROOT)/tools/build/host_python.py \
+		--python "$(HOST_PYTHON)" --shim "$(UBOOT_OUT)/.host-python" -- \
+		$(MAKE) -C $(UBOOT_DIR) O=$(UBOOT_OUT) ARCH=riscv \
 		CROSS_COMPILE="$(CROSS_COMPILE)" \
 		PYTHON="$(HOST_PYTHON)" PYTHON3="$(HOST_PYTHON)" OPENSBI=$(OPENSBI_FW_DYNAMIC_BIN) -j$(JOBS)
 	cp -v $(UBOOT_OUT)/u-boot.itb $(UBOOT_ITB)

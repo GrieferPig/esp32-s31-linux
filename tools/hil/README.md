@@ -5,6 +5,8 @@ are documented in
 [`docs/en/contribute/testing-hil.md`](../../docs/en/contribute/testing-hil.md). Implementation status is recorded in
 [`docs/en/resources/support-matrix.md`](../../docs/en/resources/support-matrix.md).
 Keep local acceptance records separate from the reference documentation.
+Every acceptance claim requires evidence from the exact firmware image, fixture,
+and test parameters; current-image hardware acceptance remains pending.
 
 The HIL system has three independently verifiable layers:
 
@@ -48,7 +50,7 @@ tools/hil/s31_hil.py --board both --case pwm-pcnt \
   --output logs/hil-pwm-pcnt.json
 ```
 
-I2C defaults to 100 kHz. The I2C overlays and runner also expose the validated
+I2C defaults to 100 kHz. The I2C overlays and runner also expose
 400 kHz and 1 MHz timing points, for example:
 
 ```sh
@@ -78,24 +80,23 @@ tools/hil/s31_hil.py --board both --case spi-stress \
   --output logs/hil-spi-20mhz.json
 ```
 
-The ESP32-P4 v1.3 slave fixture cannot validate modes 0/3 at 20 MHz: the same
-fragmented transactions occur with the S31 running the ESP-IDF master baseline
-and persist across both P4 GPSPI instances and internal-edge sweeps. Keep the
-all-mode fixture gate at a 14 MHz request. At exact 20 MHz, modes 1/2
-are the hardware-qualified gate and require the tester's SCLK input hysteresis.
+Treat ESP32-P4 v1.3 modes 0/3 at 20 MHz as unsupported acceptance combinations.
+Keep the all-mode fixture gate at a 14 MHz request. At exact 20 MHz, restrict
+acceptance runs to modes 1/2 with the tester's SCLK input hysteresis enabled.
 For cache and direction diagnosis, `spi_direction_diag.py` additionally checks
 the P4 bit length and both endpoint CRCs on each individual transfer.
-The diagnostic accepts requests through 40 MHz. On the current loose-jumper
-P4-v1.3 fixture, 40 MHz is validated only from S31 MOSI to P4 (20/20 exact
-4096-byte transfers across GPSPI2/3); bidirectional acceptance remains 20 MHz.
+The diagnostic accepts requests through 40 MHz for characterization. A
+single-direction result does not establish bidirectional acceptance, and each
+exact image/fixture combination requires its own saved evidence.
 
 I2S stress sends 32 KiB fixtures and requires an exact 16 KiB playback
 window without resynchronization, plus at least 16 KiB of contiguous matching
 capture. Guard data allows the slave to join the running frame clock; startup
 samples are outside this check. Select `--i2s-rate 8000`, `16000`, `32000` or
-`48000` (default 8000). Both controllers have passed at 8/16/48 kHz, S16_LE,
-stereo. These bounded checks do not establish extended endurance or other
-DAI formats. See `docs/en/resources/support-matrix.md` for the accepted scope.
+`48000` (default 8000); the fixture uses S16_LE stereo. These bounded checks
+require a fresh result for each controller and rate and do not establish
+extended endurance or other DAI formats. See
+`docs/en/resources/support-matrix.md` for implementation and validation scope.
 
 With the direct Ethernet cable connected, `--board both` starts the P4 IP101
 peer and tests carrier, ICMP, UDP payloads, MTU, link loss, and recovery:

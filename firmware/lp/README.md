@@ -14,5 +14,7 @@ The native build lives in `out/lp/`; the staged files are
 `out/staging/overlay/lib/firmware/esp32s31/s31-lp-core.{elf,bin}`.
 Use `make rootfs` or `make image` to include them in the root filesystem.
 
-Linux remoteproc loads `s31-lp-core.elf` into the 32 KiB LP SRAM. The raw binary
-is staged as a debugging and recovery artifact, but Linux boots the ELF image.
+Linux remoteproc is intended to load and start `s31-lp-core.elf` in the 32 KiB
+LP SRAM. The raw binary is staged as a debugging and recovery artifact.
+Current-image firmware startup, mailbox operation, and runtime acceptance remain
+unverified; successful packaging does not establish LP execution.
