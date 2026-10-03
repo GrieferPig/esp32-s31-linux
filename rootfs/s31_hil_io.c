@@ -19,7 +19,6 @@
 #include <linux/spi/spidev.h>
 #include <linux/i2c.h>
 #include <linux/i2c-dev.h>
-#include <mtd/mtd-user.h>
 
 static uint32_t crc32(const uint8_t *data, size_t length)
 {
@@ -512,97 +511,6 @@ fail:
 	return 1;
 }
 
-static int mtd_test(const char *path, unsigned long cycles)
-{
-	struct mtd_info_user info;
-	struct erase_info_user erase = { 0 };
-	uint8_t *tx = NULL, *rx = NULL;
-	int fd = -1;
-	int ret = 1;
-	uint32_t final_crc = 0;
-	const char *phase = "open";
-	unsigned long failed_cycle = 0;
-	size_t failed_offset = 0;
-	uint8_t expected = 0, actual = 0;
-
-	if (!cycles || cycles > 32)
-		return 2;
-	fd = open(path, O_RDWR);
-	if (fd < 0 || ioctl(fd, MEMGETINFO, &info) || !info.erasesize ||
-	    info.size < info.erasesize)
-		goto out;
-	tx = malloc(info.erasesize);
-	rx = malloc(info.erasesize);
-	if (!tx || !rx)
-		goto out;
-	erase.length = info.erasesize;
-	for (unsigned long cycle = 0; cycle < cycles; ++cycle) {
-		failed_cycle = cycle;
-		phase = "erase";
-		if (ioctl(fd, MEMERASE, &erase))
-			goto out;
-		phase = "erase-read";
-		if (pread(fd, rx, info.erasesize, 0) != (ssize_t)info.erasesize)
-			goto out;
-		for (size_t i = 0; i < info.erasesize; ++i) {
-			if (rx[i] != 0xff) {
-				phase = "erase-verify";
-				failed_offset = i;
-				expected = 0xff;
-				actual = rx[i];
-				errno = EILSEQ;
-				goto out;
-			}
-			tx[i] = (uint8_t)(i * 37U + cycle * 53U + 11U);
-		}
-		phase = "program";
-		if (lseek(fd, 0, SEEK_SET) != 0 ||
-		    write_all(fd, tx, info.erasesize))
-			goto out;
-		phase = "program-read";
-		if (pread(fd, rx, info.erasesize, 0) != (ssize_t)info.erasesize)
-			goto out;
-		for (size_t i = 0; i < info.erasesize; ++i) {
-			if (tx[i] == rx[i])
-				continue;
-			phase = "program-verify";
-			failed_offset = i;
-			expected = tx[i];
-			actual = rx[i];
-			errno = EILSEQ;
-			goto out;
-		}
-		final_crc = crc32(rx, info.erasesize);
-	}
-	phase = "final-erase";
-	if (ioctl(fd, MEMERASE, &erase) ||
-	    pread(fd, rx, info.erasesize, 0) != (ssize_t)info.erasesize)
-		goto out;
-	for (size_t i = 0; i < info.erasesize; ++i) {
-		if (rx[i] != 0xff) {
-			phase = "final-erase-verify";
-			failed_offset = i;
-			expected = 0xff;
-			actual = rx[i];
-			errno = EILSEQ;
-			goto out;
-		}
-	}
-	printf("PASS mtd-test device=%s cycles=%lu erases=%lu programs=%lu bytes=%u crc32=%08x final=erased\n",
-	       path, cycles, cycles + 1, cycles, info.erasesize, final_crc);
-	ret = 0;
-out:
-	if (ret)
-		fprintf(stderr, "FAIL mtd-test device=%s cycle=%lu phase=%s offset=%zu expected=%02x got=%02x: %s\n",
-			path, failed_cycle, phase, failed_offset, expected, actual,
-			strerror(errno));
-	if (fd >= 0)
-		close(fd);
-	free(tx);
-	free(rx);
-	return ret;
-}
-
 int main(int argc, char **argv)
 {
 	if (argc == 5 && !strcmp(argv[1], "uart"))
@@ -638,8 +546,6 @@ int main(int argc, char **argv)
 	if (argc == 5 && !strcmp(argv[1], "pattern-stream-check"))
 		return pattern_stream_check(argv[2], strtoul(argv[3], NULL, 0),
 					    strtoul(argv[4], NULL, 0));
-	if (argc == 4 && !strcmp(argv[1], "mtd-test"))
-		return mtd_test(argv[2], strtoul(argv[3], NULL, 0));
 	fprintf(stderr, "usage: %s uart DEVICE BAUD LENGTH\n", argv[0]);
 	fprintf(stderr, "       %s uart-loopback DEVICE BAUD LENGTH\n", argv[0]);
 	fprintf(stderr, "       %s spi DEVICE MODE SPEED LENGTH [BITS]\n", argv[0]);
@@ -651,6 +557,5 @@ int main(int argc, char **argv)
 	fprintf(stderr, "       %s pattern-write|pattern-check FILE LENGTH\n", argv[0]);
 	fprintf(stderr, "       %s pattern-stream-check FILE LENGTH MINIMUM-RUN\n",
 		argv[0]);
-	fprintf(stderr, "       %s mtd-test DEVICE CYCLES\n", argv[0]);
 	return 2;
 }

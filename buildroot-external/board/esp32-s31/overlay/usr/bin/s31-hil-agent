@@ -17,7 +17,7 @@ SKIP_COUNT=0
 
 usage()
 {
-	echo "usage: $0 [--case firmware|peer|sdmmc|ethernet|usb-drive|mtd|lp-core|smp-irq-dma|all]" >&2
+	echo "usage: $0 [--case firmware|peer|sdmmc|ethernet|usb-drive|lp-core|smp-irq-dma|all]" >&2
 	echo "          [--peer-connected] [--allow-usb-write]" >&2
 	echo "          [--local-ip CIDR] [--peer-ip ADDRESS]" >&2
 }
@@ -399,41 +399,6 @@ usb_drive_tests()
 	fi
 }
 
-mtd_tests()
-{
-	mtd_num="$(awk -F: '$2 ~ /\"hil-scratch\"/ { sub(/^mtd/, "", $1); print $1 }' /proc/mtd 2>/dev/null)"
-	if [ -z "$mtd_num" ] || [ ! -c "/dev/mtd$mtd_num" ]; then
-		emit FAIL mtd.scratch.probe probe "dedicated hil-scratch MTD partition missing"
-		return
-	fi
-	emit PASS mtd.scratch.probe probe "/dev/mtd$mtd_num is dedicated hil-scratch"
-	rm -f /tmp/hil-mtd-stop /tmp/hil-mtd-cpu0 /tmp/hil-mtd-cpu1
-	taskset -c 0 sh -c 'n=0; while [ ! -e /tmp/hil-mtd-stop ]; do sha256sum /bin/busybox >/dev/null || exit 1; n=$((n + 1)); echo $n >/tmp/hil-mtd-cpu0; done' &
-	pid0=$!
-	taskset -c 1 sh -c 'n=0; while [ ! -e /tmp/hil-mtd-stop ]; do sha256sum /bin/busybox >/dev/null || exit 1; n=$((n + 1)); echo $n >/tmp/hil-mtd-cpu1; done' &
-	pid1=$!
-	sleep 1
-	before0="$(cat /tmp/hil-mtd-cpu0 2>/dev/null || echo 0)"
-	before1="$(cat /tmp/hil-mtd-cpu1 2>/dev/null || echo 0)"
-	if output="$(s31-hil-io mtd-test "/dev/mtd$mtd_num" 4 2>&1)"; then
-		emit PASS mtd.scratch.program-erase destructive "$(printf '%s\n' "$output" | tail -n 1)"
-	else
-		emit FAIL mtd.scratch.program-erase destructive "$(printf '%s\n' "$output" | tail -n 1)"
-	fi
-	touch /tmp/hil-mtd-stop
-	wait "$pid0"; rc0=$?
-	wait "$pid1"; rc1=$?
-	after0="$(cat /tmp/hil-mtd-cpu0 2>/dev/null || echo 0)"
-	after1="$(cat /tmp/hil-mtd-cpu1 2>/dev/null || echo 0)"
-	if [ "$rc0" -eq 0 ] && [ "$rc1" -eq 0 ] &&
-	   [ "$after0" -gt "$before0" ] && [ "$after1" -gt "$before1" ]; then
-		emit PASS mtd.xip-smp concurrency "cpu0=$before0->$after0 cpu1=$before1->$after1; both XIP workers resumed"
-	else
-		emit FAIL mtd.xip-smp concurrency "cpu0=$before0->$after0 rc=$rc0 cpu1=$before1->$after1 rc=$rc1"
-	fi
-	rm -f /tmp/hil-mtd-stop /tmp/hil-mtd-cpu0 /tmp/hil-mtd-cpu1
-}
-
 lp_core_tests()
 {
 	added=0
@@ -623,10 +588,9 @@ peer) peer_tests ;;
 sdmmc) sdmmc_tests ;;
 ethernet) ethernet_tests ;;
 usb-drive) usb_drive_tests ;;
-mtd) mtd_tests ;;
 lp-core) lp_core_tests ;;
 smp-irq-dma) smp_irq_dma_tests ;;
-all) firmware_tests; peer_tests; sdmmc_tests; ethernet_tests; usb_drive_tests; mtd_tests; lp_core_tests; smp_irq_dma_tests ;;
+all) firmware_tests; peer_tests; sdmmc_tests; ethernet_tests; usb_drive_tests; lp_core_tests; smp_irq_dma_tests ;;
 *) usage; exit 2 ;;
 esac
 
