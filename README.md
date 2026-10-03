@@ -26,9 +26,10 @@ generated configuration, staging, reports, and final `images/` also live in `out
 Downloads and toolchains live in `cache/`; `make clean` removes the current build
 outputs and retains caches. Set host paths and jobs in `local.mk`.
 
-The full kernel uses size optimization and unused-export trimming. Its current
-6,228,940-byte XIP image fits the 6 MiB kernel slot with 62,516 bytes spare.
-Every build enforces the size limit; no peripheral is silently removed.
+The full kernel uses size optimization and unused-export trimming. Its XIP
+image must fit the fixed 6 MiB kernel slot. Every build enforces the size limit;
+no peripheral is silently removed. Inspect the verified `dist/current` artifacts
+for the size and remaining headroom of a particular build.
 
 `make image` publishes a verified matched set atomically under `dist/`, with
 `dist/current` pointing to the complete immutable result. The manifest
