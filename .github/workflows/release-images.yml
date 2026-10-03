@@ -183,7 +183,8 @@ jobs:
         run: |
           (cd dist/current && sha256sum --check SHA256SUMS)
           mapfile -t assets < <(python3 tools/release/assets.py --prefix dist/current)
+          # Publish only the checked-in Linux and Windows flash instructions.
           gh release create "$RELEASE_TAG" \
             "${assets[@]}" \
             --title "$RELEASE_TITLE" \
-            --notes-file configs/release-notes.md
+            --notes-file "$GITHUB_WORKSPACE/configs/release-notes.md"
