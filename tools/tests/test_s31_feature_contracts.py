@@ -13,7 +13,7 @@ import tempfile
 import unittest
 
 ROOT = Path(__file__).resolve().parents[2]
-spec = importlib.util.spec_from_file_location("eap", ROOT / "tools/s31_wifi_eap.py")
+spec = importlib.util.spec_from_file_location("eap", ROOT / "tools/device/wifi_eap.py")
 eap = importlib.util.module_from_spec(spec)
 spec.loader.exec_module(eap)
 

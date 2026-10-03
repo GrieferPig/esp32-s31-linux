@@ -187,7 +187,7 @@ class BluetoothService(unittest.TestCase):
 class PatchedBluetooth(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
-        pristine = Path(os.environ.get("S31_BTSTACK_TEST_SOURCE", ROOT / "build/btstack-source"))
+        pristine = Path(os.environ.get("S31_BTSTACK_TEST_SOURCE", os.environ.get("S31_BTSTACK_SOURCE", ROOT / "cache/sources/btstack")))
         if not (pristine / "example/a2dp_sink_demo.c").exists():
             raise unittest.SkipTest("run make btstack-source, or set S31_BTSTACK_TEST_SOURCE to pristine pinned source")
         cls.temp = tempfile.TemporaryDirectory()

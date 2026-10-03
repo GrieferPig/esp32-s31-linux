@@ -2189,7 +2189,7 @@ def main() -> int:
     parser.add_argument("--s31-port")
     parser.add_argument("--p4-port")
     parser.add_argument(
-        "--case", choices=("firmware", "gpio", "uart", "spi", "spi-stress", "spi-target", "i2c", "i2s", "i2s-stress", "pwm-pcnt", "power-wake", "c6-wifi", "c6-wifi-recover", "c6-ble", "peer", "sdmmc", "ethernet", "usb-drive", "mtd", "lp-core", "smp-irq-dma", "all"),
+        "--case", choices=("firmware", "gpio", "uart", "spi", "spi-stress", "spi-target", "i2c", "i2s", "i2s-stress", "pwm-pcnt", "power-wake", "c6-wifi", "c6-wifi-recover", "c6-ble", "peer", "sdmmc", "ethernet", "usb-drive", "lp-core", "smp-irq-dma", "all"),
         default="firmware",
     )
     parser.add_argument("--peer-connected", action="store_true")
@@ -2345,7 +2345,7 @@ def main() -> int:
                 ))
 
         if s31_port is not None:
-            for local_case in ("sdmmc", "usb-drive", "mtd", "lp-core",
+            for local_case in ("sdmmc", "usb-drive", "lp-core",
                                "smp-irq-dma"):
                 add_stage(local_case, lambda local_case=local_case: run_s31(
                     s31_port, local_case,

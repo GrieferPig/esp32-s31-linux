@@ -11,11 +11,32 @@ The firmware performs these standalone checks without wiring an S31 board:
 - P4 chip, dual HP cores, flash, heap, timer and safe GPIO state;
 - P4-to-C6 ESP-Hosted-MCU SDIO readiness and coprocessor firmware version;
 - a real C6 Wi-Fi scan without logging SSIDs;
-- NimBLE HCI reset/synchronization through ESP-Hosted VHCI;
-- UART RPC parsing and automatic output disarm.
+- NimBLE HCI reset/synchronization through ESP-Hosted VHCI.
+
+Output disarm is an implemented safety mechanism, but the standalone self-test
+does not arm outputs and wait for expiry. Verify that behavior separately when
+qualifying a fixture.
 
 The standalone self-test leaves every lane high-Z and reports electrical
 loopback as `SKIP`; connected-board patterns require host-coordinated lane RPC.
+
+## Fixture wiring
+
+Connect the following fixed lane map with a common ground. Verify compatible
+signal voltages and board/module pin availability before connecting wires;
+do not connect a powered output to another output. The same lanes are reused
+by different bus cases, so run only one wired case at a time.
+
+| Lane | ESP32-S31 pin | ESP32-P4 pin |
+|---|---|---|
+| L0 | GPIO42 | GPIO23 |
+| L1 | GPIO43 | GPIO22 |
+| L2 | GPIO44 | GPIO21 |
+| L3 | GPIO45 | GPIO20 |
+
+LP GPIO-wake tests need a separate connection. The runner defaults to
+S31 GPIO0 and P4 GPIO2; change the runner's declared pins to match the actual
+wiring. Do not route LP wake through the high-numbered four-lane fixture.
 
 For the four-lane SPI fixture, the tester uses GPSPI3 in slave-DMA mode and
 enables the SCLK pad's input hysteresis. This is required to reject narrow
@@ -89,8 +110,11 @@ received byte. Start the Linux target ioctl before this command. The Linux
 Both bus commands require the current arm token. `peer-stop` releases their
 resources and returns the fixture pins to high impedance.
 
-`wifi-sta-echo-start SSID PASSWORD` connects the C6 to an S31 AP and starts
+The `wifi-sta-echo-start SSID PASSWORD` fixture command connects the
+C6 to an external AP and starts
 the UDP echo endpoint at `192.168.77.1:3334`; `-` selects an open network.
-Configure the S31 AP address as `192.168.77.2/24`. Check
+It can exercise an AP frontend when one is available, but the current S31
+SoftMAC image exposes station mode only. An AP test setup must provide the
+peer address `192.168.77.2/24`. Check
 `wifi-sta-echo-report` for association, exact packet counts and zero errors,
 then call `wifi-sta-echo-stop`.

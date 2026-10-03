@@ -1,18 +1,18 @@
 [submodule "linux-esp32-s31"]
 	path = linux-esp32-s31
 	url = https://github.com/GrieferPig/linux-esp32-s31.git
-	branch = feature/s31-radio-bt-6.18
+	branch = v6.18-esp32-s31
 [submodule "opensbi-esp32-s31"]
 	path = opensbi-esp32-s31
 	url = https://github.com/GrieferPig/opensbi-esp32-s31
-	branch = feature/s31-radio-smode
+	branch = v1.9-esp32-s31
 [submodule "buildroot"]
 	path = buildroot
 	url = https://github.com/buildroot/buildroot.git
 [submodule "u-boot-esp32-s31"]
 	path = u-boot-esp32-s31
 	url = https://github.com/GrieferPig/u-boot-esp32-s31.git
-	branch = integration/v2024.07-esp32s31
+	branch = v2024.07-esp32s31
 [submodule "docs"]
 	path = docs
 	url = ../esp32-s31-linux-docs

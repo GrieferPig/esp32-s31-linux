@@ -8,23 +8,24 @@ import unittest
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[2]
-spec = importlib.util.spec_from_file_location("layout", ROOT / "tools/check_s31_layout.py")
+spec = importlib.util.spec_from_file_location("layout", ROOT / "tools/checks/layout.py")
 layout = importlib.util.module_from_spec(spec)
 spec.loader.exec_module(layout)
 
 class Layout(unittest.TestCase):
     def test_overlay_lock_supported_by_kernel_profile(self):
         self.assertIn("CONFIG_FILE_LOCKING=y", (ROOT / "linux-esp32-s31/arch/riscv/configs/esp32s31_defconfig").read_text())
-        self.assertIn("--enable FILE_LOCKING", (ROOT / "Makefile").read_text())
+        self.assertIn("CONFIG_FILE_LOCKING=y", (ROOT / "configs/kernel/common.config").read_text())
 
     def test_live_layout(self):
         layout.check()
         _, sizes = layout.flash_layout()
-        self.assertEqual(sizes["PERSIST"], 0x90000)
+        self.assertEqual(sizes["PERSIST"], 0x212000)
 
     def test_drift_is_rejected(self):
         files = ["configs/esp32s31-layout.cfg", "shared/s31_memory_layout.h", "Makefile", "linux-esp32-s31/drivers/platform/esp32s31-radio-smode.c", "linux-esp32-s31/arch/riscv/kernel/vmlinux-xip.lds.S", "linux-esp32-s31/arch/riscv/boot/dts/espressif/esp32s31.dtsi"]
-        for target, old, new in [(files[0], "SLOT_KERNEL=0x500000", "SLOT_KERNEL=0x520000"), (files[3], "0x2f071800UL", "0x2f071900UL")]:
+        files += [str(p.relative_to(ROOT)) for p in (ROOT / "mk").glob("*.mk")]
+        for target, old, new in [(files[0], "SLOT_KERNEL=0x400000", "SLOT_KERNEL=0x520000"), (files[3], "0x2f071800UL", "0x2f071900UL")]:
             with self.subTest(target=target), tempfile.TemporaryDirectory() as tmp:
                 root = Path(tmp)
                 for name in files:
@@ -37,28 +38,28 @@ class Layout(unittest.TestCase):
                     layout.check(root)
 
 class FlashGuards(unittest.TestCase):
-    def test_oversize_existing_image_fails_before_serial_access(self):
+    def test_partial_existing_image_fails_before_serial_access(self):
         with tempfile.TemporaryDirectory() as tmp:
-            image = Path(tmp) / "radio.sqfs"
-            with image.open("wb") as f:
-                f.truncate(layout.flash_layout()[1]["RADIO"] + 1)
-            p = subprocess.run(["make", "--no-print-directory", "flash-existing-radio", "RADIO_FS_IMG=" + str(image)], cwd=ROOT, text=True, capture_output=True)
-            self.assertNotEqual(p.returncode, 0)
-            self.assertIn("exceeds capacity", p.stderr)
-            self.assertNotIn("esptool", p.stdout)
-
-    def test_retired_target_has_no_build_side_effect(self):
-        p = subprocess.run(["make", "--no-print-directory", "radio-image"], cwd=ROOT, text=True, capture_output=True)
+            p = subprocess.run(["make", "--no-print-directory", "flash-existing-radio", "OUT_ROOT=" + tmp],
+                               cwd=ROOT, text=True, capture_output=True, timeout=10)
         self.assertNotEqual(p.returncode, 0)
-        self.assertIn("radio-image is retired", p.stderr)
+        self.assertIn("installed companion identity is unknown", p.stderr)
+        self.assertNotIn("esptool", p.stdout)
+
+    def test_default_target_is_help_without_build_side_effect(self):
+        p = subprocess.run(["make", "--no-print-directory"], cwd=ROOT,
+                           text=True, capture_output=True)
+        self.assertEqual(p.returncode, 0, p.stderr)
+        self.assertIn("GNU Make public interface", p.stdout)
         self.assertNotIn("Entering directory", p.stdout)
+        self.assertNotIn("esptool", p.stdout)
 
 class Stamp(unittest.TestCase):
     def test_noop_and_changed_input_invalidate_make(self):
         with tempfile.TemporaryDirectory() as tmp:
             root = Path(tmp)
             (root / "header.h").write_text("one")
-            (root / "Makefile").write_text(".PHONY: FORCE\nall: object\nFORCE:\n.stamp: FORCE\n\tpython3 " + str(ROOT / "tools/write_build_stamp.py") + " --output $@ --file header.h --value=$(FLAGS)\nobject: .stamp\n\t@echo rebuilt >> events\n\t@touch $@\n")
+            (root / "Makefile").write_text(".PHONY: FORCE\nall: object\nFORCE:\n.stamp: FORCE\n\tpython3 " + str(ROOT / "tools/build/input_stamp.py") + " --output $@ --file header.h --value=$(FLAGS)\nobject: .stamp\n\t@echo rebuilt >> events\n\t@touch $@\n")
             def run(flags):
                 subprocess.run(["make", "-s", "FLAGS=" + flags], cwd=root, check=True, capture_output=True)
                 return len((root / "events").read_text().splitlines())

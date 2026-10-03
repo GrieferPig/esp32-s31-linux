@@ -11,9 +11,9 @@ import unittest
 from unittest import mock
 
 ROOT = Path(__file__).resolve().parents[2]
-sys.path.insert(0, str(ROOT / 'tools'))
+sys.path.insert(0, str(ROOT))
 sys.path.insert(0, str(ROOT / 'tools/hil'))
-import build_manifest
+from tools.release import manifest as build_manifest
 import s31_hil as hil
 import serial_transport
 
@@ -30,7 +30,7 @@ class ManifestInputs(unittest.TestCase):
                      'buildroot-external/package/test/Config.in',
                      'buildroot-external/board/test/overlay/etc/init.d/S01test',
                      'firmware/lp/sdkconfig.defaults', 'drivers/test/Kconfig',
-                     'tools/test/Makefile']
+                     'tools/test/Makefile', 'tools/build/helper.py', 'mk/radio.mk']
             for name in names:
                 with self.subTest(name=name):
                     path = root / name
@@ -194,9 +194,6 @@ class RadioStartup(unittest.TestCase):
                 put('proc/device-tree/soc/radio/wifi/status', 'okay\n')
                 put('proc/device-tree/soc/radio/bluetooth/status', 'disabled\n')
                 put('sys/module/esp32s31_radio/parameters/mode', 'wifi\n')
-                put('proc/mounts', 'source ' + tmp + '/run/s31-radio squashfs ro 0 0\n')
-                put('run/s31-radio/module/esp32s31-radio.ko.xz', 'module')
-                put('run/s31-radio/firmware/esp32s31-radio-fw-v1.o.xz', 'payload')
                 put('usr/lib/s31-radio/esp32s31-radio.ko.xz', 'module')
                 (root / 'sys/class/net/wlan0').mkdir(parents=True)
                 if ready:

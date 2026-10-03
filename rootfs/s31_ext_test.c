@@ -32,7 +32,7 @@ extern void s31_bitmanip_all(uint32_t *out);
 
 #define PIE_CASE(opcode, name) name,
 static const char *const pie_case_names[] = {
-#include "s31_pie_cases.inc"
+#include <s31_pie_cases.inc>
 };
 #undef PIE_CASE
 

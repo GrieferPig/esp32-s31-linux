@@ -6,7 +6,6 @@ from pathlib import Path
 import subprocess
 import tempfile
 import threading
-import time
 import unittest
 
 
@@ -157,16 +156,29 @@ class S31SelftestTests(unittest.TestCase):
         self.assertEqual(traffic["status"], "FAIL")
 
     def test_required_radio_traffic_passes_with_packet_progress(self):
+        stop = threading.Event()
+
         def add_packets():
-            time.sleep(0.3)
-            self.write("sys/class/net/wlan0/statistics/rx_packets", b"25\n")
+            # The quick preflight performs syncs before capturing the traffic
+            # baseline. Keep traffic flowing across that boundary, rather than
+            # racing it with one update after an arbitrary 300 ms delay.
+            counter = self.root / "sys/class/net/wlan0/statistics/rx_packets"
+            pending = counter.with_suffix(".next")
+            packets = 0
+            while not stop.wait(0.05):
+                packets += 25
+                pending.write_text(f"{packets}\n")
+                pending.replace(counter)  # Never expose a truncated counter.
 
         updater = threading.Thread(target=add_packets)
         updater.start()
-        result = self.run_selftest(
-            "--stress", "--duration", "1", "--require-radio-traffic", "--json"
-        )
-        updater.join()
+        try:
+            result = self.run_selftest(
+                "--stress", "--duration", "1", "--require-radio-traffic", "--json"
+            )
+        finally:
+            stop.set()
+            updater.join()
         self.assertEqual(result.returncode, 0, result.stdout + result.stderr)
         records = [json.loads(line) for line in result.stdout.splitlines()]
         traffic = next(
