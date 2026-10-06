@@ -1,0 +1,137 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: ESP32-S31 Linux <s31-linux@example.invalid>
+Date: Tue, 6 Oct 2026 12:00:00 +0800
+Subject: [PATCH] a2dp: add SPP/RFCOMM bulk stream for Classic throughput
+
+A2DP audio is not a bulk vehicle and the host has no audio stack, so
+Classic bulk was unmeasurable.  Add an SPP streamer (RFCOMM channel 1)
+with the same seq-pattern pump shape as the BLE notifier: full-MTU
+frames, CAN_SEND_NOW self-clocking, tx/rx counters.  The host measures
+with an unprivileged AF_BLUETOOTH socket (verified to work).  EDR
+5-slot packets were already requested; this fills them.
+---
+ example/a2dp_sink_demo.c | 108 +++++++++++++++++++++++++++++++++++++++-
+ 1 file changed, 107 insertions(+), 1 deletion(-)
+
+--- a/example/a2dp_sink_demo.c
++++ b/example/a2dp_sink_demo.c
+@@ -356,6 +356,103 @@
+ };
+ static uint8_t s31_ble_scan_response[31];
+ 
++/* Classic bulk-throughput stream over SPP/RFCOMM.
++ * The host opens RFCOMM channel 1 ("S31 SPP Stream") with an unprivileged
++ * AF_BLUETOOTH socket and measures RX rate; the board pumps full-MTU
++ * frames carrying a u32 LE sequence so the peer detects loss.  Host->board
++ * bytes are counted as well (second direction measurable without a change).
++ * EDR 5-slot packets were already requested (0014); this only fills them. */
++#define S31_SPP_CHANNEL 1
++#define S31_SPP_TX_LEN 1008
++#define S31_SPP_BURST 8
++static uint8_t s31_spp_service_buffer[200];
++static uint16_t s31_spp_cid;
++static uint16_t s31_spp_mtu;
++static uint8_t s31_spp_tx[4 + S31_SPP_TX_LEN];
++static uint32_t s31_spp_seq;
++static uint32_t s31_spp_frames;
++static uint64_t s31_spp_tx_bytes;
++static uint64_t s31_spp_rx_bytes;
++
++static void s31_spp_pump(void){
++    uint16_t chunk, i, k;
++    if (s31_spp_cid == 0)
++        return;
++    chunk = s31_spp_mtu > 4 ? s31_spp_mtu - 4 : 0;
++    if (chunk > sizeof(s31_spp_tx))
++        chunk = sizeof(s31_spp_tx);
++    if (chunk <= 4)
++        return;
++    for (i = 0; i < S31_SPP_BURST; i++){
++        uint32_t seq;
++        if (!rfcomm_can_send_packet_now(s31_spp_cid))
++            break;
++        seq = s31_spp_seq;
++        s31_spp_tx[0] = (uint8_t) seq;
++        s31_spp_tx[1] = (uint8_t) (seq >> 8);
++        s31_spp_tx[2] = (uint8_t) (seq >> 16);
++        s31_spp_tx[3] = (uint8_t) (seq >> 24);
++        for (k = 4; k < chunk; k++)
++            s31_spp_tx[k] = (uint8_t) (k ^ seq);
++        if (rfcomm_send(s31_spp_cid, s31_spp_tx, chunk) != 0)
++            break;
++        s31_spp_seq++;
++        s31_spp_frames++;
++        s31_spp_tx_bytes += chunk;
++    }
++    if ((s31_spp_frames & 255u) == 0)
++        printf("S31 SPP stream: %lu frames, %llu tx bytes, %llu rx bytes, seq=%lu\n",
++               (unsigned long) s31_spp_frames, (unsigned long long) s31_spp_tx_bytes,
++               (unsigned long long) s31_spp_rx_bytes, (unsigned long) s31_spp_seq);
++    rfcomm_request_can_send_now_event(s31_spp_cid);
++}
++
++static void s31_spp_packet_handler(uint8_t packet_type, uint16_t channel, uint8_t *packet, uint16_t size){
++    bd_addr_t event_addr;
++    (void)channel;
++    if (packet_type == RFCOMM_DATA_PACKET){
++        s31_spp_rx_bytes += size;
++        return;
++    }
++    if (packet_type != HCI_EVENT_PACKET)
++        return;
++    switch (hci_event_packet_get_type(packet)){
++        case RFCOMM_EVENT_INCOMING_CONNECTION:
++            rfcomm_event_incoming_connection_get_bd_addr(packet, event_addr);
++            s31_spp_cid = rfcomm_event_incoming_connection_get_rfcomm_cid(packet);
++            printf("S31 SPP stream: incoming channel %u from %s\n",
++                   rfcomm_event_incoming_connection_get_server_channel(packet), bd_addr_to_str(event_addr));
++            rfcomm_accept_connection(s31_spp_cid);
++            break;
++        case RFCOMM_EVENT_CHANNEL_OPENED:
++            if (rfcomm_event_channel_opened_get_status(packet)){
++                printf("S31 SPP stream: open failed 0x%02x\n",
++                       rfcomm_event_channel_opened_get_status(packet));
++                s31_spp_cid = 0;
++            } else {
++                s31_spp_cid = rfcomm_event_channel_opened_get_rfcomm_cid(packet);
++                s31_spp_mtu = rfcomm_event_channel_opened_get_max_frame_size(packet);
++                s31_spp_seq = 0;
++                s31_spp_frames = 0;
++                s31_spp_tx_bytes = 0;
++                s31_spp_rx_bytes = 0;
++                printf("S31 SPP stream: open ok, cid %u, mtu %u\n", s31_spp_cid, s31_spp_mtu);
++                rfcomm_request_can_send_now_event(s31_spp_cid);
++            }
++            break;
++        case RFCOMM_EVENT_CAN_SEND_NOW:
++            s31_spp_pump();
++            break;
++        case RFCOMM_EVENT_CHANNEL_CLOSED:
++            printf("S31 SPP stream: closed, %llu tx bytes, %llu rx bytes\n",
++                   (unsigned long long) s31_spp_tx_bytes, (unsigned long long) s31_spp_rx_bytes);
++            s31_spp_cid = 0;
++            break;
++        default:
++            break;
++    }
++}
++
+ /* Bulk-throughput stream (Stage A: notifications on stock link parameters).
+  * Characteristic 0xff12 carries NOTIFY; the pump self-clocks on
+  * ATT_EVENT_CAN_SEND_NOW and bursts while the stack accepts packets.
+@@ -518,6 +615,13 @@
+     // init protocols
+     l2cap_init();
+     sdp_init();
++    rfcomm_init();
++    rfcomm_register_service(s31_spp_packet_handler, S31_SPP_CHANNEL, 0xffff);
++    memset(s31_spp_service_buffer, 0, sizeof(s31_spp_service_buffer));
++    spp_create_sdp_record(s31_spp_service_buffer, sdp_create_service_record_handle(),
++                          S31_SPP_CHANNEL, "S31 SPP Stream");
++    btstack_assert(de_get_len(s31_spp_service_buffer) <= sizeof(s31_spp_service_buffer));
++    sdp_register_service(s31_spp_service_buffer);
+ #ifdef ENABLE_BLE
+     // Initialize LE Security Manager. Needed for cross-transport key derivation
+     sm_init();
+-- 
+2.43.0
