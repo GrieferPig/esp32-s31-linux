@@ -1,8 +1,20 @@
 # STEP 2 implementation — dedicated `s31-radio` kthread removed (landed)
 
-Submodule commit: `linux-esp32-s31@632d31313a7ef` ("s31-radio: replace
-dedicated s31-radio kthread with ordered workqueue"), one file:
-`drivers/platform/esp32s31-radio-smode.c` (+258/-202).
+Submodule commits:
+- `linux-esp32-s31@632d31313a7ef` ("s31-radio: replace dedicated s31-radio
+  kthread with ordered workqueue"), one file:
+  `drivers/platform/esp32s31-radio-smode.c` (+258/-202).
+- `linux-esp32-s31@3d0953ecdc1df` ("s31-radio: create radio-init task on
+  first pass; guard current-task for non-kthreads"): module init (insmod
+  process context) only queues the first pass and returns; the radio-init
+  task is created by that pass on a pool kworker, exactly like the retired
+  thread did. `s31_linux_current_task()` (rtos.c) now returns NULL for
+  non-kthreads instead of calling `kthread_data()` on a user process
+  (warns + garbage deref). Terminal first-pass failure parks the runner
+  (`init_dead`), matching the old thread exiting. Both changes were
+  required after the first flashed image hung in module init: the new
+  init path was the first to call payload task APIs from process context,
+  a case upstream never exercised.
 
 ## What changed
 - Deleted: `s31_radio_runtime_thread` ("s31-radio" kthread),
