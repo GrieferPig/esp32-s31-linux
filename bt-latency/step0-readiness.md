@@ -36,8 +36,22 @@
 
 ## Fetch / build
 - `cache/sources/btstack` fetched via `tools/build/fetch_btstack.sh`
-  (BTSTACK_REF=431d58d5, background job completed, `a2dp_sink_demo.c` present).
-- Full `make fetch` (toolchain + buildroot downloads) and `make build`
-  (uboot/linux/rootfs/radio-image) NOT yet completed at this commit; they run
-  after this checkpoint (see NEXT). Board under test still runs its Oct-4
-  factory image (Linux 6.18.0 #38, see bt-latency/logs/before-*.log).
+  (BTSTACK_REF=431d58d5, `a2dp_sink_demo.c` present, `.s31-btstack-version`
+  matches).
+- `make fetch` completed exit 0 (toolchain already installed,
+  BTstack present, buildroot `source` configured).
+- `make build` completed exit 0 with invocation:
+  `PATH="$HOME/.local/bin:$PATH" ESP_TOOLS="$HOME/.espressif/tools/
+  riscv32-esp-elf/esp-16.1.0_20260609/riscv32-esp-elf"
+  S31_ALLOW_UNPINNED=1 make build`
+  (PATH shim = SWIG 4.3.0 wrapper fix; ESP_TOOLS = installed 16.1.0
+  toolchain since the pinned 15.2.0 is absent; S31_ALLOW_UNPINNED=1 on CLI
+  because local.mk is not forwarded to the firmware/radio sub-make).
+  Outputs: `out/images/xipImage`, `esp32s31_generic.dtb`, `radio.bin`
+  (1527120 B, sha256 069a99da…), `rootfs.sqfs` (3048.38 KB), plus
+  `out/linux/drivers/platform/esp32s31-radio.ko`.
+  Host-only build fixes are recorded in bt-latency/host-build-fixes.md; the
+  one tracked-file compat fix (probe `-mespv-spec=2p2`, keeps GCC 15 path)
+  is a separate commit.
+- Board under test still runs its Oct-4 factory image (Linux 6.18.0 #38);
+  flashing the new build is a later step (see status.md NEXT).
