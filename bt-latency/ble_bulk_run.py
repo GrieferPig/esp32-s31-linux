@@ -82,8 +82,11 @@ def main():
         om = dbus.Interface(bus.get_object("org.bluez", "/"),
                             "org.freedesktop.DBus.ObjectManager")
         for path, ifaces in om.GetManagedObjects().items():
+            # NOTE: BlueZ 5.83 omits Device on characteristics; match path.
+            if dev_path not in str(path):
+                continue
             ch = ifaces.get("org.bluez.GattCharacteristic1")
-            if not ch or str(ch.get("Device", "")) != dev_path:
+            if not ch:
                 continue
             if str(ch.get("UUID", "")).lower() == want:
                 char_path = path
@@ -94,11 +97,20 @@ def main():
           f"after {time.monotonic() - t0:.0f}s", flush=True)
     if not char_path:
         return 1
-    # subscribe + stream
+    # subscribe + stream (retry: BlueZ reports InProgress while resolving)
     ch = dbus.Interface(bus.get_object("org.bluez", char_path),
                         "org.bluez.GattCharacteristic1")
-    ch.StartNotify()
-    fd_obj, mtu = ch.AcquireNotify(dbus.Dictionary({}, signature="sv"))
+    fd_obj = mtu = None
+    for attempt in range(4):
+        try:
+            ch.StartNotify()
+            fd_obj, mtu = ch.AcquireNotify(dbus.Dictionary({}, signature="sv"))
+            break
+        except Exception as e:
+            print(f"subscribe attempt {attempt+1}: {str(e)[:60]}", flush=True)
+            time.sleep(10)
+    if fd_obj is None:
+        return 1
     print(f"notify acquired: mtu={mtu}", flush=True)
     f = os.fdopen(fd_obj.take(), "rb", buffering=0)
     total = pkts = gaps = dups = 0
