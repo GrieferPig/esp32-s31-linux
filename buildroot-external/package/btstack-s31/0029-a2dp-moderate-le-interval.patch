@@ -1,0 +1,36 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: ESP32-S31 Linux <s31-linux@example.invalid>
+Date: Tue, 6 Oct 2026 12:00:00 +0800
+Subject: [PATCH] a2dp: request survivable 30-50 ms LE interval, not 7.5-15 ms
+
+Measurement overrode theory: 11.25 ms links (which the host kernel
+persists across links after accepting our update) die ~2 s after connect
+with supervision timeout, 3/3, always mid-SMP; 45 ms links survive
+minutes.  Ask for 30-50 ms / 2000 ms instead and get throughput from
+DLE/2M/burst on a link that lives.
+---
+ example/a2dp_sink_demo.c | 10 +++++++++-
+ 1 file changed, 9 insertions(+), 1 deletion(-)
+
+--- a/example/a2dp_sink_demo.c
++++ b/example/a2dp_sink_demo.c
+@@ -476,9 +476,16 @@
+  * the L2CAP bearer is fully up (and bonding usually done), so conn-update,
+  * DLE and PHY tasks cannot stall behind connect-time gating.  Return codes
+  * are logged to diagnose silent drops (0 = queued to BTstack task runner). */
++/* NOTE: (6,12) = 7.5-15 ms was requested before.  The host kernel
++ * persists accepted params across links, so new links started arriving at
++ * 11.25 ms — and 11.25 ms links die ~2 s after connect (3/3, supervision
++ * timeout 0x08 mid-SMP), while 45 ms links survive minutes.  Likely cause:
++ * the software-LL btdm compat task cannot service 11 ms anchors under the
++ * shared workqueue/gate.  Request (24,40) = 30-50 ms so the host relearns a
++ * survivable interval; throughput comes from DLE/2M/burst, not interval. */
+ static void s31_ble_request_link_params(hci_con_handle_t conn, const char * when){
+     int rc_u, rc_d, rc_p;
+-    rc_u = gap_request_connection_parameter_update(conn, 6, 12, 0, 200);
++    rc_u = gap_request_connection_parameter_update(conn, 24, 40, 0, 200);
+     if (s31_ble_dle_enabled)
+         rc_d = gap_le_set_data_length(conn, 251, 2120);
+     else
+-- 
+2.43.0
