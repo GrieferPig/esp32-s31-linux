@@ -1,0 +1,48 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: ESP32-S31 Linux <s31-linux@example.invalid>
+Date: Tue, 6 Oct 2026 12:00:00 +0800
+Subject: [PATCH] a2dp: bond and auto-confirm Just Works LE pairing
+
+BlueZ `pair` requests bonding, but the peripheral offered no bonding
+(auth requirements 0: no LTK distribution), so a bond could never
+complete.  Worse, nobody answered SM_EVENT_JUST_WORKS_REQUEST, so the
+SM responder parked in SM_PH1_W4_USER_RESPONSE and the initiator hit its
+30 s SMP timeout (disconnect reason 0x05).  Request bonding (method stays
+Just Works via NoInputNoOutput, no MITM) and auto-confirm: this NoIO
+appliance has no user to ask, matching the existing Classic SSP
+auto-accept in the same handler.
+---
+ example/a2dp_sink_demo.c | 15 ++++++++++++++-
+ 1 file changed, 14 insertions(+), 1 deletion(-)
+
+--- a/example/a2dp_sink_demo.c
++++ b/example/a2dp_sink_demo.c
+@@ -355,7 +355,10 @@
+     uint8_t name_length = (uint8_t) strlen(s31_device_name);
+ 
+     sm_set_io_capabilities(IO_CAPABILITY_NO_INPUT_NO_OUTPUT);
+-    sm_set_authentication_requirements(0);
++    /* Bonding is required: without SM_AUTHREQ_BONDING the responder
++     * offers no LTK distribution and BlueZ `pair` can never complete.
++     * NoInputNoOutput keeps the method Just Works (no MITM). */
++    sm_set_authentication_requirements(SM_AUTHREQ_BONDING);
+ 
+     att_db_util_init();
+     att_db_util_add_service_uuid16(ORG_BLUETOOTH_SERVICE_GENERIC_ACCESS);
+@@ -1022,6 +1025,14 @@
+             printf("Accepting Pairing - TODO: require actual user action\n");
+             hci_event_user_confirmation_request_get_bd_addr(packet, address);
+             gap_ssp_confirmation_response(address);
++            break;
++        case SM_EVENT_JUST_WORKS_REQUEST:
++            /* NoIO device: no user exists to confirm.  Without this
++             * call the SM responder parks in SM_PH1_W4_USER_RESPONSE
++             * and the initiator times out (30 s).  Same policy as the
++             * Classic SSP auto-accept above. */
++            printf("S31 LE Just Works pairing auto-confirmed\n");
++            sm_just_works_confirm(sm_event_just_works_request_get_handle(packet));
+             break;
+         default:
+             break;
+-- 
+2.43.0
