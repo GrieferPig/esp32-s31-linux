@@ -13,12 +13,32 @@ dedicated SM event handler: SM events travel on the sm_add_event_handler
 list, not the HCI list, and this NoIO appliance has no user to ask,
 matching the existing Classic SSP auto-accept.
 ---
- example/a2dp_sink_demo.c | 31 ++++++++++++++++++++++++++++++-
- 1 file changed, 30 insertions(+), 1 deletion(-)
+ example/a2dp_sink_demo.c | 37 ++++++++++++++++++++++++++++++++++++-
+ 1 file changed, 36 insertions(+), 1 deletion(-)
 
 --- a/example/a2dp_sink_demo.c
 +++ b/example/a2dp_sink_demo.c
-@@ -355,7 +355,10 @@
+@@ -113,6 +113,11 @@
+ #endif
+ 
+ static btstack_packet_callback_registration_t hci_event_callback_registration;
++/* SM events arrive on the dedicated SM handler list
++ * (sm_add_event_handler), not the HCI list: without this registration
++ * SM_EVENT_JUST_WORKS_REQUEST would never be seen and the responder
++ * would park in SM_PH1_W4_USER_RESPONSE until the 30 s timeout. */
++static btstack_packet_callback_registration_t s31_sm_event_callback_registration;
+ 
+ static uint8_t  sdp_avdtp_sink_service_buffer[150];
+ static uint8_t  sdp_avrcp_target_service_buffer[150];
+@@ -309,6 +314,7 @@
+ 
+ /* LISTING_START(MainConfiguration): Setup Audio Sink and AVRCP services */
+ static void hci_packet_handler(uint8_t packet_type, uint16_t channel, uint8_t *packet, uint16_t size);
++static void s31_sm_packet_handler(uint8_t packet_type, uint16_t channel, uint8_t *packet, uint16_t size);
+ static void a2dp_sink_packet_handler(uint8_t packet_type, uint16_t channel, uint8_t * packet, uint16_t event_size);
+ static void handle_l2cap_media_data_packet(uint8_t seid, uint8_t *packet, uint16_t size);
+ static void avrcp_packet_handler(uint8_t packet_type, uint16_t channel, uint8_t *packet, uint16_t size);
+@@ -355,7 +361,10 @@
      uint8_t name_length = (uint8_t) strlen(s31_device_name);
  
      sm_set_io_capabilities(IO_CAPABILITY_NO_INPUT_NO_OUTPUT);
@@ -30,7 +50,7 @@ matching the existing Classic SSP auto-accept.
  
      att_db_util_init();
      att_db_util_add_service_uuid16(ORG_BLUETOOTH_SERVICE_GENERIC_ACCESS);
-@@ -488,6 +491,9 @@
+@@ -488,6 +497,9 @@
      hci_event_callback_registration.callback = &hci_packet_handler;
      hci_add_event_handler(&hci_event_callback_registration);
  
@@ -40,17 +60,11 @@ matching the existing Classic SSP auto-accept.
      const char * coex_env = getenv("S31_BTSTACK_COEX");
      s31_coex_enabled = coex_env != NULL && strcmp(coex_env, "0") != 0;
      printf("ESP-IDF A2DP coexistence status: %s\n",
-@@ -948,6 +954,28 @@
+@@ -948,6 +960,22 @@
                 s31_coex_applied_streaming ? "streaming" : "stopped");
      }
      s31_coex_pump();
 +}
-+
-+/* SM events arrive on the dedicated SM handler list
-+ * (sm_add_event_handler), not the HCI list: without this registration
-+ * SM_EVENT_JUST_WORKS_REQUEST would never be seen and the responder
-+ * would park in SM_PH1_W4_USER_RESPONSE until the 30 s timeout. */
-+static btstack_packet_callback_registration_t s31_sm_event_callback_registration;
 +
 +static void s31_sm_packet_handler(uint8_t packet_type, uint16_t channel, uint8_t *packet, uint16_t size){
 +    UNUSED(channel);
