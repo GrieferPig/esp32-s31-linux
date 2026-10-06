@@ -1,0 +1,72 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: ESP32-S31 Linux <s31-linux@example.invalid>
+Date: Tue, 6 Oct 2026 12:00:00 +0800
+Subject: [PATCH] a2dp: re-request LE link params at MTU exchange, log rc
+
+The connect-time DLE request (0x2022) never reached the air although the
+parallel L2CAP conn-update did: likely task gating at connect time.  Send
+all three requests (interval, DLE, PHY) through one helper called both at
+connect and at ATT MTU exchange complete (bearer fully up, post-bonding),
+and log each return code so silent drops are visible in the daemon log.
+---
+ example/a2dp_sink_demo.c | 40 ++++++++++++++++++++++++++++++++++------
+ 1 file changed, 34 insertions(+), 6 deletions(-)
+
+--- a/example/a2dp_sink_demo.c
++++ b/example/a2dp_sink_demo.c
+@@ -375,6 +375,24 @@
+ static uint64_t s31_ble_stream_bytes;
+ static bool s31_ble_stream_subscribed;
+ 
++/* Re-issue link-parameter requests when the ATT MTU exchange completes:
++ * the L2CAP bearer is fully up (and bonding usually done), so conn-update,
++ * DLE and PHY tasks cannot stall behind connect-time gating.  Return codes
++ * are logged to diagnose silent drops (0 = queued to BTstack task runner). */
++static void s31_ble_request_link_params(hci_con_handle_t conn, const char * when){
++    int rc_u, rc_d, rc_p;
++    rc_u = gap_request_connection_parameter_update(conn, 6, 12, 0, 200);
++    if (s31_ble_dle_enabled)
++        rc_d = gap_le_set_data_length(conn, 251, 2120);
++    else
++        rc_d = -1;
++    if (s31_ble_prefer_2m)
++        rc_p = gap_le_set_phy(conn, 0, 2, 2, 0);
++    else
++        rc_p = -1;
++    printf("S31 BLE link params @%s: update=%d dle=%d phy=%d\n", when, rc_u, rc_d, rc_p);
++}
++
+ static void s31_ble_stream_pump(void){
+     uint16_t mtu, chunk, i, k;
+     if (s31_ble_stream_conn == HCI_CON_HANDLE_INVALID || !s31_ble_stream_subscribed)
+@@ -439,6 +457,8 @@
+             break;
+         case ATT_EVENT_MTU_EXCHANGE_COMPLETE:
+             printf("S31 BLE stream: ATT MTU %u\n", att_event_mtu_exchange_complete_get_MTU(packet));
++            s31_ble_stream_conn = att_event_mtu_exchange_complete_get_handle(packet);
++            s31_ble_request_link_params(s31_ble_stream_conn, "mtu");
+             break;
+         case ATT_EVENT_DISCONNECTED:
+             s31_ble_stream_subscribed = false;
+@@ -1116,18 +1136,7 @@
+              * Idempotent per link. */
+             if (hci_event_le_meta_get_subevent_code(packet) == HCI_SUBEVENT_LE_CONNECTION_COMPLETE){
+                 s31_ble_stream_conn = hci_subevent_le_connection_complete_get_connection_handle(packet);
+-                gap_request_connection_parameter_update(s31_ble_stream_conn, 6, 12, 0, 200);
+-                /* Stage C: use full-size LL PDUs on the streaming (TX)
+-                 * direction.  Matches IDF/Bluedroid practice of explicit
+-                 * enablement; the controller answers accept/reject and
+-                 * the Data Length Change event records the result. */
+-                if (s31_ble_dle_enabled)
+-                    gap_le_set_data_length(s31_ble_stream_conn, 251, 2120);
+-                /* Stage D: prefer 2M both directions when asked.
+-                 * Like IDF Bluedroid (app-driven, never automatic),
+-                 * default stays 1M; S31_BTSTACK_PHY=2 opts in. */
+-                if (s31_ble_prefer_2m)
+-                    gap_le_set_phy(s31_ble_stream_conn, 0, 2, 2, 0);
++                s31_ble_request_link_params(s31_ble_stream_conn, "connect");
+             }
+             break;
+         case HCI_EVENT_CONNECTION_COMPLETE:
+-- 
+2.43.0
