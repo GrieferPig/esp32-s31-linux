@@ -1,0 +1,131 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: ESP32-S31 Linux <s31-linux@example.invalid>
+Date: Tue, 6 Oct 2026 12:00:00 +0800
+Subject: [PATCH] a2dp: add BLE notify stream for bulk-throughput tests
+
+Single GATT reads top out at ~55 B/s (ATT round trip per 5 bytes).
+Add a NOTIFY characteristic (0xff12) with a self-clocking pump driven by
+ATT_EVENT_CAN_SEND_NOW: bursts of up to 8 MTU-sized notifications carrying
+a u32 sequence so the peer measures rate and loss.  Subscription is
+tracked through the CCCD write callback; Stage A changes no link
+parameters (interval/PHY/DLE tuning follows with re-measurement).
+---
+ example/a2dp_sink_demo.c | 100 +++++++++++++++++++++++++++++++++++++++-
+ 1 file changed, 99 insertions(+), 1 deletion(-)
+
+--- a/example/a2dp_sink_demo.c
++++ b/example/a2dp_sink_demo.c
+@@ -356,6 +356,96 @@
+ };
+ static uint8_t s31_ble_scan_response[31];
+ 
++/* Bulk-throughput stream (Stage A: notifications on stock link parameters).
++ * Characteristic 0xff12 carries NOTIFY; the pump self-clocks on
++ * ATT_EVENT_CAN_SEND_NOW and bursts while the stack accepts packets.
++ * Payload = u32 LE sequence + pattern so the peer detects loss/reorder. */
++#define S31_BLE_STREAM_UUID 0xff12
++#define S31_BLE_STREAM_LEN 500
++#define S31_BLE_STREAM_BURST 8
++static uint16_t s31_ble_stream_handle;
++static uint16_t s31_ble_stream_ccc_handle;
++static hci_con_handle_t s31_ble_stream_conn = HCI_CON_HANDLE_INVALID;
++static uint8_t s31_ble_stream_buf[4 + S31_BLE_STREAM_LEN];
++static uint32_t s31_ble_stream_seq;
++static uint32_t s31_ble_stream_notifies;
++static uint64_t s31_ble_stream_bytes;
++static bool s31_ble_stream_subscribed;
++
++static void s31_ble_stream_pump(void){
++    uint16_t mtu, chunk, i, k;
++    if (s31_ble_stream_conn == HCI_CON_HANDLE_INVALID || !s31_ble_stream_subscribed)
++        return;
++    mtu = att_server_get_mtu(s31_ble_stream_conn);
++    chunk = mtu > 3 ? mtu - 3 : 0;
++    if (chunk > sizeof(s31_ble_stream_buf))
++        chunk = sizeof(s31_ble_stream_buf);
++    if (chunk <= 4)
++        return;
++    for (i = 0; i < S31_BLE_STREAM_BURST; i++){
++        uint32_t seq;
++        if (!att_server_can_send_packet_now(s31_ble_stream_conn))
++            break;
++        seq = s31_ble_stream_seq;
++        s31_ble_stream_buf[0] = (uint8_t) seq;
++        s31_ble_stream_buf[1] = (uint8_t) (seq >> 8);
++        s31_ble_stream_buf[2] = (uint8_t) (seq >> 16);
++        s31_ble_stream_buf[3] = (uint8_t) (seq >> 24);
++        for (k = 4; k < chunk; k++)
++            s31_ble_stream_buf[k] = (uint8_t) (k ^ seq);
++        if (att_server_notify(s31_ble_stream_conn, s31_ble_stream_handle, s31_ble_stream_buf, chunk) != 0)
++            break;
++        s31_ble_stream_seq++;
++        s31_ble_stream_notifies++;
++        s31_ble_stream_bytes += chunk;
++    }
++    if ((s31_ble_stream_notifies & 255u) == 0)
++        printf("S31 BLE stream: %lu notifies, %llu bytes, seq=%lu\n",
++               (unsigned long) s31_ble_stream_notifies, (unsigned long long) s31_ble_stream_bytes,
++               (unsigned long) s31_ble_stream_seq);
++    att_server_request_can_send_now_event(s31_ble_stream_conn);
++}
++
++static int s31_ble_att_write(hci_con_handle_t con_handle, uint16_t att_handle, uint16_t transaction_mode, uint16_t offset, uint8_t *buffer, uint16_t buffer_size){
++    (void)offset;
++    if (transaction_mode != ATT_TRANSACTION_MODE_NONE)
++        return 0;
++    if (att_handle == s31_ble_stream_ccc_handle && buffer_size >= 2){
++        s31_ble_stream_conn = con_handle;
++        s31_ble_stream_subscribed =
++            little_endian_read_16(buffer, 0) == GATT_CLIENT_CHARACTERISTICS_CONFIGURATION_NOTIFICATION;
++        printf("S31 BLE stream: notifications %s\n", s31_ble_stream_subscribed ? "enabled" : "disabled");
++        if (s31_ble_stream_subscribed){
++            s31_ble_stream_seq = 0;
++            s31_ble_stream_notifies = 0;
++            s31_ble_stream_bytes = 0;
++            s31_ble_stream_pump();
++        }
++    }
++    return 0;
++}
++
++static void s31_ble_att_handler(uint8_t packet_type, uint16_t channel, uint8_t *packet, uint16_t size){
++    (void)channel;
++    (void)size;
++    if (packet_type != HCI_EVENT_PACKET)
++        return;
++    switch (hci_event_packet_get_type(packet)){
++        case ATT_EVENT_CAN_SEND_NOW:
++            s31_ble_stream_pump();
++            break;
++        case ATT_EVENT_MTU_EXCHANGE_COMPLETE:
++            printf("S31 BLE stream: ATT MTU %u\n", att_event_mtu_exchange_complete_get_MTU(packet));
++            break;
++        case ATT_EVENT_DISCONNECTED:
++            s31_ble_stream_subscribed = false;
++            s31_ble_stream_conn = HCI_CON_HANDLE_INVALID;
++            break;
++        default:
++            break;
++    }
++}
++
+ static void s31_ble_setup(void){
+     bd_addr_t null_addr = { 0 };
+     uint8_t name_length = (uint8_t) strlen(s31_device_name);
+@@ -377,7 +467,13 @@
+     att_db_util_add_characteristic_uuid16(
+         0xff11, ATT_PROPERTY_READ, ATT_SECURITY_NONE, ATT_SECURITY_NONE,
+         (uint8_t *) s31_ble_value, sizeof(s31_ble_value) - 1u);
+-    att_server_init(att_db_util_get_address(), NULL, NULL);
++    s31_ble_stream_handle = att_db_util_add_characteristic_uuid16(
++        S31_BLE_STREAM_UUID, ATT_PROPERTY_NOTIFY, ATT_SECURITY_NONE,
++        ATT_SECURITY_NONE, s31_ble_stream_buf, 0);
++    /* att_db_util lays out declaration/value/CCCD consecutively. */
++    s31_ble_stream_ccc_handle = s31_ble_stream_handle + 1;
++    att_server_init(att_db_util_get_address(), NULL, s31_ble_att_write);
++    att_server_register_packet_handler(s31_ble_att_handler);
+ 
+     s31_ble_scan_response[0] = name_length + 1;
+     s31_ble_scan_response[1] = BLUETOOTH_DATA_TYPE_COMPLETE_LOCAL_NAME;
+-- 
+2.43.0
