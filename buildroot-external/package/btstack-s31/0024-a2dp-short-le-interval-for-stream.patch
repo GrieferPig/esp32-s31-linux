@@ -1,0 +1,32 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: ESP32-S31 Linux <s31-linux@example.invalid>
+Date: Tue, 6 Oct 2026 12:00:00 +0800
+Subject: [PATCH] a2dp: request short LE interval for the bulk stream
+
+The stock 45 ms / 420 ms link drops under load (9 missed 45 ms anchors in
+a 400 ms RF hole: supervision timeout, reason 0x08) and caps streaming.
+Ask the central for 7.5-15 ms interval, zero latency, 2000 ms supervision
+when streaming starts.  No other link parameters change in this stage.
+---
+ example/a2dp_sink_demo.c | 11 ++++++++++-
+ 1 file changed, 10 insertions(+), 1 deletion(-)
+
+--- a/example/a2dp_sink_demo.c
++++ b/example/a2dp_sink_demo.c
+@@ -416,6 +416,14 @@
+             little_endian_read_16(buffer, 0) == GATT_CLIENT_CHARACTERISTICS_CONFIGURATION_NOTIFICATION;
+         printf("S31 BLE stream: notifications %s\n", s31_ble_stream_subscribed ? "enabled" : "disabled");
+         if (s31_ble_stream_subscribed){
++            /* Stage B: ask the central for a short interval (7.5-15 ms)
++             * with a tolerant supervision timeout (2000 ms).  The stock
++             * 45 ms / 420 ms link misses 9 anchors in a 400 ms RF hole
++             * and drops under load; shorter intervals also multiply
++             * streaming throughput. */
++            gap_request_connection_parameter_update(con_handle, 6, 12, 0, 200);
++        }
++        if (s31_ble_stream_subscribed){
+             s31_ble_stream_seq = 0;
+             s31_ble_stream_notifies = 0;
+             s31_ble_stream_bytes = 0;
+-- 
+2.43.0
