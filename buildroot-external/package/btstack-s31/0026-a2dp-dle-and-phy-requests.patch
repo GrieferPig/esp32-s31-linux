@@ -1,0 +1,61 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: ESP32-S31 Linux <s31-linux@example.invalid>
+Date: Tue, 6 Oct 2026 12:00:00 +0800
+Subject: [PATCH] a2dp: env-gated DLE and 2M PHY requests on LE connect
+
+Stages C+D.  Request 251B/2120us TX data length and (optionally) 2M PHY
+at connect time alongside the interval update.  Env-gated so each knob
+is measurable without rebuilding: S31_BTSTACK_DLE=0 restores stock PDUs,
+S31_BTSTACK_PHY=2 opts into 2M (default 1M, matching IDF Bluedroid which
+never auto-prefers 2M).  Controller accept/reject is observable in the
+Data Length Change / PHY Update Complete events.
+---
+ example/a2dp_sink_demo.c | 22 +++++++++++++++++++++-
+ 1 file changed, 21 insertions(+), 1 deletion(-)
+
+--- a/example/a2dp_sink_demo.c
++++ b/example/a2dp_sink_demo.c
+@@ -361,6 +361,9 @@
+  * ATT_EVENT_CAN_SEND_NOW and bursts while the stack accepts packets.
+  * Payload = u32 LE sequence + pattern so the peer detects loss/reorder. */
+ #define S31_BLE_STREAM_UUID 0xff12
++/* Link-knob state, parsed once from the environment in setup_demo. */
++static bool s31_ble_dle_enabled;
++static bool s31_ble_prefer_2m;
+ #define S31_BLE_STREAM_LEN 500
+ #define S31_BLE_STREAM_BURST 8
+ static uint16_t s31_ble_stream_handle;
+@@ -597,6 +600,13 @@
+     sm_add_event_handler(&s31_sm_event_callback_registration);
+ 
+     const char * coex_env = getenv("S31_BTSTACK_COEX");
++    const char * dle_env = getenv("S31_BTSTACK_DLE");
++    const char * phy_env = getenv("S31_BTSTACK_PHY");
++    s31_ble_dle_enabled = dle_env == NULL || strcmp(dle_env, "0") != 0;
++    s31_ble_prefer_2m = phy_env != NULL && strcmp(phy_env, "2") == 0;
++    printf("S31 BLE link knobs: DLE %s, PHY %s\n",
++           s31_ble_dle_enabled ? "251B" : "off",
++           s31_ble_prefer_2m ? "2M" : "1M");
+     s31_coex_enabled = coex_env != NULL && strcmp(coex_env, "0") != 0;
+     printf("ESP-IDF A2DP coexistence status: %s\n",
+            s31_coex_enabled ? "enabled" : "disabled");
+@@ -1107,6 +1117,17 @@
+             if (hci_event_le_meta_get_subevent_code(packet) == HCI_SUBEVENT_LE_CONNECTION_COMPLETE){
+                 s31_ble_stream_conn = hci_subevent_le_connection_complete_get_connection_handle(packet);
+                 gap_request_connection_parameter_update(s31_ble_stream_conn, 6, 12, 0, 200);
++                /* Stage C: use full-size LL PDUs on the streaming (TX)
++                 * direction.  Matches IDF/Bluedroid practice of explicit
++                 * enablement; the controller answers accept/reject and
++                 * the Data Length Change event records the result. */
++                if (s31_ble_dle_enabled)
++                    gap_le_set_data_length(s31_ble_stream_conn, 251, 2120);
++                /* Stage D: prefer 2M both directions when asked.
++                 * Like IDF Bluedroid (app-driven, never automatic),
++                 * default stays 1M; S31_BTSTACK_PHY=2 opts in. */
++                if (s31_ble_prefer_2m)
++                    gap_le_set_phy(s31_ble_stream_conn, 0, 2, 2, 0);
+             }
+             break;
+         case HCI_EVENT_CONNECTION_COMPLETE:
+-- 
+2.43.0
