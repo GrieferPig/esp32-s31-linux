@@ -1,41 +1,54 @@
-# bt-latency-fix status (updated 2026-10-06, commit: audit + before-logs)
+# bt-latency-fix status (final 2026-10-06)
 
-Done in this commit:
-- STEP 0 partial: submodules initialized (all pinned, no `-`/`+`), branch
-  `bt-latency-fix`, IDF choice recorded (`S31_ALLOW_UNPINNED=1` with local
-  08e0d30a vs pinned a602e67b), BTstack source fetched. `make doctor` still
-  red (no toolchain) and `make fetch`/`make build` not run yet.
-- STEP 1: payload audit in bt-latency/audit.md (38 items with file:line).
-- STEP 2 analysis (no code change): bt-latency/worker-analysis.md — worker
-  exists to serialize the blob gate + run deferred IRQ/timer/TX/command work;
-  tasklet cannot sleep for the mutex, shared workqueue keeps an async thread
-  with pool jitter, pure inline deadlocks when the caller holds the gate and
-  leaves idle timers/IRQs with no runner (plus shared foreign-TCB aliasing).
-  Board's Oct-4 image already runs BT with `worker_passes=0` ("no s31-radio
-  thread") and GATT reads stall — deleting the runner without fixing
-  wakeup/delivery reproduces the symptom.
-- STEP 3 partial (BEFORE only): bt-latency/logs/before-measurements.md with
-  exact commands + raw numbers. LE connect works (10.1 s); GATT reads stall
-  (>55 s, 0 B/s); Classic pair fails AuthenticationFailed (9.9 s); SDP
-  stalls; l2ping blocked (no root); Wi-Fi blocked (mode=bt + dummy SSID +
-  recovery cmdline).
+## Completed and committed
+- STEP 0: submodules pinned, `make doctor` pass, `make fetch` exit 0,
+  `make build` + `make image` exit 0. Invocation:
+  `PATH="$HOME/.local/bin:$PATH"
+  ESP_TOOLS="$HOME/.espressif/tools/riscv32-esp-elf/esp-16.1.0_20260609/riscv32-esp-elf"
+  S31_ALLOW_UNPINNED=1 make build image`.
+  Host-only fixes in bt-latency/host-build-fixes.md; one tracked compat fix
+  (`-mespv-spec=` probe in gen_s31_pie_cases.sh, GCC 15 path kept).
+- STEP 1: 38-item payload audit (bt-latency/audit.md), files verified
+  unchanged before editing.
+- STEP 2: dedicated `s31-radio` kthread DELETED, replaced by ordered
+  workqueue + deadline hrtimer
+  (`linux-esp32-s31@632d31313a7ef`, `@3d0953ecdc1df` first-pass creation +
+  non-kthread guard, `@ce3917f` workerless-teardown guard). No payload
+  functional change. Implementation: step2-implementation.md; plan:
+  worker-removal-plan.md; analysis: worker-analysis.md.
+- STEP 3 BEFORE: bt-latency/logs/before-measurements.md (+diagnostics
+  addendum). STEP 3 AFTER: bt-latency/logs/after-measurements.md.
+- STEP 4: profile-first suspect matrix (step4-profile.md). No blind tuning
+  applied; the measured stall (LE-ATT on the Oct-4 image) is gone on the
+  new image with event-driven delivery.
+- Flash: full matched sets hash-verified (dist 4a080ca03e4ab94f then
+  4bbdfb33bbbf56cf), persist never touched (still corrupt from before;
+  RAM-only configs used). Initial 2M-baud flash failure recovered via
+  verify-flash + 921600-baud rewrite; procedure recorded in logs.
 
-NEXT (blocking):
-1. Decide the code change. Candidates: (a) keep the kthread but delete the
-   *periodic tick* (event-driven hrtimer for `timer_next_due_us`, no 40 ms
-   BT batching, no ACL-RX coalescing, distinct TCB per context); (b) extend
-   the existing workerless/native path to BT/combo with the same wakeup
-   guarantees + Wi-Fi STA re-check. Both need profiling first:
-   `s31_linux_timer_report` lateness, `-1` counts at `s31_radio_vhci_try_send`
-   / `s31_radio_wifi_try_send`, BTstack HCI log (`-l` file, not `none`) for
-   the SMP/ATT stall, and BlueZ `btmon` (needs root — currently unavailable).
-2. Build: `make fetch` (toolchain ~GB + buildroot downloads) then `make build`
-   (uboot/linux/rootfs/radio-image). Long; run with generous timeouts.
-3. Flash + AFTER: respect tools/tests/test_s31_hil_flash_safety.py, never wipe
-   persist, use existing-image flash targets; then rerun §1–§8 same-setup for
-   AFTER numbers + Wi-Fi STA connect/throughput. Pairing failure (§5) and GATT
-   stall (§4) must be root-caused (SMP/ATT trace) before claiming a
-   throughput win — do not tune softmac/BTstack MTU blindly.
-4. Uplink risk: board image source ≠ pinned linux-esp32-s31 52dc6ea
-   ("btdm native…" string absent here); identify the Oct-4 build commit
-   before rebasing the fix, or AFTER numbers won't compare like-for-like.
+## How the AFTER run went (honest log)
+- First flashed image hung in module init: init called payload task APIs
+  from insmod process context (upstream never did). Fixed by creating the
+  radio-init task on the first serialized pass + PF_KTHREAD guard.
+- Wi-Fi→combo transition oopsed (teardown on uninitialized timer/work in
+  workerless mode). Fixed with existence guard + unpublish-first ordering;
+  transitions now clean with zero oops/BUG/panic.
+- Host BlueZ sessions are flaky (stale agents, cache expiry); one-shot
+  invocations + fresh scans used throughout; UART needs single continuous
+  sessions (reopen flakiness observed, worked around, not fully explained).
+
+## Verdict: NEXT (numbers recorded; two blockers remain)
+Worker gone, BLE fixed with numbers, Wi-Fi coexistence validated as far as
+the environment permits. NOT done because:
+1. Classic pairing fails identically before/after
+   (`AuthenticationFailed`; board SM NoInputNoOutput/auth-req-0 vs host
+   agent). This blocks Classic bonded/bulk throughput numbers and any
+   A2DP-streaming test. Needs SMP packet trace (BTstack `-l` + root
+   `btmon`, unavailable unprivileged) + SM/agent fix — a separate task.
+2. No authorized Wi-Fi AP and no host root: STA association + iperf
+   throughput and `l2ping` RTT are unobtainable here. Wi-Fi evidence is
+   interface-up + working scans + zero drops + clean transitions.
+3. Persist partition is corrupt (pre-existing JFFS2 damage; kernel refuses
+   to mount, system runs recovery read-only root). All AFTER tests used
+   RAM-only configs with zero MTD writes. Restoring persist (reformat)
+   is explicitly out of scope (never wipe persist) — needs the lab owner.
