@@ -8,12 +8,13 @@ BlueZ `pair` requests bonding, but the peripheral offered no bonding
 complete.  Worse, nobody answered SM_EVENT_JUST_WORKS_REQUEST, so the
 SM responder parked in SM_PH1_W4_USER_RESPONSE and the initiator hit its
 30 s SMP timeout (disconnect reason 0x05).  Request bonding (method stays
-Just Works via NoInputNoOutput, no MITM) and auto-confirm: this NoIO
-appliance has no user to ask, matching the existing Classic SSP
-auto-accept in the same handler.
+Just Works via NoInputNoOutput, no MITM) and auto-confirm through a
+dedicated SM event handler: SM events travel on the sm_add_event_handler
+list, not the HCI list, and this NoIO appliance has no user to ask,
+matching the existing Classic SSP auto-accept.
 ---
- example/a2dp_sink_demo.c | 15 ++++++++++++++-
- 1 file changed, 14 insertions(+), 1 deletion(-)
+ example/a2dp_sink_demo.c | 31 ++++++++++++++++++++++++++++++-
+ 1 file changed, 30 insertions(+), 1 deletion(-)
 
 --- a/example/a2dp_sink_demo.c
 +++ b/example/a2dp_sink_demo.c
@@ -29,20 +30,44 @@ auto-accept in the same handler.
  
      att_db_util_init();
      att_db_util_add_service_uuid16(ORG_BLUETOOTH_SERVICE_GENERIC_ACCESS);
-@@ -1022,6 +1025,14 @@
-             printf("Accepting Pairing - TODO: require actual user action\n");
-             hci_event_user_confirmation_request_get_bd_addr(packet, address);
-             gap_ssp_confirmation_response(address);
-+            break;
+@@ -488,6 +491,9 @@
+     hci_event_callback_registration.callback = &hci_packet_handler;
+     hci_add_event_handler(&hci_event_callback_registration);
+ 
++    s31_sm_event_callback_registration.callback = &s31_sm_packet_handler;
++    sm_add_event_handler(&s31_sm_event_callback_registration);
++
+     const char * coex_env = getenv("S31_BTSTACK_COEX");
+     s31_coex_enabled = coex_env != NULL && strcmp(coex_env, "0") != 0;
+     printf("ESP-IDF A2DP coexistence status: %s\n",
+@@ -948,6 +954,28 @@
+                s31_coex_applied_streaming ? "streaming" : "stopped");
+     }
+     s31_coex_pump();
++}
++
++/* SM events arrive on the dedicated SM handler list
++ * (sm_add_event_handler), not the HCI list: without this registration
++ * SM_EVENT_JUST_WORKS_REQUEST would never be seen and the responder
++ * would park in SM_PH1_W4_USER_RESPONSE until the 30 s timeout. */
++static btstack_packet_callback_registration_t s31_sm_event_callback_registration;
++
++static void s31_sm_packet_handler(uint8_t packet_type, uint16_t channel, uint8_t *packet, uint16_t size){
++    UNUSED(channel);
++    UNUSED(size);
++    if (packet_type != HCI_EVENT_PACKET) return;
++    switch (hci_event_packet_get_type(packet)){
 +        case SM_EVENT_JUST_WORKS_REQUEST:
-+            /* NoIO device: no user exists to confirm.  Without this
-+             * call the SM responder parks in SM_PH1_W4_USER_RESPONSE
-+             * and the initiator times out (30 s).  Same policy as the
-+             * Classic SSP auto-accept above. */
++            /* NoIO appliance: no user exists to confirm.  Same policy
++             * as the Classic SSP auto-accept in hci_packet_handler. */
 +            printf("S31 LE Just Works pairing auto-confirmed\n");
 +            sm_just_works_confirm(sm_event_just_works_request_get_handle(packet));
-             break;
-         default:
-             break;
++            break;
++        default:
++            break;
++    }
+ }
+ 
+ static void hci_packet_handler(uint8_t packet_type, uint16_t channel, uint8_t *packet, uint16_t size){
 -- 
 2.43.0
