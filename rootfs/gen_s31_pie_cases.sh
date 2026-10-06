@@ -61,9 +61,17 @@ if grep -q '["\\]' "$work_dir/cases.S"; then
 	exit 1
 fi
 
+# GCC 16 removed the -mespv-spec= driver option (Xespv 2.2 objects are now
+# tagged by default; verified: readelf shows xespv2p2 without the flag).
+# Probe so pinned GCC 15 keeps its explicit flag while newer drivers omit it.
+espv_spec=()
+if echo | "$cc" -mespv-spec=2p2 -E - >/dev/null 2>&1; then
+	espv_spec=(-mespv-spec=2p2)
+fi
+
 "$cc" \
 	-march=rv32imafc_zicsr_zifencei_xespv \
-	-mespv-spec=2p2 -mabi=ilp32f \
+	"${espv_spec[@]}" -mabi=ilp32f \
 	-x assembler -c "$work_dir/cases.S" -o "$work_dir/cases.o"
 
 if ! "$readelf" -A "$work_dir/cases.o" | grep -q 'xespv2p2'; then
