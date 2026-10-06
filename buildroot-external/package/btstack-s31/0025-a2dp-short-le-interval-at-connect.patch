@@ -1,0 +1,52 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: ESP32-S31 Linux <s31-linux@example.invalid>
+Date: Tue, 6 Oct 2026 12:00:00 +0800
+Subject: [PATCH] a2dp: request short LE interval at connect, not subscribe
+
+Links flap (supervision timeouts) before any subscription can trigger the
+update, so nothing downstream is measurable.  Move the Stage B request to
+LE Connection Complete: every link gets 7.5-15 ms / 2000 ms from birth.
+Values unchanged; still a single L2CAP request per link.  Also collapses
+a redundant double-if left by the previous patch.
+---
+ example/a2dp_sink_demo.c | 22 ++++++++++++++++++----
+ 1 file changed, 18 insertions(+), 4 deletions(-)
+
+--- a/example/a2dp_sink_demo.c
++++ b/example/a2dp_sink_demo.c
+@@ -416,14 +416,6 @@
+             little_endian_read_16(buffer, 0) == GATT_CLIENT_CHARACTERISTICS_CONFIGURATION_NOTIFICATION;
+         printf("S31 BLE stream: notifications %s\n", s31_ble_stream_subscribed ? "enabled" : "disabled");
+         if (s31_ble_stream_subscribed){
+-            /* Stage B: ask the central for a short interval (7.5-15 ms)
+-             * with a tolerant supervision timeout (2000 ms).  The stock
+-             * 45 ms / 420 ms link misses 9 anchors in a 400 ms RF hole
+-             * and drops under load; shorter intervals also multiply
+-             * streaming throughput. */
+-            gap_request_connection_parameter_update(con_handle, 6, 12, 0, 200);
+-        }
+-        if (s31_ble_stream_subscribed){
+             s31_ble_stream_seq = 0;
+             s31_ble_stream_notifies = 0;
+             s31_ble_stream_bytes = 0;
+@@ -1103,6 +1095,18 @@
+                 }
+                 printf("S31 Classic pairability: %s\n",
+                        pairable ? "enabled" : "disabled");
++            }
++            break;
++        case HCI_EVENT_LE_META:
++            /* Stage B (at connect time): short interval plus tolerant
++             * supervision keeps every link — discovery, reads,
++             * subscribe, stream — alive in this RF-dense shared-radio
++             * environment.  The stock 45 ms / 420 ms link missed 9
++             * anchors in a 400 ms hole and dropped under load.
++             * Idempotent per link. */
++            if (hci_event_le_meta_get_subevent_code(packet) == HCI_SUBEVENT_LE_CONNECTION_COMPLETE){
++                s31_ble_stream_conn = hci_subevent_le_connection_complete_get_connection_handle(packet);
++                gap_request_connection_parameter_update(s31_ble_stream_conn, 6, 12, 0, 200);
+             }
+             break;
+         case HCI_EVENT_CONNECTION_COMPLETE:
+-- 
+2.43.0
