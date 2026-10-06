@@ -21,10 +21,11 @@
 - STEP 4: profile-first suspect matrix (step4-profile.md). No blind tuning
   applied; the measured stall (LE-ATT on the Oct-4 image) is gone on the
   new image with event-driven delivery.
-- Flash: full matched sets hash-verified (dist 4a080ca03e4ab94f then
-  4bbdfb33bbbf56cf), persist never touched (still corrupt from before;
-  RAM-only configs used). Initial 2M-baud flash failure recovered via
-  verify-flash + 921600-baud rewrite; procedure recorded in logs.
+- Flash: full matched sets hash-verified (dist 4a080ca03e4ab94f,
+  4bbdfb33bbbf56cf, then 4b08e6cef5ce76d3 with the pairing fix), persist
+  never touched (still corrupt from before; RAM-only configs used).
+  Initial 2M-baud flash failure recovered via verify-flash + 921600-baud
+  rewrite; procedure recorded in logs.
 
 ## How the AFTER run went (honest log)
 - First flashed image hung in module init: init called payload task APIs
@@ -37,18 +38,19 @@
   invocations + fresh scans used throughout; UART needs single continuous
   sessions (reopen flakiness observed, worked around, not fully explained).
 
-## Verdict: NEXT (numbers recorded; two blockers remain)
-Worker gone, BLE fixed with numbers, Wi-Fi coexistence validated as far as
-the environment permits. NOT done because:
-1. Classic pairing fails identically before/after
-   (`AuthenticationFailed`; board SM NoInputNoOutput/auth-req-0 vs host
-   agent). This blocks Classic bonded/bulk throughput numbers and any
-   A2DP-streaming test. Needs SMP packet trace (BTstack `-l` + root
-   `btmon`, unavailable unprivileged) + SM/agent fix — a separate task.
-2. No authorized Wi-Fi AP and no host root: STA association + iperf
+## Verdict: NEXT (pairing fixed with numbers; two environmental blockers remain)
+Blocker 1 (pairing) is CLOSED: `pair` bonds in ~1.6 s (3/3), full key
+exchange on air, encrypted bulk 20/20 @88 ms / 56.6 B/s, bond reuse
+without re-pairing — see bt-latency/logs/pairing-fix.md. NOT fully done
+because:
+1. No authorized Wi-Fi AP and no host root: STA association + iperf
    throughput and `l2ping` RTT are unobtainable here. Wi-Fi evidence is
    interface-up + working scans + zero drops + clean transitions.
-3. Persist partition is corrupt (pre-existing JFFS2 damage; kernel refuses
-   to mount, system runs recovery read-only root). All AFTER tests used
-   RAM-only configs with zero MTD writes. Restoring persist (reformat)
-   is explicitly out of scope (never wipe persist) — needs the lab owner.
+2. Persist partition is corrupt (pre-existing JFFS2 damage; recovery
+   read-only root). All tests used RAM-only configs with zero MTD writes.
+   Restoring persist (reformat) is explicitly out of scope (never wipe
+   persist) — needs the lab owner.
+(Adjacent findings left open, out of scope: TLV key files never written
+to disk — bonds live in BTstack RAM only; BTstack first-start HCI-init
+stall needing a restart; Classic BR/EDR SSP never exercised on air
+because BlueZ always chose LE.)
