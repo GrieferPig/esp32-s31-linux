@@ -11,6 +11,10 @@
 #define ENABLE_CLASSIC
 #define ENABLE_HCI_CONTROLLER_TO_HOST_FLOW_CONTROL
 #define ENABLE_LE_PERIPHERAL
+/* Required for gap_le_set_data_length() (bulk-streaming Stage C).
+ * The S31 BTDM controller is BT 5.x LE; support is verified per link
+ * through the Data Length Change event, not assumed. */
+#define ENABLE_LE_DATA_LENGTH_EXTENSION
 #define ENABLE_LOG_ERROR
 #define S31_HCI_ACL_ONLY_FLOW_CONTROL
 #define S31_HCI_HOST_COMPLETED_BATCH 4
