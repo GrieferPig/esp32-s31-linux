@@ -1,0 +1,43 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: ESP32-S31 Linux <s31-linux@example.invalid>
+Date: Tue, 6 Oct 2026 12:00:00 +0800
+Subject: [PATCH] a2dp: send LE Set Data Length directly (task runner stalls it)
+
+gap_le_set_data_length() returns 0 but 0x2022 never reaches the air on
+this port, while L2CAP conn-update on the same handle works.  Bypass the
+wedged per-connection HCI task with a direct hci_send_cmd when the command
+pipeline is free; the queued task remains as fallback (duplicate sends
+are idempotent).  Logs which path was taken.
+---
+ example/a2dp_sink_demo.c | 16 +++++++++++++++-
+ 1 file changed, 15 insertions(+), 1 deletion(-)
+
+--- a/example/a2dp_sink_demo.c
++++ b/example/a2dp_sink_demo.c
+@@ -486,10 +486,22 @@
+ static void s31_ble_request_link_params(hci_con_handle_t conn, const char * when){
+     int rc_u, rc_d, rc_p;
+     rc_u = gap_request_connection_parameter_update(conn, 24, 40, 0, 200);
+-    if (s31_ble_dle_enabled)
++    if (s31_ble_dle_enabled){
+         rc_d = gap_le_set_data_length(conn, 251, 2120);
+-    else
++        /* The task-runner path above (rc=0) never emits 0x2022 on this
++         * port while L2CAP requests on the same handle fly: the per-conn
++         * HCI task is likely wedged behind a stuck ACTIVE bit.  Send the
++         * command directly when the pipeline is free (duplicate is
++         * harmless/idempotent if the task later runs too). */
++        if (hci_can_send_command_packet_now()){
++            hci_send_cmd(&hci_le_set_data_length, conn, 251, 2120);
++            printf("S31 BLE DLE: direct 0x2022 sent\n");
++        } else {
++            printf("S31 BLE DLE: pipeline busy, task path only\n");
++        }
++    } else {
+         rc_d = -1;
++    }
+     if (s31_ble_prefer_2m)
+         rc_p = gap_le_set_phy(conn, 0, 2, 2, 0);
+     else
+-- 
+2.43.0
