@@ -1,0 +1,12 @@
+Board: restart-command.txt (BURST=8, PHY default 1M), PID 299.
+Host:
+python3 -u bt-latency/fresh_bulk_run.py bt-latency/logs/burst8-controlled
+Fresh host setup includes adapter power off/on and re-pair, same as PHY=2 run.
+All four subscriptions returned InProgress; CCCD nevertheless starts stream.
+Board:
+kill -STOP 299; ls -l /tmp/mission8c.pklg; tail -20 /tmp/mission8c.log
+Frozen board capture length: 1021100 bytes.
+Board: gzip -c /tmp/mission8c.pklg >/tmp/mission8c.pklg.gz; ls -l /tmp/mission8c.pklg.gz
+python3 bt-latency/pull_pklg_chunk.py /tmp/mission8c.pklg.gz bt-latency/logs/burst8-controlled/capture.pklg.gz 0 70
+Python gzip.decompress -> capture.pklg; assert len == 1021100
+python3 bt-latency/analyze_pklg.py bt-latency/logs/burst8-controlled/capture.pklg

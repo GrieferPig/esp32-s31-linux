@@ -1,0 +1,1 @@
+kill -KILL 245; S31_HCI_DEVICE=/dev/s31-hci S31_BTSTACK_PAIRABLE=0 S31_BTSTACK_COEX=0 S31_BTSTACK_NAME="S31 Radio" S31_BTSTACK_BURST=8 /usr/sbin/s31-btstack-a2dp -u 0 -l /tmp/mission8.pklg >/tmp/mission8.log 2>&1 &

@@ -1,0 +1,24 @@
+kill -STOP 281; ls -l /tmp/mission8.pklg; tail -20 /tmp/mission8.log
+-rw-r--r--    1 root     root         12227 Jan  1 00:45 /tmp/mission8.pklg
+- HCI Revision   0x0000
+- LMP Version    0x000e
+- LMP Subversion 0x0000
+- Manufacturer 0x02e5
+S31 Classic scan command 0x0c1a status=0
+BTstack up and running on 30:ED:A0:F3:D4:AE.
+TLV path: /var/lib/btstack/btstack_30-ED-A0-F3-D4-AE.tlv
+S31 Classic pairability: disabled
+S31 Classic scan command 0x0c1c status=0
+S31 Classic scan command 0x0c1a status=0
+S31 Classic scan command 0x0c1e status=0
+S31 BLE DLE: pipeline busy, task path only
+S31 BLE link params @connect: update=0 dle=0 phy=-1
+S31 BLE stream: ATT MTU 517
+S31 BLE DLE: pipeline busy, task path only
+S31 BLE link params @mtu: update=0 dle=0 phy=-1
+S31 BLE stream: notifications enabled
+S31 BLE stream: 0 notifies, 0 bytes, seq=0
+S31 BLE DLE: direct 0x2022 sent from pump
+S31 BLE stream: 0 notifies, 0 bytes, seq=0
+[2]+  Stopped (signal)           /usr/sbin/s31-btstack-a2dp -u 0 -l /tmp/mission8.pklg 1>/tmp/mission8.log 2>&1
+~ #

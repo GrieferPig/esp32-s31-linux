@@ -1,0 +1,9 @@
+tail -5 /tmp/mission8c.log; pidof s31-btstack-a2dp
+TLV path: /var/lib/btstack/btstack_30-ED-A0-F3-D4-AE.tlv
+S31 Classic pairability: disabled
+S31 Classic scan command 0x0c1c status=0
+S31 Classic scan command 0x0c1a status=0
+S31 Classic scan command 0x0c1e status=0
+299
+[1]+  Killed                     /usr/sbin/s31-btstack-a2dp -u 0 -l /tmp/missionphy.pklg 1>/tmp/missionphy.log 2>&1
+~ #

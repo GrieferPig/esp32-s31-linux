@@ -1,0 +1,3 @@
+gzip -c /tmp/mission8c.pklg >/tmp/mission8c.pklg.gz; ls -l /tmp/mission8c.pk
+
+lg.gz
