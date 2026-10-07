@@ -1,0 +1,7 @@
+pair: BONDED in 0.0s
+connect: UP in 0.0s
+char ff12 objects: FOUND char0008 after 0s
+subscribe attempt 1: org.bluez.Error.InProgress: In Progress
+subscribe attempt 2: org.bluez.Error.InProgress: In Progress
+subscribe attempt 3: org.bluez.Error.InProgress: In Progress
+subscribe attempt 4: org.bluez.Error.InProgress: In Progress

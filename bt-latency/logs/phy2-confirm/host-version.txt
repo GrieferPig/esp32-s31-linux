@@ -1,0 +1,5 @@
+hci0:	Type: Primary  Bus: USB
+	BD Address: F0:6E:0B:D8:CE:45  ACL MTU: 1021:7  SCO MTU: 240:3
+	HCI Version: 4.2 (0x8)  Revision: 0x8300
+	LMP Version: 4.2 (0x8)  Subversion: 0x7015
+	Manufacturer: Marvell Technology Group Ltd. (72)

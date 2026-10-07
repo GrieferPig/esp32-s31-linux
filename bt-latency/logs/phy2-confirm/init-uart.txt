@@ -1,0 +1,23 @@
+tail -20 /tmp/missionphy.log; pidof s31-btstack-a2dp
+Bluetooth device: hci0
+BLE GAP/GATT: advertising as S31 Radio, service 0xff10
+S31 BLE stream burst: 24
+S31 BLE link knobs: DLE 251B, PHY 2M
+ESP-IDF A2DP coexistence status: disabled
+SBC decode: compiled out; max bitpool: 53
+Starting BTstack ...
+Local version information:
+- HCI Version    0x000e
+- HCI Revision   0x0000
+- LMP Version    0x000e
+- LMP Subversion 0x0000
+- Manufacturer 0x02e5
+S31 Classic scan command 0x0c1a status=0
+BTstack up and running on 30:ED:A0:F3:D4:AE.
+TLV path: /var/lib/btstack/btstack_30-ED-A0-F3-D4-AE.tlv
+S31 Classic pairability: disabled
+S31 Classic scan command 0x0c1c status=0
+S31 Classic scan command 0x0c1a status=0
+S31 Classic scan command 0x0c1e status=0
+290
+~ #

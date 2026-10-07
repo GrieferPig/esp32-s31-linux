@@ -1,0 +1,20 @@
+Board restart: see restart-command.txt and init-uart.txt (PID 290).
+Same image 94fb9aabbbf452d9, BURST=24, PAIRABLE=0, COEX=0, PHY=2, DLE on.
+Host:
+python3 -u bt-latency/fresh_bulk_run.py bt-latency/logs/phy2-confirm
+Fresh setup in persistent bluetoothctl --agent NoInputNoOutput session:
+agent on; default-agent; remove 30:ED:A0:F3:D4:AE;
+power off; power on; scan le; pair 30:ED:A0:F3:D4:AE; scan off.
+Commands are separate input lines; waits and subprocess argv are in the script.
+After fresh pairing, run-bonded.py rechecks bond and connects/subscribes.
+Board:
+tail -15 /tmp/missionphy.log
+kill -STOP 290; ls -l /tmp/missionphy.pklg; tail -20 /tmp/missionphy.log
+Host:
+hciconfig hci0 version
+python3 bt-latency/pull_pklg_chunk.py /tmp/missionphy.pklg bt-latency/logs/phy2-confirm/chunk0.bin 0 300
+python3 bt-latency/pull_pklg_chunk.py /tmp/missionphy.pklg bt-latency/logs/phy2-confirm/chunk1.bin 300 300
+python3 bt-latency/pull_pklg_chunk.py /tmp/missionphy.pklg bt-latency/logs/phy2-confirm/chunk2.bin 600 300
+python3 bt-latency/pull_pklg_chunk.py /tmp/missionphy.pklg bt-latency/logs/phy2-confirm/chunk3.bin 900 300
+python3 bt-latency/pull_pklg_chunk.py /tmp/missionphy.pklg bt-latency/logs/phy2-confirm/chunk4.bin 1200 8
+Reassemble in numeric chunk order; exact board byte size 1236406.

@@ -11,7 +11,7 @@ in 40.066848 s: 23.355256 KiB/s pump-to-controller. ATT values are 504 bytes.
 LE interval 45 ms and DLE accepted; no end-to-end BLE result.
 
 For comparison, burst-24/default 1M first 30 s was 27.429492 KiB/s.
-Fresh burst-24/PHY=2-requested (actual 1M) was 28.32 KiB/s over ~40 s.
+Fresh burst-24/PHY=2-requested (actual 1M) was 28.337619 KiB/s over ~40 s.
 These are single trials with fluctuating windows. The PHY-request setting
 and pairing histories differ for parts of this comparison; results suggest
 a modest burst gain, not a controlled causal estimate or a path to 100 KiB/s.

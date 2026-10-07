@@ -1,0 +1,17 @@
+tail -15 /tmp/missionphy.log
+S31 BLE DLE: pipeline busy, task path only
+S31 BLE link params @connect: update=0 dle=0 phy=0
+S31 LE Just Works pairing auto-confirmed
+S31 BLE stream: ATT MTU 517
+S31 BLE DLE: pipeline busy, task path only
+S31 BLE link params @mtu: update=0 dle=0 phy=0
+S31 BLE stream: notifications enabled
+S31 BLE stream: 0 notifies, 0 bytes, seq=0
+S31 BLE PHY: direct Set-PHY 2M sent from pump
+S31 BLE stream: 0 notifies, 0 bytes, seq=0
+S31 BLE DLE: direct 0x2022 sent from pump
+S31 BLE stream: 256 notifies, 129024 bytes, seq=256
+S31 BLE stream: 512 notifies, 258048 bytes, seq=512
+S31 BLE stream: 768 notifies, 387072 bytes, seq=768
+S31 BLE stream: 1024 notifies, 516096 bytes, seq=1024
+~ #

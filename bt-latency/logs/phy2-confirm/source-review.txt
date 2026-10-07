@@ -1,0 +1,14 @@
+Source inspected: out/buildroot/build/btstack-s31-431d58d5613fd8fae38afe50282b25302de84bf7
+src/hci.c hci_send_cmd_packet(): lines 8650-8651 call hci_dump_packet()
+immediately before hci_transport->send_packet().
+platform/linux/hci_transport_linux.c: send_packet asserts hci_can_send,
+sets it false, retains packet pointer only on EAGAIN/EWOULDBLOCK;
+process_write retries retained bytes then clears pending slot.
+Therefore a command absent from the PacketLogger command stream has not
+reached this normal transport send path. Transport overwrite alone would
+not remove an already emitted pre-transport PacketLogger command record.
+More decisively, captured 0x2032 Command Status and PHY Update Complete
+responses demonstrate controller processing in these runs.
+src/bluetooth.h line 238:
+ERROR_CODE_UNSUPPORTED_REMOTE_FEATURE_UNSUPPORTED_LMP_FEATURE = 0x1a.
+No transport defect inferred or code changed from this inspection.
