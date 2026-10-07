@@ -1,0 +1,1 @@
+cat /proc/35/status; cat /proc/35/stat

@@ -1,0 +1,73 @@
+From: ESP32-S31 Linux <s31-linux@example.invalid>
+Subject: [PATCH] a2dp: isolate BLE advertising airtime during Classic tests
+
+--- a/example/a2dp_sink_demo.c
++++ b/example/a2dp_sink_demo.c
+@@ -471,6 +471,8 @@
+ /* Link-knob state, parsed once from the environment in setup_demo. */
+ static bool s31_ble_dle_enabled;
+ static bool s31_ble_prefer_2m;
++static bool s31_ble_advertise = true;
++static bool s31_ble_adv_disable_pending;
+ #define S31_BLE_STREAM_LEN 500
+ #define S31_BLE_STREAM_BURST 8
+ /* Runtime burst depth (S31_BTSTACK_BURST, default 8): pump pacing is
+@@ -623,9 +625,23 @@
+     }
+ }
+ 
++/* Explicitly disable advertising after HCI reset for a matched Classic-only
++ * airtime control. Guard the direct command with transport and HCI credits. */
++static void s31_ble_advertising_pump(void){
++    if (!s31_ble_adv_disable_pending || hci_get_state() != HCI_STATE_WORKING ||
++        !hci_can_send_command_packet_now()) return;
++    s31_ble_adv_disable_pending = false;
++    if (hci_send_cmd(&hci_le_set_advertise_enable, 0) != ERROR_CODE_SUCCESS){
++        s31_ble_adv_disable_pending = true;
++    }
++}
++
+ static void s31_ble_setup(void){
+     bd_addr_t null_addr = { 0 };
+     uint8_t name_length = (uint8_t) strlen(s31_device_name);
++    const char * advertise_env = getenv("S31_BTSTACK_ADVERTISE");
++    s31_ble_advertise = advertise_env == NULL || strcmp(advertise_env, "0") != 0;
++    s31_ble_adv_disable_pending = !s31_ble_advertise;
+ 
+     sm_set_io_capabilities(IO_CAPABILITY_NO_INPUT_NO_OUTPUT);
+     /* Bonding is required: without SM_AUTHREQ_BONDING the responder
+@@ -660,8 +676,9 @@
+     gap_advertisements_set_data(sizeof(s31_ble_adv_data),
+                                 (uint8_t *) s31_ble_adv_data);
+     gap_scan_response_set_data(name_length + 2, s31_ble_scan_response);
+-    gap_advertisements_enable(1);
+-    printf("BLE GAP/GATT: advertising as %s, service 0xff10\n", s31_device_name);
++    gap_advertisements_enable(s31_ble_advertise ? 1 : 0);
++    printf("BLE GAP/GATT: advertising %s, name %s, service 0xff10\n",
++           s31_ble_advertise ? "enabled" : "disabled", s31_device_name);
+ }
+ #endif
+ 
+@@ -1360,6 +1377,12 @@
+                        packet[5], little_endian_read_16(packet, 6),
+                        little_endian_read_16(packet, 9));
+             }
++#ifdef ENABLE_BLE
++            if (opcode == 0x200a && size >= 6){
++                printf("S31 BLE advertising complete: requested=%u status=%u\n",
++                       s31_ble_advertise ? 1 : 0, packet[5]);
++            }
++#endif
+             s31_coex_command_complete(packet, size);
+             break;
+         }
+@@ -1379,6 +1402,9 @@
+             break;
+     }
+     s31_coex_pump();
++#ifdef ENABLE_BLE
++    s31_ble_advertising_pump();
++#endif
+ }
+ 
+ #ifdef ENABLE_AVRCP_COVER_ART
