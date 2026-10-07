@@ -1,0 +1,873 @@
+W (77024) BT_HCI: hcif conn complete: hdl 0x801, st 0x0
+
+I (77028) SPP_ACCEPTOR_DEMO: event: 16
+
+I (77728) SPP_ACCEPTOR_DEMO: authentication success: BasedSurface bda:[f0:6e:0b:d8:ce:45]
+
+I (77740) SPP_ACCEPTOR_DEMO: event: 21
+
+W (82032) BT_HCI: hcif disc complete: hdl 0x801, rsn 0x13 dev_find 1
+
+I (82032) SPP_ACCEPTOR_DEMO: event: 17
+
+W (85427) BT_HCI: hcif conn complete: hdl 0x802, st 0x0
+
+I (85428) SPP_ACCEPTOR_DEMO: event: 16
+
+W (85586) BT_APPL: new conn_srvc id:26, app_id:255
+
+I (85588) SPP_ACCEPTOR_DEMO: ESP_SPP_SRV_OPEN_EVT status:0 handle:129, rem_bda:[f0:6e:0b:d8:ce:45]
+
+I (85603) SPP_ACCEPTOR_DEMO: BENCH frame_bytes=1012
+
+E (85648) BT_L2CAP: l2cab is_cong_cback_context
+
+E (85795) BT_L2CAP: l2cab is_cong_cback_context
+
+E (85868) BT_L2CAP: l2cab is_cong_cback_context
+
+E (85965) BT_L2CAP: l2cab is_cong_cback_context
+
+E (86053) BT_L2CAP: l2cab is_cong_cback_context
+
+E (86157) BT_L2CAP: l2cab is_cong_cback_context
+
+E (86324) BT_L2CAP: l2cab is_cong_cback_context
+
+E (86413) BT_L2CAP: l2cab is_cong_cback_context
+
+E (86495) BT_L2CAP: l2cab is_cong_cback_context
+
+E (86590) BT_L2CAP: l2cab is_cong_cback_context
+
+E (86668) BT_L2CAP: l2cab is_cong_cback_context
+
+E (86773) BT_L2CAP: l2cab is_cong_cback_context
+
+E (86850) BT_L2CAP: l2cab is_cong_cback_context
+
+E (86933) BT_L2CAP: l2cab is_cong_cback_context
+
+E (87044) BT_L2CAP: l2cab is_cong_cback_context
+
+E (87133) BT_L2CAP: l2cab is_cong_cback_context
+
+E (87207) BT_L2CAP: l2cab is_cong_cback_context
+
+E (87302) BT_L2CAP: l2cab is_cong_cback_context
+
+E (87404) BT_L2CAP: l2cab is_cong_cback_context
+
+E (87492) BT_L2CAP: l2cab is_cong_cback_context
+
+E (87585) BT_L2CAP: l2cab is_cong_cback_context
+
+E (87658) BT_L2CAP: l2cab is_cong_cback_context
+
+E (87747) BT_L2CAP: l2cab is_cong_cback_context
+
+E (87844) BT_L2CAP: l2cab is_cong_cback_context
+
+E (87928) BT_L2CAP: l2cab is_cong_cback_context
+
+E (88035) BT_L2CAP: l2cab is_cong_cback_context
+
+E (88109) BT_L2CAP: l2cab is_cong_cback_context
+
+E (88152) BT_L2CAP: l2cab is_cong_cback_context
+
+E (88334) BT_L2CAP: l2cab is_cong_cback_context
+
+E (88419) BT_L2CAP: l2cab is_cong_cback_context
+
+E (88494) BT_L2CAP: l2cab is_cong_cback_context
+
+E (88580) BT_L2CAP: l2cab is_cong_cback_context
+
+E (88700) BT_L2CAP: l2cab is_cong_cback_context
+
+E (88789) BT_L2CAP: l2cab is_cong_cback_context
+
+E (88864) BT_L2CAP: l2cab is_cong_cback_context
+
+E (88957) BT_L2CAP: l2cab is_cong_cback_context
+
+E (89031) BT_L2CAP: l2cab is_cong_cback_context
+
+E (89066) BT_L2CAP: l2cab is_cong_cback_context
+
+E (89115) BT_L2CAP: l2cab is_cong_cback_context
+
+E (89215) BT_L2CAP: l2cab is_cong_cback_context
+
+E (89310) BT_L2CAP: l2cab is_cong_cback_context
+
+E (89403) BT_L2CAP: l2cab is_cong_cback_context
+
+E (89491) BT_L2CAP: l2cab is_cong_cback_context
+
+E (89600) BT_L2CAP: l2cab is_cong_cback_context
+
+E (89678) BT_L2CAP: l2cab is_cong_cback_context
+
+E (89865) BT_L2CAP: l2cab is_cong_cback_context
+
+E (89984) BT_L2CAP: l2cab is_cong_cback_context
+
+E (90078) BT_L2CAP: l2cab is_cong_cback_context
+
+E (90287) BT_L2CAP: l2cab is_cong_cback_context
+
+E (90357) BT_L2CAP: l2cab is_cong_cback_context
+
+E (90450) BT_L2CAP: l2cab is_cong_cback_context
+
+E (90549) BT_L2CAP: l2cab is_cong_cback_context
+
+E (90652) BT_L2CAP: l2cab is_cong_cback_context
+
+E (90732) BT_L2CAP: l2cab is_cong_cback_context
+
+E (90839) BT_L2CAP: l2cab is_cong_cback_context
+
+E (90915) BT_L2CAP: l2cab is_cong_cback_context
+
+E (91004) BT_L2CAP: l2cab is_cong_cback_context
+
+E (91098) BT_L2CAP: l2cab is_cong_cback_context
+
+E (91203) BT_L2CAP: l2cab is_cong_cback_context
+
+E (91291) BT_L2CAP: l2cab is_cong_cback_context
+
+E (91383) BT_L2CAP: l2cab is_cong_cback_context
+
+E (91467) BT_L2CAP: l2cab is_cong_cback_context
+
+E (91562) BT_L2CAP: l2cab is_cong_cback_context
+
+E (91644) BT_L2CAP: l2cab is_cong_cback_context
+
+E (91732) BT_L2CAP: l2cab is_cong_cback_context
+
+E (91800) BT_L2CAP: l2cab is_cong_cback_context
+
+E (91840) BT_L2CAP: l2cab is_cong_cback_context
+
+E (92009) BT_L2CAP: l2cab is_cong_cback_context
+
+E (92122) BT_L2CAP: l2cab is_cong_cback_context
+
+E (92199) BT_L2CAP: l2cab is_cong_cback_context
+
+E (92300) BT_L2CAP: l2cab is_cong_cback_context
+
+E (92381) BT_L2CAP: l2cab is_cong_cback_context
+
+E (92489) BT_L2CAP: l2cab is_cong_cback_context
+
+E (92569) BT_L2CAP: l2cab is_cong_cback_context
+
+E (92660) BT_L2CAP: l2cab is_cong_cback_context
+
+E (92743) BT_L2CAP: l2cab is_cong_cback_context
+
+E (92831) BT_L2CAP: l2cab is_cong_cback_context
+
+E (92918) BT_L2CAP: l2cab is_cong_cback_context
+
+E (93000) BT_L2CAP: l2cab is_cong_cback_context
+
+E (93093) BT_L2CAP: l2cab is_cong_cback_context
+
+E (93176) BT_L2CAP: l2cab is_cong_cback_context
+
+E (93292) BT_L2CAP: l2cab is_cong_cback_context
+
+E (93364) BT_L2CAP: l2cab is_cong_cback_context
+
+E (93475) BT_L2CAP: l2cab is_cong_cback_context
+
+E (93565) BT_L2CAP: l2cab is_cong_cback_context
+
+E (93640) BT_L2CAP: l2cab is_cong_cback_context
+
+E (93771) BT_L2CAP: l2cab is_cong_cback_context
+
+E (93839) BT_L2CAP: l2cab is_cong_cback_context
+
+E (94028) BT_L2CAP: l2cab is_cong_cback_context
+
+E (94108) BT_L2CAP: l2cab is_cong_cback_context
+
+E (94189) BT_L2CAP: l2cab is_cong_cback_context
+
+E (94281) BT_L2CAP: l2cab is_cong_cback_context
+
+E (94374) BT_L2CAP: l2cab is_cong_cback_context
+
+E (94466) BT_L2CAP: l2cab is_cong_cback_context
+
+E (94557) BT_L2CAP: l2cab is_cong_cback_context
+
+E (94655) BT_L2CAP: l2cab is_cong_cback_context
+
+E (94756) BT_L2CAP: l2cab is_cong_cback_context
+
+E (94854) BT_L2CAP: l2cab is_cong_cback_context
+
+E (94945) BT_L2CAP: l2cab is_cong_cback_context
+
+E (95039) BT_L2CAP: l2cab is_cong_cback_context
+
+E (95073) BT_L2CAP: l2cab is_cong_cback_context
+
+E (95219) BT_L2CAP: l2cab is_cong_cback_context
+
+E (95302) BT_L2CAP: l2cab is_cong_cback_context
+
+E (95394) BT_L2CAP: l2cab is_cong_cback_context
+
+E (95481) BT_L2CAP: l2cab is_cong_cback_context
+
+E (95574) BT_L2CAP: l2cab is_cong_cback_context
+
+E (95657) BT_L2CAP: l2cab is_cong_cback_context
+
+E (95749) BT_L2CAP: l2cab is_cong_cback_context
+
+E (95839) BT_L2CAP: l2cab is_cong_cback_context
+
+E (95940) BT_L2CAP: l2cab is_cong_cback_context
+
+E (96049) BT_L2CAP: l2cab is_cong_cback_context
+
+E (96143) BT_L2CAP: l2cab is_cong_cback_context
+
+E (96228) BT_L2CAP: l2cab is_cong_cback_context
+
+E (96338) BT_L2CAP: l2cab is_cong_cback_context
+
+E (96426) BT_L2CAP: l2cab is_cong_cback_context
+
+E (96502) BT_L2CAP: l2cab is_cong_cback_context
+
+E (96588) BT_L2CAP: l2cab is_cong_cback_context
+
+E (96680) BT_L2CAP: l2cab is_cong_cback_context
+
+E (96753) BT_L2CAP: l2cab is_cong_cback_context
+
+E (96853) BT_L2CAP: l2cab is_cong_cback_context
+
+E (96926) BT_L2CAP: l2cab is_cong_cback_context
+
+E (97036) BT_L2CAP: l2cab is_cong_cback_context
+
+E (97120) BT_L2CAP: l2cab is_cong_cback_context
+
+E (97194) BT_L2CAP: l2cab is_cong_cback_context
+
+E (97309) BT_L2CAP: l2cab is_cong_cback_context
+
+E (97400) BT_L2CAP: l2cab is_cong_cback_context
+
+E (97478) BT_L2CAP: l2cab is_cong_cback_context
+
+E (97597) BT_L2CAP: l2cab is_cong_cback_context
+
+E (97635) BT_L2CAP: l2cab is_cong_cback_context
+
+E (97786) BT_L2CAP: l2cab is_cong_cback_context
+
+E (97874) BT_L2CAP: l2cab is_cong_cback_context
+
+E (97949) BT_L2CAP: l2cab is_cong_cback_context
+
+E (98041) BT_L2CAP: l2cab is_cong_cback_context
+
+E (98124) BT_L2CAP: l2cab is_cong_cback_context
+
+E (98209) BT_L2CAP: l2cab is_cong_cback_context
+
+E (98338) BT_L2CAP: l2cab is_cong_cback_context
+
+E (98475) BT_L2CAP: l2cab is_cong_cback_context
+
+E (98596) BT_L2CAP: l2cab is_cong_cback_context
+
+E (98676) BT_L2CAP: l2cab is_cong_cback_context
+
+E (98759) BT_L2CAP: l2cab is_cong_cback_context
+
+E (98873) BT_L2CAP: l2cab is_cong_cback_context
+
+E (98955) BT_L2CAP: l2cab is_cong_cback_context
+
+E (99043) BT_L2CAP: l2cab is_cong_cback_context
+
+E (99138) BT_L2CAP: l2cab is_cong_cback_context
+
+E (99210) BT_L2CAP: l2cab is_cong_cback_context
+
+E (99393) BT_L2CAP: l2cab is_cong_cback_context
+
+E (99484) BT_L2CAP: l2cab is_cong_cback_context
+
+E (99574) BT_L2CAP: l2cab is_cong_cback_context
+
+E (99675) BT_L2CAP: l2cab is_cong_cback_context
+
+E (99758) BT_L2CAP: l2cab is_cong_cback_context
+
+E (99861) BT_L2CAP: l2cab is_cong_cback_context
+
+E (99949) BT_L2CAP: l2cab is_cong_cback_context
+
+E (100026) BT_L2CAP: l2cab is_cong_cback_context
+
+E (100114) BT_L2CAP: l2cab is_cong_cback_context
+
+E (100215) BT_L2CAP: l2cab is_cong_cback_context
+
+E (100405) BT_L2CAP: l2cab is_cong_cback_context
+
+E (100493) BT_L2CAP: l2cab is_cong_cback_context
+
+E (100578) BT_L2CAP: l2cab is_cong_cback_context
+
+E (100665) BT_L2CAP: l2cab is_cong_cback_context
+
+E (100756) BT_L2CAP: l2cab is_cong_cback_context
+
+E (100871) BT_L2CAP: l2cab is_cong_cback_context
+
+E (100949) BT_L2CAP: l2cab is_cong_cback_context
+
+E (101071) BT_L2CAP: l2cab is_cong_cback_context
+
+E (101148) BT_L2CAP: l2cab is_cong_cback_context
+
+E (101234) BT_L2CAP: l2cab is_cong_cback_context
+
+E (101320) BT_L2CAP: l2cab is_cong_cback_context
+
+E (101431) BT_L2CAP: l2cab is_cong_cback_context
+
+E (101505) BT_L2CAP: l2cab is_cong_cback_context
+
+E (101601) BT_L2CAP: l2cab is_cong_cback_context
+
+E (101694) BT_L2CAP: l2cab is_cong_cback_context
+
+E (101771) BT_L2CAP: l2cab is_cong_cback_context
+
+E (101860) BT_L2CAP: l2cab is_cong_cback_context
+
+E (101943) BT_L2CAP: l2cab is_cong_cback_context
+
+E (102031) BT_L2CAP: l2cab is_cong_cback_context
+
+E (102131) BT_L2CAP: l2cab is_cong_cback_context
+
+E (102239) BT_L2CAP: l2cab is_cong_cback_context
+
+E (102363) BT_L2CAP: l2cab is_cong_cback_context
+
+E (102438) BT_L2CAP: l2cab is_cong_cback_context
+
+E (102533) BT_L2CAP: l2cab is_cong_cback_context
+
+E (102615) BT_L2CAP: l2cab is_cong_cback_context
+
+E (102711) BT_L2CAP: l2cab is_cong_cback_context
+
+E (102799) BT_L2CAP: l2cab is_cong_cback_context
+
+E (102894) BT_L2CAP: l2cab is_cong_cback_context
+
+E (102980) BT_L2CAP: l2cab is_cong_cback_context
+
+E (103070) BT_L2CAP: l2cab is_cong_cback_context
+
+E (103153) BT_L2CAP: l2cab is_cong_cback_context
+
+E (103230) BT_L2CAP: l2cab is_cong_cback_context
+
+E (103320) BT_L2CAP: l2cab is_cong_cback_context
+
+E (103411) BT_L2CAP: l2cab is_cong_cback_context
+
+E (103505) BT_L2CAP: l2cab is_cong_cback_context
+
+E (103604) BT_L2CAP: l2cab is_cong_cback_context
+
+E (103703) BT_L2CAP: l2cab is_cong_cback_context
+
+E (103801) BT_L2CAP: l2cab is_cong_cback_context
+
+E (103884) BT_L2CAP: l2cab is_cong_cback_context
+
+E (103994) BT_L2CAP: l2cab is_cong_cback_context
+
+E (104093) BT_L2CAP: l2cab is_cong_cback_context
+
+E (104174) BT_L2CAP: l2cab is_cong_cback_context
+
+E (104256) BT_L2CAP: l2cab is_cong_cback_context
+
+E (104353) BT_L2CAP: l2cab is_cong_cback_context
+
+E (104433) BT_L2CAP: l2cab is_cong_cback_context
+
+E (104523) BT_L2CAP: l2cab is_cong_cback_context
+
+E (104601) BT_L2CAP: l2cab is_cong_cback_context
+
+E (104713) BT_L2CAP: l2cab is_cong_cback_context
+
+E (104885) BT_L2CAP: l2cab is_cong_cback_context
+
+E (104985) BT_L2CAP: l2cab is_cong_cback_context
+
+E (105081) BT_L2CAP: l2cab is_cong_cback_context
+
+E (105154) BT_L2CAP: l2cab is_cong_cback_context
+
+E (105276) BT_L2CAP: l2cab is_cong_cback_context
+
+E (105359) BT_L2CAP: l2cab is_cong_cback_context
+
+E (105531) BT_L2CAP: l2cab is_cong_cback_context
+
+E (105619) BT_L2CAP: l2cab is_cong_cback_context
+
+E (105689) BT_L2CAP: l2cab is_cong_cback_context
+
+E (105786) BT_L2CAP: l2cab is_cong_cback_context
+
+E (105874) BT_L2CAP: l2cab is_cong_cback_context
+
+E (105966) BT_L2CAP: l2cab is_cong_cback_context
+
+E (106049) BT_L2CAP: l2cab is_cong_cback_context
+
+E (106141) BT_L2CAP: l2cab is_cong_cback_context
+
+E (106249) BT_L2CAP: l2cab is_cong_cback_context
+
+E (106328) BT_L2CAP: l2cab is_cong_cback_context
+
+E (106415) BT_L2CAP: l2cab is_cong_cback_context
+
+E (106495) BT_L2CAP: l2cab is_cong_cback_context
+
+E (106601) BT_L2CAP: l2cab is_cong_cback_context
+
+E (106689) BT_L2CAP: l2cab is_cong_cback_context
+
+E (106854) BT_L2CAP: l2cab is_cong_cback_context
+
+E (106940) BT_L2CAP: l2cab is_cong_cback_context
+
+E (107034) BT_L2CAP: l2cab is_cong_cback_context
+
+E (107111) BT_L2CAP: l2cab is_cong_cback_context
+
+E (107204) BT_L2CAP: l2cab is_cong_cback_context
+
+E (107295) BT_L2CAP: l2cab is_cong_cback_context
+
+E (107400) BT_L2CAP: l2cab is_cong_cback_context
+
+E (107533) BT_L2CAP: l2cab is_cong_cback_context
+
+E (107685) BT_L2CAP: l2cab is_cong_cback_context
+
+E (107753) BT_L2CAP: l2cab is_cong_cback_context
+
+E (107873) BT_L2CAP: l2cab is_cong_cback_context
+
+E (107945) BT_L2CAP: l2cab is_cong_cback_context
+
+E (108046) BT_L2CAP: l2cab is_cong_cback_context
+
+E (108128) BT_L2CAP: l2cab is_cong_cback_context
+
+E (108215) BT_L2CAP: l2cab is_cong_cback_context
+
+E (108296) BT_L2CAP: l2cab is_cong_cback_context
+
+E (108379) BT_L2CAP: l2cab is_cong_cback_context
+
+E (108466) BT_L2CAP: l2cab is_cong_cback_context
+
+E (108570) BT_L2CAP: l2cab is_cong_cback_context
+
+E (108665) BT_L2CAP: l2cab is_cong_cback_context
+
+E (108771) BT_L2CAP: l2cab is_cong_cback_context
+
+E (108854) BT_L2CAP: l2cab is_cong_cback_context
+
+E (108931) BT_L2CAP: l2cab is_cong_cback_context
+
+E (109031) BT_L2CAP: l2cab is_cong_cback_context
+
+E (109133) BT_L2CAP: l2cab is_cong_cback_context
+
+E (109208) BT_L2CAP: l2cab is_cong_cback_context
+
+E (109394) BT_L2CAP: l2cab is_cong_cback_context
+
+E (109469) BT_L2CAP: l2cab is_cong_cback_context
+
+E (109556) BT_L2CAP: l2cab is_cong_cback_context
+
+E (109649) BT_L2CAP: l2cab is_cong_cback_context
+
+E (109723) BT_L2CAP: l2cab is_cong_cback_context
+
+E (109836) BT_L2CAP: l2cab is_cong_cback_context
+
+E (109904) BT_L2CAP: l2cab is_cong_cback_context
+
+E (109991) BT_L2CAP: l2cab is_cong_cback_context
+
+E (110110) BT_L2CAP: l2cab is_cong_cback_context
+
+E (110186) BT_L2CAP: l2cab is_cong_cback_context
+
+E (110281) BT_L2CAP: l2cab is_cong_cback_context
+
+E (110376) BT_L2CAP: l2cab is_cong_cback_context
+
+E (110459) BT_L2CAP: l2cab is_cong_cback_context
+
+E (110563) BT_L2CAP: l2cab is_cong_cback_context
+
+E (110645) BT_L2CAP: l2cab is_cong_cback_context
+
+E (110733) BT_L2CAP: l2cab is_cong_cback_context
+
+E (110836) BT_L2CAP: l2cab is_cong_cback_context
+
+E (110914) BT_L2CAP: l2cab is_cong_cback_context
+
+E (110991) BT_L2CAP: l2cab is_cong_cback_context
+
+E (111092) BT_L2CAP: l2cab is_cong_cback_context
+
+E (111164) BT_L2CAP: l2cab is_cong_cback_context
+
+E (111256) BT_L2CAP: l2cab is_cong_cback_context
+
+E (111378) BT_L2CAP: l2cab is_cong_cback_context
+
+E (111453) BT_L2CAP: l2cab is_cong_cback_context
+
+E (111548) BT_L2CAP: l2cab is_cong_cback_context
+
+E (111650) BT_L2CAP: l2cab is_cong_cback_context
+
+E (111715) BT_L2CAP: l2cab is_cong_cback_context
+
+E (111819) BT_L2CAP: l2cab is_cong_cback_context
+
+E (111908) BT_L2CAP: l2cab is_cong_cback_context
+
+E (111985) BT_L2CAP: l2cab is_cong_cback_context
+
+E (112075) BT_L2CAP: l2cab is_cong_cback_context
+
+E (112163) BT_L2CAP: l2cab is_cong_cback_context
+
+E (112245) BT_L2CAP: l2cab is_cong_cback_context
+
+E (112346) BT_L2CAP: l2cab is_cong_cback_context
+
+E (112434) BT_L2CAP: l2cab is_cong_cback_context
+
+E (112504) BT_L2CAP: l2cab is_cong_cback_context
+
+E (112625) BT_L2CAP: l2cab is_cong_cback_context
+
+E (112713) BT_L2CAP: l2cab is_cong_cback_context
+
+E (112791) BT_L2CAP: l2cab is_cong_cback_context
+
+E (112874) BT_L2CAP: l2cab is_cong_cback_context
+
+E (112993) BT_L2CAP: l2cab is_cong_cback_context
+
+E (113086) BT_L2CAP: l2cab is_cong_cback_context
+
+E (113154) BT_L2CAP: l2cab is_cong_cback_context
+
+E (113334) BT_L2CAP: l2cab is_cong_cback_context
+
+E (113416) BT_L2CAP: l2cab is_cong_cback_context
+
+E (113494) BT_L2CAP: l2cab is_cong_cback_context
+
+E (113585) BT_L2CAP: l2cab is_cong_cback_context
+
+E (113676) BT_L2CAP: l2cab is_cong_cback_context
+
+E (113771) BT_L2CAP: l2cab is_cong_cback_context
+
+E (113844) BT_L2CAP: l2cab is_cong_cback_context
+
+E (113949) BT_L2CAP: l2cab is_cong_cback_context
+
+E (114048) BT_L2CAP: l2cab is_cong_cback_context
+
+E (114130) BT_L2CAP: l2cab is_cong_cback_context
+
+E (114225) BT_L2CAP: l2cab is_cong_cback_context
+
+E (114324) BT_L2CAP: l2cab is_cong_cback_context
+
+E (114406) BT_L2CAP: l2cab is_cong_cback_context
+
+E (114476) BT_L2CAP: l2cab is_cong_cback_context
+
+E (114576) BT_L2CAP: l2cab is_cong_cback_context
+
+E (114664) BT_L2CAP: l2cab is_cong_cback_context
+
+E (114743) BT_L2CAP: l2cab is_cong_cback_context
+
+E (114831) BT_L2CAP: l2cab is_cong_cback_context
+
+E (114931) BT_L2CAP: l2cab is_cong_cback_context
+
+E (115031) BT_L2CAP: l2cab is_cong_cback_context
+
+E (115114) BT_L2CAP: l2cab is_cong_cback_context
+
+E (115223) BT_L2CAP: l2cab is_cong_cback_context
+
+E (115296) BT_L2CAP: l2cab is_cong_cback_context
+
+E (115390) BT_L2CAP: l2cab is_cong_cback_context
+
+E (115500) BT_L2CAP: l2cab is_cong_cback_context
+
+E (115595) BT_L2CAP: l2cab is_cong_cback_context
+
+E (115668) BT_L2CAP: l2cab is_cong_cback_context
+
+E (115756) BT_L2CAP: l2cab is_cong_cback_context
+
+E (115856) BT_L2CAP: l2cab is_cong_cback_context
+
+E (115940) BT_L2CAP: l2cab is_cong_cback_context
+
+E (116010) BT_L2CAP: l2cab is_cong_cback_context
+
+E (116116) BT_L2CAP: l2cab is_cong_cback_context
+
+E (116214) BT_L2CAP: l2cab is_cong_cback_context
+
+E (116328) BT_L2CAP: l2cab is_cong_cback_context
+
+E (116385) BT_L2CAP: l2cab is_cong_cback_context
+
+E (116486) BT_L2CAP: l2cab is_cong_cback_context
+
+E (116584) BT_L2CAP: l2cab is_cong_cback_context
+
+E (116671) BT_L2CAP: l2cab is_cong_cback_context
+
+E (116791) BT_L2CAP: l2cab is_cong_cback_context
+
+E (116866) BT_L2CAP: l2cab is_cong_cback_context
+
+E (116959) BT_L2CAP: l2cab is_cong_cback_context
+
+E (117138) BT_L2CAP: l2cab is_cong_cback_context
+
+E (117229) BT_L2CAP: l2cab is_cong_cback_context
+
+E (117321) BT_L2CAP: l2cab is_cong_cback_context
+
+E (117424) BT_L2CAP: l2cab is_cong_cback_context
+
+E (117510) BT_L2CAP: l2cab is_cong_cback_context
+
+E (117605) BT_L2CAP: l2cab is_cong_cback_context
+
+E (117683) BT_L2CAP: l2cab is_cong_cback_context
+
+E (117801) BT_L2CAP: l2cab is_cong_cback_context
+
+E (117884) BT_L2CAP: l2cab is_cong_cback_context
+
+E (117964) BT_L2CAP: l2cab is_cong_cback_context
+
+E (118064) BT_L2CAP: l2cab is_cong_cback_context
+
+E (118156) BT_L2CAP: l2cab is_cong_cback_context
+
+E (118230) BT_L2CAP: l2cab is_cong_cback_context
+
+E (118326) BT_L2CAP: l2cab is_cong_cback_context
+
+E (118410) BT_L2CAP: l2cab is_cong_cback_context
+
+E (118498) BT_L2CAP: l2cab is_cong_cback_context
+
+E (118589) BT_L2CAP: l2cab is_cong_cback_context
+
+E (118666) BT_L2CAP: l2cab is_cong_cback_context
+
+E (118771) BT_L2CAP: l2cab is_cong_cback_context
+
+E (118849) BT_L2CAP: l2cab is_cong_cback_context
+
+E (118939) BT_L2CAP: l2cab is_cong_cback_context
+
+E (119045) BT_L2CAP: l2cab is_cong_cback_context
+
+E (119140) BT_L2CAP: l2cab is_cong_cback_context
+
+E (119228) BT_L2CAP: l2cab is_cong_cback_context
+
+E (119348) BT_L2CAP: l2cab is_cong_cback_context
+
+E (119435) BT_L2CAP: l2cab is_cong_cback_context
+
+E (119528) BT_L2CAP: l2cab is_cong_cback_context
+
+E (119615) BT_L2CAP: l2cab is_cong_cback_context
+
+E (119691) BT_L2CAP: l2cab is_cong_cback_context
+
+E (119781) BT_L2CAP: l2cab is_cong_cback_context
+
+E (119881) BT_L2CAP: l2cab is_cong_cback_context
+
+E (119949) BT_L2CAP: l2cab is_cong_cback_context
+
+E (120050) BT_L2CAP: l2cab is_cong_cback_context
+
+E (120131) BT_L2CAP: l2cab is_cong_cback_context
+
+E (120223) BT_L2CAP: l2cab is_cong_cback_context
+
+E (120318) BT_L2CAP: l2cab is_cong_cback_context
+
+E (120415) BT_L2CAP: l2cab is_cong_cback_context
+
+E (120481) BT_L2CAP: l2cab is_cong_cback_context
+
+E (120608) BT_L2CAP: l2cab is_cong_cback_context
+
+E (120685) BT_L2CAP: l2cab is_cong_cback_context
+
+E (120869) BT_L2CAP: l2cab is_cong_cback_context
+
+E (120936) BT_L2CAP: l2cab is_cong_cback_context
+
+E (121031) BT_L2CAP: l2cab is_cong_cback_context
+
+E (121124) BT_L2CAP: l2cab is_cong_cback_context
+
+E (121198) BT_L2CAP: l2cab is_cong_cback_context
+
+E (121288) BT_L2CAP: l2cab is_cong_cback_context
+
+E (121389) BT_L2CAP: l2cab is_cong_cback_context
+
+E (121470) BT_L2CAP: l2cab is_cong_cback_context
+
+E (121588) BT_L2CAP: l2cab is_cong_cback_context
+
+E (121670) BT_L2CAP: l2cab is_cong_cback_context
+
+E (121753) BT_L2CAP: l2cab is_cong_cback_context
+
+E (121844) BT_L2CAP: l2cab is_cong_cback_context
+
+E (121956) BT_L2CAP: l2cab is_cong_cback_context
+
+E (122125) BT_L2CAP: l2cab is_cong_cback_context
+
+E (122195) BT_L2CAP: l2cab is_cong_cback_context
+
+E (122300) BT_L2CAP: l2cab is_cong_cback_context
+
+E (122378) BT_L2CAP: l2cab is_cong_cback_context
+
+E (122459) BT_L2CAP: l2cab is_cong_cback_context
+
+E (122641) BT_L2CAP: l2cab is_cong_cback_context
+
+E (122730) BT_L2CAP: l2cab is_cong_cback_context
+
+E (122848) BT_L2CAP: l2cab is_cong_cback_context
+
+E (122923) BT_L2CAP: l2cab is_cong_cback_context
+
+E (123023) BT_L2CAP: l2cab is_cong_cback_context
+
+E (123100) BT_L2CAP: l2cab is_cong_cback_context
+
+E (123201) BT_L2CAP: l2cab is_cong_cback_context
+
+E (123291) BT_L2CAP: l2cab is_cong_cback_context
+
+E (123379) BT_L2CAP: l2cab is_cong_cback_context
+
+E (123470) BT_L2CAP: l2cab is_cong_cback_context
+
+E (123635) BT_L2CAP: l2cab is_cong_cback_context
+
+E (123721) BT_L2CAP: l2cab is_cong_cback_context
+
+E (123796) BT_L2CAP: l2cab is_cong_cback_context
+
+E (123891) BT_L2CAP: l2cab is_cong_cback_context
+
+E (123985) BT_L2CAP: l2cab is_cong_cback_context
+
+E (124078) BT_L2CAP: l2cab is_cong_cback_context
+
+E (124195) BT_L2CAP: l2cab is_cong_cback_context
+
+E (124358) BT_L2CAP: l2cab is_cong_cback_context
+
+E (124465) BT_L2CAP: l2cab is_cong_cback_context
+
+E (124549) BT_L2CAP: l2cab is_cong_cback_context
+
+E (124628) BT_L2CAP: l2cab is_cong_cback_context
+
+E (124720) BT_L2CAP: l2cab is_cong_cback_context
+
+E (124811) BT_L2CAP: l2cab is_cong_cback_context
+
+E (124903) BT_L2CAP: l2cab is_cong_cback_context
+
+E (124974) BT_L2CAP: l2cab is_cong_cback_context
+
+E (125079) BT_L2CAP: l2cab is_cong_cback_context
+
+E (125360) BT_L2CAP: l2cab is_cong_cback_context
+
+E (125471) BT_L2CAP: l2cab is_cong_cback_context
+
+E (125556) BT_L2CAP: l2cab is_cong_cback_context
+
+W (125594) BT_RFCOMM: port_rfc_closed RFCOMM connection in server:1 state 2 closed: Closed (res: 19)
+
+I (125595) SPP_ACCEPTOR_DEMO: ESP_SPP_CLOSE_EVT status:0 handle:129 close_by_remote:1
+
+W (125635) BT_RFCOMM: rfc_find_lcid_mcb LCID reused LCID:0x41 current:0x0
+
+W (125637) BT_RFCOMM: RFCOMM_DisconnectInd LCID:0x41
+
+W (127784) BT_HCI: hcif disc complete: hdl 0x802, rsn 0x13 dev_find 1
+
+I (127785) SPP_ACCEPTOR_DEMO: event: 17

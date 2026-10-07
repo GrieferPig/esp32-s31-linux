@@ -1,0 +1,12 @@
+{
+  "env": {
+    "S31_BT_ADDR": "30:ED:A0:F3:D4:AD",
+    "S31_BLE_INTERVAL": "6",
+    "S31_BLE_VALUE_LEN": "244"
+  },
+  "argv": [
+    "python3",
+    "bt-latency/fresh_fd_run.py",
+    "bt-latency/logs/native-idf/ble-iv6-len244"
+  ]
+}

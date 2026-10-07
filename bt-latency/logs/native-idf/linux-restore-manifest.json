@@ -1,0 +1,26 @@
+{
+  "spl_app.bin": {
+    "size": 38560,
+    "sha256": "c1c050a97449f41ec45f65bffe99e72ab1aa77e5df3d36d3949755d8a7b54e85"
+  },
+  "u-boot.itb": {
+    "size": 253208,
+    "sha256": "3da4e6cc910da9e35b120d71ee402bf89e59791c36938bd997f541b8b2c2efae"
+  },
+  "esp32s31_generic.dtb": {
+    "size": 26352,
+    "sha256": "4466f703a78eedb33669a990728974f9b7f3b3a370157372901a90b0603f2522"
+  },
+  "radio.bin": {
+    "size": 1527120,
+    "sha256": "069a99da3b7b1e30b1832403263a86e65da9bcff2d2f914d6e8185b5e46e5156"
+  },
+  "xipImage": {
+    "size": 6229708,
+    "sha256": "da4af0a813c0176183a726ae5b40384056493b0cbd28542743ca5577cd5f5dab"
+  },
+  "rootfs.sqfs": {
+    "size": 3133440,
+    "sha256": "6e512d934b75c21bf01a8b2a84f51ee03cb4b7b2395998b14b0117d2feed871d"
+  }
+}

@@ -20,7 +20,9 @@ Current Linux bank:
   packet logging enabled. AcquireNotify-only fixes the receive harness.
 - Classic host-fd 42.125308 KiB/s logged; 88.697444 KiB/s without logging,
   40 s each; every complete frame sequence and pattern validated.
-Current board: unchanged image 94fb9aabbbf452d9; PID 340, PAIRABLE=1,
+Before native experiments, board: unchanged image 94fb9aabbbf452d9; PID 340, PAIRABLE=1,
 COEX=0, packet logging disabled, /tmp/spp-nolog.log. Persist untouched.
 Potential scheduler busy-poll on pending HCI TX was inspected but NOT changed;
 native benchmarks take precedence before attributing remaining loss to it.
+
+Native baselines completed: BLE31.795451 KiB/s (15ms,495B); Classic214.386362 KiB/s (990B), each repeated for40s with zero payload/sequence errors. See native-idf/report.md and summary.json. These replace the fixed100KiB/s target.

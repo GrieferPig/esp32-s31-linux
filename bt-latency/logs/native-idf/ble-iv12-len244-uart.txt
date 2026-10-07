@@ -1,0 +1,35 @@
+W (167670) BT_HCI: hcif disc complete: hdl 0x0, rsn 0x13 dev_find 1
+
+I (167671) GATTS_DEMO: Disconnected, remote f0:6e:0b:d8:ce:45, reason 0x13
+
+I (167675) GATTS_DEMO: Advertising start successfully
+
+I (179985) GATTS_DEMO: Connected, conn_id 0, remote f0:6e:0b:d8:ce:45
+
+E (179986) BT_BTM: BTM_SetBleDataLength failed, peer does not support request
+
+E (179987) BT_APPL: bta_dm_ble_set_data_length failed
+
+
+
+I (179993) GATTS_DEMO: DLE status=17 tx=517 rx=517
+
+I (180484) GATTS_DEMO: Connection params update, status 0, conn_int 36, latency 0, timeout 200
+
+I (180756) GATTS_DEMO: MTU exchange, MTU 517
+
+I (180865) GATTS_DEMO: AUTH success=1 reason=0
+
+I (187595) GATTS_DEMO: BENCH interval=12 value_bytes=244 status=0
+
+I (188101) GATTS_DEMO: Connection params update, status 0, conn_int 12, latency 0, timeout 200
+
+I (189677) GATTS_DEMO: Notification enable
+
+E (189678) BT_BTM: BTM_SetBleDataLength failed, peer does not support request
+
+E (189678) BT_APPL: bta_dm_ble_set_data_length failed
+
+
+
+I (189683) GATTS_DEMO: DLE status=17 tx=517 rx=517

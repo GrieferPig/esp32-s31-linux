@@ -12,6 +12,8 @@ import select
 import fcntl
 import os
 import sys
+import json
+from pathlib import Path
 import dbus
 import dbus.mainloop.glib
 
@@ -100,6 +102,14 @@ def main():
     # AcquireNotify owns the notification session. Do not call StartNotify first.
     ch = dbus.Interface(bus.get_object("org.bluez", char_path),
                         "org.bluez.GattCharacteristic1")
+    interval = os.environ.get("S31_BLE_INTERVAL")
+    value_len = int(os.environ.get("S31_BLE_VALUE_LEN", "504"))
+    if interval:
+        iv = int(interval)
+        ch.WriteValue(dbus.Array([0xa1, iv & 255, iv >> 8, value_len & 255, value_len >> 8], signature="y"),
+                      dbus.Dictionary({"type": "request"}, signature="sv"))
+        print(f"native control interval={iv} value_bytes={value_len}", flush=True)
+        time.sleep(2)
     fd_obj = mtu = None
     for attempt in range(4):
         try:
@@ -114,7 +124,9 @@ def main():
     fd = fd_obj.take()
     os.set_blocking(fd, False)
     f = os.fdopen(fd, "rb", buffering=0)
-    total = pkts = gaps = dups = 0
+    total = pkts = gaps = dups = bad = 0
+    raw = bytearray()
+    arrivals = []
     first_seq = last_seq = None
     t0 = time.monotonic()
     deadline = t0 + seconds
@@ -140,14 +152,25 @@ def main():
                 if seq != ((last_seq + 1) & 0xFFFFFFFF):
                     gaps += (seq - last_seq - 1) & 0xFFFFFFFF
                 last_seq = seq
+            if any(chunk[k] != ((k ^ seq) & 255) for k in range(4, len(chunk))):
+                bad += 1
+            raw.extend(chunk)
+            arrivals.append((time.monotonic() - t0, len(chunk), seq))
             pkts += 1
             total += len(chunk)
     dur = time.monotonic() - t0
     print(f"STREAM bytes={total} pkts={pkts} first={first_seq} last={last_seq} "
-          f"gaps={gaps} dups={dups} dur={dur:.1f}s "
+          f"gaps={gaps} dups={dups} bad_patterns={bad} dur={dur:.1f}s "
           f"rate={total/max(dur, 1e-3):.0f} B/s ({total/max(dur, 1e-3)/1024:.2f} KiB/s)", flush=True)
     f.close()
-    return 0
+    result = dict(bytes=total, packets=pkts, first_seq=first_seq, last_seq=last_seq,
+                  gaps=gaps, duplicates=dups, bad_patterns=bad, duration=dur,
+                  KiBs=total / max(dur, 1e-3) / 1024, arrivals=arrivals)
+    if os.environ.get("S31_BENCH_RAW"):
+        dest = Path(os.environ["S31_BENCH_RAW"])
+        dest.write_bytes(raw)
+        dest.with_suffix(".json").write_text(json.dumps(result, indent=2))
+    return 0 if dur >= seconds - 0.1 and pkts and not (gaps or dups or bad) else 1
 
 
 if __name__ == "__main__":

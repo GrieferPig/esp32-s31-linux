@@ -1,0 +1,6 @@
+pair: BONDED in 0.0s
+connect: UP in 0.0s
+char ff12 objects: FOUND char0029 after 0s
+native control interval=6 value_bytes=244
+notify acquired: mtu=517
+STREAM bytes=173972 pkts=713 first=0 last=712 gaps=0 dups=0 bad_patterns=0 dur=40.0s rate=4349 B/s (4.25 KiB/s)

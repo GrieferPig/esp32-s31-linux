@@ -1,0 +1,12 @@
+{
+  "env": {
+    "S31_BT_ADDR": "30:ED:A0:F3:D4:AD",
+    "S31_SPP_START_CONTROL": "1",
+    "S31_SPP_FRAME_SIZE": "1980"
+  },
+  "argv": [
+    "python3",
+    "bt-latency/fresh_spp_run.py",
+    "bt-latency/logs/native-idf/spp-fixed-len1980"
+  ]
+}

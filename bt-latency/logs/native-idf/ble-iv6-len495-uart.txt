@@ -1,0 +1,29 @@
+I (57889) GATTS_DEMO: Connected, conn_id 0, remote f0:6e:0b:d8:ce:45
+
+E (57889) BT_BTM: BTM_SetBleDataLength failed, peer does not support request
+
+E (57891) BT_APPL: bta_dm_ble_set_data_length failed
+
+
+
+I (57897) GATTS_DEMO: DLE status=17 tx=517 rx=517
+
+I (58387) GATTS_DEMO: Connection params update, status 0, conn_int 36, latency 0, timeout 200
+
+I (58660) GATTS_DEMO: MTU exchange, MTU 517
+
+I (58772) GATTS_DEMO: AUTH success=1 reason=0
+
+I (65454) GATTS_DEMO: BENCH interval=6 value_bytes=495 status=0
+
+I (65953) GATTS_DEMO: Connection params update, status 0, conn_int 6, latency 0, timeout 200
+
+I (67559) GATTS_DEMO: Notification enable
+
+E (67559) BT_BTM: BTM_SetBleDataLength failed, peer does not support request
+
+E (67559) BT_APPL: bta_dm_ble_set_data_length failed
+
+
+
+I (67565) GATTS_DEMO: DLE status=17 tx=517 rx=517
