@@ -1,0 +1,81 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: ESP32-S31 Linux <s31-linux@example.invalid>
+Date: Tue, 6 Oct 2026 12:00:00 +0800
+Subject: [PATCH] a2dp: direct 2M PHY send from pump + env-gated burst depth
+
+Same wedged-task treatment for PHY as DLE (0030/0031): one-shot direct
+Set-PHY 2M from pump context when S31_BTSTACK_PHY=2.  Also gate the
+notify burst depth on S31_BTSTACK_BURST (default 8, clamp 1-64) so
+depths are measurable on one image without rebuilding.
+---
+ example/a2dp_sink_demo.c | 30 ++++++++++++++++++++++++++++--
+ 1 file changed, 28 insertions(+), 2 deletions(-)
+
+--- a/example/a2dp_sink_demo.c
++++ b/example/a2dp_sink_demo.c
+@@ -463,6 +463,10 @@
+ static bool s31_ble_prefer_2m;
+ #define S31_BLE_STREAM_LEN 500
+ #define S31_BLE_STREAM_BURST 8
++/* Runtime burst depth (S31_BTSTACK_BURST, default 8): pump pacing is
++ * CAN_SEND-gated, so depth trades per-event batching against runloop
++ * latency.  Env-gated to measure depths on one image. */
++static uint16_t s31_ble_stream_burst = 8;
+ static uint16_t s31_ble_stream_handle;
+ static uint16_t s31_ble_stream_ccc_handle;
+ static hci_con_handle_t s31_ble_stream_conn = HCI_CON_HANDLE_INVALID;
+@@ -510,6 +514,7 @@
+ }
+ 
+ static bool s31_ble_dle_sent;
++static bool s31_ble_phy_sent;
+ static void s31_ble_stream_pump(void){
+     uint16_t mtu, chunk, i, k;
+     if (s31_ble_stream_conn == HCI_CON_HANDLE_INVALID || !s31_ble_stream_subscribed)
+@@ -517,6 +522,13 @@
+     /* One-shot DLE from stream context (not the HCI event handler, where
+      * the shared packet buffer is always reserved): proves whether the
+      * missing 0x2022 is handler-context or a wedged task. */
++    if (s31_ble_prefer_2m && !s31_ble_phy_sent){
++        if (hci_can_send_command_packet_now()){
++            hci_send_cmd(&hci_le_set_phy, s31_ble_stream_conn, 0, 2, 2, 0);
++            s31_ble_phy_sent = true;
++            printf("S31 BLE PHY: direct Set-PHY 2M sent from pump\n");
++        }
++    }
+     if (s31_ble_dle_enabled && !s31_ble_dle_sent){
+         if (hci_can_send_command_packet_now()){
+             hci_send_cmd(&hci_le_set_data_length, s31_ble_stream_conn, 251, 2120);
+@@ -530,7 +542,7 @@
+         chunk = sizeof(s31_ble_stream_buf);
+     if (chunk <= 4)
+         return;
+-    for (i = 0; i < S31_BLE_STREAM_BURST; i++){
++    for (i = 0; i < s31_ble_stream_burst; i++){
+         uint32_t seq;
+         if (!att_server_can_send_packet_now(s31_ble_stream_conn))
+             break;
+@@ -568,6 +580,7 @@
+             s31_ble_stream_notifies = 0;
+             s31_ble_stream_bytes = 0;
+             s31_ble_dle_sent = false;
++            s31_ble_phy_sent = false;
+             s31_ble_stream_pump();
+         }
+     }
+@@ -759,6 +772,13 @@
+     const char * phy_env = getenv("S31_BTSTACK_PHY");
+     s31_ble_dle_enabled = dle_env == NULL || strcmp(dle_env, "0") != 0;
+     s31_ble_prefer_2m = phy_env != NULL && strcmp(phy_env, "2") == 0;
++    {
++        const char * burst_env = getenv("S31_BTSTACK_BURST");
++        long burst = burst_env != NULL ? atol(burst_env) : 8;
++        if (burst >= 1 && burst <= 64)
++            s31_ble_stream_burst = (uint16_t) burst;
++    }
++    printf("S31 BLE stream burst: %u\n", s31_ble_stream_burst);
+     printf("S31 BLE link knobs: DLE %s, PHY %s\n",
+            s31_ble_dle_enabled ? "251B" : "off",
+            s31_ble_prefer_2m ? "2M" : "1M");
+-- 
+2.43.0
