@@ -37,3 +37,6 @@ Use /home/grieferpig/.espressif/python_env/idf6.2_py3.13_env/bin/python bt-laten
 Each run command.json records its exact host argv and environment; fresh pairing/agent/scan sequence is implemented in fresh_fd_run.py or fresh_spp_run.py. UART is raw115200 with no modem-line toggles; native_monitor.py reads without sending Linux shell commands.
 Exact sdkconfig snapshots, per-flash image manifests, build logs, original receiver bytes, arrival timestamps, and UART logs are retained here. Source changes are in bt-latency/native-idf; the installed SDK was not edited.
 Raw files are gzip-compressed losslessly. sources-sha256.json fingerprints the final native sources/config defaults; raw-sha256.json fingerprints uncompressed evidence.
+
+## Linux restoration
+Restored dist94fb9aabbbf452d9 using tools/device/flash.py --slot all. All six writes passed internal hashes, followed by six explicit verify-flash digest matches. Persist was excluded. Linux booted and accepted root console login. Kernel6.18.0 and the pre-existing loopback-only network state were observed; Wi-Fi association was not tested.
