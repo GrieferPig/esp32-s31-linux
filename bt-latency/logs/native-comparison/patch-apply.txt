@@ -1,0 +1,4 @@
+Scratch: /tmp/s31-0033-m5x0ndu1
+patch -p1 -i /home/grieferpig/esp32-s31-linux/buildroot-external/package/btstack-s31/0033-a2dp-native-comparison-knobs.patch
+patching file example/a2dp_sink_demo.c
+Exact patched source comparison: PASS

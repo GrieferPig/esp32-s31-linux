@@ -1,0 +1,17 @@
+[
+  [
+    "status",
+    "uname -a; ip link; cat /proc/mtd; ps",
+    5
+  ],
+  [
+    "overlay",
+    "mkdir -p /tmp/cfg; printf \"enabled=1\\nindex=0\\nle=1\\n\" > /tmp/cfg/bluetooth.conf; export ESP32_CONFIG_DIR=/tmp/cfg S31_RADIO_VOLATILE_MODE=bt; /usr/sbin/s31-overlay apply radio-bluetooth --volatile; echo OV_DONE",
+    35
+  ],
+  [
+    "modload",
+    "timeout -s KILL 90 /usr/sbin/s31-modload /usr/lib/s31-radio/esp32s31-radio.ko.xz mode=bt direct_hci=1; echo MODLOAD_DONE",
+    100
+  ]
+]

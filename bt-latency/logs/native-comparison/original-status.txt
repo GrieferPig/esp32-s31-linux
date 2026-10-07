@@ -1,0 +1,125 @@
+uname -a; ip link; cat /proc/mtd; ps
+
+Linux esp32-s31 6.18.0 #3 SMP Tue Oct  6 15:10:32 PDT 2026 riscv32 GNU/Linux
+
+1: lo: <LOOPBACK,UP,LOWER_UP> mtu 65536 qdisc noqueue state UNKNOWN qlen 1000
+
+    link/loopback 00:00:00:00:00:00 brd 00:00:00:00:00:00
+
+dev:    size   erasesize  name
+
+mtd0: 01000000 00002000 "40000000.flash"
+
+mtd1: 0000c000 00002000 "spl"
+
+mtd2: 00050000 00002000 "u-boot-fit"
+
+mtd3: 00010000 00002000 "dtb"
+
+mtd4: 00180000 00002000 "radio-bundle"
+
+mtd5: 00212000 00002000 "persist"
+
+mtd6: 00600000 00002000 "linux"
+
+mtd7: 00600000 00002000 "rootfs"
+
+PID   USER     COMMAND
+
+    1 root     init
+
+    2 root     [kthreadd]
+
+    3 root     [pool_workqueue_]
+
+    4 root     [kworker/R-rcu_g]
+
+    5 root     [kworker/R-sync_]
+
+    6 root     [kworker/0:0-rcu]
+
+    7 root     [kworker/0:0H-kb]
+
+    8 root     [kworker/0:1-eve]
+
+    9 root     [kworker/u8:0-ip]
+
+   10 root     [kworker/R-mm_pe]
+
+   11 root     [ksoftirqd/0]
+
+   12 root     [rcu_sched]
+
+   13 root     [rcu_exp_par_gp_]
+
+   14 root     [rcu_exp_gp_kthr]
+
+   15 root     [migration/0]
+
+   16 root     [cpuhp/0]
+
+   17 root     [cpuhp/1]
+
+   18 root     [migration/1]
+
+   19 root     [ksoftirqd/1]
+
+   20 root     [kworker/1:0-mm_]
+
+   21 root     [kworker/1:0H-kb]
+
+   22 root     [kworker/u9:0-ev]
+
+   23 root     [kworker/u10:0-e]
+
+   24 root     [kdevtmpfs]
+
+   25 root     [kworker/R-inet_]
+
+   26 root     [oom_reaper]
+
+   27 root     [kworker/R-write]
+
+   28 root     [kcompactd0]
+
+   29 root     [kworker/R-kbloc]
+
+   30 root     [watchdogd]
+
+   31 root     [kworker/R-cfg80]
+
+   32 root     [kworker/u9:1]
+
+   33 root     [kswapd0]
+
+   34 root     [kworker/u11:0]
+
+   35 root     [hwrng]
+
+   36 root     [kworker/u10:1-e]
+
+   38 root     [kworker/1:1-mm_]
+
+   39 root     [kworker/R-mld]
+
+   40 root     [kworker/R-ipv6_]
+
+   41 root     [kworker/u8:1]
+
+   42 root     [kworker/u9:2-as]
+
+   43 root     [kworker/1:1H]
+
+   44 root     [kworker/0:1H]
+
+   77 root     -sh
+
+  123 root     /sbin/syslogd -n
+
+  127 root     /sbin/klogd -n
+
+  190 root     /usr/sbin/crond -f
+
+  199 root     ps
+
+~ #

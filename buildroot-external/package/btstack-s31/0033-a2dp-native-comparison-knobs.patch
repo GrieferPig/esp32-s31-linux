@@ -1,0 +1,94 @@
+From: ESP32-S31 Linux <s31-linux@example.invalid>
+Subject: [PATCH] a2dp: expose matched native benchmark payload and interval settings
+
+Keep defaults unchanged. Allow comparing the native ESP-IDF best measured
+settings (BLE495 bytes /15ms; SPP990 bytes) without rebuilding for every size.
+Log actual accepted BLE updates even with packet capture disabled.
+---
+--- a/example/a2dp_sink_demo.c
++++ b/example/a2dp_sink_demo.c
+@@ -369,6 +369,16 @@
+ static uint16_t s31_spp_cid;
+ static uint16_t s31_spp_mtu;
+ static uint8_t s31_spp_tx[4 + S31_SPP_TX_LEN];
++static uint16_t s31_spp_frame_limit = sizeof(s31_spp_tx);
++
++static uint16_t s31_bench_env_u16(const char * name, uint16_t fallback, uint16_t min, uint16_t max){
++    const char * value = getenv(name);
++    char * end;
++    if (value == NULL || *value == 0) return fallback;
++    unsigned long parsed = strtoul(value, &end, 10);
++    if (*end != 0 || parsed < min || parsed > max) return fallback;
++    return (uint16_t) parsed;
++}
+ static uint32_t s31_spp_seq;
+ static uint32_t s31_spp_frames;
+ static uint64_t s31_spp_tx_bytes;
+@@ -379,8 +389,8 @@
+     if (s31_spp_cid == 0)
+         return;
+     chunk = s31_spp_mtu > 4 ? s31_spp_mtu - 4 : 0;
+-    if (chunk > sizeof(s31_spp_tx))
+-        chunk = sizeof(s31_spp_tx);
++    if (chunk > s31_spp_frame_limit)
++        chunk = s31_spp_frame_limit;
+     if (chunk <= 4)
+         return;
+     for (i = 0; i < S31_SPP_BURST; i++){
+@@ -471,6 +481,9 @@
+ static uint16_t s31_ble_stream_ccc_handle;
+ static hci_con_handle_t s31_ble_stream_conn = HCI_CON_HANDLE_INVALID;
+ static uint8_t s31_ble_stream_buf[4 + S31_BLE_STREAM_LEN];
++static uint16_t s31_ble_value_limit = sizeof(s31_ble_stream_buf);
++static uint16_t s31_ble_interval_min = 24;
++static uint16_t s31_ble_interval_max = 40;
+ static uint32_t s31_ble_stream_seq;
+ static uint32_t s31_ble_stream_notifies;
+ static uint64_t s31_ble_stream_bytes;
+@@ -489,7 +502,7 @@
+  * survivable interval; throughput comes from DLE/2M/burst, not interval. */
+ static void s31_ble_request_link_params(hci_con_handle_t conn, const char * when){
+     int rc_u, rc_d, rc_p;
+-    rc_u = gap_request_connection_parameter_update(conn, 24, 40, 0, 200);
++    rc_u = gap_request_connection_parameter_update(conn, s31_ble_interval_min, s31_ble_interval_max, 0, 200);
+     if (s31_ble_dle_enabled){
+         rc_d = gap_le_set_data_length(conn, 251, 2120);
+         /* The task-runner path above (rc=0) never emits 0x2022 on this
+@@ -538,8 +551,8 @@
+     }
+     mtu = att_server_get_mtu(s31_ble_stream_conn);
+     chunk = mtu > 3 ? mtu - 3 : 0;
+-    if (chunk > sizeof(s31_ble_stream_buf))
+-        chunk = sizeof(s31_ble_stream_buf);
++    if (chunk > s31_ble_value_limit)
++        chunk = s31_ble_value_limit;
+     if (chunk <= 4)
+         return;
+     for (i = 0; i < s31_ble_stream_burst; i++){
+@@ -778,6 +791,12 @@
+         if (burst >= 1 && burst <= 64)
+             s31_ble_stream_burst = (uint16_t) burst;
+     }
++    s31_spp_frame_limit = s31_bench_env_u16("S31_BTSTACK_SPP_BYTES", sizeof(s31_spp_tx), 20, sizeof(s31_spp_tx));
++    s31_ble_value_limit = s31_bench_env_u16("S31_BTSTACK_BLE_BYTES", sizeof(s31_ble_stream_buf), 20, sizeof(s31_ble_stream_buf));
++    uint16_t interval = s31_bench_env_u16("S31_BTSTACK_INTERVAL", 0, 6, 40);
++    if (interval != 0) s31_ble_interval_min = s31_ble_interval_max = interval;
++    printf("S31 comparison knobs: SPP %u bytes, BLE %u bytes, interval %u..%u (1.25ms)\n",
++           s31_spp_frame_limit, s31_ble_value_limit, s31_ble_interval_min, s31_ble_interval_max);
+     printf("S31 BLE stream burst: %u\n", s31_ble_stream_burst);
+     printf("S31 BLE link knobs: DLE %s, PHY %s\n",
+            s31_ble_dle_enabled ? "251B" : "off",
+@@ -1292,6 +1311,13 @@
+             if (hci_event_le_meta_get_subevent_code(packet) == HCI_SUBEVENT_LE_CONNECTION_COMPLETE){
+                 s31_ble_stream_conn = hci_subevent_le_connection_complete_get_connection_handle(packet);
+                 s31_ble_request_link_params(s31_ble_stream_conn, "connect");
++            }
++            if (hci_event_le_meta_get_subevent_code(packet) == HCI_SUBEVENT_LE_CONNECTION_UPDATE_COMPLETE){
++                printf("S31 BLE interval: status=%u interval=%u latency=%u timeout=%u\n",
++                       hci_subevent_le_connection_update_complete_get_status(packet),
++                       hci_subevent_le_connection_update_complete_get_conn_interval(packet),
++                       hci_subevent_le_connection_update_complete_get_conn_latency(packet),
++                       hci_subevent_le_connection_update_complete_get_supervision_timeout(packet));
+             }
+             break;
+         case HCI_EVENT_CONNECTION_COMPLETE:

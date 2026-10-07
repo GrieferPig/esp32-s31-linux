@@ -1,0 +1,27 @@
+tail -n 12 /tmp/original-spp-nolog.log
+
+S31 SPP stream: 1792 frames, 1813504 tx bytes, 0 rx bytes, seq=1792
+
+S31 SPP stream: 2048 frames, 2072576 tx bytes, 0 rx bytes, seq=2048
+
+S31 SPP stream: 2304 frames, 2331648 tx bytes, 0 rx bytes, seq=2304
+
+S31 SPP stream: 2560 frames, 2590720 tx bytes, 0 rx bytes, seq=2560
+
+S31 SPP stream: 2816 frames, 2849792 tx bytes, 0 rx bytes, seq=2816
+
+S31 SPP stream: 3072 frames, 3108864 tx bytes, 0 rx bytes, seq=3072
+
+S31 SPP stream: 3328 frames, 3367936 tx bytes, 0 rx bytes, seq=3328
+
+S31 SPP stream: 3584 frames, 3627008 tx bytes, 0 rx bytes, seq=3584
+
+S31 SPP stream: 3840 frames, 3886080 tx bytes, 0 rx bytes, seq=3840
+
+S31 SPP stream: 4096 frames, 4145152 tx bytes, 0 rx bytes, seq=4096
+
+S31 SPP stream: 4352 frames, 4404224 tx bytes, 0 rx bytes, seq=4352
+
+S31 SPP stream: closed, 4405236 tx bytes, 0 rx bytes
+
+~ #

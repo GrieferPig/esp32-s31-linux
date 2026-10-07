@@ -1,0 +1,61 @@
+tail -n 10 /tmp/original-nolog-restart.log; killall s31-btstack-a2dp; sleep
+
+
+2; S31_HCI_DEVICE=/dev/s31-hci S31_BTSTACK_PAIRABLE=1 S31_BTSTACK_COEX=0 S31_BTS
+
+
+TACK_BURST=24 S31_BTSTACK_NAME="S31 Radio" /usr/sbin/s31-btstack-a2dp -u 0 -l no
+
+
+ne >/tmp/original-spp-nolog.log 2>&1 & sleep 12; tail -n 12 /tmp/original-spp-no
+
+
+log.log
+
+S31 BLE stream: 256 notifies, 129024 bytes, seq=256
+
+S31 BLE stream: 512 notifies, 258048 bytes, seq=512
+
+S31 BLE stream: 768 notifies, 387072 bytes, seq=768
+
+S31 BLE stream: 1024 notifies, 516096 bytes, seq=1024
+
+S31 BLE stream: 1280 notifies, 645120 bytes, seq=1280
+
+S31 BLE stream: 1536 notifies, 774144 bytes, seq=1536
+
+S31 BLE stream: 1792 notifies, 903168 bytes, seq=1792
+
+S31 BLE stream: 2048 notifies, 1032192 bytes, seq=2048
+
+S31 BLE stream: 2304 notifies, 1161216 bytes, seq=2304
+
+S31 BLE stream: notifications disabled
+
+Local version information:
+
+- HCI Version    0x000e
+
+- HCI Revision   0x0000
+
+- LMP Version    0x000e
+
+- LMP Subversion 0x0000
+
+- Manufacturer 0x02e5
+
+S31 Classic scan command 0x0c1a status=0
+
+BTstack up and running on 30:ED:A0:F3:D4:AE.
+
+TLV path: /var/lib/btstack/btstack_30-ED-A0-F3-D4-AE.tlv
+
+S31 Classic pairability: enabled
+
+S31 Classic scan command 0x0c1c status=0
+
+S31 Classic scan command 0x0c1e status=0
+
+[2]-  Terminated                 /usr/sbin/s31-btstack-a2dp -u 0 -l none 1>/tmp/original-nolog-restart.log 2>&1
+
+~ #

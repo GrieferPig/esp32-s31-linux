@@ -1,0 +1,10 @@
+{
+  "env": {
+    "S31_BT_ADDR": "30:ED:A0:F3:D4:AE"
+  },
+  "argv": [
+    "python3",
+    "bt-latency/fresh_fd_run.py",
+    "bt-latency/logs/native-comparison/original-ble-nolog"
+  ]
+}

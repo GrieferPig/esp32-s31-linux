@@ -1,0 +1,8 @@
+timeout -s KILL 90 /usr/sbin/s31-modload /usr/lib/s31-radio/esp32s31-radio.k
+
+
+o.xz mode=bt direct_hci=1; echo MODLOAD_DONE
+
+MODLOAD_DONE
+
+~ #
