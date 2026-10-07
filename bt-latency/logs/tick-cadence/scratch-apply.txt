@@ -1,0 +1,3 @@
+/tmp/s31-bt-tick-8a3hl1d4
+patching file drivers/platform/esp32s31-radio-smode.c
+Exact patched source: PASS

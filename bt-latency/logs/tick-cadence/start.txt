@@ -1,0 +1,74 @@
+{ S31_HCI_DEVICE=/dev/s31-hci S31_BTSTACK_PAIRABLE=1 S31_BTSTACK_COEX=0 S31_
+
+
+BTSTACK_BURST=24 S31_BTSTACK_SPP_BYTES=990 S31_BTSTACK_BLE_BYTES=495 S31_BTSTACK
+
+
+_INTERVAL=12 S31_BTSTACK_NAME="S31 Radio" /usr/sbin/s31-btstack-a2dp -u 0 -l non
+
+
+e >/tmp/tick-first.log 2>&1 & sleep 8; cat /tmp/tick-first.log; if ! grep -q "up
+
+
+ and running" /tmp/tick-first.log; then killall s31-btstack-a2dp; sleep 2; S31_H
+
+
+CI_DEVICE=/dev/s31-hci S31_BTSTACK_PAIRABLE=1 S31_BTSTACK_COEX=0 S31_BTSTACK_BUR
+
+
+ST=24 S31_BTSTACK_SPP_BYTES=990 S31_BTSTACK_BLE_BYTES=495 S31_BTSTACK_INTERVAL=1
+
+
+2 S31_BTSTACK_NAME="S31 Radio" /usr/sbin/s31-btstack-a2dp -u 0 -l none >/tmp/tic
+
+
+k-restart.log 2>&1 & sleep 8; cat /tmp/tick-restart.log; fi; }; s31_cmd_status=$
+
+
+?; printf '\n__S31_DONE_%s__:%s\n' '5ca943a2a56dc0bb' "$s31_cmd_status"
+
+Packet Log: disabled
+
+Bluetooth device: hci0
+
+BLE GAP/GATT: advertising as S31 Radio, service 0xff10
+
+S31 comparison knobs: SPP 990 bytes, BLE 495 bytes, interval 12..12 (1.25ms)
+
+S31 BLE stream burst: 24
+
+S31 BLE link knobs: DLE 251B, PHY 1M
+
+ESP-IDF A2DP coexistence status: disabled
+
+SBC decode: compiled out; max bitpool: 53
+
+Starting BTstack ...
+
+Local version information:
+
+- HCI Version    0x000e
+
+- HCI Revision   0x0000
+
+- LMP Version    0x000e
+
+- LMP Subversion 0x0000
+
+- Manufacturer 0x02e5
+
+S31 Classic scan command 0x0c1a status=0
+
+BTstack up and running on 30:ED:A0:F3:D4:AE.
+
+TLV path: /var/lib/btstack/btstack_30-ED-A0-F3-D4-AE.tlv
+
+S31 Classic pairability: enabled
+
+S31 Classic scan command 0x0c1c status=0
+
+S31 Classic scan command 0x0c1e status=0
+
+
+
+__S31_DONE_5ca943a2a56dc0bb__:0

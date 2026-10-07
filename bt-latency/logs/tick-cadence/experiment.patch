@@ -1,0 +1,28 @@
+diff --git a/drivers/platform/esp32s31-radio-smode.c b/drivers/platform/esp32s31-radio-smode.c
+index f59e4c6d46bd0..8678055b150c4 100644
+--- a/drivers/platform/esp32s31-radio-smode.c
++++ b/drivers/platform/esp32s31-radio-smode.c
+@@ -60,6 +60,13 @@ typedef unsigned int (*s31_rom_cpu_freq_t)(void);
+ 
+ static bool s31_radio_disabled;
+ 
++/* Preserve the idle batching default while allowing controlled throughput
++ * comparisons. This only affects the Bluetooth-only branch below; combo
++ * and Wi-Fi keep their native 10 ms cadence. */
++static unsigned int s31_radio_bt_tick_ms = 40;
++module_param_named(bt_tick_ms, s31_radio_bt_tick_ms, uint, 0600);
++MODULE_PARM_DESC(bt_tick_ms, "Bluetooth-only timer batch, clamped to 1..40 ms (default 40)");
++
+ #ifndef MODULE
+ static int __init s31_radio_disable_setup(char *value)
+ {
+@@ -2865,7 +2872,8 @@ static void s31_radio_workfn(struct work_struct *work)
+ 	const unsigned long init_tick_period = max_t(unsigned long, 1,
+ 						      msecs_to_jiffies(10));
+ 	const unsigned long bt_tick_period = max_t(unsigned long, 1,
+-						    msecs_to_jiffies(40));
++		msecs_to_jiffies(clamp_val(READ_ONCE(s31_radio_bt_tick_ms),
++					  1, 40)));
+ 	unsigned long tick_period;
+ 	u32 timer_wait_us = 10000;
+ 	int tick_events = 0;

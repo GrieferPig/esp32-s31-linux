@@ -1,0 +1,16 @@
+[
+  {
+    "command": "echo MARKER_OK",
+    "expected": 0,
+    "returncode": 0,
+    "output": "{ echo MARKER_OK; }; s31_cmd_status=$?; printf '\\n__S31_DONE_%s__:%s\\n' '6fb\r\r\n2a765611f47b5' \"$s31_cmd_status\"\r\nMARKER_OK\r\n\r\n__S31_DONE_6fb2a765611f47b5__:0\r\n",
+    "stderr": ""
+  },
+  {
+    "command": "false",
+    "expected": 1,
+    "returncode": 1,
+    "output": "{ false; }; s31_cmd_status=$?; printf '\\n__S31_DONE_%s__:%s\\n' '38e10cffabae\r\r\n72dc' \"$s31_cmd_status\"\r\n\r\n__S31_DONE_38e10cffabae72dc__:1\r\n~ # ",
+    "stderr": ""
+  }
+]
