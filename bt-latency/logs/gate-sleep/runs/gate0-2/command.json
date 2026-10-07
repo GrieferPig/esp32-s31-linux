@@ -1,0 +1,13 @@
+{
+  "board_command": "echo 0 > /sys/module/esp32s31_radio/parameters/bt_gate_sleep; cat /sys/module/esp32s31_radio/parameters/bt_gate_sleep; taskset -p 2 $(pidof s31-btstack-a2dp); taskset -p $(pidof s31-btstack-a2dp)",
+  "argv": [
+    "python3",
+    "/home/grieferpig/esp32-s31-linux/bt-latency/fresh_spp_run.py",
+    "bt-latency/logs/gate-sleep/runs/gate0-2"
+  ],
+  "env": {
+    "S31_BOARD_STATS": "1",
+    "S31_BOARD_PROFILE": "1",
+    "S31_SPP_FRAME_SIZE": "990"
+  }
+}

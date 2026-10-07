@@ -1,12 +1,16 @@
 #!/usr/bin/env python3
 """Decode a Linux /proc/profile sample against its exact build System.map."""
-import sys,struct,bisect,json
+import sys,struct,bisect,json,gzip
 from pathlib import Path
-raw=Path(sys.argv[1]).read_bytes()
+def read(path):
+    p=Path(path)
+    if not p.exists() and Path(str(p)+'.gz').exists():p=Path(str(p)+'.gz')
+    return gzip.decompress(p.read_bytes()) if p.suffix=='.gz' else p.read_bytes()
+raw=read(sys.argv[1])
 words=struct.unpack('<'+'I'*(len(raw)//4),raw)
 step=words[0]
 symbols=[]
-for line in Path(sys.argv[2]).read_text().splitlines():
+for line in read(sys.argv[2]).decode().splitlines():
     addr,kind,name=line.split()[:3]
     if kind.lower() in ('t','w'):
         symbols.append((int(addr,16),name))
