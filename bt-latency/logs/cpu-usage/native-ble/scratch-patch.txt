@@ -1,0 +1,3 @@
+patching file main/CMakeLists.txt
+patching file main/example_ble_server_throughput.c
+patching file sdkconfig.defaults

@@ -1,0 +1,136 @@
+connected 1.473031s
+{"bytes": 8816940, "duration": 40.000194178996026, "KiBs": 215.25627926254512, "frames": 8906, "frame_size": 990, "partial": 0, "gap_events": 0, "duplicates": 0, "bad_pattern_frames": 0, "last_seq": 8905, "stop": "deadline"}
+
+{
+  "platform": "esp-idf",
+  "window_seconds": 30.000399,
+  "per_core_busy_pct": [
+    41.09848339017091,
+    5.999920200849829e-05
+  ],
+  "total_capacity_busy_pct": 20.54927169468646,
+  "busy_core_equivalents": 0.4109854338937292,
+  "task_accounting_coverage_pct": 99.999996666711,
+  "tasks": [
+    {
+      "name": "IDLE1",
+      "runtime_us": 30000381,
+      "one_core_pct": 99.99994000079799
+    },
+    {
+      "name": "IDLE0",
+      "runtime_us": 17670690,
+      "one_core_pct": 58.90151660982909
+    },
+    {
+      "name": "BTU_TASK",
+      "runtime_us": 4703825,
+      "one_core_pct": 15.679208133198495
+    },
+    {
+      "name": "btdm",
+      "runtime_us": 4583157,
+      "one_core_pct": 15.276986816075347
+    },
+    {
+      "name": "hciT",
+      "runtime_us": 2021935,
+      "one_core_pct": 6.739693695407184
+    },
+    {
+      "name": "BTC_TASK",
+      "runtime_us": 1015725,
+      "one_core_pct": 3.3857049701238973
+    }
+  ],
+  "window": {
+    "sample": 1,
+    "start_us": 50744211,
+    "end_us": 80744610,
+    "wall_us": 30000385,
+    "cores": 2,
+    "before_count": 11,
+    "after_count": 11
+  },
+  "throughput": {
+    "bytes": 8816940,
+    "duration": 40.000194178996026,
+    "KiBs": 215.25627926254512,
+    "frames": 8906,
+    "frame_size": 990,
+    "partial": 0,
+    "gap_events": 0,
+    "duplicates": 0,
+    "bad_pattern_frames": 0,
+    "last_seq": 8905,
+    "stop": "deadline"
+  }
+}
+connected 1.435631s
+{"bytes": 8789220, "duration": 40.00010642500274, "KiBs": 214.5799954893348, "frames": 8878, "frame_size": 990, "partial": 0, "gap_events": 0, "duplicates": 0, "bad_pattern_frames": 0, "last_seq": 8877, "stop": "deadline"}
+
+{
+  "platform": "esp-idf",
+  "window_seconds": 29.999996,
+  "per_core_busy_pct": [
+    41.052115473615395,
+    3.333333778243741e-05
+  ],
+  "total_capacity_busy_pct": 20.52607440347659,
+  "busy_core_equivalents": 0.41052148806953176,
+  "task_accounting_coverage_pct": 100.0,
+  "tasks": [
+    {
+      "name": "IDLE1",
+      "runtime_us": 29999986,
+      "one_core_pct": 99.99996666666222
+    },
+    {
+      "name": "IDLE0",
+      "runtime_us": 17684363,
+      "one_core_pct": 58.947884526384605
+    },
+    {
+      "name": "BTU_TASK",
+      "runtime_us": 4690432,
+      "one_core_pct": 15.634775417970056
+    },
+    {
+      "name": "btdm",
+      "runtime_us": 4617067,
+      "one_core_pct": 15.390225385363385
+    },
+    {
+      "name": "hciT",
+      "runtime_us": 1994997,
+      "one_core_pct": 6.649990886665451
+    },
+    {
+      "name": "BTC_TASK",
+      "runtime_us": 1008162,
+      "one_core_pct": 3.3605404480720598
+    }
+  ],
+  "window": {
+    "sample": 2,
+    "start_us": 118814175,
+    "end_us": 148814171,
+    "wall_us": 30000004,
+    "cores": 2,
+    "before_count": 11,
+    "after_count": 11
+  },
+  "throughput": {
+    "bytes": 8789220,
+    "duration": 40.00010642500274,
+    "KiBs": 214.5799954893348,
+    "frames": 8878,
+    "frame_size": 990,
+    "partial": 0,
+    "gap_events": 0,
+    "duplicates": 0,
+    "bad_pattern_frames": 0,
+    "last_seq": 8877,
+    "stop": "deadline"
+  }
+}

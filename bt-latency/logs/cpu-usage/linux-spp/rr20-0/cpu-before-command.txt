@@ -1,0 +1,1 @@
+echo CPU; cat /tmp/cpu-before; echo TASKS; cat /tmp/tasks-before; echo UPTIME; cat /tmp/time-before

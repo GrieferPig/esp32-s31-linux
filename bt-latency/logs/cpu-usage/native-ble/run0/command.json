@@ -1,0 +1,16 @@
+{
+  "argv": [
+    "python3",
+    "/home/grieferpig/esp32-s31-linux/bt-latency/fresh_fd_run.py",
+    "/home/grieferpig/esp32-s31-linux/bt-latency/logs/cpu-usage/native-ble/run0"
+  ],
+  "platform": "native",
+  "kind": "ble",
+  "env": {
+    "S31_BT_ADDR": "30:ED:A0:F3:D4:AD",
+    "S31_BLE_INTERVAL": "12",
+    "S31_BLE_VALUE_LEN": "495",
+    "S31_BOARD_STATS": "0",
+    "S31_STREAM_STARTED_FILE": "/home/grieferpig/esp32-s31-linux/bt-latency/logs/cpu-usage/native-ble/run0/stream-start.json"
+  }
+}

@@ -1,0 +1,9 @@
+{
+  "uart_openers": [],
+  "fuser_returncode": 1,
+  "linux_restored_dist": "e168e8c0f293a4d4",
+  "explicit_slot_hashes": 6,
+  "ble_ready": true,
+  "persist_written": false,
+  "sdk_clean": true
+}

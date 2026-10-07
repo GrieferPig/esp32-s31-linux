@@ -1,0 +1,1 @@
+sed -n '/^cpu/p' /proc/stat > /tmp/cpu-before; cat /proc/[0-9]*/stat > /tmp/tasks-before; cat /proc/uptime > /tmp/time-before; sleep 30; sed -n '/^cpu/p' /proc/stat > /tmp/cpu-after; cat /proc/[0-9]*/stat > /tmp/tasks-after; cat /proc/uptime > /tmp/time-after

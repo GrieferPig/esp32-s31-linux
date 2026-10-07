@@ -18,6 +18,8 @@ while time.monotonic()<deadline:
   reason='deadline' if time.monotonic()>=deadline else 'idle_5s';break
  part=sock.recv(65536)
  if not part:reason='eof';break
+ if not chunks and os.environ.get('S31_STREAM_STARTED_FILE'):
+  Path(os.environ['S31_STREAM_STARTED_FILE']).write_text(json.dumps({'first_host_packet':time.monotonic()}))
  raw.extend(part);chunks.append((time.monotonic()-start,len(part)))
 duration=time.monotonic()-start;sock.close()
 dest=Path(os.environ.get('S31_BENCH_RAW','/tmp/spp-rx.bin'));dest.write_bytes(raw)

@@ -1,0 +1,4 @@
+Default agent request successful
+[[0;93mCHG[0m] Device 30:ED:A0:F3:D4:AD Bonded: yes
+[[0;93mCHG[0m] Device 30:ED:A0:F3:D4:AD Paired: yes
+Pairing successful

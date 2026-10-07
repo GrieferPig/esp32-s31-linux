@@ -1,0 +1,74 @@
+{
+  "native-ble": {
+    "protocol": "ble",
+    "platform": "ESP-IDF",
+    "runs": [
+      "native-ble/run0/cpu-summary.json",
+      "native-ble/run1/cpu-summary.json"
+    ],
+    "cpu_capacity_mean_pct": 13.831022212433211,
+    "cpu_capacity_range_pct": [
+      13.825396091533094,
+      13.83664833333333
+    ],
+    "core_busy_mean_pct": [
+      27.66200775816148,
+      3.6666704943399964e-05
+    ],
+    "host_KiBs_mean": 31.5415736643871
+  },
+  "linux-ble-idle": {
+    "protocol": "ble",
+    "platform": "Linux",
+    "runs": [
+      "linux-ble-idle/rr20-0/cpu-summary.json",
+      "linux-ble-idle/rr20-1/cpu-summary.json"
+    ],
+    "cpu_capacity_mean_pct": 68.82255798148634,
+    "cpu_capacity_range_pct": [
+      68.73962962780669,
+      68.90548633516597
+    ],
+    "core_busy_mean_pct": [
+      84.91951224736331,
+      52.70893998910088
+    ],
+    "host_KiBs_mean": 31.807432027924783
+  },
+  "native-spp": {
+    "protocol": "spp",
+    "platform": "ESP-IDF",
+    "runs": [
+      "native-spp/run0/cpu-summary.json",
+      "native-spp/run1/cpu-summary.json"
+    ],
+    "cpu_capacity_mean_pct": 20.537673049081526,
+    "cpu_capacity_range_pct": [
+      20.52607440347659,
+      20.54927169468646
+    ],
+    "core_busy_mean_pct": [
+      41.07529943189316,
+      4.666626989546785e-05
+    ],
+    "host_KiBs_mean": 214.91813737593998
+  },
+  "linux-spp-idle": {
+    "protocol": "spp",
+    "platform": "Linux",
+    "runs": [
+      "linux-spp-idle/rr20-0/cpu-summary.json",
+      "linux-spp-idle/rr20-1/cpu-summary.json"
+    ],
+    "cpu_capacity_mean_pct": 79.4074743927668,
+    "cpu_capacity_range_pct": [
+      79.35820176050798,
+      79.4567470250256
+    ],
+    "core_busy_mean_pct": [
+      81.14014625042087,
+      77.65814248810749
+    ],
+    "host_KiBs_mean": 212.50106460249555
+  }
+}

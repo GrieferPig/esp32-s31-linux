@@ -1,0 +1,7 @@
+[
+  "python3",
+  "-u",
+  "/home/grieferpig/esp32-s31-linux/bt-latency/logs/kernel-hz100/restore-ready.py",
+  "/home/grieferpig/esp32-s31-linux/bt-latency/logs/cpu-usage/restore-linux/ready",
+  "rr20"
+]

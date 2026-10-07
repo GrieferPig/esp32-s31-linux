@@ -1,0 +1,2 @@
+cache/toolchains/riscv32-esp-linux-musl/bin/riscv32-esp-linux-musl-gcc -Os -Wall -Wextra bt-latency/cpu_idle_probe.c -o bt-latency/logs/cpu-usage/cpu_idle_probe
+cache/toolchains/riscv32-esp-linux-musl/bin/riscv32-esp-linux-musl-strip bt-latency/logs/cpu-usage/cpu_idle_probe

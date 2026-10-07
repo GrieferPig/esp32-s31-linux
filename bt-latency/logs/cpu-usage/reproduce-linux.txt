@@ -1,0 +1,8 @@
+# From /home/grieferpig/esp32-s31-linux, accepted Linux image already flashed.
+# Use new empty destination paths for a new run.
+S31_CPU_PROTOCOL=spp python3 -u bt-latency/cpu_linux_matrix.py bt-latency/logs/cpu-usage/linux-spp-idle rr20 rr20
+S31_CPU_PROTOCOL=ble python3 -u bt-latency/cpu_linux_matrix.py bt-latency/logs/cpu-usage/linux-ble-idle rr20 rr20
+python3 bt-latency/analyze_cpu_comparison.py linux bt-latency/logs/cpu-usage/linux-spp-idle/rr20-0
+python3 bt-latency/analyze_cpu_comparison.py linux bt-latency/logs/cpu-usage/linux-spp-idle/rr20-1
+python3 bt-latency/analyze_cpu_comparison.py linux bt-latency/logs/cpu-usage/linux-ble-idle/rr20-0
+python3 bt-latency/analyze_cpu_comparison.py linux bt-latency/logs/cpu-usage/linux-ble-idle/rr20-1

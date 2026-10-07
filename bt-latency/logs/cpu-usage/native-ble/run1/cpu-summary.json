@@ -1,0 +1,88 @@
+{
+  "platform": "esp-idf",
+  "window_seconds": 30.0,
+  "per_core_busy_pct": [
+    27.673266666666663,
+    2.9999999995311555e-05
+  ],
+  "total_capacity_busy_pct": 13.83664833333333,
+  "busy_core_equivalents": 0.2767329666666666,
+  "task_accounting_coverage_pct": 100.00000333333334,
+  "tasks": [
+    {
+      "name": "IDLE1",
+      "runtime_us": 29999991,
+      "one_core_pct": 99.99997
+    },
+    {
+      "name": "IDLE0",
+      "runtime_us": 21698020,
+      "one_core_pct": 72.32673333333334
+    },
+    {
+      "name": "btdm",
+      "runtime_us": 4718409,
+      "one_core_pct": 15.72803
+    },
+    {
+      "name": "throughput_serv",
+      "runtime_us": 1546025,
+      "one_core_pct": 5.153416666666667
+    },
+    {
+      "name": "BTU_TASK",
+      "runtime_us": 1080029,
+      "one_core_pct": 3.6000966666666665
+    },
+    {
+      "name": "hciT",
+      "runtime_us": 690028,
+      "one_core_pct": 2.3000933333333333
+    },
+    {
+      "name": "BTC_TASK",
+      "runtime_us": 263310,
+      "one_core_pct": 0.8777
+    },
+    {
+      "name": "esp_timer",
+      "runtime_us": 3650,
+      "one_core_pct": 0.012166666666666666
+    },
+    {
+      "name": "cpu_sample",
+      "runtime_us": 530,
+      "one_core_pct": 0.0017666666666666666
+    },
+    {
+      "name": "ipc1",
+      "runtime_us": 10,
+      "one_core_pct": 3.3333333333333335e-05
+    },
+    {
+      "name": "ipc0",
+      "runtime_us": 0,
+      "one_core_pct": 0.0
+    }
+  ],
+  "window": {
+    "sample": 2,
+    "start_us": 115817146,
+    "end_us": 145817146,
+    "wall_us": 29999991,
+    "cores": 2,
+    "before_count": 11,
+    "after_count": 11
+  },
+  "throughput": {
+    "bytes": 1293930,
+    "packets": 2614,
+    "first_seq": 0,
+    "last_seq": 2613,
+    "gaps": 0,
+    "duplicates": 0,
+    "bad_patterns": 0,
+    "duration": 40.000224215000344,
+    "KiBs": 31.58991081732838
+  }
+}

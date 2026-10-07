@@ -1,0 +1,30 @@
+[
+  {
+    "offset": "0x2000",
+    "file": "/home/grieferpig/esp32-s31-linux/bt-latency/logs/cpu-usage/native-ble/project/build/bootloader/bootloader.bin",
+    "size": 21344,
+    "erase_end": "0x8000",
+    "sha256": "3a72c1561a2581ff0ca8200ab620988e890170a89038d56fcbd1b595f48a2ad7"
+  },
+  {
+    "offset": "0x10000",
+    "file": "/home/grieferpig/esp32-s31-linux/bt-latency/logs/cpu-usage/native-ble/project/build/partition_table/partition-table.bin",
+    "size": 3072,
+    "erase_end": "0x11000",
+    "sha256": "e6e4113cfdabc662f8f59f63b68e5997f08ccbae19db411cdf4b0210b3c412a8"
+  },
+  {
+    "offset": "0x11000",
+    "file": "/home/grieferpig/esp32-s31-linux/bt-latency/logs/cpu-usage/native-ble/project/build/benchmark-nvs-empty.bin",
+    "size": 24576,
+    "erase_end": "0x17000",
+    "sha256": "1df8949b2e345ab8c00cb81fb6b83686e20a4080f969e5cd8b8d520a07cdaba2"
+  },
+  {
+    "offset": "0x20000",
+    "file": "/home/grieferpig/esp32-s31-linux/bt-latency/logs/cpu-usage/native-ble/project/build/throughput_server_demo.bin",
+    "size": 1004688,
+    "erase_end": "0x116000",
+    "sha256": "e6917e49b9a5c9b8d59b796bd932120b16f51cf4cb23f022158b599201caef9c"
+  }
+]

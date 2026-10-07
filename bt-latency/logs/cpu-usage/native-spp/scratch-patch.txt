@@ -1,0 +1,3 @@
+patching file main/CMakeLists.txt
+patching file main/main.c
+patching file sdkconfig.defaults

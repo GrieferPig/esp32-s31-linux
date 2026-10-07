@@ -146,6 +146,8 @@ def main():
             seq = int.from_bytes(chunk[0:4], "little")
             if first_seq is None:
                 first_seq = last_seq = seq
+                if os.environ.get("S31_STREAM_STARTED_FILE"):
+                    Path(os.environ["S31_STREAM_STARTED_FILE"]).write_text(json.dumps({"first_host_packet":time.monotonic()}))
             elif seq == last_seq:
                 dups += 1
             else:
