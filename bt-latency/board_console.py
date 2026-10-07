@@ -9,6 +9,8 @@ tty.setraw(fd)
 attrs = termios.tcgetattr(fd)
 attrs[4] = getattr(termios, 'B115200')
 attrs[5] = getattr(termios, 'B115200')
+# Keep modem lines stable when this capture closes.
+attrs[2] = (attrs[2] | termios.CLOCAL | termios.CREAD) & ~termios.HUPCL
 termios.tcsetattr(fd, termios.TCSANOW, attrs)
 termios.tcflush(fd, termios.TCIOFLUSH)
 os.set_blocking(fd, False)

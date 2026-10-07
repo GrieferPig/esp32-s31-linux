@@ -1,0 +1,1 @@
+echo CONSOLE_PROBE_1; cat /proc/uptime

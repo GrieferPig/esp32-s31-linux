@@ -6,7 +6,10 @@ skip,count=int(skip),int(count)
 assert 0<count<=300 and skip>=0
 fd=os.open('/dev/ttyUSB0',os.O_RDWR|os.O_NOCTTY|os.O_NONBLOCK)
 tty.setraw(fd)
-a=termios.tcgetattr(fd);a[4]=a[5]=termios.B115200;termios.tcsetattr(fd,termios.TCSANOW,a)
+a=termios.tcgetattr(fd);a[4]=a[5]=termios.B115200
+# Keep closing a console capture from hanging up the USB-UART modem lines.
+a[2]=(a[2] | termios.CLOCAL | termios.CREAD) & ~termios.HUPCL
+termios.tcsetattr(fd,termios.TCSANOW,a)
 cmd=f'dd if={source} bs=1K skip={skip} count={count} 2>/dev/null | base64; echo MISSION_DONE'
 os.write(fd,(cmd+'\r').encode())
 raw=b'';deadline=time.monotonic()+58

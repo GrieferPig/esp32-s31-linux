@@ -1,0 +1,1 @@
+["/home/grieferpig/.espressif/python_env/idf6.2_py3.13_env/bin/esptool", "--chip", "esp32s31", "--port", "/dev/ttyUSB0", "--baud", "115200", "--no-stub", "read-mac"]

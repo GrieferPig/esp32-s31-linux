@@ -4,7 +4,10 @@ import os,sys,tty,termios,select,time,secrets,re
 cmd=sys.argv[1];seconds=float(sys.argv[2]) if len(sys.argv)>2 else 30
 fd=os.open('/dev/ttyUSB0',os.O_RDWR|os.O_NOCTTY|os.O_NONBLOCK)
 tty.setraw(fd)
-a=termios.tcgetattr(fd);a[4]=a[5]=termios.B115200;termios.tcsetattr(fd,termios.TCSANOW,a)
+a=termios.tcgetattr(fd);a[4]=a[5]=termios.B115200
+# Keep closing a console capture from hanging up the USB-UART modem lines.
+a[2]=(a[2] | termios.CLOCAL | termios.CREAD) & ~termios.HUPCL
+termios.tcsetattr(fd,termios.TCSANOW,a)
 # printf assembles the marker so the echoed command cannot match it.
 token=secrets.token_hex(8)
 marker=('__S31_DONE_'+token+'__').encode()
