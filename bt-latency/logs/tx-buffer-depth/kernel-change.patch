@@ -1,0 +1,76 @@
+diff --git a/drivers/platform/esp32s31-radio-smode.c b/drivers/platform/esp32s31-radio-smode.c
+index 227a1ddacff5c..dda7efe3d6b01 100644
+--- a/drivers/platform/esp32s31-radio-smode.c
++++ b/drivers/platform/esp32s31-radio-smode.c
+@@ -66,6 +66,10 @@ static bool s31_radio_disabled;
+ static unsigned int s31_radio_bt_tick_ms = 40;
+ module_param_named(bt_tick_ms, s31_radio_bt_tick_ms, uint, 0600);
+ MODULE_PARM_DESC(bt_tick_ms, "Bluetooth-only timer batch, clamped to 1..40 ms (default 40)");
++static unsigned int s31_radio_bt_tx_buffers;
++module_param_named(bt_tx_buffers, s31_radio_bt_tx_buffers, uint, 0444);
++MODULE_PARM_DESC(bt_tx_buffers, "BT-only Classic TX buffers at init: 0=SDK default, or 3..10");
++
+ 
+ #ifndef MODULE
+ static int __init s31_radio_disable_setup(char *value)
+@@ -920,6 +924,16 @@ static DECLARE_WORK(s31_radio_health_work, s31_radio_health_workfn);
+ 
+ #define S31_IDF_INTR_DISABLED	BIT(5)
+ 
++static void *s31_radio_init_args(void)
++{
++	u32 args = READ_ONCE(s31_radio_features);
++
++	if (args == S31_RADIO_FEATURE_BLUETOOTH)
++		args |= READ_ONCE(s31_radio_bt_tx_buffers) <<
++			S31_RADIO_BT_TX_BUFS_SHIFT;
++	return (void *)(uintptr_t)args;
++}
++
+ bool s31_radio_is_bt_only(void)
+ {
+ 	return READ_ONCE(s31_radio_features) == S31_RADIO_FEATURE_BLUETOOTH;
+@@ -2774,7 +2788,7 @@ static void s31_radio_control_workfn(struct work_struct *work)
+ 		s31_native_started = true;
+ 		s31_rtos_init();
+ 		if (xTaskCreatePinnedToCore(s31_radio_stack_task, "radio-init", 8192,
+-      (void *)(uintptr_t)s31_radio_features, 24, NULL, 0) != 1)
++      s31_radio_init_args(), 24, NULL, 0) != 1)
+ 			atomic_set(&s31_radio_state, ESP32S31_RADIO_FAILED);
+ 	}
+ 	s31_radio_sync_irq_registrations();
+@@ -2914,7 +2928,7 @@ static void s31_radio_workfn(struct work_struct *work)
+ 		pr_info("esp32s31-radio: creating radio-init compatibility task\n");
+ 		if (xTaskCreatePinnedToCore(s31_radio_stack_task, "radio-init",
+ 					    8192,
+-					    (void *)(uintptr_t)s31_radio_features,
++					    s31_radio_init_args(),
+ 					    24, NULL, 0) != 1) {
+ 			pr_err("esp32s31-radio: cannot create IDF init task\n");
+ 			goto hw_failed;
+@@ -3015,6 +3029,10 @@ int s31_radio_runtime_init(bool enable_wifi, bool enable_bt)
+ 		return 0;
+ 	}
+ 
++	if (enable_bt && !enable_wifi && s31_radio_bt_tx_buffers &&
++	    (s31_radio_bt_tx_buffers < 3 || s31_radio_bt_tx_buffers > 10))
++		return -EINVAL;
++
+ 	pr_info("esp32s31-radio: late init entered\n");
+ 	/* Reload within one module lifetime must not reuse indices or pending
+ 	 * events referencing the previous payload heap.  Frontends are detached. */
+diff --git a/include/linux/esp32s31-radio-control.h b/include/linux/esp32s31-radio-control.h
+index 8608ee3a1398c..da2ae42192aa1 100644
+--- a/include/linux/esp32s31-radio-control.h
++++ b/include/linux/esp32s31-radio-control.h
+@@ -4,6 +4,10 @@
+ #define S31_RADIO_FEATURE_RX_LEAN16 (1U << 9)
+ #define ESP32S31_RADIO_CONTROL_H
+ 
++/* Optional BT-only init argument: zero retains the SDK default. */
++#define S31_RADIO_BT_TX_BUFS_SHIFT 16U
++#define S31_RADIO_BT_TX_BUFS_MASK 0xffU
++
+ #ifdef __KERNEL__
+ #include <linux/types.h>
+ #else

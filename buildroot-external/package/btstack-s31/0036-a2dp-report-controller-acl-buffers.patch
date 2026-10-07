@@ -1,0 +1,17 @@
+From: ESP32-S31 Linux <s31-linux@example.invalid>
+Subject: [PATCH] a2dp: report Classic controller buffer capacity during init
+
+--- a/example/a2dp_sink_demo.c
++++ b/example/a2dp_sink_demo.c
+@@ -1355,6 +1355,11 @@
+                 const uint8_t * params = hci_event_command_complete_get_return_parameters(packet);
+                 printf("S31 Classic scan command 0x%04x status=%u\n", opcode, params[0]);
+             }
++            if (opcode == 0x1005 && size >= 13){
++                printf("S31 Classic controller buffers: status=%u acl_bytes=%u acl_packets=%u\n",
++                       packet[5], little_endian_read_16(packet, 6),
++                       little_endian_read_16(packet, 9));
++            }
+             s31_coex_command_complete(packet, size);
+             break;
+         }

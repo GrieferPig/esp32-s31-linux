@@ -1622,6 +1622,18 @@ void s31_radio_stack_task(void *arg)
 	bool enable_bt = (features & S31_RADIO_FEATURE_BLUETOOTH) != 0;
 	int rc;
 
+	if (enable_bt && !enable_wifi) {
+		unsigned tx_buffers = (features >> S31_RADIO_BT_TX_BUFS_SHIFT) &
+			S31_RADIO_BT_TX_BUFS_MASK;
+		if (tx_buffers >= 3 && tx_buffers <= 10) {
+			bt_cfg.bredr.static_aclu_tx_buf_nb = tx_buffers;
+			bt_cfg.bredr.dynamic_aclu_tx_buf_nb = 0;
+		}
+		s31_linux_printf("[S31] Classic TX buffers static=%u dynamic=%u\n",
+			bt_cfg.bredr.static_aclu_tx_buf_nb,
+			bt_cfg.bredr.dynamic_aclu_tx_buf_nb);
+	}
+
 	pmu_init();
 	rc = s31_radio_clock_handoff();
 	if (rc != 0) {
