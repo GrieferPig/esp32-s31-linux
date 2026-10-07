@@ -1,0 +1,46 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: ESP32-S31 Linux <s31-linux@example.invalid>
+Date: Tue, 6 Oct 2026 12:00:00 +0800
+Subject: [PATCH] a2dp: one-shot direct DLE from stream pump context
+
+The handler-context direct send never fires (packet buffer reserved
+during event dispatch).  Retry once from the notify pump, where the
+buffer is free, to isolate handler-context vs wedged-task causes.
+---
+ example/a2dp_sink_demo.c | 14 +++++++++++++-
+ 1 file changed, 13 insertions(+), 1 deletion(-)
+
+--- a/example/a2dp_sink_demo.c
++++ b/example/a2dp_sink_demo.c
+@@ -509,10 +509,21 @@
+     printf("S31 BLE link params @%s: update=%d dle=%d phy=%d\n", when, rc_u, rc_d, rc_p);
+ }
+ 
++static bool s31_ble_dle_sent;
+ static void s31_ble_stream_pump(void){
+     uint16_t mtu, chunk, i, k;
+     if (s31_ble_stream_conn == HCI_CON_HANDLE_INVALID || !s31_ble_stream_subscribed)
+         return;
++    /* One-shot DLE from stream context (not the HCI event handler, where
++     * the shared packet buffer is always reserved): proves whether the
++     * missing 0x2022 is handler-context or a wedged task. */
++    if (s31_ble_dle_enabled && !s31_ble_dle_sent){
++        if (hci_can_send_command_packet_now()){
++            hci_send_cmd(&hci_le_set_data_length, s31_ble_stream_conn, 251, 2120);
++            s31_ble_dle_sent = true;
++            printf("S31 BLE DLE: direct 0x2022 sent from pump\n");
++        }
++    }
+     mtu = att_server_get_mtu(s31_ble_stream_conn);
+     chunk = mtu > 3 ? mtu - 3 : 0;
+     if (chunk > sizeof(s31_ble_stream_buf))
+@@ -556,6 +567,7 @@
+             s31_ble_stream_seq = 0;
+             s31_ble_stream_notifies = 0;
+             s31_ble_stream_bytes = 0;
++            s31_ble_dle_sent = false;
+             s31_ble_stream_pump();
+         }
+     }
+-- 
+2.43.0
