@@ -1,0 +1,2842 @@
+SetDiscoveryFilter success
+Discovery started
+[CHG] Controller F0:6E:0B:D8:CE:45 Discovering: yes
+[NEW] Device 64:B7:08:01:CD:BE Vertuo_DV6_64B70801CDBE
+[NEW] Device 80:F3:DA:1D:33:AE P0AC_33AE
+[NEW] Device 04:E4:B6:03:69:CB 55" Crystal UHD
+[NEW] Device 0E:30:31:25:E9:2C 0E-30-31-25-E9-2C
+[NEW] Device 5A:F6:CF:90:8F:EF 5A-F6-CF-90-8F-EF
+[NEW] Device 57:A3:E5:7B:AA:C9 57-A3-E5-7B-AA-C9
+[NEW] Device 34:13:43:E6:6C:C3 EB1F8DAE84C6
+[NEW] Device 5F:67:12:3E:5C:EC 5F-67-12-3E-5C-EC
+[NEW] Device 7B:64:1E:BE:58:B2 7B-64-1E-BE-58-B2
+[NEW] Device 7B:17:8E:2F:E1:FD 7B-17-8E-2F-E1-FD
+[CHG] Device 30:ED:A0:F3:D4:AE RSSI: 0xffffffd4 (-44)
+[NEW] Device 58:F1:3F:1F:FE:85 58-F1-3F-1F-FE-85
+[CHG] Device 64:B7:08:01:CD:BE RSSI: 0xffffffac (-84)
+[CHG] Device 64:B7:08:01:CD:BE TxPower: 0x0005 (5)
+[CHG] Device 0E:30:31:25:E9:2C RSSI: 0xffffffad (-83)
+[CHG] Device 04:E4:B6:03:69:CB RSSI: 0xffffffd1 (-47)
+[CHG] Device 64:B7:08:01:CD:BE RSSI: 0xffffffaf (-81)
+[NEW] Device C8:3F:ED:EE:5B:C8 C8-3F-ED-EE-5B-C8
+[NEW] Device 63:8E:9D:C5:4E:B5 63-8E-9D-C5-4E-B5
+[CHG] Device 30:ED:A0:F3:D4:AE RSSI: 0xffffffd4 (-44)
+[CHG] Device 0E:30:31:25:E9:2C RSSI: 0xffffffac (-84)
+[CHG] Device 5A:F6:CF:90:8F:EF RSSI: 0xffffffac (-84)
+[CHG] Device 5A:F6:CF:90:8F:EF TxPower: 0xfffffff6 (-10)
+[CHG] Device 5A:F6:CF:90:8F:EF Name: LE-not your headphones
+[CHG] Device 5A:F6:CF:90:8F:EF Alias: LE-not your headphones
+[NEW] Device 73:13:F1:2B:C5:64 73-13-F1-2B-C5-64
+[CHG] Device 64:B7:08:01:CD:BE RSSI: 0xffffffac (-84)
+[NEW] Device 40:3D:48:41:4C:F7 40-3D-48-41-4C-F7
+[NEW] Device 80:F3:DA:1C:20:3A P0AC_203A
+[CHG] Device 7B:17:8E:2F:E1:FD RSSI: 0xffffffaf (-81)
+[NEW] Device EA:D1:69:D6:AE:60 EA-D1-69-D6-AE-60
+[CHG] Device 04:E4:B6:03:69:CB RSSI: 0xffffffd8 (-40)
+[CHG] Device 30:ED:A0:F3:D4:AE RSSI: 0xffffffd4 (-44)
+[CHG] Device 34:13:43:E6:6C:C3 RSSI: 0xffffffaa (-86)
+[CHG] Device 34:13:43:E6:6C:C3 ManufacturerData.Key: 0x45e5 (17893)
+[CHG] Device 34:13:43:E6:6C:C3 ManufacturerData.Value:
+  17 d9 7d 19 8a 03 c2 63 24 07 63 f1 8e 77 70 00  ..}....c$.c..wp.
+  00 d2 fd 34 00 00 21 8c ea 21 2e                 ...4..!..!.
+[CHG] Device 5F:67:12:3E:5C:EC RSSI: 0xffffffb3 (-77)
+[CHG] Device 5F:67:12:3E:5C:EC ManufacturerData.Key: 0x004c (76)
+[CHG] Device 5F:67:12:3E:5C:EC ManufacturerData.Value:
+  01 00 00 00 00 00 00 00 00 00 00 00 00 80 00 00  ................
+  00                                               .
+[CHG] Device 0E:30:31:25:E9:2C RSSI: 0xffffffad (-83)
+[CHG] Device 30:ED:A0:F3:D4:AE RSSI: 0xffffffd4 (-44)
+[CHG] Device 64:B7:08:01:CD:BE RSSI: 0xffffffaf (-81)
+[CHG] Device 73:13:F1:2B:C5:64 RSSI: 0xffffffac (-84)
+[CHG] Device 04:E4:B6:03:69:CB RSSI: 0xffffffdc (-36)
+[NEW] Device F2:4B:63:EA:1F:03 F2-4B-63-EA-1F-03
+[CHG] Device 5A:F6:CF:90:8F:EF RSSI: 0xffffffb3 (-77)
+[CHG] Device 7B:17:8E:2F:E1:FD RSSI: 0xffffffac (-84)
+[CHG] Device 63:8E:9D:C5:4E:B5 RSSI: 0xffffffab (-85)
+[CHG] Device 58:F1:3F:1F:FE:85 RSSI: 0xffffffaf (-81)
+[CHG] Device 64:B7:08:01:CD:BE RSSI: 0xffffffaa (-86)
+[NEW] Device 3A:ED:3B:6B:E7:6D 3A-ED-3B-6B-E7-6D
+[CHG] Device 30:ED:A0:F3:D4:AE RSSI: 0xffffffd4 (-44)
+[CHG] Device 40:3D:48:41:4C:F7 RSSI: 0xffffffaa (-86)
+[CHG] Device 0E:30:31:25:E9:2C RSSI: 0xffffffb5 (-75)
+[CHG] Device 64:B7:08:01:CD:BE RSSI: 0xffffffab (-85)
+[NEW] Device F3:32:89:BA:95:60 F3-32-89-BA-95-60
+[NEW] Device 51:14:CE:27:F3:4A 51-14-CE-27-F3-4A
+[CHG] Device 57:A3:E5:7B:AA:C9 RSSI: 0xffffffaa (-86)
+[CHG] Device 5F:67:12:3E:5C:EC RSSI: 0xffffffb3 (-77)
+[CHG] Device 5F:67:12:3E:5C:EC ManufacturerData.Key: 0x004c (76)
+[CHG] Device 5F:67:12:3E:5C:EC ManufacturerData.Value:
+  01 00 00 00 00 00 00 00 00 00 00 00 00 80 00 00  ................
+  00                                               .
+[CHG] Device 04:E4:B6:03:69:CB RSSI: 0xffffffd1 (-47)
+[CHG] Device 64:B7:08:01:CD:BE RSSI: 0xffffffae (-82)
+[NEW] Device 34:13:43:E3:D9:2D EB1F8DAE84C6
+[CHG] Device 7B:64:1E:BE:58:B2 RSSI: 0xffffffb5 (-75)
+[CHG] Device 30:ED:A0:F3:D4:AE RSSI: 0xffffffd5 (-43)
+[CHG] Device 0E:30:31:25:E9:2C RSSI: 0xffffffad (-83)
+[CHG] Device 64:B7:08:01:CD:BE RSSI: 0xffffffaa (-86)
+[CHG] Device 5A:F6:CF:90:8F:EF RSSI: 0xffffffac (-84)
+[CHG] Device 34:13:43:E6:6C:C3 RSSI: 0xffffffaa (-86)
+[CHG] Device 34:13:43:E6:6C:C3 ManufacturerData.Key: 0x45e5 (17893)
+[CHG] Device 34:13:43:E6:6C:C3 ManufacturerData.Value:
+  17 da 7d 19 8a 03 c2 63 24 07 63 f1 8e 77 70 00  ..}....c$.c..wp.
+  00 d2 fd 34 00 00 21 8c ea 21 2f                 ...4..!..!/
+[NEW] Device D7:E2:23:91:D7:1A D7-E2-23-91-D7-1A
+[CHG] Device 58:F1:3F:1F:FE:85 RSSI: 0xffffffb6 (-74)
+[CHG] Device 64:B7:08:01:CD:BE RSSI: 0xffffffac (-84)
+[CHG] Device 34:13:43:E6:6C:C3 RSSI: 0xffffffaa (-86)
+[CHG] Device 34:13:43:E6:6C:C3 ManufacturerData.Key: 0x45e5 (17893)
+[CHG] Device 34:13:43:E6:6C:C3 ManufacturerData.Value:
+  17 db 7d 19 8a 03 c2 63 24 07 63 f2 8e 77 70 00  ..}....c$.c..wp.
+  00 d2 fd 34 00 00 21 8c ea 21 31                 ...4..!..!1
+[CHG] Device 30:ED:A0:F3:D4:AE RSSI: 0xffffffd5 (-43)
+[CHG] Device 0E:30:31:25:E9:2C RSSI: 0xffffffad (-83)
+[CHG] Device 04:E4:B6:03:69:CB RSSI: 0xffffffd7 (-41)
+[CHG] Device 51:14:CE:27:F3:4A RSSI: 0xffffffb0 (-80)
+[NEW] Device 40:01:00:F1:E7:A0 40-01-00-F1-E7-A0
+[CHG] Device 34:13:43:E6:6C:C3 RSSI: 0xffffffaa (-86)
+[CHG] Device 34:13:43:E6:6C:C3 ManufacturerData.Key: 0x45e5 (17893)
+[CHG] Device 34:13:43:E6:6C:C3 ManufacturerData.Value:
+  17 db 7d 19 8a 03 c2 63 24 07 63 f2 8e 77 70 00  ..}....c$.c..wp.
+  00 d2 fd 34 00 00 21 8c ea 21 31                 ...4..!..!1
+[CHG] Device 34:13:43:E6:6C:C3 ManufacturerData.Key: 0x0211 (529)
+[CHG] Device 34:13:43:E6:6C:C3 ManufacturerData.Value:
+  11 22 c3 6c e6 43                                .".l.C
+[CHG] Device 34:13:43:E6:6C:C3 AdvertisingFlags:
+  05                                               .
+[CHG] Device 64:B7:08:01:CD:BE RSSI: 0xffffffaa (-86)
+[CHG] Device 40:3D:48:41:4C:F7 RSSI: 0xffffffaa (-86)
+[CHG] Device 7B:17:8E:2F:E1:FD RSSI: 0xffffffaf (-81)
+[CHG] Device 58:F1:3F:1F:FE:85 RSSI: 0xffffffac (-84)
+[CHG] Device 5F:67:12:3E:5C:EC RSSI: 0xffffffb1 (-79)
+[CHG] Device 5F:67:12:3E:5C:EC ManufacturerData.Key: 0x004c (76)
+[CHG] Device 5F:67:12:3E:5C:EC ManufacturerData.Value:
+  01 00 00 00 00 00 00 00 00 00 00 00 00 80 00 00  ................
+  00                                               .
+[CHG] Device 5A:F6:CF:90:8F:EF RSSI: 0xffffffac (-84)
+[CHG] Device 64:B7:08:01:CD:BE RSSI: 0xffffffaf (-81)
+[CHG] Device 34:13:43:E3:D9:2D RSSI: 0xffffffaa (-86)
+[CHG] Device 30:ED:A0:F3:D4:AE RSSI: 0xffffffd5 (-43)
+[CHG] Device 64:B7:08:01:CD:BE RSSI: 0xffffffaa (-86)
+[CHG] Device 7B:17:8E:2F:E1:FD RSSI: 0xffffffb3 (-77)
+[NEW] Device FC:CF:B6:63:90:E2 FC-CF-B6-63-90-E2
+[CHG] Device 73:13:F1:2B:C5:64 RSSI: 0xffffffad (-83)
+[NEW] Device D8:51:54:B3:E6:AF D8-51-54-B3-E6-AF
+[CHG] Device 40:01:00:F1:E7:A0 RSSI: 0xffffffab (-85)
+[CHG] Device 30:ED:A0:F3:D4:AE RSSI: 0xffffffd4 (-44)
+[CHG] Device 04:E4:B6:03:69:CB RSSI: 0xffffffd1 (-47)
+[CHG] Device 34:13:43:E6:6C:C3 RSSI: 0xffffffaa (-86)
+[CHG] Device 34:13:43:E6:6C:C3 ManufacturerData.Key: 0x45e5 (17893)
+[CHG] Device 34:13:43:E6:6C:C3 ManufacturerData.Value:
+  17 dc 7d 19 8a 03 c5 63 24 07 63 f4 8e 77 70 00  ..}....c$.c..wp.
+  00 d2 fd 34 00 00 21 8c ea 21 37                 ...4..!..!7
+[CHG] Device 34:13:43:E6:6C:C3 ManufacturerData.Key: 0x0211 (529)
+[CHG] Device 34:13:43:E6:6C:C3 ManufacturerData.Value:
+  11 22 c3 6c e6 43                                .".l.C
+[CHG] Device 34:13:43:E6:6C:C3 AdvertisingFlags:
+  00                                               .
+[CHG] Device 5A:F6:CF:90:8F:EF RSSI: 0xffffffb3 (-77)
+[CHG] Device 64:B7:08:01:CD:BE RSSI: 0xffffffac (-84)
+[CHG] Device 51:14:CE:27:F3:4A RSSI: 0xffffffb1 (-79)
+[CHG] Device 5F:67:12:3E:5C:EC RSSI: 0xffffffb1 (-79)
+[CHG] Device 5F:67:12:3E:5C:EC ManufacturerData.Key: 0x004c (76)
+[CHG] Device 5F:67:12:3E:5C:EC ManufacturerData.Value:
+  10 07 3e 1f 74 dc a7 10 78                       ..>.t...x
+[CHG] Device 0E:30:31:25:E9:2C RSSI: 0xffffffb5 (-75)
+[CHG] Device 30:ED:A0:F3:D4:AE RSSI: 0xffffffd4 (-44)
+[NEW] Device E6:69:A2:FF:55:30 E6-69-A2-FF-55-30
+[NEW] Device CD:EB:05:9F:1D:DB CD-EB-05-9F-1D-DB
+[CHG] Device 73:13:F1:2B:C5:64 RSSI: 0xffffffb5 (-75)
+[NEW] Device 57:BA:FA:37:A1:85 57-BA-FA-37-A1-85
+[CHG] Device 04:E4:B6:03:69:CB RSSI: 0xffffffdc (-36)
+[CHG] Device 34:13:43:E3:D9:2D RSSI: 0xffffffaa (-86)
+[CHG] Device 34:13:43:E3:D9:2D ManufacturerData.Key: 0x45e5 (17893)
+[CHG] Device 34:13:43:E3:D9:2D ManufacturerData.Value:
+  63 f4 7d 19 8a 03 c4 63 24 07 17 da 8e 77 70 00  c.}....c$....wp.
+  00 d2 fd 34 00 00 21 8c ea 21 34                 ...4..!..!4
+[CHG] Device 58:F1:3F:1F:FE:85 RSSI: 0xffffffad (-83)
+[CHG] Device 34:13:43:E3:D9:2D RSSI: 0xffffffaa (-86)
+[CHG] Device 34:13:43:E3:D9:2D ManufacturerData.Key: 0x45e5 (17893)
+[CHG] Device 34:13:43:E3:D9:2D ManufacturerData.Value:
+  63 f4 7d 19 8a 03 c4 63 24 07 17 da 8e 77 70 00  c.}....c$....wp.
+  00 d2 fd 34 00 00 21 8c ea 21 34                 ...4..!..!4
+[CHG] Device 34:13:43:E3:D9:2D ManufacturerData.Key: 0x0211 (529)
+[CHG] Device 34:13:43:E3:D9:2D ManufacturerData.Value:
+  11 22 2d d9 e3 43                                ."-..C
+[CHG] Device 34:13:43:E3:D9:2D AdvertisingFlags:
+  05                                               .
+[CHG] Device 3A:ED:3B:6B:E7:6D RSSI: 0xffffffaa (-86)
+[CHG] Device 30:ED:A0:F3:D4:AE RSSI: 0xffffffd4 (-44)
+[CHG] Device 0E:30:31:25:E9:2C RSSI: 0xffffffac (-84)
+[CHG] Device 80:F3:DA:1D:33:AE RSSI: 0xffffffaa (-86)
+[CHG] Device 5A:F6:CF:90:8F:EF RSSI: 0xffffffac (-84)
+[NEW] Device 38:A5:C9:C3:BD:F8 TY
+[NEW] Device E8:0E:72:B8:D2:AF E8-0E-72-B8-D2-AF
+[CHG] Device 34:13:43:E6:6C:C3 RSSI: 0xffffffaa (-86)
+[CHG] Device 64:B7:08:01:CD:BE RSSI: 0xffffffaa (-86)
+[CHG] Device 0E:30:31:25:E9:2C RSSI: 0xffffffb6 (-74)
+[CHG] Device 30:ED:A0:F3:D4:AE RSSI: 0xffffffd4 (-44)
+[NEW] Device 16:16:44:1F:34:4F 16-16-44-1F-34-4F
+[CHG] Device 7B:17:8E:2F:E1:FD RSSI: 0xffffffb1 (-79)
+[CHG] Device 73:13:F1:2B:C5:64 RSSI: 0xffffffad (-83)
+[CHG] Device 04:E4:B6:03:69:CB RSSI: 0xffffffd1 (-47)
+[CHG] Device 64:B7:08:01:CD:BE RSSI: 0xffffffb0 (-80)
+[CHG] Device 5F:67:12:3E:5C:EC RSSI: 0xffffffb1 (-79)
+[CHG] Device 58:F1:3F:1F:FE:85 RSSI: 0xffffffb5 (-75)
+[NEW] Device DE:DE:71:B2:64:7D DE-DE-71-B2-64-7D
+[CHG] Device 7B:64:1E:BE:58:B2 RSSI: 0xffffffb0 (-80)
+[CHG] Device 0E:30:31:25:E9:2C RSSI: 0xffffffad (-83)
+[NEW] Device 2C:41:A1:F7:62:C9 LE-Bose Revolve SoundLink
+[CHG] Device 64:B7:08:01:CD:BE RSSI: 0xffffffaa (-86)
+[CHG] Device 5A:F6:CF:90:8F:EF RSSI: 0xffffffac (-84)
+[CHG] Device 51:14:CE:27:F3:4A RSSI: 0xffffffad (-83)
+[CHG] Device 7B:17:8E:2F:E1:FD RSSI: 0xffffffb1 (-79)
+[CHG] Device 73:13:F1:2B:C5:64 RSSI: 0xffffffb5 (-75)
+[CHG] Device 30:ED:A0:F3:D4:AE RSSI: 0xffffffd3 (-45)
+[CHG] Device 58:F1:3F:1F:FE:85 RSSI: 0xffffffaf (-81)
+[NEW] Device 80:F3:DA:1E:B3:BE P0AC_B3BE
+[CHG] Device 30:ED:A0:F3:D4:AE RSSI: 0xffffffd3 (-45)
+[CHG] Device 0E:30:31:25:E9:2C RSSI: 0xffffffad (-83)
+[CHG] Device 57:A3:E5:7B:AA:C9 RSSI: 0xffffffaa (-86)
+[CHG] Device 64:B7:08:01:CD:BE RSSI: 0xffffffaf (-81)
+[CHG] Device 34:13:43:E6:6C:C3 RSSI: 0xffffffaa (-86)
+[CHG] Device 34:13:43:E6:6C:C3 ManufacturerData.Key: 0x45e5 (17893)
+[CHG] Device 34:13:43:E6:6C:C3 ManufacturerData.Value:
+  17 de 7d 19 8a 03 c7 63 24 07 63 f6 8e 77 70 00  ..}....c$.c..wp.
+  00 d2 fd 34 00 00 21 8c ea 21 3d                 ...4..!..!=
+[CHG] Device 34:13:43:E6:6C:C3 ManufacturerData.Key: 0x0211 (529)
+[CHG] Device 34:13:43:E6:6C:C3 ManufacturerData.Value:
+  11 22 c3 6c e6 43                                .".l.C
+[CHG] Device 5F:67:12:3E:5C:EC RSSI: 0xffffffae (-82)
+[CHG] Device 5F:67:12:3E:5C:EC ManufacturerData.Key: 0x004c (76)
+[CHG] Device 5F:67:12:3E:5C:EC ManufacturerData.Value:
+  01 00 00 00 00 00 00 00 00 00 00 00 00 80 00 00  ................
+  00                                               .
+[CHG] Device 51:14:CE:27:F3:4A RSSI: 0xffffffae (-82)
+[CHG] Device 5A:F6:CF:90:8F:EF RSSI: 0xffffffb3 (-77)
+[CHG] Device 7B:64:1E:BE:58:B2 RSSI: 0xffffffac (-84)
+[CHG] Device 73:13:F1:2B:C5:64 RSSI: 0xffffffae (-82)
+[CHG] Device 64:B7:08:01:CD:BE RSSI: 0xffffffaa (-86)
+[CHG] Device 57:BA:FA:37:A1:85 RSSI: 0xffffffaa (-86)
+[CHG] Device 30:ED:A0:F3:D4:AE RSSI: 0xffffffd4 (-44)
+[CHG] Device 0E:30:31:25:E9:2C RSSI: 0xffffffad (-83)
+[CHG] Device 58:F1:3F:1F:FE:85 RSSI: 0xffffffb0 (-80)
+[CHG] Device 64:B7:08:01:CD:BE RSSI: 0xffffffb0 (-80)
+[CHG] Device 04:E4:B6:03:69:CB RSSI: 0xffffffd8 (-40)
+[CHG] Device 64:B7:08:01:CD:BE RSSI: 0xffffffaf (-81)
+[CHG] Device 30:ED:A0:F3:D4:AE RSSI: 0xffffffd3 (-45)
+[CHG] Device 51:14:CE:27:F3:4A RSSI: 0xffffffae (-82)
+[CHG] Device 0E:30:31:25:E9:2C RSSI: 0xffffffad (-83)
+[CHG] Device 7B:17:8E:2F:E1:FD RSSI: 0xffffffb1 (-79)
+[CHG] Device 73:13:F1:2B:C5:64 RSSI: 0xffffffaf (-81)
+[CHG] Device 5F:67:12:3E:5C:EC RSSI: 0xffffffb0 (-80)
+[CHG] Device 5F:67:12:3E:5C:EC ManufacturerData.Key: 0x004c (76)
+[CHG] Device 5F:67:12:3E:5C:EC ManufacturerData.Value:
+  01 00 00 00 00 00 00 00 00 00 00 00 00 80 00 00  ................
+  00                                               .
+[CHG] Device 30:ED:A0:F3:D4:AE RSSI: 0xffffffd4 (-44)
+[CHG] Device 0E:30:31:25:E9:2C RSSI: 0xffffffad (-83)
+[CHG] Device 58:F1:3F:1F:FE:85 RSSI: 0xffffffb5 (-75)
+[CHG] Device 7B:64:1E:BE:58:B2 RSSI: 0xffffffb2 (-78)
+[CHG] Device 64:B7:08:01:CD:BE RSSI: 0xffffffaa (-86)
+[CHG] Device 40:01:00:F1:E7:A0 RSSI: 0xffffffab (-85)
+[CHG] Device 2C:41:A1:F7:62:C9 RSSI: 0xffffffaa (-86)
+[CHG] Device 0E:30:31:25:E9:2C RSSI: 0xffffffae (-82)
+[CHG] Device 7B:17:8E:2F:E1:FD RSSI: 0xffffffb5 (-75)
+[CHG] Device 64:B7:08:01:CD:BE RSSI: 0xffffffaf (-81)
+[NEW] Device 75:38:64:00:D4:E7 75-38-64-00-D4-E7
+[CHG] Device 04:E4:B6:03:69:CB RSSI: 0xffffffd8 (-40)
+[CHG] Device 58:F1:3F:1F:FE:85 RSSI: 0xffffffb1 (-79)
+[CHG] Device 30:ED:A0:F3:D4:AE RSSI: 0xffffffd5 (-43)
+[CHG] Device 0E:30:31:25:E9:2C RSSI: 0xffffffad (-83)
+[CHG] Device 34:13:43:E3:D9:2D RSSI: 0xffffffaa (-86)
+[CHG] Device 34:13:43:E3:D9:2D ManufacturerData.Key: 0x45e5 (17893)
+[CHG] Device 34:13:43:E3:D9:2D ManufacturerData.Value:
+  63 f7 7d 19 8a 03 c8 63 24 07 17 de 8e 77 70 00  c.}....c$....wp.
+  00 d2 fd 34 00 00 21 8c ea 21 3f                 ...4..!..!?
+[CHG] Device 34:13:43:E3:D9:2D ManufacturerData.Key: 0x0211 (529)
+[CHG] Device 34:13:43:E3:D9:2D ManufacturerData.Value:
+  11 22 2d d9 e3 43                                ."-..C
+[CHG] Device 34:13:43:E3:D9:2D AdvertisingFlags:
+  00                                               .
+[CHG] Device C8:3F:ED:EE:5B:C8 RSSI: 0xffffffaf (-81)
+[CHG] Device 64:B7:08:01:CD:BE RSSI: 0xffffffad (-83)
+[CHG] Device 57:A3:E5:7B:AA:C9 RSSI: 0xffffffaa (-86)
+[CHG] Device 5F:67:12:3E:5C:EC RSSI: 0xffffffb1 (-79)
+[CHG] Device 5F:67:12:3E:5C:EC ManufacturerData.Key: 0x004c (76)
+[CHG] Device 5F:67:12:3E:5C:EC ManufacturerData.Value:
+  10 07 3e 1f 74 dc a7 10 78                       ..>.t...x
+[CHG] Device 80:F3:DA:1E:B3:BE RSSI: 0xffffffaa (-86)
+[CHG] Device 30:ED:A0:F3:D4:AE RSSI: 0xffffffd5 (-43)
+[CHG] Device 7B:64:1E:BE:58:B2 RSSI: 0xffffffb0 (-80)
+[CHG] Device 7B:17:8E:2F:E1:FD RSSI: 0xffffffac (-84)
+[CHG] Device 04:E4:B6:03:69:CB RSSI: 0xffffffdc (-36)
+[CHG] Device 34:13:43:E3:D9:2D RSSI: 0xffffffaa (-86)
+[CHG] Device 34:13:43:E3:D9:2D AdvertisingFlags:
+  05                                               .
+[CHG] Device 34:13:43:E6:6C:C3 RSSI: 0xffffffaa (-86)
+[CHG] Device 34:13:43:E6:6C:C3 ManufacturerData.Key: 0x45e5 (17893)
+[CHG] Device 34:13:43:E6:6C:C3 ManufacturerData.Value:
+  17 e0 7d 19 8a 03 c9 63 24 07 63 f8 8e 77 70 00  ..}....c$.c..wp.
+  00 d2 fd 34 00 00 21 8c ea 21 43                 ...4..!..!C
+[CHG] Device 34:13:43:E6:6C:C3 ManufacturerData.Key: 0x0211 (529)
+[CHG] Device 34:13:43:E6:6C:C3 ManufacturerData.Value:
+  11 22 c3 6c e6 43                                .".l.C
+[CHG] Device 73:13:F1:2B:C5:64 RSSI: 0xffffffac (-84)
+[CHG] Device 64:B7:08:01:CD:BE RSSI: 0xffffffaa (-86)
+[CHG] Device 58:F1:3F:1F:FE:85 RSSI: 0xffffffb6 (-74)
+[CHG] Device 5A:F6:CF:90:8F:EF RSSI: 0xffffffb3 (-77)
+[CHG] Device 30:ED:A0:F3:D4:AE RSSI: 0xffffffd4 (-44)
+[CHG] Device 63:8E:9D:C5:4E:B5 RSSI: 0xffffffab (-85)
+[CHG] Device F2:4B:63:EA:1F:03 RSSI: 0xffffffab (-85)
+[CHG] Device 04:E4:B6:03:69:CB RSSI: 0xffffffd0 (-48)
+[CHG] Device 7B:17:8E:2F:E1:FD RSSI: 0xffffffb3 (-77)
+[CHG] Device 57:A3:E5:7B:AA:C9 RSSI: 0xffffffaa (-86)
+[CHG] Device 34:13:43:E3:D9:2D RSSI: 0xffffffaa (-86)
+[CHG] Device 34:13:43:E3:D9:2D ManufacturerData.Key: 0x45e5 (17893)
+[CHG] Device 34:13:43:E3:D9:2D ManufacturerData.Value:
+  63 f8 7d 19 8a 03 c9 63 24 07 17 df 8e 77 70 00  c.}....c$....wp.
+  00 d2 fd 34 00 00 21 8c ea 21 42                 ...4..!..!B
+[CHG] Device 34:13:43:E3:D9:2D ManufacturerData.Key: 0x0211 (529)
+[CHG] Device 34:13:43:E3:D9:2D ManufacturerData.Value:
+  11 22 2d d9 e3 43                                ."-..C
+[CHG] Device 34:13:43:E3:D9:2D AdvertisingFlags:
+  00                                               .
+[CHG] Device 30:ED:A0:F3:D4:AE RSSI: 0xffffffd4 (-44)
+[CHG] Device 0E:30:31:25:E9:2C RSSI: 0xffffffb6 (-74)
+[CHG] Device 64:B7:08:01:CD:BE RSSI: 0xffffffad (-83)
+[CHG] Device 5F:67:12:3E:5C:EC RSSI: 0xffffffb3 (-77)
+[CHG] Device 5F:67:12:3E:5C:EC ManufacturerData.Key: 0x004c (76)
+[CHG] Device 5F:67:12:3E:5C:EC ManufacturerData.Value:
+  01 00 00 00 00 00 00 00 00 00 00 00 00 80 00 00  ................
+  00                                               .
+[CHG] Device 40:01:00:F1:E7:A0 RSSI: 0xffffffac (-84)
+[NEW] Device 5F:94:8D:2B:D5:5A 5F-94-8D-2B-D5-5A
+[CHG] Device 64:B7:08:01:CD:BE RSSI: 0xffffffaf (-81)
+[CHG] Device 7B:64:1E:BE:58:B2 RSSI: 0xffffffae (-82)
+[CHG] Device F3:32:89:BA:95:60 RSSI: 0xffffffaa (-86)
+[CHG] Device 5A:F6:CF:90:8F:EF RSSI: 0xffffffaa (-86)
+[CHG] Device 34:13:43:E3:D9:2D RSSI: 0xffffffaa (-86)
+[CHG] Device 34:13:43:E3:D9:2D ManufacturerData.Key: 0x45e5 (17893)
+[CHG] Device 34:13:43:E3:D9:2D ManufacturerData.Value:
+  63 f9 7d 19 8a 03 ca 63 24 07 17 e0 8e 77 70 00  c.}....c$....wp.
+  00 d2 fd 34 00 00 21 8c ea 21 45                 ...4..!..!E
+[CHG] Device 34:13:43:E3:D9:2D ManufacturerData.Key: 0x0211 (529)
+[CHG] Device 34:13:43:E3:D9:2D ManufacturerData.Value:
+  11 22 2d d9 e3 43                                ."-..C
+[CHG] Device 0E:30:31:25:E9:2C RSSI: 0xffffffb6 (-74)
+[CHG] Device 51:14:CE:27:F3:4A RSSI: 0xffffffac (-84)
+[CHG] Device 04:E4:B6:03:69:CB RSSI: 0xffffffdc (-36)
+[CHG] Device 7B:17:8E:2F:E1:FD RSSI: 0xffffffae (-82)
+[CHG] Device D7:E2:23:91:D7:1A RSSI: 0xffffffaf (-81)
+[CHG] Device 64:B7:08:01:CD:BE RSSI: 0xffffffad (-83)
+[CHG] Device 30:ED:A0:F3:D4:AE RSSI: 0xffffffd4 (-44)
+[CHG] Device 40:3D:48:41:4C:F7 RSSI: 0xffffffaa (-86)
+[NEW] Device C5:4A:AD:30:72:07 C5-4A-AD-30-72-07
+[CHG] Device 58:F1:3F:1F:FE:85 RSSI: 0xffffffb5 (-75)
+[CHG] Device 04:E4:B6:03:69:CB RSSI: 0xffffffd1 (-47)
+[CHG] Device 57:A3:E5:7B:AA:C9 RSSI: 0xffffffaa (-86)
+[CHG] Device 64:B7:08:01:CD:BE RSSI: 0xffffffae (-82)
+[CHG] Device 5F:67:12:3E:5C:EC RSSI: 0xffffffb1 (-79)
+[CHG] Device 5F:67:12:3E:5C:EC ManufacturerData.Key: 0x004c (76)
+[CHG] Device 5F:67:12:3E:5C:EC ManufacturerData.Value:
+  01 00 00 00 00 00 00 00 00 00 00 00 00 80 00 00  ................
+  00                                               .
+[CHG] Device 5A:F6:CF:90:8F:EF RSSI: 0xffffffb3 (-77)
+[CHG] Device 30:ED:A0:F3:D4:AE RSSI: 0xffffffd4 (-44)
+[CHG] Device 64:B7:08:01:CD:BE RSSI: 0xffffffaf (-81)
+[CHG] Device 7B:64:1E:BE:58:B2 RSSI: 0xffffffb1 (-79)
+[CHG] Device 7B:17:8E:2F:E1:FD RSSI: 0xffffffb6 (-74)
+[CHG] Device 64:B7:08:01:CD:BE RSSI: 0xffffffb0 (-80)
+[CHG] Device 57:BA:FA:37:A1:85 RSSI: 0xffffffaa (-86)
+[CHG] Device 73:13:F1:2B:C5:64 RSSI: 0xffffffb7 (-73)
+[CHG] Device 64:B7:08:01:CD:BE RSSI: 0xffffffaa (-86)
+[CHG] Device 0E:30:31:25:E9:2C RSSI: 0xffffffb5 (-75)
+[CHG] Device 34:13:43:E6:6C:C3 RSSI: 0xffffffaa (-86)
+[CHG] Device 34:13:43:E6:6C:C3 ManufacturerData.Key: 0x45e5 (17893)
+[CHG] Device 34:13:43:E6:6C:C3 ManufacturerData.Value:
+  17 e1 7d 19 8a 03 ca 63 24 07 63 f9 8e 77 70 00  ..}....c$.c..wp.
+  00 d2 fd 34 00 00 21 8c ea 21 46                 ...4..!..!F
+[CHG] Device 34:13:43:E6:6C:C3 ManufacturerData.Key: 0x0211 (529)
+[CHG] Device 34:13:43:E6:6C:C3 ManufacturerData.Value:
+  11 22 c3 6c e6 43                                .".l.C
+[CHG] Device 34:13:43:E6:6C:C3 RSSI: 0xffffffaa (-86)
+[CHG] Device 34:13:43:E6:6C:C3 ManufacturerData.Key: 0x45e5 (17893)
+[CHG] Device 34:13:43:E6:6C:C3 ManufacturerData.Value:
+  17 e2 7d 19 8a 03 cb 63 24 07 63 f9 8e 77 70 00  ..}....c$.c..wp.
+  00 d2 fd 34 00 00 21 8c ea 21 48                 ...4..!..!H
+[CHG] Device 34:13:43:E6:6C:C3 ManufacturerData.Key: 0x0211 (529)
+[CHG] Device 34:13:43:E6:6C:C3 ManufacturerData.Value:
+  11 22 c3 6c e6 43                                .".l.C
+[CHG] Device 51:14:CE:27:F3:4A RSSI: 0xffffffaa (-86)
+[CHG] Device FC:CF:B6:63:90:E2 RSSI: 0xffffffb6 (-74)
+[CHG] Device 5A:F6:CF:90:8F:EF RSSI: 0xffffffac (-84)
+[CHG] Device D8:51:54:B3:E6:AF RSSI: 0xffffffab (-85)
+[CHG] Device 30:ED:A0:F3:D4:AE RSSI: 0xffffffd4 (-44)
+[CHG] Device 40:01:00:F1:E7:A0 RSSI: 0xffffffab (-85)
+[CHG] Device 7B:17:8E:2F:E1:FD RSSI: 0xffffffb5 (-75)
+[CHG] Device 57:A3:E5:7B:AA:C9 RSSI: 0xffffffaa (-86)
+[CHG] Device 73:13:F1:2B:C5:64 RSSI: 0xffffffb3 (-77)
+[CHG] Device 64:B7:08:01:CD:BE RSSI: 0xffffffae (-82)
+[CHG] Device 5F:94:8D:2B:D5:5A RSSI: 0xffffffaa (-86)
+[CHG] Device 34:13:43:E3:D9:2D RSSI: 0xffffffaa (-86)
+[CHG] Device 34:13:43:E3:D9:2D ManufacturerData.Key: 0x45e5 (17893)
+[CHG] Device 34:13:43:E3:D9:2D ManufacturerData.Value:
+  63 f9 7d 19 8a 03 ca 63 24 07 17 e0 8e 77 70 00  c.}....c$....wp.
+  00 d2 fd 34 00 00 21 8c ea 21 45                 ...4..!..!E
+[CHG] Device 34:13:43:E3:D9:2D ManufacturerData.Key: 0x0211 (529)
+[CHG] Device 34:13:43:E3:D9:2D ManufacturerData.Value:
+  11 02 2d d9 e3 43 6e 00 01 2d 00 34 13 43 e3 d9  ..-..Cn..-.4.C..
+  2c 06 07 08 09 0a 0b 0c 0d 0e 0f                 ,..........
+[CHG] Device 34:13:43:E3:D9:2D AdvertisingFlags:
+  05                                               .
+[CHG] Device 58:F1:3F:1F:FE:85 RSSI: 0xffffffb6 (-74)
+[CHG] Device 0E:30:31:25:E9:2C RSSI: 0xffffffad (-83)
+[CHG] Device 7B:64:1E:BE:58:B2 RSSI: 0xffffffac (-84)
+[CHG] Device E6:69:A2:FF:55:30 RSSI: 0xffffffb2 (-78)
+[CHG] Device 51:14:CE:27:F3:4A RSSI: 0xffffffb4 (-76)
+[CHG] Device 64:B7:08:01:CD:BE RSSI: 0xffffffaa (-86)
+[CHG] Device 0E:30:31:25:E9:2C RSSI: 0xffffffae (-82)
+[CHG] Device 30:ED:A0:F3:D4:AE RSSI: 0xffffffd3 (-45)
+[CHG] Device 7B:17:8E:2F:E1:FD RSSI: 0xffffffaf (-81)
+[CHG] Device 5A:F6:CF:90:8F:EF RSSI: 0xffffffad (-83)
+[CHG] Device 34:13:43:E6:6C:C3 RSSI: 0xffffffaa (-86)
+[CHG] Device 73:13:F1:2B:C5:64 RSSI: 0xffffffb7 (-73)
+[CHG] Device 64:B7:08:01:CD:BE RSSI: 0xffffffad (-83)
+[NEW] Device D3:16:C9:AA:14:17 D3-16-C9-AA-14-17
+[CHG] Device 64:B7:08:01:CD:BE RSSI: 0xffffffaf (-81)
+[CHG] Device 0E:30:31:25:E9:2C RSSI: 0xffffffad (-83)
+[CHG] Device 57:A3:E5:7B:AA:C9 RSSI: 0xffffffaa (-86)
+[CHG] Device 30:ED:A0:F3:D4:AE RSSI: 0xffffffd5 (-43)
+[CHG] Device 64:B7:08:01:CD:BE RSSI: 0xffffffaa (-86)
+[CHG] Device 5F:67:12:3E:5C:EC RSSI: 0xffffffb1 (-79)
+[CHG] Device 5F:67:12:3E:5C:EC ManufacturerData.Key: 0x004c (76)
+[CHG] Device 5F:67:12:3E:5C:EC ManufacturerData.Value:
+  01 00 00 00 00 00 00 00 00 00 00 00 00 80 00 00  ................
+  00                                               .
+[CHG] Device 51:14:CE:27:F3:4A RSSI: 0xffffffaa (-86)
+[CHG] Device 04:E4:B6:03:69:CB RSSI: 0xffffffdc (-36)
+[CHG] Device 7B:17:8E:2F:E1:FD RSSI: 0xffffffb6 (-74)
+[CHG] Device DE:DE:71:B2:64:7D RSSI: 0xffffffaa (-86)
+[CHG] Device 30:ED:A0:F3:D4:AE RSSI: 0xffffffd5 (-43)
+[CHG] Device 64:B7:08:01:CD:BE RSSI: 0xffffffb0 (-80)
+[CHG] Device 5A:F6:CF:90:8F:EF RSSI: 0xffffffb3 (-77)
+[CHG] Device 64:B7:08:01:CD:BE RSSI: 0xffffffaa (-86)
+[CHG] Device 80:F3:DA:1C:20:3A RSSI: 0xffffffae (-82)
+[CHG] Device 58:F1:3F:1F:FE:85 RSSI: 0xffffffb6 (-74)
+[CHG] Device 63:8E:9D:C5:4E:B5 RSSI: 0xffffffab (-85)
+[CHG] Device 34:13:43:E3:D9:2D RSSI: 0xffffffaa (-86)
+[CHG] Device 34:13:43:E3:D9:2D ManufacturerData.Key: 0x45e5 (17893)
+[CHG] Device 34:13:43:E3:D9:2D ManufacturerData.Value:
+  63 fc 7d 19 8a 03 cd 63 24 07 17 e3 8e 77 70 00  c.}....c$....wp.
+  00 d2 fd 34 00 00 21 8c ea 21 4e                 ...4..!..!N
+[CHG] Device 34:13:43:E3:D9:2D ManufacturerData.Key: 0x0211 (529)
+[CHG] Device 34:13:43:E3:D9:2D ManufacturerData.Value:
+  11 02 2d d9 e3 43 6e 00 01 2d 00 34 13 43 e3 d9  ..-..Cn..-.4.C..
+  2c 06 07 08 09 0a 0b 0c 0d 0e 0f                 ,..........
+[CHG] Device 34:13:43:E3:D9:2D AdvertisingFlags:
+  00                                               .
+[CHG] Device 64:B7:08:01:CD:BE RSSI: 0xffffffad (-83)
+[CHG] Device 0E:30:31:25:E9:2C RSSI: 0xffffffae (-82)
+[CHG] Device 51:14:CE:27:F3:4A RSSI: 0xffffffb4 (-76)
+[CHG] Device 38:A5:C9:C3:BD:F8 RSSI: 0xffffffaa (-86)
+[CHG] Device 57:A3:E5:7B:AA:C9 RSSI: 0xffffffaa (-86)
+[CHG] Device 7B:17:8E:2F:E1:FD RSSI: 0xffffffb4 (-76)
+[CHG] Device 73:13:F1:2B:C5:64 RSSI: 0xffffffb6 (-74)
+[CHG] Device 64:B7:08:01:CD:BE RSSI: 0xffffffaa (-86)
+[CHG] Device 34:13:43:E6:6C:C3 RSSI: 0xffffffaa (-86)
+[CHG] Device 34:13:43:E6:6C:C3 ManufacturerData.Key: 0x45e5 (17893)
+[CHG] Device 34:13:43:E6:6C:C3 ManufacturerData.Value:
+  17 e4 7d 19 8a 03 cd 63 24 07 63 fc 8e 77 70 00  ..}....c$.c..wp.
+  00 d2 fd 34 00 00 21 8c ea 21 4f                 ...4..!..!O
+[CHG] Device 34:13:43:E6:6C:C3 ManufacturerData.Key: 0x0211 (529)
+[CHG] Device 34:13:43:E6:6C:C3 ManufacturerData.Value:
+  11 22 c3 6c e6 43                                .".l.C
+[CHG] Device 30:ED:A0:F3:D4:AE RSSI: 0xffffffd5 (-43)
+[CHG] Device 0E:30:31:25:E9:2C RSSI: 0xffffffae (-82)
+[CHG] Device 5A:F6:CF:90:8F:EF RSSI: 0xffffffae (-82)
+[CHG] Device 64:B7:08:01:CD:BE RSSI: 0xffffffb0 (-80)
+[CHG] Device 7B:64:1E:BE:58:B2 RSSI: 0xffffffaf (-81)
+[CHG] Device 04:E4:B6:03:69:CB RSSI: 0xffffffdc (-36)
+[CHG] Device 2C:41:A1:F7:62:C9 RSSI: 0xffffffaa (-86)
+[CHG] Device 64:B7:08:01:CD:BE RSSI: 0xffffffb0 (-80)
+[CHG] Device 30:ED:A0:F3:D4:AE RSSI: 0xffffffd5 (-43)
+[CHG] Device 63:8E:9D:C5:4E:B5 RSSI: 0xffffffab (-85)
+[CHG] Device 64:B7:08:01:CD:BE RSSI: 0xffffffad (-83)
+[CHG] Device 7B:17:8E:2F:E1:FD RSSI: 0xffffffb3 (-77)
+[CHG] Device 73:13:F1:2B:C5:64 RSSI: 0xffffffb2 (-78)
+[CHG] Device 3A:ED:3B:6B:E7:6D RSSI: 0xffffffaa (-86)
+[CHG] Device 04:E4:B6:03:69:CB RSSI: 0xffffffd0 (-48)
+[CHG] Device 0E:30:31:25:E9:2C RSSI: 0xffffffb5 (-75)
+[CHG] Device 58:F1:3F:1F:FE:85 RSSI: 0xffffffb6 (-74)
+[CHG] Device 57:A3:E5:7B:AA:C9 RSSI: 0xffffffaa (-86)
+[CHG] Device 5A:F6:CF:90:8F:EF RSSI: 0xffffffaa (-86)
+[CHG] Device 5F:67:12:3E:5C:EC RSSI: 0xffffffb6 (-74)
+[CHG] Device 5F:67:12:3E:5C:EC ManufacturerData.Key: 0x004c (76)
+[CHG] Device 5F:67:12:3E:5C:EC ManufacturerData.Value:
+  10 07 3e 1f 74 dc a7 10 78                       ..>.t...x
+[CHG] Device 64:B7:08:01:CD:BE RSSI: 0xffffffaa (-86)
+[CHG] Device 30:ED:A0:F3:D4:AE RSSI: 0xffffffd4 (-44)
+[CHG] Device 0E:30:31:25:E9:2C RSSI: 0xffffffb5 (-75)
+[CHG] Device 64:B7:08:01:CD:BE RSSI: 0xffffffb0 (-80)
+[CHG] Device 7B:17:8E:2F:E1:FD RSSI: 0xffffffb4 (-76)
+[CHG] Device 73:13:F1:2B:C5:64 RSSI: 0xffffffb6 (-74)
+[CHG] Device 04:E4:B6:03:69:CB RSSI: 0xffffffd7 (-41)
+[CHG] Device 58:F1:3F:1F:FE:85 RSSI: 0xffffffb3 (-77)
+[CHG] Device 30:ED:A0:F3:D4:AE RSSI: 0xffffffd4 (-44)
+[CHG] Device 64:B7:08:01:CD:BE RSSI: 0xffffffae (-82)
+[CHG] Device 5A:F6:CF:90:8F:EF RSSI: 0xffffffb3 (-77)
+[NEW] Device E4:B6:D6:A2:10:69 E4-B6-D6-A2-10-69
+[CHG] Device 51:14:CE:27:F3:4A RSSI: 0xffffffb6 (-74)
+[CHG] Device 34:13:43:E3:D9:2D RSSI: 0xffffffaa (-86)
+[CHG] Device 34:13:43:E3:D9:2D ManufacturerData.Key: 0x45e5 (17893)
+[CHG] Device 34:13:43:E3:D9:2D ManufacturerData.Value:
+  63 fd 7d 19 8a 03 ce 63 24 07 17 e4 8e 77 70 00  c.}....c$....wp.
+  00 d2 fd 34 00 00 21 8c ea 21 51                 ...4..!..!Q
+[CHG] Device 34:13:43:E3:D9:2D ManufacturerData.Key: 0x0211 (529)
+[CHG] Device 34:13:43:E3:D9:2D ManufacturerData.Value:
+  11 02 2d d9 e3 43 6e 00 01 2d 00 34 13 43 e3 d9  ..-..Cn..-.4.C..
+  2c 06 07 08 09 0a 0b 0c 0d 0e 0f                 ,..........
+[CHG] Device 04:E4:B6:03:69:CB RSSI: 0xffffffdc (-36)
+[CHG] Device 0E:30:31:25:E9:2C RSSI: 0xffffffb5 (-75)
+[CHG] Device 30:ED:A0:F3:D4:AE RSSI: 0xffffffd4 (-44)
+[CHG] Device 73:13:F1:2B:C5:64 RSSI: 0xffffffaa (-86)
+[CHG] Device 5F:67:12:3E:5C:EC RSSI: 0xffffffb1 (-79)
+[CHG] Device 5F:67:12:3E:5C:EC ManufacturerData.Key: 0x004c (76)
+[CHG] Device 5F:67:12:3E:5C:EC ManufacturerData.Value:
+  01 00 00 00 00 00 00 00 00 00 00 00 00 80 00 00  ................
+  00                                               .
+[CHG] Device C8:3F:ED:EE:5B:C8 RSSI: 0xffffffab (-85)
+[CHG] Device 64:B7:08:01:CD:BE RSSI: 0xffffffae (-82)
+[CHG] Device 7B:64:1E:BE:58:B2 RSSI: 0xffffffb1 (-79)
+[CHG] Device 58:F1:3F:1F:FE:85 RSSI: 0xffffffb6 (-74)
+[CHG] Device 30:ED:A0:F3:D4:AE RSSI: 0xffffffd4 (-44)
+[CHG] Device EA:D1:69:D6:AE:60 RSSI: 0xffffffac (-84)
+[CHG] Device 5A:F6:CF:90:8F:EF RSSI: 0xffffffae (-82)
+[CHG] Device 04:E4:B6:03:69:CB RSSI: 0xffffffd0 (-48)
+[CHG] Device 51:14:CE:27:F3:4A RSSI: 0xffffffaa (-86)
+[CHG] Device 64:B7:08:01:CD:BE RSSI: 0xffffffad (-83)
+[CHG] Device 7B:17:8E:2F:E1:FD RSSI: 0xffffffb2 (-78)
+[CHG] Device 30:ED:A0:F3:D4:AE RSSI: 0xffffffd4 (-44)
+[CHG] Device 57:A3:E5:7B:AA:C9 RSSI: 0xffffffaa (-86)
+[CHG] Device 64:B7:08:01:CD:BE RSSI: 0xffffffaa (-86)
+[CHG] Device F2:4B:63:EA:1F:03 RSSI: 0xffffffaa (-86)
+[CHG] Device 7B:64:1E:BE:58:B2 RSSI: 0xffffffae (-82)
+[CHG] Device 7B:64:1E:BE:58:B2 ManufacturerData.Key: 0x004c (76)
+[CHG] Device 7B:64:1E:BE:58:B2 ManufacturerData.Value:
+  10 06 4c 1d 0c 13 f4 d8                          ..L.....
+[CHG] Device 04:E4:B6:03:69:CB RSSI: 0xffffffd7 (-41)
+[CHG] Device 30:ED:A0:F3:D4:AE RSSI: 0xffffffd3 (-45)
+[CHG] Device D8:51:54:B3:E6:AF RSSI: 0xffffffb0 (-80)
+[CHG] Device 7B:17:8E:2F:E1:FD RSSI: 0xffffffb1 (-79)
+[CHG] Device 7B:17:8E:2F:E1:FD ManufacturerData.Key: 0x004c (76)
+[CHG] Device 7B:17:8E:2F:E1:FD ManufacturerData.Value:
+  07 19 01 14 20 0b 88 8f 10 00 09 ad ad 14 6b 07  .... .........k.
+  c5 d9 29 a1 e8 f6 12 d1 25 f7 d4                 ..).....%..
+[CHG] Device 0E:30:31:25:E9:2C RSSI: 0xffffffad (-83)
+[CHG] Device 34:13:43:E6:6C:C3 RSSI: 0xffffffaa (-86)
+[CHG] Device 34:13:43:E6:6C:C3 AdvertisingFlags:
+  05                                               .
+[CHG] Device 34:13:43:E3:D9:2D RSSI: 0xffffffaa (-86)
+[CHG] Device 34:13:43:E3:D9:2D ManufacturerData.Key: 0x45e5 (17893)
+[CHG] Device 34:13:43:E3:D9:2D ManufacturerData.Value:
+  63 ff 7d 19 8a 03 d0 63 24 07 17 e6 8e 77 70 00  c.}....c$....wp.
+  00 d2 fd 34 00 00 21 8c ea 21 57                 ...4..!..!W
+[CHG] Device 34:13:43:E3:D9:2D ManufacturerData.Key: 0x0211 (529)
+[CHG] Device 34:13:43:E3:D9:2D ManufacturerData.Value:
+  11 02 2d d9 e3 43 6e 00 01 2d 00 34 13 43 e3 d9  ..-..Cn..-.4.C..
+  2c 06 07 08 09 0a 0b 0c 0d 0e 0f                 ,..........
+[CHG] Device 80:F3:DA:1D:33:AE RSSI: 0xffffffaa (-86)
+[CHG] Device 51:14:CE:27:F3:4A RSSI: 0xffffffb2 (-78)
+[CHG] Device 16:16:44:1F:34:4F RSSI: 0xffffffaa (-86)
+[CHG] Device 5A:F6:CF:90:8F:EF RSSI: 0xffffffad (-83)
+[NEW] Device 71:0E:AE:F3:AA:10 71-0E-AE-F3-AA-10
+[NEW] Device EA:43:1D:F7:20:40 EA-43-1D-F7-20-40
+[CHG] Device 30:ED:A0:F3:D4:AE RSSI: 0xffffffd3 (-45)
+[CHG] Device 34:13:43:E6:6C:C3 RSSI: 0xffffffaa (-86)
+[CHG] Device 34:13:43:E6:6C:C3 ManufacturerData.Key: 0x45e5 (17893)
+[CHG] Device 34:13:43:E6:6C:C3 ManufacturerData.Value:
+  17 e7 7d 19 8a 03 d0 63 24 07 63 fe 8e 77 70 00  ..}....c$.c..wp.
+  00 d2 fd 34 00 00 21 8c ea 21 57                 ...4..!..!W
+[CHG] Device 34:13:43:E6:6C:C3 ManufacturerData.Key: 0x0211 (529)
+[CHG] Device 34:13:43:E6:6C:C3 ManufacturerData.Value:
+  11 22 c3 6c e6 43                                .".l.C
+[CHG] Device 34:13:43:E6:6C:C3 AdvertisingFlags:
+  00                                               .
+[CHG] Device 0E:30:31:25:E9:2C RSSI: 0xffffffb5 (-75)
+[CHG] Device 58:F1:3F:1F:FE:85 RSSI: 0xffffffb1 (-79)
+[CHG] Device 64:B7:08:01:CD:BE RSSI: 0xffffffad (-83)
+[CHG] Device 04:E4:B6:03:69:CB RSSI: 0xffffffd0 (-48)
+[NEW] Device CC:0C:7C:1E:2F:98 CC-0C-7C-1E-2F-98
+[CHG] Device 64:B7:08:01:CD:BE RSSI: 0xffffffaf (-81)
+[CHG] Device 7B:17:8E:2F:E1:FD RSSI: 0xffffffb0 (-80)
+[NEW] Device D1:C9:DA:7D:30:AD D1-C9-DA-7D-30-AD
+[CHG] Device D7:E2:23:91:D7:1A RSSI: 0xffffffaa (-86)
+[CHG] Device 57:A3:E5:7B:AA:C9 RSSI: 0xffffffaa (-86)
+[CHG] Device 64:B7:08:01:CD:BE RSSI: 0xffffffaa (-86)
+[CHG] Device 5F:67:12:3E:5C:EC RSSI: 0xffffffae (-82)
+[CHG] Device 5F:67:12:3E:5C:EC ManufacturerData.Key: 0x004c (76)
+[CHG] Device 5F:67:12:3E:5C:EC ManufacturerData.Value:
+  01 00 00 00 00 00 00 00 00 00 00 00 00 80 00 00  ................
+  00                                               .
+[CHG] Device C5:4A:AD:30:72:07 RSSI: 0xffffffab (-85)
+[CHG] Device 73:13:F1:2B:C5:64 RSSI: 0xffffffb5 (-75)
+[CHG] Device 34:13:43:E6:6C:C3 RSSI: 0xffffffaa (-86)
+[CHG] Device 34:13:43:E6:6C:C3 AdvertisingFlags:
+  05                                               .
+[CHG] Device 80:F3:DA:1C:20:3A RSSI: 0xffffffae (-82)
+[CHG] Device 04:E4:B6:03:69:CB RSSI: 0xffffffd7 (-41)
+[CHG] Device 30:ED:A0:F3:D4:AE RSSI: 0xffffffd4 (-44)
+[CHG] Device 0E:30:31:25:E9:2C RSSI: 0xffffffb5 (-75)
+[CHG] Device 64:B7:08:01:CD:BE RSSI: 0xffffffaa (-86)
+[CHG] Device 34:13:43:E3:D9:2D RSSI: 0xffffffaa (-86)
+[CHG] Device 34:13:43:E3:D9:2D ManufacturerData.Key: 0x45e5 (17893)
+[CHG] Device 34:13:43:E3:D9:2D ManufacturerData.Value:
+  63 81 7d 19 8a 03 d1 63 24 07 17 e7 8e 77 70 00  c.}....c$....wp.
+  00 d2 fd 34 00 00 21 8c ea 21 db                 ...4..!..!.
+[CHG] Device 34:13:43:E3:D9:2D ManufacturerData.Key: 0x0211 (529)
+[CHG] Device 34:13:43:E3:D9:2D ManufacturerData.Value:
+  11 02 2d d9 e3 43 6e 00 01 2d 00 34 13 43 e3 d9  ..-..Cn..-.4.C..
+  2c 06 07 08 09 0a 0b 0c 0d 0e 0f                 ,..........
+[CHG] Device 7B:17:8E:2F:E1:FD RSSI: 0xffffffb4 (-76)
+[CHG] Device 80:F3:DA:1E:B3:BE RSSI: 0xffffffaa (-86)
+[CHG] Device 64:B7:08:01:CD:BE RSSI: 0xffffffad (-83)
+[CHG] Device 30:ED:A0:F3:D4:AE RSSI: 0xffffffd5 (-43)
+[CHG] Device 0E:30:31:25:E9:2C RSSI: 0xffffffad (-83)
+[CHG] Device 64:B7:08:01:CD:BE RSSI: 0xffffffaf (-81)
+[CHG] Device 04:E4:B6:03:69:CB RSSI: 0xffffffdc (-36)
+[CHG] Device 5A:F6:CF:90:8F:EF RSSI: 0xffffffad (-83)
+[CHG] Device 64:B7:08:01:CD:BE RSSI: 0xffffffaa (-86)
+[CHG] Device 58:F1:3F:1F:FE:85 RSSI: 0xffffffb4 (-76)
+[CHG] Device 30:ED:A0:F3:D4:AE RSSI: 0xffffffd4 (-44)
+[CHG] Device 5F:67:12:3E:5C:EC RSSI: 0xffffffb4 (-76)
+[CHG] Device 5F:67:12:3E:5C:EC ManufacturerData.Key: 0x004c (76)
+[CHG] Device 5F:67:12:3E:5C:EC ManufacturerData.Value:
+  01 00 00 00 00 00 00 00 00 00 00 00 00 80 00 00  ................
+  00                                               .
+[CHG] Device FC:CF:B6:63:90:E2 RSSI: 0xffffffaf (-81)
+[CHG] Device 7B:17:8E:2F:E1:FD RSSI: 0xffffffaa (-86)
+[CHG] Device 64:B7:08:01:CD:BE RSSI: 0xffffffae (-82)
+[CHG] Device 51:14:CE:27:F3:4A RSSI: 0xffffffb5 (-75)
+[CHG] Device 34:13:43:E3:D9:2D RSSI: 0xffffffaa (-86)
+[CHG] Device 16:16:44:1F:34:4F RSSI: 0xffffffaa (-86)
+[CHG] Device 71:0E:AE:F3:AA:10 RSSI: 0xffffffaa (-86)
+[CHG] Device 04:E4:B6:03:69:CB RSSI: 0xffffffd1 (-47)
+[CHG] Device 64:B7:08:01:CD:BE RSSI: 0xffffffae (-82)
+[CHG] Device 30:ED:A0:F3:D4:AE RSSI: 0xffffffd4 (-44)
+[CHG] Device 73:13:F1:2B:C5:64 RSSI: 0xffffffaf (-81)
+[CHG] Device 0E:30:31:25:E9:2C RSSI: 0xffffffad (-83)
+[CHG] Device 64:B7:08:01:CD:BE RSSI: 0xffffffaa (-86)
+[CHG] Device 58:F1:3F:1F:FE:85 RSSI: 0xffffffaa (-86)
+[CHG] Device 34:13:43:E3:D9:2D RSSI: 0xffffffaa (-86)
+[CHG] Device 34:13:43:E3:D9:2D ManufacturerData.Key: 0x45e5 (17893)
+[CHG] Device 34:13:43:E3:D9:2D ManufacturerData.Value:
+  63 82 7d 19 8a 03 d1 63 24 07 17 e7 8e 77 70 00  c.}....c$....wp.
+  00 d2 fd 34 00 00 21 8c ea 21 dc                 ...4..!..!.
+[CHG] Device 34:13:43:E3:D9:2D ManufacturerData.Key: 0x0211 (529)
+[CHG] Device 34:13:43:E3:D9:2D ManufacturerData.Value:
+  11 02 2d d9 e3 43 6e 00 01 2d 00 34 13 43 e3 d9  ..-..Cn..-.4.C..
+  2c 06 07 08 09 0a 0b 0c 0d 0e 0f                 ,..........
+[CHG] Device 5A:F6:CF:90:8F:EF RSSI: 0xffffffb3 (-77)
+[CHG] Device 40:3D:48:41:4C:F7 RSSI: 0xffffffaa (-86)
+[CHG] Device 64:B7:08:01:CD:BE RSSI: 0xffffffae (-82)
+[CHG] Device 34:13:43:E6:6C:C3 RSSI: 0xffffffaa (-86)
+[CHG] Device 34:13:43:E6:6C:C3 ManufacturerData.Key: 0x45e5 (17893)
+[CHG] Device 34:13:43:E6:6C:C3 ManufacturerData.Value:
+  17 e8 7d 19 8a 03 d1 63 24 07 63 ff 8e 77 70 00  ..}....c$.c..wp.
+  00 d2 fd 34 00 00 21 8c ea 21 5a                 ...4..!..!Z
+[CHG] Device 34:13:43:E6:6C:C3 ManufacturerData.Key: 0x0211 (529)
+[CHG] Device 34:13:43:E6:6C:C3 ManufacturerData.Value:
+  11 22 c3 6c e6 43                                .".l.C
+[CHG] Device 34:13:43:E6:6C:C3 AdvertisingFlags:
+  00                                               .
+[CHG] Device 30:ED:A0:F3:D4:AE RSSI: 0xffffffd3 (-45)
+[CHG] Device 64:B7:08:01:CD:BE RSSI: 0xffffffaf (-81)
+[CHG] Device 7B:17:8E:2F:E1:FD RSSI: 0xffffffae (-82)
+[CHG] Device 34:13:43:E6:6C:C3 RSSI: 0xffffffaa (-86)
+[CHG] Device 34:13:43:E6:6C:C3 ManufacturerData.Key: 0x45e5 (17893)
+[CHG] Device 34:13:43:E6:6C:C3 ManufacturerData.Value:
+  17 e9 7d 19 8a 03 d1 63 24 07 63 82 8e 77 70 00  ..}....c$.c..wp.
+  00 d2 fd 34 00 00 21 8c ea 21 de                 ...4..!..!.
+[CHG] Device 34:13:43:E6:6C:C3 ManufacturerData.Key: 0x0211 (529)
+[CHG] Device 34:13:43:E6:6C:C3 ManufacturerData.Value:
+  11 22 c3 6c e6 43                                .".l.C
+[CHG] Device 57:A3:E5:7B:AA:C9 RSSI: 0xffffffaa (-86)
+[CHG] Device 04:E4:B6:03:69:CB RSSI: 0xffffffd7 (-41)
+[CHG] Device 34:13:43:E3:D9:2D RSSI: 0xffffffaa (-86)
+[CHG] Device 5F:67:12:3E:5C:EC RSSI: 0xffffffb3 (-77)
+[CHG] Device 5F:67:12:3E:5C:EC ManufacturerData.Key: 0x004c (76)
+[CHG] Device 5F:67:12:3E:5C:EC ManufacturerData.Value:
+  01 00 00 00 00 00 00 00 00 00 00 00 00 80 00 00  ................
+  00                                               .
+[CHG] Device D3:16:C9:AA:14:17 RSSI: 0xffffffae (-82)
+[CHG] Device 7B:64:1E:BE:58:B2 RSSI: 0xffffffad (-83)
+[CHG] Device 73:13:F1:2B:C5:64 RSSI: 0xffffffb4 (-76)
+[CHG] Device 30:ED:A0:F3:D4:AE RSSI: 0xffffffd4 (-44)
+[CHG] Device E8:0E:72:B8:D2:AF RSSI: 0xffffffac (-84)
+[CHG] Device 2C:41:A1:F7:62:C9 RSSI: 0xffffffaa (-86)
+[CHG] Device 58:F1:3F:1F:FE:85 RSSI: 0xffffffaf (-81)
+[CHG] Device 71:0E:AE:F3:AA:10 RSSI: 0xffffffaa (-86)
+[CHG] Device 64:B7:08:01:CD:BE RSSI: 0xffffffb0 (-80)
+[CHG] Device 5A:F6:CF:90:8F:EF RSSI: 0xffffffae (-82)
+[CHG] Device 04:E4:B6:03:69:CB RSSI: 0xffffffdc (-36)
+[CHG] Device 80:F3:DA:1C:20:3A RSSI: 0xffffffad (-83)
+[CHG] Device 7B:17:8E:2F:E1:FD RSSI: 0xffffffae (-82)
+[CHG] Device 30:ED:A0:F3:D4:AE RSSI: 0xffffffd5 (-43)
+[CHG] Device 0E:30:31:25:E9:2C RSSI: 0xffffffb5 (-75)
+[CHG] Device 51:14:CE:27:F3:4A RSSI: 0xffffffaf (-81)
+[CHG] Device 40:3D:48:41:4C:F7 RSSI: 0xffffffaa (-86)
+[CHG] Device 34:13:43:E3:D9:2D RSSI: 0xffffffaa (-86)
+[CHG] Device 34:13:43:E3:D9:2D ManufacturerData.Key: 0x45e5 (17893)
+[CHG] Device 34:13:43:E3:D9:2D ManufacturerData.Value:
+  63 83 7d 19 8a 03 d3 63 24 07 17 e8 8e 77 70 00  c.}....c$....wp.
+  00 d2 fd 34 00 00 21 8c ea 21 e0                 ...4..!..!.
+[CHG] Device 34:13:43:E3:D9:2D ManufacturerData.Key: 0x0211 (529)
+[CHG] Device 34:13:43:E3:D9:2D ManufacturerData.Value:
+  11 02 2d d9 e3 43 6e 00 01 2d 00 34 13 43 e3 d9  ..-..Cn..-.4.C..
+  2c 06 07 08 09 0a 0b 0c 0d 0e 0f                 ,..........
+[CHG] Device 71:0E:AE:F3:AA:10 RSSI: 0xffffffaa (-86)
+[CHG] Device 73:13:F1:2B:C5:64 RSSI: 0xffffffad (-83)
+[CHG] Device 64:B7:08:01:CD:BE RSSI: 0xffffffaf (-81)
+[CHG] Device 57:A3:E5:7B:AA:C9 RSSI: 0xffffffaa (-86)
+[CHG] Device 30:ED:A0:F3:D4:AE RSSI: 0xffffffd5 (-43)
+[CHG] Device 0E:30:31:25:E9:2C RSSI: 0xffffffae (-82)
+[CHG] Device 34:13:43:E6:6C:C3 RSSI: 0xffffffaa (-86)
+[CHG] Device 34:13:43:E6:6C:C3 ManufacturerData.Key: 0x45e5 (17893)
+[CHG] Device 34:13:43:E6:6C:C3 ManufacturerData.Value:
+  17 e9 7d 19 8a 03 d1 63 24 07 63 82 8e 77 70 00  ..}....c$.c..wp.
+  00 d2 fd 34 00 00 21 8c ea 21 de                 ...4..!..!.
+[CHG] Device 34:13:43:E6:6C:C3 ManufacturerData.Key: 0x0211 (529)
+[CHG] Device 34:13:43:E6:6C:C3 ManufacturerData.Value:
+  11 02 c3 6c e6 43 6e 00 01 c3 00 34 13 43 e6 6c  ...l.Cn....4.C.l
+  c2 06 07 08 09 0a 0b 0c 0d 0e 0f                 ...........
+[CHG] Device 34:13:43:E6:6C:C3 AdvertisingFlags:
+  05                                               .
+[CHG] Device 04:E4:B6:03:69:CB RSSI: 0xffffffd1 (-47)
+[CHG] Device 5F:67:12:3E:5C:EC RSSI: 0xffffffad (-83)
+[CHG] Device 5F:67:12:3E:5C:EC ManufacturerData.Key: 0x004c (76)
+[CHG] Device 5F:67:12:3E:5C:EC ManufacturerData.Value:
+  10 07 3e 1f 74 dc a7 10 78                       ..>.t...x
+[CHG] Device 5F:94:8D:2B:D5:5A RSSI: 0xffffffaa (-86)
+[CHG] Device 7B:64:1E:BE:58:B2 RSSI: 0xffffffaa (-86)
+[CHG] Device 64:B7:08:01:CD:BE RSSI: 0xffffffae (-82)
+[CHG] Device 71:0E:AE:F3:AA:10 RSSI: 0xffffffaa (-86)
+[CHG] Device 51:14:CE:27:F3:4A RSSI: 0xffffffab (-85)
+[CHG] Device 0E:30:31:25:E9:2C RSSI: 0xffffffae (-82)
+[CHG] Device 73:13:F1:2B:C5:64 RSSI: 0xffffffb7 (-73)
+[CHG] Device 64:B7:08:01:CD:BE RSSI: 0xffffffad (-83)
+[NEW] Device D1:2C:7A:65:60:D1 D1-2C-7A-65-60-D1
+[CHG] Device 34:13:43:E3:D9:2D RSSI: 0xffffffaa (-86)
+[CHG] Device 04:E4:B6:03:69:CB RSSI: 0xffffffd8 (-40)
+[CHG] Device 58:F1:3F:1F:FE:85 RSSI: 0xffffffb3 (-77)
+[CHG] Device 34:13:43:E3:D9:2D RSSI: 0xffffffaa (-86)
+[CHG] Device 0E:30:31:25:E9:2C RSSI: 0xffffffae (-82)
+[CHG] Device 64:B7:08:01:CD:BE RSSI: 0xffffffaa (-86)
+[CHG] Device 7B:17:8E:2F:E1:FD RSSI: 0xffffffb3 (-77)
+[CHG] Device 80:F3:DA:1D:33:AE RSSI: 0xffffffaa (-86)
+[CHG] Device 5A:F6:CF:90:8F:EF RSSI: 0xffffffad (-83)
+[CHG] Device 51:14:CE:27:F3:4A RSSI: 0xffffffb3 (-77)
+[CHG] Device 73:13:F1:2B:C5:64 RSSI: 0xffffffab (-85)
+[CHG] Device 04:E4:B6:03:69:CB RSSI: 0xffffffd0 (-48)
+[CHG] Device 2C:41:A1:F7:62:C9 RSSI: 0xffffffaa (-86)
+[CHG] Device 30:ED:A0:F3:D4:AE RSSI: 0xffffffd4 (-44)
+[CHG] Device 63:8E:9D:C5:4E:B5 RSSI: 0xffffffaa (-86)
+[CHG] Device 04:E4:B6:03:69:CB RSSI: 0xffffffd7 (-41)
+[CHG] Device 5A:F6:CF:90:8F:EF RSSI: 0xffffffac (-84)
+[CHG] Device 64:B7:08:01:CD:BE RSSI: 0xffffffaa (-86)
+[CHG] Device 80:F3:DA:1C:20:3A RSSI: 0xffffffab (-85)
+[CHG] Device 57:A3:E5:7B:AA:C9 RSSI: 0xffffffaa (-86)
+[CHG] Device 0E:30:31:25:E9:2C RSSI: 0xffffffb6 (-74)
+[CHG] Device 5F:67:12:3E:5C:EC RSSI: 0xffffffb0 (-80)
+[CHG] Device E4:B6:D6:A2:10:69 RSSI: 0xffffffaa (-86)
+[CHG] Device 7B:64:1E:BE:58:B2 RSSI: 0xffffffb4 (-76)
+[CHG] Device 64:B7:08:01:CD:BE RSSI: 0xffffffaa (-86)
+[CHG] Device 30:ED:A0:F3:D4:AE RSSI: 0xffffffd4 (-44)
+[CHG] Device 71:0E:AE:F3:AA:10 RSSI: 0xffffffaa (-86)
+[NEW] Device 34:13:43:E3:41:E9 EB1F8DAE84C6
+[CHG] Device 04:E4:B6:03:69:CB RSSI: 0xffffffdc (-36)
+[CHG] Device 34:13:43:E6:6C:C3 RSSI: 0xffffffaa (-86)
+[CHG] Device 34:13:43:E6:6C:C3 ManufacturerData.Key: 0x45e5 (17893)
+[CHG] Device 34:13:43:E6:6C:C3 ManufacturerData.Value:
+  17 ec 7d 19 8a 03 d5 63 24 07 63 85 8e 77 70 00  ..}....c$.c..wp.
+  00 d2 fd 34 00 00 21 8c ea 21 e8                 ...4..!..!.
+[CHG] Device 34:13:43:E6:6C:C3 ManufacturerData.Key: 0x0211 (529)
+[CHG] Device 34:13:43:E6:6C:C3 ManufacturerData.Value:
+  11 02 c3 6c e6 43 6e 00 01 c3 00 34 13 43 e6 6c  ...l.Cn....4.C.l
+  c2 06 07 08 09 0a 0b 0c 0d 0e 0f                 ...........
+[CHG] Device 34:13:43:E6:6C:C3 AdvertisingFlags:
+  00                                               .
+[CHG] Device 64:B7:08:01:CD:BE RSSI: 0xffffffb0 (-80)
+[CHG] Device 73:13:F1:2B:C5:64 RSSI: 0xffffffad (-83)
+[CHG] Device 5A:F6:CF:90:8F:EF RSSI: 0xffffffb2 (-78)
+[CHG] Device 30:ED:A0:F3:D4:AE RSSI: 0xffffffd3 (-45)
+[CHG] Device 40:3D:48:41:4C:F7 RSSI: 0xffffffaa (-86)
+[CHG] Device 64:B7:08:01:CD:BE RSSI: 0xffffffaa (-86)
+[CHG] Device 58:F1:3F:1F:FE:85 RSSI: 0xffffffb7 (-73)
+[CHG] Device 34:13:43:E3:D9:2D RSSI: 0xffffffaa (-86)
+[CHG] Device 34:13:43:E3:D9:2D ManufacturerData.Key: 0x45e5 (17893)
+[CHG] Device 34:13:43:E3:D9:2D ManufacturerData.Value:
+  63 83 7d 19 8a 03 d3 63 24 07 17 e8 8e 77 70 00  c.}....c$....wp.
+  00 d2 fd 34 00 00 21 8c ea 21 e0                 ...4..!..!.
+[CHG] Device 34:13:43:E3:D9:2D ManufacturerData.Key: 0x0211 (529)
+[CHG] Device 34:13:43:E3:D9:2D ManufacturerData.Value:
+  11 22 2d d9 e3 43                                ."-..C
+[CHG] Device 34:13:43:E3:D9:2D AdvertisingFlags:
+  05                                               .
+[CHG] Device 3A:ED:3B:6B:E7:6D RSSI: 0xffffffaa (-86)
+[CHG] Device 64:B7:08:01:CD:BE RSSI: 0xffffffad (-83)
+[CHG] Device 40:01:00:F1:E7:A0 RSSI: 0xffffffaa (-86)
+[CHG] Device 04:E4:B6:03:69:CB RSSI: 0xffffffd0 (-48)
+[CHG] Device 30:ED:A0:F3:D4:AE RSSI: 0xffffffd3 (-45)
+[CHG] Device 5F:67:12:3E:5C:EC RSSI: 0xffffffb2 (-78)
+[CHG] Device 5F:67:12:3E:5C:EC ManufacturerData.Key: 0x004c (76)
+[CHG] Device 5F:67:12:3E:5C:EC ManufacturerData.Value:
+  01 00 00 00 00 00 00 00 00 00 00 00 00 80 00 00  ................
+  00                                               .
+[CHG] Device 0E:30:31:25:E9:2C RSSI: 0xffffffae (-82)
+[CHG] Device 73:13:F1:2B:C5:64 RSSI: 0xffffffb0 (-80)
+[CHG] Device 34:13:43:E3:D9:2D RSSI: 0xffffffaa (-86)
+[CHG] Device 34:13:43:E3:D9:2D ManufacturerData.Key: 0x45e5 (17893)
+[CHG] Device 34:13:43:E3:D9:2D ManufacturerData.Value:
+  63 86 7d 19 8a 03 d6 63 24 07 17 ec 8e 77 70 00  c.}....c$....wp.
+  00 d2 fd 34 00 00 21 8c ea 21 ea                 ...4..!..!.
+[CHG] Device 34:13:43:E3:D9:2D ManufacturerData.Key: 0x0211 (529)
+[CHG] Device 34:13:43:E3:D9:2D ManufacturerData.Value:
+  11 22 2d d9 e3 43                                ."-..C
+[CHG] Device 34:13:43:E3:D9:2D AdvertisingFlags:
+  00                                               .
+[CHG] Device F2:4B:63:EA:1F:03 RSSI: 0xffffffaa (-86)
+[CHG] Device 30:ED:A0:F3:D4:AE RSSI: 0xffffffd3 (-45)
+[CHG] Device 5A:F6:CF:90:8F:EF RSSI: 0xffffffaa (-86)
+[CHG] Device E6:69:A2:FF:55:30 RSSI: 0xffffffaf (-81)
+[CHG] Device D8:51:54:B3:E6:AF RSSI: 0xffffffab (-85)
+[CHG] Device 04:E4:B6:03:69:CB RSSI: 0xffffffd7 (-41)
+[CHG] Device 0E:30:31:25:E9:2C RSSI: 0xffffffae (-82)
+[CHG] Device 64:B7:08:01:CD:BE RSSI: 0xffffffaf (-81)
+[CHG] Device 7B:17:8E:2F:E1:FD RSSI: 0xffffffb1 (-79)
+[CHG] Device 64:B7:08:01:CD:BE RSSI: 0xffffffaa (-86)
+[CHG] Device 34:13:43:E3:D9:2D RSSI: 0xffffffaa (-86)
+[CHG] Device 34:13:43:E3:D9:2D AdvertisingFlags:
+  05                                               .
+[CHG] Device 30:ED:A0:F3:D4:AE RSSI: 0xffffffd3 (-45)
+[CHG] Device 51:14:CE:27:F3:4A RSSI: 0xffffffb1 (-79)
+[CHG] Device F3:32:89:BA:95:60 RSSI: 0xffffffaa (-86)
+[CHG] Device 57:A3:E5:7B:AA:C9 RSSI: 0xffffffaa (-86)
+[CHG] Device 73:13:F1:2B:C5:64 RSSI: 0xffffffb5 (-75)
+[CHG] Device CC:0C:7C:1E:2F:98 RSSI: 0xffffffb1 (-79)
+[CHG] Device 04:E4:B6:03:69:CB RSSI: 0xffffffdc (-36)
+[CHG] Device 58:F1:3F:1F:FE:85 RSSI: 0xffffffb6 (-74)
+[CHG] Device 5F:67:12:3E:5C:EC RSSI: 0xffffffb3 (-77)
+[CHG] Device 5F:67:12:3E:5C:EC ManufacturerData.Key: 0x004c (76)
+[CHG] Device 5F:67:12:3E:5C:EC ManufacturerData.Value:
+  10 07 3e 1f 74 dc a7 10 78                       ..>.t...x
+[CHG] Device 30:ED:A0:F3:D4:AE RSSI: 0xffffffd5 (-43)
+[CHG] Device 7B:64:1E:BE:58:B2 RSSI: 0xffffffad (-83)
+[CHG] Device 64:B7:08:01:CD:BE RSSI: 0xffffffaa (-86)
+[CHG] Device D7:E2:23:91:D7:1A RSSI: 0xffffffae (-82)
+[CHG] Device 34:13:43:E3:D9:2D RSSI: 0xffffffaa (-86)
+[CHG] Device 34:13:43:E3:D9:2D AdvertisingFlags:
+  00                                               .
+[CHG] Device 80:F3:DA:1C:20:3A RSSI: 0xffffffab (-85)
+[CHG] Device 0E:30:31:25:E9:2C RSSI: 0xffffffad (-83)
+[CHG] Device 34:13:43:E3:D9:2D RSSI: 0xffffffaa (-86)
+[CHG] Device 34:13:43:E3:D9:2D ManufacturerData.Key: 0x45e5 (17893)
+[CHG] Device 34:13:43:E3:D9:2D ManufacturerData.Value:
+  63 87 7d 19 8a 03 d7 63 24 07 17 ed 8e 77 70 00  c.}....c$....wp.
+  00 d2 fd 34 00 00 21 8c ea 21 ed                 ...4..!..!.
+[CHG] Device 34:13:43:E3:D9:2D ManufacturerData.Key: 0x0211 (529)
+[CHG] Device 34:13:43:E3:D9:2D ManufacturerData.Value:
+  11 22 2d d9 e3 43                                ."-..C
+[CHG] Device 64:B7:08:01:CD:BE RSSI: 0xffffffaf (-81)
+[CHG] Device 30:ED:A0:F3:D4:AE RSSI: 0xffffffd5 (-43)
+[CHG] Device 34:13:43:E6:6C:C3 RSSI: 0xffffffaa (-86)
+[CHG] Device 34:13:43:E6:6C:C3 ManufacturerData.Key: 0x45e5 (17893)
+[CHG] Device 34:13:43:E6:6C:C3 ManufacturerData.Value:
+  17 ed 7d 19 8a 03 d6 63 24 07 63 86 8e 77 70 00  ..}....c$.c..wp.
+  00 d2 fd 34 00 00 21 8c ea 21 eb                 ...4..!..!.
+[CHG] Device 34:13:43:E6:6C:C3 ManufacturerData.Key: 0x0211 (529)
+[CHG] Device 34:13:43:E6:6C:C3 ManufacturerData.Value:
+  11 02 c3 6c e6 43 6e 00 01 c3 00 34 13 43 e6 6c  ...l.Cn....4.C.l
+  c2 06 07 08 09 0a 0b 0c 0d 0e 0f                 ...........
+[CHG] Device 80:F3:DA:1E:B3:BE RSSI: 0xffffffaa (-86)
+[CHG] Device 64:B7:08:01:CD:BE RSSI: 0xffffffb0 (-80)
+[CHG] Device 63:8E:9D:C5:4E:B5 RSSI: 0xffffffab (-85)
+[CHG] Device 58:F1:3F:1F:FE:85 RSSI: 0xffffffb3 (-77)
+[CHG] Device 30:ED:A0:F3:D4:AE RSSI: 0xffffffd4 (-44)
+[CHG] Device 5A:F6:CF:90:8F:EF RSSI: 0xffffffaa (-86)
+[CHG] Device 0E:30:31:25:E9:2C RSSI: 0xffffffae (-82)
+[CHG] Device 51:14:CE:27:F3:4A RSSI: 0xffffffaa (-86)
+[CHG] Device 5F:67:12:3E:5C:EC RSSI: 0xffffffb1 (-79)
+[CHG] Device 5F:67:12:3E:5C:EC ManufacturerData.Key: 0x004c (76)
+[CHG] Device 5F:67:12:3E:5C:EC ManufacturerData.Value:
+  01 00 00 00 00 00 00 00 00 00 00 00 00 80 00 00  ................
+  00                                               .
+[CHG] Device 64:B7:08:01:CD:BE RSSI: 0xffffffaa (-86)
+[CHG] Device 7B:64:1E:BE:58:B2 RSSI: 0xffffffb0 (-80)
+[CHG] Device 04:E4:B6:03:69:CB RSSI: 0xffffffd7 (-41)
+[CHG] Device 2C:41:A1:F7:62:C9 RSSI: 0xffffffaa (-86)
+[CHG] Device 30:ED:A0:F3:D4:AE RSSI: 0xffffffd4 (-44)
+[CHG] Device 73:13:F1:2B:C5:64 RSSI: 0xffffffb4 (-76)
+[CHG] Device 64:B7:08:01:CD:BE RSSI: 0xffffffae (-82)
+[CHG] Device FC:CF:B6:63:90:E2 RSSI: 0xffffffb6 (-74)
+[CHG] Device 64:B7:08:01:CD:BE RSSI: 0xffffffaf (-81)
+[CHG] Device 7B:17:8E:2F:E1:FD RSSI: 0xffffffb2 (-78)
+[CHG] Device 64:B7:08:01:CD:BE RSSI: 0xffffffaa (-86)
+[CHG] Device 63:8E:9D:C5:4E:B5 RSSI: 0xffffffaa (-86)
+[CHG] Device 40:3D:48:41:4C:F7 RSSI: 0xffffffaa (-86)
+[CHG] Device 5A:F6:CF:90:8F:EF RSSI: 0xffffffae (-82)
+[CHG] Device 51:14:CE:27:F3:4A RSSI: 0xffffffb5 (-75)
+[CHG] Device 0E:30:31:25:E9:2C RSSI: 0xffffffb5 (-75)
+[CHG] Device 64:B7:08:01:CD:BE RSSI: 0xffffffae (-82)
+[CHG] Device CD:EB:05:9F:1D:DB RSSI: 0xffffffaa (-86)
+[CHG] Device 73:13:F1:2B:C5:64 RSSI: 0xffffffaa (-86)
+[CHG] Device 30:ED:A0:F3:D4:AE RSSI: 0xffffffd4 (-44)
+[CHG] Device 5F:67:12:3E:5C:EC RSSI: 0xffffffb1 (-79)
+[CHG] Device 5F:67:12:3E:5C:EC ManufacturerData.Key: 0x004c (76)
+[CHG] Device 5F:67:12:3E:5C:EC ManufacturerData.Value:
+  10 07 3e 1f 74 dc a7 10 78                       ..>.t...x
+[CHG] Device 0E:30:31:25:E9:2C RSSI: 0xffffffb4 (-76)
+[CHG] Device 64:B7:08:01:CD:BE RSSI: 0xffffffad (-83)
+[CHG] Device 38:A5:C9:C3:BD:F8 RSSI: 0xffffffaa (-86)
+[CHG] Device 04:E4:B6:03:69:CB RSSI: 0xffffffd7 (-41)
+[CHG] Device 7B:17:8E:2F:E1:FD RSSI: 0xffffffaa (-86)
+[CHG] Device 64:B7:08:01:CD:BE RSSI: 0xffffffad (-83)
+[CHG] Device D3:16:C9:AA:14:17 RSSI: 0xffffffb2 (-78)
+[CHG] Device 30:ED:A0:F3:D4:AE RSSI: 0xffffffd4 (-44)
+[CHG] Device 51:14:CE:27:F3:4A RSSI: 0xffffffaf (-81)
+[CHG] Device 5A:F6:CF:90:8F:EF RSSI: 0xffffffb2 (-78)
+[CHG] Device 0E:30:31:25:E9:2C RSSI: 0xffffffad (-83)
+[CHG] Device 40:01:00:F1:E7:A0 RSSI: 0xffffffaa (-86)
+[CHG] Device 80:F3:DA:1C:20:3A RSSI: 0xffffffaa (-86)
+[CHG] Device 64:B7:08:01:CD:BE RSSI: 0xffffffaa (-86)
+[CHG] Device 73:13:F1:2B:C5:64 RSSI: 0xffffffb7 (-73)
+[CHG] Device 58:F1:3F:1F:FE:85 RSSI: 0xffffffb7 (-73)
+[CHG] Device 64:B7:08:01:CD:BE RSSI: 0xffffffad (-83)
+[CHG] Device 30:ED:A0:F3:D4:AE RSSI: 0xffffffd3 (-45)
+[CHG] Device 34:13:43:E6:6C:C3 RSSI: 0xffffffaa (-86)
+[CHG] Device 34:13:43:E6:6C:C3 ManufacturerData.Key: 0x45e5 (17893)
+[CHG] Device 34:13:43:E6:6C:C3 ManufacturerData.Value:
+  17 ed 7d 19 8a 03 d6 63 24 07 63 86 8e 77 70 00  ..}....c$.c..wp.
+  00 d2 fd 34 00 00 21 8c ea 21 eb                 ...4..!..!.
+[CHG] Device 34:13:43:E6:6C:C3 ManufacturerData.Key: 0x0211 (529)
+[CHG] Device 34:13:43:E6:6C:C3 ManufacturerData.Value:
+  11 22 c3 6c e6 43                                .".l.C
+[CHG] Device 34:13:43:E6:6C:C3 AdvertisingFlags:
+  05                                               .
+[CHG] Device 04:E4:B6:03:69:CB RSSI: 0xffffffdc (-36)
+[CHG] Device 34:13:43:E3:D9:2D RSSI: 0xffffffaa (-86)
+[CHG] Device 34:13:43:E3:D9:2D ManufacturerData.Key: 0x45e5 (17893)
+[CHG] Device 34:13:43:E3:D9:2D ManufacturerData.Value:
+  63 89 7d 19 8a 03 d8 63 24 07 17 ef 8e 77 70 00  c.}....c$....wp.
+  00 d2 fd 34 00 00 21 8c ea 21 f2                 ...4..!..!.
+[CHG] Device 34:13:43:E3:D9:2D ManufacturerData.Key: 0x0211 (529)
+[CHG] Device 34:13:43:E3:D9:2D ManufacturerData.Value:
+  11 22 2d d9 e3 43                                ."-..C
+[CHG] Device DE:DE:71:B2:64:7D RSSI: 0xffffffb0 (-80)
+[CHG] Device 0E:30:31:25:E9:2C RSSI: 0xffffffad (-83)
+[CHG] Device 57:A3:E5:7B:AA:C9 RSSI: 0xffffffaa (-86)
+[CHG] Device 64:B7:08:01:CD:BE RSSI: 0xffffffb0 (-80)
+[CHG] Device 51:14:CE:27:F3:4A RSSI: 0xffffffb8 (-72)
+[CHG] Device 5F:67:12:3E:5C:EC RSSI: 0xffffffb3 (-77)
+[CHG] Device 5F:67:12:3E:5C:EC ManufacturerData.Key: 0x004c (76)
+[CHG] Device 5F:67:12:3E:5C:EC ManufacturerData.Value:
+  01 00 00 00 00 00 00 00 00 00 00 00 00 80 00 00  ................
+  00                                               .
+[CHG] Device 7B:64:1E:BE:58:B2 RSSI: 0xffffffab (-85)
+[CHG] Device 64:B7:08:01:CD:BE RSSI: 0xffffffad (-83)
+[CHG] Device 5A:F6:CF:90:8F:EF RSSI: 0xffffffaa (-86)
+[CHG] Device 2C:41:A1:F7:62:C9 RSSI: 0xffffffaa (-86)
+[CHG] Device 58:F1:3F:1F:FE:85 RSSI: 0xffffffaa (-86)
+[CHG] Device 30:ED:A0:F3:D4:AE RSSI: 0xffffffd4 (-44)
+[CHG] Device 7B:17:8E:2F:E1:FD RSSI: 0xffffffab (-85)
+[CHG] Device 0E:30:31:25:E9:2C RSSI: 0xffffffad (-83)
+[CHG] Device 51:14:CE:27:F3:4A RSSI: 0xffffffb0 (-80)
+[CHG] Device 34:13:43:E6:6C:C3 RSSI: 0xffffffaa (-86)
+[CHG] Device 34:13:43:E6:6C:C3 ManufacturerData.Key: 0x45e5 (17893)
+[CHG] Device 34:13:43:E6:6C:C3 ManufacturerData.Value:
+  17 ed 7d 19 8a 03 d6 63 24 07 63 86 8e 77 70 00  ..}....c$.c..wp.
+  00 d2 fd 34 00 00 21 8c ea 21 eb                 ...4..!..!.
+[CHG] Device 34:13:43:E6:6C:C3 ManufacturerData.Key: 0x0211 (529)
+[CHG] Device 34:13:43:E6:6C:C3 ManufacturerData.Value:
+  11 02 c3 6c e6 43 6e 00 01 c3 00 34 13 43 e6 6c  ...l.Cn....4.C.l
+  c2 06 07 08 09 0a 0b 0c 0d 0e 0f                 ...........
+[CHG] Device 34:13:43:E3:D9:2D RSSI: 0xffffffaa (-86)
+[CHG] Device 3A:ED:3B:6B:E7:6D RSSI: 0xffffffaa (-86)
+[CHG] Device 64:B7:08:01:CD:BE RSSI: 0xffffffad (-83)
+[CHG] Device 30:ED:A0:F3:D4:AE RSSI: 0xffffffd5 (-43)
+[CHG] Device 57:A3:E5:7B:AA:C9 RSSI: 0xffffffaa (-86)
+[CHG] Device 73:13:F1:2B:C5:64 RSSI: 0xffffffb7 (-73)
+[CHG] Device 0E:30:31:25:E9:2C RSSI: 0xffffffad (-83)
+[CHG] Device 5A:F6:CF:90:8F:EF RSSI: 0xffffffad (-83)
+[CHG] Device 58:F1:3F:1F:FE:85 RSSI: 0xffffffb7 (-73)
+[CHG] Device 5F:67:12:3E:5C:EC RSSI: 0xffffffb3 (-77)
+[CHG] Device 5F:67:12:3E:5C:EC ManufacturerData.Key: 0x004c (76)
+[CHG] Device 5F:67:12:3E:5C:EC ManufacturerData.Value:
+  10 07 3e 1f 74 dc a7 10 78                       ..>.t...x
+[CHG] Device 5F:94:8D:2B:D5:5A RSSI: 0xffffffaa (-86)
+[CHG] Device 7B:64:1E:BE:58:B2 RSSI: 0xffffffb4 (-76)
+[CHG] Device 64:B7:08:01:CD:BE RSSI: 0xffffffaa (-86)
+[CHG] Device 30:ED:A0:F3:D4:AE RSSI: 0xffffffd5 (-43)
+[CHG] Device 34:13:43:E6:6C:C3 RSSI: 0xffffffaa (-86)
+[CHG] Device 34:13:43:E6:6C:C3 ManufacturerData.Key: 0x45e5 (17893)
+[CHG] Device 34:13:43:E6:6C:C3 ManufacturerData.Value:
+  17 f1 7d 19 8a 03 d9 63 24 07 63 8a 8e 77 70 00  ..}....c$.c..wp.
+  00 d2 fd 34 00 00 21 8c ea 21 f6                 ...4..!..!.
+[CHG] Device 34:13:43:E6:6C:C3 ManufacturerData.Key: 0x0211 (529)
+[CHG] Device 34:13:43:E6:6C:C3 ManufacturerData.Value:
+  11 02 c3 6c e6 43 6e 00 01 c3 00 34 13 43 e6 6c  ...l.Cn....4.C.l
+  c2 06 07 08 09 0a 0b 0c 0d 0e 0f                 ...........
+[CHG] Device 34:13:43:E6:6C:C3 AdvertisingFlags:
+  00                                               .
+[CHG] Device 57:BA:FA:37:A1:85 RSSI: 0xffffffaa (-86)
+[CHG] Device 64:B7:08:01:CD:BE RSSI: 0xffffffae (-82)
+[CHG] Device 0E:30:31:25:E9:2C RSSI: 0xffffffae (-82)
+[CHG] Device 64:B7:08:01:CD:BE RSSI: 0xffffffaf (-81)
+[CHG] Device 04:E4:B6:03:69:CB RSSI: 0xffffffd0 (-48)
+[CHG] Device 73:13:F1:2B:C5:64 RSSI: 0xffffffb3 (-77)
+[CHG] Device 64:B7:08:01:CD:BE RSSI: 0xffffffaf (-81)
+[CHG] Device 30:ED:A0:F3:D4:AE RSSI: 0xffffffd5 (-43)
+[CHG] Device 0E:30:31:25:E9:2C RSSI: 0xffffffb5 (-75)
+[CHG] Device 64:B7:08:01:CD:BE RSSI: 0xffffffaa (-86)
+[CHG] Device 5A:F6:CF:90:8F:EF RSSI: 0xffffffb2 (-78)
+[CHG] Device 57:A3:E5:7B:AA:C9 RSSI: 0xffffffaa (-86)
+[CHG] Device 34:13:43:E3:D9:2D RSSI: 0xffffffaa (-86)
+[CHG] Device 34:13:43:E3:D9:2D ManufacturerData.Key: 0x45e5 (17893)
+[CHG] Device 34:13:43:E3:D9:2D ManufacturerData.Value:
+  63 8a 7d 19 8a 03 d9 63 24 07 17 ef 8e 77 70 00  c.}....c$....wp.
+  00 d2 fd 34 00 00 21 8c ea 21 f4                 ...4..!..!.
+[CHG] Device 34:13:43:E3:D9:2D ManufacturerData.Key: 0x0211 (529)
+[CHG] Device 34:13:43:E3:D9:2D ManufacturerData.Value:
+  11 22 2d d9 e3 43                                ."-..C
+[CHG] Device 7B:17:8E:2F:E1:FD RSSI: 0xffffffaa (-86)
+[CHG] Device 64:B7:08:01:CD:BE RSSI: 0xffffffad (-83)
+[CHG] Device 30:ED:A0:F3:D4:AE RSSI: 0xffffffd4 (-44)
+[CHG] Device 34:13:43:E3:D9:2D RSSI: 0xffffffaa (-86)
+[CHG] Device 34:13:43:E3:D9:2D ManufacturerData.Key: 0x45e5 (17893)
+[CHG] Device 34:13:43:E3:D9:2D ManufacturerData.Value:
+  63 8b 7d 19 8a 03 db 63 24 07 17 f1 8e 77 70 00  c.}....c$....wp.
+  00 d2 fd 34 00 00 21 8c ea 21 f9                 ...4..!..!.
+[CHG] Device 34:13:43:E3:D9:2D ManufacturerData.Key: 0x0211 (529)
+[CHG] Device 34:13:43:E3:D9:2D ManufacturerData.Value:
+  11 22 2d d9 e3 43                                ."-..C
+[CHG] Device 51:14:CE:27:F3:4A RSSI: 0xffffffb7 (-73)
+[CHG] Device 04:E4:B6:03:69:CB RSSI: 0xffffffd7 (-41)
+[CHG] Device 5F:67:12:3E:5C:EC RSSI: 0xffffffb5 (-75)
+[CHG] Device 5F:67:12:3E:5C:EC ManufacturerData.Key: 0x004c (76)
+[CHG] Device 5F:67:12:3E:5C:EC ManufacturerData.Value:
+  01 00 00 00 00 00 00 00 00 00 00 00 00 80 00 00  ................
+  00                                               .
+[CHG] Device 7B:64:1E:BE:58:B2 RSSI: 0xffffffb5 (-75)
+[CHG] Device 40:01:00:F1:E7:A0 RSSI: 0xffffffab (-85)
+[CHG] Device 64:B7:08:01:CD:BE RSSI: 0xffffffaa (-86)
+[CHG] Device 57:BA:FA:37:A1:85 RSSI: 0xffffffaa (-86)
+[CHG] Device 30:ED:A0:F3:D4:AE RSSI: 0xffffffd4 (-44)
+[CHG] Device 64:B7:08:01:CD:BE RSSI: 0xffffffaf (-81)
+[CHG] Device 0E:30:31:25:E9:2C RSSI: 0xffffffad (-83)
+[CHG] Device 5A:F6:CF:90:8F:EF RSSI: 0xffffffaa (-86)
+[CHG] Device 04:E4:B6:03:69:CB RSSI: 0xffffffd1 (-47)
+[CHG] Device C8:3F:ED:EE:5B:C8 RSSI: 0xffffffab (-85)
+[CHG] Device 30:ED:A0:F3:D4:AE RSSI: 0xffffffd3 (-45)
+[CHG] Device 64:B7:08:01:CD:BE RSSI: 0xffffffad (-83)
+[CHG] Device EA:D1:69:D6:AE:60 RSSI: 0xffffffab (-85)
+[CHG] Device 5F:67:12:3E:5C:EC RSSI: 0xffffffb5 (-75)
+[CHG] Device 5F:67:12:3E:5C:EC ManufacturerData.Key: 0x004c (76)
+[CHG] Device 5F:67:12:3E:5C:EC ManufacturerData.Value:
+  01 00 00 00 00 00 00 00 00 00 00 00 00 80 00 00  ................
+  00                                               .
+[CHG] Device 58:F1:3F:1F:FE:85 RSSI: 0xffffffb2 (-78)
+[CHG] Device 0E:30:31:25:E9:2C RSSI: 0xffffffb0 (-80)
+[CHG] Device 5F:94:8D:2B:D5:5A RSSI: 0xffffffaa (-86)
+[CHG] Device 64:B7:08:01:CD:BE RSSI: 0xffffffaa (-86)
+[CHG] Device 30:ED:A0:F3:D4:AE RSSI: 0xffffffd3 (-45)
+[CHG] Device 40:01:00:F1:E7:A0 RSSI: 0xffffffaa (-86)
+[CHG] Device 80:F3:DA:1D:33:AE RSSI: 0xffffffab (-85)
+[CHG] Device 7B:17:8E:2F:E1:FD RSSI: 0xffffffae (-82)
+[CHG] Device 64:B7:08:01:CD:BE RSSI: 0xffffffac (-84)
+[CHG] Device 0E:30:31:25:E9:2C RSSI: 0xffffffb1 (-79)
+[CHG] Device 51:14:CE:27:F3:4A RSSI: 0xffffffb7 (-73)
+[CHG] Device 30:ED:A0:F3:D4:AE RSSI: 0xffffffd3 (-45)
+[CHG] Device F2:4B:63:EA:1F:03 RSSI: 0xffffffaa (-86)
+[CHG] Device 63:8E:9D:C5:4E:B5 RSSI: 0xffffffab (-85)
+[CHG] Device 73:13:F1:2B:C5:64 RSSI: 0xffffffb7 (-73)
+[CHG] Device E6:69:A2:FF:55:30 RSSI: 0xffffffae (-82)
+[CHG] Device 64:B7:08:01:CD:BE RSSI: 0xffffffac (-84)
+[CHG] Device 0E:30:31:25:E9:2C RSSI: 0xffffffaa (-86)
+[CHG] Device 40:3D:48:41:4C:F7 RSSI: 0xffffffaa (-86)
+[CHG] Device 34:13:43:E6:6C:C3 RSSI: 0xffffffaa (-86)
+[CHG] Device 34:13:43:E6:6C:C3 ManufacturerData.Key: 0x45e5 (17893)
+[CHG] Device 34:13:43:E6:6C:C3 ManufacturerData.Value:
+  17 f1 7d 19 8a 03 d9 63 24 07 63 8a 8e 77 70 00  ..}....c$.c..wp.
+  00 d2 fd 34 00 00 21 8c ea 21 f6                 ...4..!..!.
+[CHG] Device 34:13:43:E6:6C:C3 ManufacturerData.Key: 0x0211 (529)
+[CHG] Device 34:13:43:E6:6C:C3 ManufacturerData.Value:
+  11 22 c3 6c e6 43                                .".l.C
+[CHG] Device 34:13:43:E6:6C:C3 AdvertisingFlags:
+  05                                               .
+[CHG] Device 64:B7:08:01:CD:BE RSSI: 0xffffffaf (-81)
+[CHG] Device 57:A3:E5:7B:AA:C9 RSSI: 0xffffffaa (-86)
+[CHG] Device 30:ED:A0:F3:D4:AE RSSI: 0xffffffd4 (-44)
+[CHG] Device 64:B7:08:01:CD:BE RSSI: 0xffffffb0 (-80)
+[CHG] Device 7B:17:8E:2F:E1:FD RSSI: 0xffffffaf (-81)
+[CHG] Device F3:32:89:BA:95:60 RSSI: 0xffffffaa (-86)
+[CHG] Device 0E:30:31:25:E9:2C RSSI: 0xffffffad (-83)
+[CHG] Device 5F:67:12:3E:5C:EC RSSI: 0xffffffb0 (-80)
+[CHG] Device 5F:67:12:3E:5C:EC ManufacturerData.Key: 0x004c (76)
+[CHG] Device 5F:67:12:3E:5C:EC ManufacturerData.Value:
+  01 00 00 00 00 00 00 00 00 00 00 00 00 80 00 00  ................
+  00                                               .
+[CHG] Device 40:01:00:F1:E7:A0 RSSI: 0xffffffaa (-86)
+[CHG] Device 7B:64:1E:BE:58:B2 RSSI: 0xffffffb0 (-80)
+[CHG] Device 80:F3:DA:1C:20:3A RSSI: 0xffffffaf (-81)
+[CHG] Device 2C:41:A1:F7:62:C9 RSSI: 0xffffffaa (-86)
+[CHG] Device 04:E4:B6:03:69:CB RSSI: 0xffffffd7 (-41)
+[CHG] Device 73:13:F1:2B:C5:64 RSSI: 0xffffffb2 (-78)
+[CHG] Device 64:B7:08:01:CD:BE RSSI: 0xffffffb0 (-80)
+[CHG] Device 30:ED:A0:F3:D4:AE RSSI: 0xffffffd5 (-43)
+[CHG] Device 34:13:43:E3:D9:2D RSSI: 0xffffffaa (-86)
+[CHG] Device 34:13:43:E3:D9:2D AdvertisingFlags:
+  05                                               .
+[CHG] Device 0E:30:31:25:E9:2C RSSI: 0xffffffb1 (-79)
+[CHG] Device 64:B7:08:01:CD:BE RSSI: 0xffffffaa (-86)
+[CHG] Device 63:8E:9D:C5:4E:B5 RSSI: 0xffffffab (-85)
+[CHG] Device 64:B7:08:01:CD:BE RSSI: 0xffffffad (-83)
+[CHG] Device 7B:17:8E:2F:E1:FD RSSI: 0xffffffad (-83)
+[CHG] Device 30:ED:A0:F3:D4:AE RSSI: 0xffffffd5 (-43)
+[CHG] Device 51:14:CE:27:F3:4A RSSI: 0xffffffb7 (-73)
+[CHG] Device 34:13:43:E3:41:E9 RSSI: 0xffffffaa (-86)
+[CHG] Device 34:13:43:E3:41:E9 ManufacturerData.Key: 0x45e5 (17893)
+[CHG] Device 34:13:43:E3:41:E9 ManufacturerData.Value:
+  03 de d3 5a 49 63 8c 57 f0 59 17 f3 3b a8 ee 00  ...ZIc.W.Y..;...
+  00 6e 63 07 00 00 da 87 97 d3 ab                 .nc........
+[CHG] Device 0E:30:31:25:E9:2C RSSI: 0xffffffb5 (-75)
+[CHG] Device 04:E4:B6:03:69:CB RSSI: 0xffffffdc (-36)
+[CHG] Device 73:13:F1:2B:C5:64 RSSI: 0xffffffb7 (-73)
+[CHG] Device 30:ED:A0:F3:D4:AE RSSI: 0xffffffd5 (-43)
+[CHG] Device 5F:67:12:3E:5C:EC RSSI: 0xffffffb3 (-77)
+[CHG] Device 5F:67:12:3E:5C:EC ManufacturerData.Key: 0x004c (76)
+[CHG] Device 5F:67:12:3E:5C:EC ManufacturerData.Value:
+  01 00 00 00 00 00 00 00 00 00 00 00 00 80 00 00  ................
+  00                                               .
+[CHG] Device 7B:64:1E:BE:58:B2 RSSI: 0xffffffab (-85)
+[CHG] Device 64:B7:08:01:CD:BE RSSI: 0xffffffaa (-86)
+[CHG] Device 7B:17:8E:2F:E1:FD RSSI: 0xffffffaf (-81)
+[CHG] Device 34:13:43:E3:D9:2D RSSI: 0xffffffaa (-86)
+[CHG] Device 51:14:CE:27:F3:4A RSSI: 0xffffffaa (-86)
+[CHG] Device 64:B7:08:01:CD:BE RSSI: 0xffffffb0 (-80)
+[CHG] Device 04:E4:B6:03:69:CB RSSI: 0xffffffd0 (-48)
+[CHG] Device 30:ED:A0:F3:D4:AE RSSI: 0xffffffd5 (-43)
+[CHG] Device 3A:ED:3B:6B:E7:6D RSSI: 0xffffffaa (-86)
+[CHG] Device 34:13:43:E3:D9:2D RSSI: 0xffffffaa (-86)
+[CHG] Device 34:13:43:E3:D9:2D ManufacturerData.Key: 0x45e5 (17893)
+[CHG] Device 34:13:43:E3:D9:2D ManufacturerData.Value:
+  63 8d 7d 19 8a 03 dd 63 24 07 17 f3 8e 77 70 00  c.}....c$....wp.
+  00 d2 fd 34 00 00 21 8c ea 21 ff                 ...4..!..!.
+[CHG] Device 34:13:43:E3:D9:2D ManufacturerData.Key: 0x0211 (529)
+[CHG] Device 34:13:43:E3:D9:2D ManufacturerData.Value:
+  11 22 2d d9 e3 43                                ."-..C
+[CHG] Device 34:13:43:E3:D9:2D AdvertisingFlags:
+  00                                               .
+[CHG] Device 64:B7:08:01:CD:BE RSSI: 0xffffffaa (-86)
+[CHG] Device 80:F3:DA:1D:33:AE RSSI: 0xffffffab (-85)
+[CHG] Device 34:13:43:E6:6C:C3 RSSI: 0xffffffaa (-86)
+[CHG] Device 0E:30:31:25:E9:2C RSSI: 0xffffffac (-84)
+[CHG] Device FC:CF:B6:63:90:E2 RSSI: 0xffffffb3 (-77)
+[CHG] Device 73:13:F1:2B:C5:64 RSSI: 0xffffffaa (-86)
+[CHG] Device 5A:F6:CF:90:8F:EF RSSI: 0xffffffb2 (-78)
+[CHG] Device 58:F1:3F:1F:FE:85 RSSI: 0xffffffaa (-86)
+[CHG] Device 30:ED:A0:F3:D4:AE RSSI: 0xffffffd4 (-44)
+[CHG] Device 34:13:43:E6:6C:C3 RSSI: 0xffffffaa (-86)
+[CHG] Device 34:13:43:E6:6C:C3 ManufacturerData.Key: 0x45e5 (17893)
+[CHG] Device 34:13:43:E6:6C:C3 ManufacturerData.Value:
+  17 f4 7d 19 8a 03 dd 63 24 07 63 8c 8e 77 70 00  ..}....c$.c..wp.
+  00 d2 fd 34 00 00 21 8c ea 21 ff                 ...4..!..!.
+[CHG] Device 34:13:43:E6:6C:C3 ManufacturerData.Key: 0x0211 (529)
+[CHG] Device 34:13:43:E6:6C:C3 ManufacturerData.Value:
+  11 22 c3 6c e6 43                                .".l.C
+[CHG] Device 34:13:43:E6:6C:C3 AdvertisingFlags:
+  00                                               .
+[CHG] Device 64:B7:08:01:CD:BE RSSI: 0xffffffb0 (-80)
+[CHG] Device 57:A3:E5:7B:AA:C9 RSSI: 0xffffffaa (-86)
+[CHG] Device 04:E4:B6:03:69:CB RSSI: 0xffffffd7 (-41)
+[CHG] Device 7B:17:8E:2F:E1:FD RSSI: 0xffffffb3 (-77)
+[CHG] Device 51:14:CE:27:F3:4A RSSI: 0xffffffb7 (-73)
+[CHG] Device 5F:67:12:3E:5C:EC RSSI: 0xffffffb1 (-79)
+[CHG] Device 5F:67:12:3E:5C:EC ManufacturerData.Key: 0x004c (76)
+[CHG] Device 5F:67:12:3E:5C:EC ManufacturerData.Value:
+  01 00 00 00 00 00 00 00 00 00 00 00 00 80 00 00  ................
+  00                                               .
+[CHG] Device 7B:64:1E:BE:58:B2 RSSI: 0xffffffab (-85)
+[CHG] Device 64:B7:08:01:CD:BE RSSI: 0xffffffaa (-86)
+[CHG] Device 34:13:43:E3:41:E9 RSSI: 0xffffffaa (-86)
+[CHG] Device 34:13:43:E3:41:E9 ManufacturerData.Key: 0x45e5 (17893)
+[CHG] Device 34:13:43:E3:41:E9 ManufacturerData.Value:
+  03 de d3 5a 49 63 8c 57 f0 59 17 f3 3b a8 ee 00  ...ZIc.W.Y..;...
+  00 6e 63 07 00 00 da 87 97 d3 ab                 .nc........
+[CHG] Device 34:13:43:E3:41:E9 ManufacturerData.Key: 0x0211 (529)
+[CHG] Device 34:13:43:E3:41:E9 ManufacturerData.Value:
+  11 22 e9 41 e3 43                                .".A.C
+[CHG] Device 34:13:43:E3:41:E9 AdvertisingFlags:
+  05                                               .
+[CHG] Device 0E:30:31:25:E9:2C RSSI: 0xffffffb0 (-80)
+[CHG] Device 5A:F6:CF:90:8F:EF RSSI: 0xffffffab (-85)
+[CHG] Device 58:F1:3F:1F:FE:85 RSSI: 0xffffffb3 (-77)
+[CHG] Device 64:B7:08:01:CD:BE RSSI: 0xffffffb0 (-80)
+[CHG] Device 04:E4:B6:03:69:CB RSSI: 0xffffffdc (-36)
+[CHG] Device 30:ED:A0:F3:D4:AE RSSI: 0xffffffd4 (-44)
+[CHG] Device D3:16:C9:AA:14:17 RSSI: 0xffffffb1 (-79)
+[CHG] Device 7B:17:8E:2F:E1:FD RSSI: 0xffffffaf (-81)
+[CHG] Device E8:0E:72:B8:D2:AF RSSI: 0xffffffaa (-86)
+[CHG] Device 51:14:CE:27:F3:4A RSSI: 0xffffffaa (-86)
+[CHG] Device 34:13:43:E3:D9:2D RSSI: 0xffffffaa (-86)
+[CHG] Device 34:13:43:E3:D9:2D ManufacturerData.Key: 0x45e5 (17893)
+[CHG] Device 34:13:43:E3:D9:2D ManufacturerData.Value:
+  63 8f 7d 19 8a 03 de 63 24 07 17 f4 8e 77 70 00  c.}....c$....wp.
+  00 d2 fd 34 00 00 21 8c ea 21 03                 ...4..!..!.
+[CHG] Device 34:13:43:E3:D9:2D ManufacturerData.Key: 0x0211 (529)
+[CHG] Device 34:13:43:E3:D9:2D ManufacturerData.Value:
+  11 22 2d d9 e3 43                                ."-..C
+[CHG] Device 0E:30:31:25:E9:2C RSSI: 0xffffffb4 (-76)
+[CHG] Device 16:16:44:1F:34:4F RSSI: 0xffffffaa (-86)
+[CHG] Device 64:B7:08:01:CD:BE RSSI: 0xffffffac (-84)
+[CHG] Device 40:01:00:F1:E7:A0 RSSI: 0xffffffad (-83)
+[CHG] Device 30:ED:A0:F3:D4:AE RSSI: 0xffffffd3 (-45)
+[CHG] Device 5F:67:12:3E:5C:EC RSSI: 0xffffffb5 (-75)
+[CHG] Device 5F:67:12:3E:5C:EC ManufacturerData.Key: 0x004c (76)
+[CHG] Device 5F:67:12:3E:5C:EC ManufacturerData.Value:
+  01 00 00 00 00 00 00 00 00 00 00 00 00 80 00 00  ................
+  00                                               .
+[CHG] Device 71:0E:AE:F3:AA:10 RSSI: 0xffffffaa (-86)
+[CHG] Device DE:DE:71:B2:64:7D RSSI: 0xffffffaf (-81)
+[CHG] Device 04:E4:B6:03:69:CB RSSI: 0xffffffd1 (-47)
+[CHG] Device 58:F1:3F:1F:FE:85 RSSI: 0xffffffb7 (-73)
+[CHG] Device 0E:30:31:25:E9:2C RSSI: 0xffffffb4 (-76)
+[CHG] Device 64:B7:08:01:CD:BE RSSI: 0xffffffad (-83)
+[CHG] Device 5A:F6:CF:90:8F:EF RSSI: 0xffffffad (-83)
+[CHG] Device 7B:64:1E:BE:58:B2 RSSI: 0xffffffad (-83)
+[CHG] Device 30:ED:A0:F3:D4:AE RSSI: 0xffffffd4 (-44)
+[CHG] Device 7B:17:8E:2F:E1:FD RSSI: 0xffffffac (-84)
+[CHG] Device 51:14:CE:27:F3:4A RSSI: 0xffffffb7 (-73)
+[CHG] Device 64:B7:08:01:CD:BE RSSI: 0xffffffaa (-86)
+[CHG] Device 71:0E:AE:F3:AA:10 RSSI: 0xffffffaa (-86)
+[CHG] Device 0E:30:31:25:E9:2C RSSI: 0xffffffb1 (-79)
+[CHG] Device 34:13:43:E3:D9:2D RSSI: 0xffffffaa (-86)
+[CHG] Device 40:3D:48:41:4C:F7 RSSI: 0xffffffaa (-86)
+[CHG] Device 64:B7:08:01:CD:BE RSSI: 0xffffffad (-83)
+[CHG] Device 58:F1:3F:1F:FE:85 RSSI: 0xffffffb2 (-78)
+[CHG] Device 57:A3:E5:7B:AA:C9 RSSI: 0xffffffaa (-86)
+[CHG] Device 80:F3:DA:1D:33:AE RSSI: 0xffffffac (-84)
+[CHG] Device 0E:30:31:25:E9:2C RSSI: 0xffffffaa (-86)
+[CHG] Device 7B:17:8E:2F:E1:FD RSSI: 0xffffffaf (-81)
+[CHG] Device 5A:F6:CF:90:8F:EF RSSI: 0xffffffb2 (-78)
+[CHG] Device 51:14:CE:27:F3:4A RSSI: 0xffffffaa (-86)
+[CHG] Device 3A:ED:3B:6B:E7:6D RSSI: 0xffffffaa (-86)
+[CHG] Device 64:B7:08:01:CD:BE RSSI: 0xffffffaf (-81)
+[CHG] Device 04:E4:B6:03:69:CB RSSI: 0xffffffd0 (-48)
+[CHG] Device 7B:64:1E:BE:58:B2 RSSI: 0xffffffaa (-86)
+[CHG] Device 0E:30:31:25:E9:2C RSSI: 0xffffffb0 (-80)
+[CHG] Device 73:13:F1:2B:C5:64 RSSI: 0xffffffb7 (-73)
+[CHG] Device 30:ED:A0:F3:D4:AE RSSI: 0xffffffd5 (-43)
+[CHG] Device 58:F1:3F:1F:FE:85 RSSI: 0xffffffb7 (-73)
+[CHG] Device 64:B7:08:01:CD:BE RSSI: 0xffffffae (-82)
+[CHG] Device 64:B7:08:01:CD:BE RSSI: 0xffffffb0 (-80)
+[CHG] Device 0E:30:31:25:E9:2C RSSI: 0xffffffb0 (-80)
+[CHG] Device 51:14:CE:27:F3:4A RSSI: 0xffffffb7 (-73)
+[CHG] Device 04:E4:B6:03:69:CB RSSI: 0xffffffd7 (-41)
+[CHG] Device 40:01:00:F1:E7:A0 RSSI: 0xffffffad (-83)
+[CHG] Device 64:B7:08:01:CD:BE RSSI: 0xffffffb0 (-80)
+[CHG] Device 73:13:F1:2B:C5:64 RSSI: 0xffffffb3 (-77)
+[CHG] Device 5F:67:12:3E:5C:EC RSSI: 0xffffffb1 (-79)
+[CHG] Device 5F:67:12:3E:5C:EC ManufacturerData.Key: 0x004c (76)
+[CHG] Device 5F:67:12:3E:5C:EC ManufacturerData.Value:
+  10 07 3e 1f 74 dc a7 10 78                       ..>.t...x
+[CHG] Device 64:B7:08:01:CD:BE RSSI: 0xffffffad (-83)
+[CHG] Device 58:F1:3F:1F:FE:85 RSSI: 0xffffffaa (-86)
+[CHG] Device 30:ED:A0:F3:D4:AE RSSI: 0xffffffd4 (-44)
+[CHG] Device 57:BA:FA:37:A1:85 RSSI: 0xffffffaa (-86)
+[CHG] Device 04:E4:B6:03:69:CB RSSI: 0xffffffd0 (-48)
+[CHG] Device 7B:17:8E:2F:E1:FD RSSI: 0xffffffae (-82)
+[CHG] Device 34:13:43:E6:6C:C3 RSSI: 0xffffffaa (-86)
+[CHG] Device 34:13:43:E6:6C:C3 AdvertisingFlags:
+  05                                               .
+[CHG] Device 51:14:CE:27:F3:4A RSSI: 0xffffffaa (-86)
+[CHG] Device 64:B7:08:01:CD:BE RSSI: 0xffffffaa (-86)
+[CHG] Device 30:ED:A0:F3:D4:AE RSSI: 0xffffffd4 (-44)
+[CHG] Device 63:8E:9D:C5:4E:B5 RSSI: 0xffffffac (-84)
+[CHG] Device E4:B6:D6:A2:10:69 RSSI: 0xffffffaa (-86)
+[CHG] Device 64:B7:08:01:CD:BE RSSI: 0xffffffb0 (-80)
+[CHG] Device 73:13:F1:2B:C5:64 RSSI: 0xffffffb8 (-72)
+[CHG] Device 64:B7:08:01:CD:BE RSSI: 0xffffffaf (-81)
+[CHG] Device 58:F1:3F:1F:FE:85 RSSI: 0xffffffb2 (-78)
+[CHG] Device 04:E4:B6:03:69:CB RSSI: 0xffffffd7 (-41)
+[CHG] Device 30:ED:A0:F3:D4:AE RSSI: 0xffffffd4 (-44)
+[CHG] Device 5F:94:8D:2B:D5:5A RSSI: 0xffffffaa (-86)
+[CHG] Device 5F:67:12:3E:5C:EC RSSI: 0xffffffb3 (-77)
+[CHG] Device 5F:67:12:3E:5C:EC ManufacturerData.Key: 0x004c (76)
+[CHG] Device 5F:67:12:3E:5C:EC ManufacturerData.Value:
+  01 00 00 00 00 00 00 00 00 00 00 00 00 80 00 00  ................
+  00                                               .
+[CHG] Device 34:13:43:E3:D9:2D RSSI: 0xffffffaa (-86)
+[CHG] Device 34:13:43:E3:D9:2D AdvertisingFlags:
+  05                                               .
+[CHG] Device 51:14:CE:27:F3:4A RSSI: 0xffffffb8 (-72)
+[CHG] Device 64:B7:08:01:CD:BE RSSI: 0xffffffad (-83)
+[CHG] Device 0E:30:31:25:E9:2C RSSI: 0xffffffad (-83)
+[CHG] Device 64:B7:08:01:CD:BE RSSI: 0xffffffb0 (-80)
+[CHG] Device 7B:64:1E:BE:58:B2 RSSI: 0xffffffb3 (-77)
+[CHG] Device 5A:F6:CF:90:8F:EF RSSI: 0xffffffaa (-86)
+[CHG] Device 04:E4:B6:03:69:CB RSSI: 0xffffffdc (-36)
+[CHG] Device 64:B7:08:01:CD:BE RSSI: 0xffffffaa (-86)
+[CHG] Device 3A:ED:3B:6B:E7:6D RSSI: 0xffffffaa (-86)
+[CHG] Device 58:F1:3F:1F:FE:85 RSSI: 0xffffffb8 (-72)
+[CHG] Device 34:13:43:E6:6C:C3 RSSI: 0xffffffaa (-86)
+[CHG] Device 34:13:43:E6:6C:C3 ManufacturerData.Key: 0x45e5 (17893)
+[CHG] Device 34:13:43:E6:6C:C3 ManufacturerData.Value:
+  17 f9 7d 19 8a 03 e2 63 24 07 63 92 8e 77 70 00  ..}....c$.c..wp.
+  00 d2 fd 34 00 00 21 8c ea 21 0f                 ...4..!..!.
+[CHG] Device 34:13:43:E6:6C:C3 ManufacturerData.Key: 0x0211 (529)
+[CHG] Device 34:13:43:E6:6C:C3 ManufacturerData.Value:
+  11 22 c3 6c e6 43                                .".l.C
+[CHG] Device 34:13:43:E6:6C:C3 AdvertisingFlags:
+  00                                               .
+[CHG] Device 30:ED:A0:F3:D4:AE RSSI: 0xffffffd4 (-44)
+[CHG] Device 7B:17:8E:2F:E1:FD RSSI: 0xffffffaf (-81)
+[CHG] Device 64:B7:08:01:CD:BE RSSI: 0xffffffb0 (-80)
+[CHG] Device F2:4B:63:EA:1F:03 RSSI: 0xffffffac (-84)
+[CHG] Device 0E:30:31:25:E9:2C RSSI: 0xffffffaa (-86)
+[CHG] Device 04:E4:B6:03:69:CB RSSI: 0xffffffd0 (-48)
+[CHG] Device 64:B7:08:01:CD:BE RSSI: 0xffffffac (-84)
+[CHG] Device 5A:F6:CF:90:8F:EF RSSI: 0xffffffab (-85)
+[CHG] Device 34:13:43:E3:D9:2D RSSI: 0xffffffaa (-86)
+[CHG] Device 34:13:43:E3:D9:2D ManufacturerData.Key: 0x45e5 (17893)
+[CHG] Device 34:13:43:E3:D9:2D ManufacturerData.Value:
+  63 92 7d 19 8a 03 e2 63 24 07 17 f8 8e 77 70 00  c.}....c$....wp.
+  00 d2 fd 34 00 00 21 8c ea 21 0e                 ...4..!..!.
+[CHG] Device 34:13:43:E3:D9:2D ManufacturerData.Key: 0x0211 (529)
+[CHG] Device 34:13:43:E3:D9:2D ManufacturerData.Value:
+  11 22 2d d9 e3 43                                ."-..C
+[CHG] Device 34:13:43:E3:D9:2D AdvertisingFlags:
+  00                                               .
+[CHG] Device 80:F3:DA:1C:20:3A RSSI: 0xffffffaa (-86)
+[CHG] Device F3:32:89:BA:95:60 RSSI: 0xffffffaa (-86)
+[CHG] Device 64:B7:08:01:CD:BE RSSI: 0xffffffb0 (-80)
+[CHG] Device 7B:64:1E:BE:58:B2 RSSI: 0xffffffaf (-81)
+[CHG] Device 7B:17:8E:2F:E1:FD RSSI: 0xffffffb2 (-78)
+[CHG] Device 51:14:CE:27:F3:4A RSSI: 0xffffffb8 (-72)
+[CHG] Device 64:B7:08:01:CD:BE RSSI: 0xffffffaa (-86)
+[CHG] Device 30:ED:A0:F3:D4:AE RSSI: 0xffffffd4 (-44)
+[CHG] Device 40:01:00:F1:E7:A0 RSSI: 0xffffffab (-85)
+[CHG] Device CC:0C:7C:1E:2F:98 RSSI: 0xffffffb4 (-76)
+[CHG] Device 04:E4:B6:03:69:CB RSSI: 0xffffffdc (-36)
+[CHG] Device 73:13:F1:2B:C5:64 RSSI: 0xffffffaa (-86)
+[CHG] Device 30:ED:A0:F3:D4:AE RSSI: 0xffffffd4 (-44)
+[CHG] Device 57:A3:E5:7B:AA:C9 RSSI: 0xffffffaa (-86)
+[CHG] Device 5A:F6:CF:90:8F:EF RSSI: 0xffffffb4 (-76)
+[CHG] Device 58:F1:3F:1F:FE:85 RSSI: 0xffffffb7 (-73)
+[CHG] Device 7B:17:8E:2F:E1:FD RSSI: 0xffffffaf (-81)
+[CHG] Device 64:B7:08:01:CD:BE RSSI: 0xffffffad (-83)
+[CHG] Device 04:E4:B6:03:69:CB RSSI: 0xffffffd1 (-47)
+[CHG] Device 2C:41:A1:F7:62:C9 RSSI: 0xffffffaa (-86)
+[CHG] Device 30:ED:A0:F3:D4:AE RSSI: 0xffffffd4 (-44)
+[CHG] Device 64:B7:08:01:CD:BE RSSI: 0xffffffaf (-81)
+[CHG] Device 0E:30:31:25:E9:2C RSSI: 0xffffffb4 (-76)
+[CHG] Device 7B:64:1E:BE:58:B2 RSSI: 0xffffffb0 (-80)
+[CHG] Device 40:01:00:F1:E7:A0 RSSI: 0xffffffac (-84)
+[CHG] Device 73:13:F1:2B:C5:64 RSSI: 0xffffffb2 (-78)
+[CHG] Device 0E:30:31:25:E9:2C RSSI: 0xffffffb5 (-75)
+[CHG] Device 80:F3:DA:1D:33:AE RSSI: 0xffffffaa (-86)
+[CHG] Device 30:ED:A0:F3:D4:AE RSSI: 0xffffffd4 (-44)
+[CHG] Device 58:F1:3F:1F:FE:85 RSSI: 0xffffffaa (-86)
+[CHG] Device 63:8E:9D:C5:4E:B5 RSSI: 0xffffffab (-85)
+[CHG] Device 04:E4:B6:03:69:CB RSSI: 0xffffffdc (-36)
+[CHG] Device 64:B7:08:01:CD:BE RSSI: 0xffffffb0 (-80)
+[CHG] Device 51:14:CE:27:F3:4A RSSI: 0xffffffb8 (-72)
+[CHG] Device 3A:ED:3B:6B:E7:6D RSSI: 0xffffffaa (-86)
+[CHG] Device 34:13:43:E6:6C:C3 RSSI: 0xffffffaa (-86)
+[CHG] Device 34:13:43:E6:6C:C3 ManufacturerData.Key: 0x45e5 (17893)
+[CHG] Device 34:13:43:E6:6C:C3 ManufacturerData.Value:
+  17 fa 7d 19 8a 03 e3 63 24 07 63 93 8e 77 70 00  ..}....c$.c..wp.
+  00 d2 fd 34 00 00 21 8c ea 21 12                 ...4..!..!.
+[CHG] Device 34:13:43:E6:6C:C3 ManufacturerData.Key: 0x0211 (529)
+[CHG] Device 34:13:43:E6:6C:C3 ManufacturerData.Value:
+  11 22 c3 6c e6 43                                .".l.C
+[CHG] Device 57:A3:E5:7B:AA:C9 RSSI: 0xffffffaa (-86)
+[CHG] Device 0E:30:31:25:E9:2C RSSI: 0xffffffaa (-86)
+[CHG] Device 30:ED:A0:F3:D4:AE RSSI: 0xffffffd5 (-43)
+[CHG] Device 64:B7:08:01:CD:BE RSSI: 0xffffffaa (-86)
+[CHG] Device 5F:67:12:3E:5C:EC RSSI: 0xffffffb1 (-79)
+[CHG] Device 5F:67:12:3E:5C:EC ManufacturerData.Key: 0x004c (76)
+[CHG] Device 5F:67:12:3E:5C:EC ManufacturerData.Value:
+  01 00 00 00 00 00 00 00 00 00 00 00 00 80 00 00  ................
+  00                                               .
+[CHG] Device 64:B7:08:01:CD:BE RSSI: 0xffffffab (-85)
+[CHG] Device 34:13:43:E6:6C:C3 RSSI: 0xffffffaa (-86)
+[CHG] Device 34:13:43:E6:6C:C3 AdvertisingFlags:
+  05                                               .
+[CHG] Device 0E:30:31:25:E9:2C RSSI: 0xffffffb5 (-75)
+[CHG] Device 58:F1:3F:1F:FE:85 RSSI: 0xffffffb7 (-73)
+[CHG] Device 30:ED:A0:F3:D4:AE RSSI: 0xffffffd5 (-43)
+[CHG] Device 7B:17:8E:2F:E1:FD RSSI: 0xffffffaf (-81)
+[CHG] Device 5A:F6:CF:90:8F:EF RSSI: 0xffffffaa (-86)
+[CHG] Device 63:8E:9D:C5:4E:B5 RSSI: 0xffffffab (-85)
+[CHG] Device 0E:30:31:25:E9:2C RSSI: 0xffffffaa (-86)
+[CHG] Device 30:ED:A0:F3:D4:AE RSSI: 0xffffffd4 (-44)
+[CHG] Device 04:E4:B6:03:69:CB RSSI: 0xffffffd1 (-47)
+[CHG] Device 80:F3:DA:1E:B3:BE RSSI: 0xffffffaa (-86)
+[CHG] Device D3:16:C9:AA:14:17 RSSI: 0xffffffb3 (-77)
+[CHG] Device 34:13:43:E3:D9:2D RSSI: 0xffffffaa (-86)
+[CHG] Device 34:13:43:E3:D9:2D ManufacturerData.Key: 0x45e5 (17893)
+[CHG] Device 34:13:43:E3:D9:2D ManufacturerData.Value:
+  63 92 7d 19 8a 03 e2 63 24 07 17 f8 8e 77 70 00  c.}....c$....wp.
+  00 d2 fd 34 00 00 21 8c ea 21 0e                 ...4..!..!.
+[CHG] Device 34:13:43:E3:D9:2D ManufacturerData.Key: 0x0211 (529)
+[CHG] Device 34:13:43:E3:D9:2D ManufacturerData.Value:
+  11 02 2d d9 e3 43 6e 00 01 2d 00 34 13 43 e3 d9  ..-..Cn..-.4.C..
+  2c 06 07 08 09 0a 0b 0c 0d 0e 0f                 ,..........
+[CHG] Device 34:13:43:E3:D9:2D AdvertisingFlags:
+  05                                               .
+[CHG] Device E8:0E:72:B8:D2:AF RSSI: 0xffffffac (-84)
+[CHG] Device 71:0E:AE:F3:AA:10 RSSI: 0xffffffaa (-86)
+[CHG] Device 7B:17:8E:2F:E1:FD RSSI: 0xffffffae (-82)
+[CHG] Device 51:14:CE:27:F3:4A RSSI: 0xffffffb7 (-73)
+[CHG] Device 2C:41:A1:F7:62:C9 RSSI: 0xffffffaa (-86)
+[CHG] Device 40:01:00:F1:E7:A0 RSSI: 0xffffffaf (-81)
+[CHG] Device 57:BA:FA:37:A1:85 RSSI: 0xffffffaa (-86)
+[CHG] Device 5A:F6:CF:90:8F:EF RSSI: 0xffffffaa (-86)
+[CHG] Device 34:13:43:E6:6C:C3 RSSI: 0xffffffaa (-86)
+[CHG] Device 34:13:43:E6:6C:C3 ManufacturerData.Key: 0x45e5 (17893)
+[CHG] Device 34:13:43:E6:6C:C3 ManufacturerData.Value:
+  17 fc 7d 19 8a 03 e5 63 24 07 63 94 8e 77 70 00  ..}....c$.c..wp.
+  00 d2 fd 34 00 00 21 8c ea 21 17                 ...4..!..!.
+[CHG] Device 34:13:43:E6:6C:C3 ManufacturerData.Key: 0x0211 (529)
+[CHG] Device 34:13:43:E6:6C:C3 ManufacturerData.Value:
+  11 22 c3 6c e6 43                                .".l.C
+[CHG] Device 34:13:43:E6:6C:C3 AdvertisingFlags:
+  00                                               .
+[CHG] Device 64:B7:08:01:CD:BE RSSI: 0xffffffaa (-86)
+[CHG] Device 04:E4:B6:03:69:CB RSSI: 0xffffffdc (-36)
+[CHG] Device 30:ED:A0:F3:D4:AE RSSI: 0xffffffd5 (-43)
+[CHG] Device 73:13:F1:2B:C5:64 RSSI: 0xffffffb7 (-73)
+[CHG] Device 0E:30:31:25:E9:2C RSSI: 0xffffffaa (-86)
+[CHG] Device 58:F1:3F:1F:FE:85 RSSI: 0xffffffb2 (-78)
+[CHG] Device 64:B7:08:01:CD:BE RSSI: 0xffffffb0 (-80)
+[CHG] Device 7B:17:8E:2F:E1:FD RSSI: 0xffffffaf (-81)
+[CHG] Device 0E:30:31:25:E9:2C RSSI: 0xffffffb0 (-80)
+[CHG] Device 30:ED:A0:F3:D4:AE RSSI: 0xffffffd4 (-44)
+[CHG] Device 57:A3:E5:7B:AA:C9 RSSI: 0xffffffaa (-86)
+[CHG] Device 80:F3:DA:1D:33:AE RSSI: 0xffffffaa (-86)
+[CHG] Device 64:B7:08:01:CD:BE RSSI: 0xffffffab (-85)
+[CHG] Device 5F:94:8D:2B:D5:5A RSSI: 0xffffffaa (-86)
+[CHG] Device 5A:F6:CF:90:8F:EF RSSI: 0xffffffaa (-86)
+[CHG] Device 5F:67:12:3E:5C:EC RSSI: 0xffffffb3 (-77)
+[CHG] Device 5F:67:12:3E:5C:EC ManufacturerData.Key: 0x004c (76)
+[CHG] Device 5F:67:12:3E:5C:EC ManufacturerData.Value:
+  01 00 00 00 00 00 00 00 00 00 00 00 00 80 00 00  ................
+  00                                               .
+[CHG] Device 40:01:00:F1:E7:A0 RSSI: 0xffffffab (-85)
+[CHG] Device 0E:30:31:25:E9:2C RSSI: 0xffffffb1 (-79)
+[CHG] Device 30:ED:A0:F3:D4:AE RSSI: 0xffffffd4 (-44)
+[CHG] Device D1:2C:7A:65:60:D1 RSSI: 0xffffffaa (-86)
+[CHG] Device 64:B7:08:01:CD:BE RSSI: 0xffffffaa (-86)
+[CHG] Device 58:F1:3F:1F:FE:85 RSSI: 0xffffffb7 (-73)
+[CHG] Device 34:13:43:E6:6C:C3 RSSI: 0xffffffaa (-86)
+[CHG] Device 34:13:43:E6:6C:C3 ManufacturerData.Key: 0x45e5 (17893)
+[CHG] Device 34:13:43:E6:6C:C3 ManufacturerData.Value:
+  17 fd 7d 19 8a 03 e6 63 24 07 63 96 8e 77 70 00  ..}....c$.c..wp.
+  00 d2 fd 34 00 00 21 8c ea 21 1b                 ...4..!..!.
+[CHG] Device 34:13:43:E6:6C:C3 ManufacturerData.Key: 0x0211 (529)
+[CHG] Device 34:13:43:E6:6C:C3 ManufacturerData.Value:
+  11 22 c3 6c e6 43                                .".l.C
+[CHG] Device 3A:ED:3B:6B:E7:6D RSSI: 0xffffffaa (-86)
+[CHG] Device 51:14:CE:27:F3:4A RSSI: 0xffffffb7 (-73)
+[CHG] Device 04:E4:B6:03:69:CB RSSI: 0xffffffd7 (-41)
+[CHG] Device 0E:30:31:25:E9:2C RSSI: 0xffffffb6 (-74)
+[CHG] Device 30:ED:A0:F3:D4:AE RSSI: 0xffffffd4 (-44)
+[CHG] Device 64:B7:08:01:CD:BE RSSI: 0xffffffaf (-81)
+[CHG] Device 5A:F6:CF:90:8F:EF RSSI: 0xffffffac (-84)
+[CHG] Device 73:13:F1:2B:C5:64 RSSI: 0xffffffb7 (-73)
+[CHG] Device 57:A3:E5:7B:AA:C9 RSSI: 0xffffffaa (-86)
+[CHG] Device 0E:30:31:25:E9:2C RSSI: 0xffffffb6 (-74)
+[CHG] Device 64:B7:08:01:CD:BE RSSI: 0xffffffaa (-86)
+[CHG] Device 04:E4:B6:03:69:CB RSSI: 0xffffffdb (-37)
+[CHG] Device 34:13:43:E3:D9:2D RSSI: 0xffffffaa (-86)
+[CHG] Device 34:13:43:E3:D9:2D ManufacturerData.Key: 0x45e5 (17893)
+[CHG] Device 34:13:43:E3:D9:2D ManufacturerData.Value:
+  63 97 7d 19 8a 03 e7 63 24 07 17 fd 8e 77 70 00  c.}....c$....wp.
+  00 d2 fd 34 00 00 21 8c ea 21 1d                 ...4..!..!.
+[CHG] Device 34:13:43:E3:D9:2D ManufacturerData.Key: 0x0211 (529)
+[CHG] Device 34:13:43:E3:D9:2D ManufacturerData.Value:
+  11 02 2d d9 e3 43 6e 00 01 2d 00 34 13 43 e3 d9  ..-..Cn..-.4.C..
+  2c 06 07 08 09 0a 0b 0c 0d 0e 0f                 ,..........
+[CHG] Device 34:13:43:E3:D9:2D AdvertisingFlags:
+  00                                               .
+[CHG] Device 5F:67:12:3E:5C:EC RSSI: 0xffffffb4 (-76)
+[CHG] Device 5F:67:12:3E:5C:EC ManufacturerData.Key: 0x004c (76)
+[CHG] Device 5F:67:12:3E:5C:EC ManufacturerData.Value:
+  01 00 00 00 00 00 00 00 00 00 00 00 00 80 00 00  ................
+  00                                               .
+[CHG] Device 7B:17:8E:2F:E1:FD RSSI: 0xffffffaf (-81)
+[CHG] Device 40:01:00:F1:E7:A0 RSSI: 0xffffffab (-85)
+[CHG] Device 34:13:43:E6:6C:C3 RSSI: 0xffffffaa (-86)
+[CHG] Device 34:13:43:E6:6C:C3 AdvertisingFlags:
+  05                                               .
+[CHG] Device 7B:64:1E:BE:58:B2 RSSI: 0xffffffb3 (-77)
+[CHG] Device 0E:30:31:25:E9:2C RSSI: 0xffffffb6 (-74)
+[CHG] Device 30:ED:A0:F3:D4:AE RSSI: 0xffffffd3 (-45)
+[CHG] Device 34:13:43:E6:6C:C3 RSSI: 0xffffffaa (-86)
+[CHG] Device 34:13:43:E6:6C:C3 AdvertisingFlags:
+  00                                               .
+[CHG] Device 5A:F6:CF:90:8F:EF RSSI: 0xffffffaa (-86)
+[CHG] Device 64:B7:08:01:CD:BE RSSI: 0xffffffac (-84)
+[CHG] Device 04:E4:B6:03:69:CB RSSI: 0xffffffd0 (-48)
+[CHG] Device 58:F1:3F:1F:FE:85 RSSI: 0xffffffb2 (-78)
+[CHG] Device 30:ED:A0:F3:D4:AE RSSI: 0xffffffd3 (-45)
+[CHG] Device 64:B7:08:01:CD:BE RSSI: 0xffffffb0 (-80)
+[CHG] Device 0E:30:31:25:E9:2C RSSI: 0xffffffb5 (-75)
+[CHG] Device 51:14:CE:27:F3:4A RSSI: 0xffffffb2 (-78)
+[CHG] Device E4:B6:D6:A2:10:69 RSSI: 0xffffffaa (-86)
+[CHG] Device 64:B7:08:01:CD:BE RSSI: 0xffffffaa (-86)
+[CHG] Device 71:0E:AE:F3:AA:10 RSSI: 0xffffffaa (-86)
+[CHG] Device 40:01:00:F1:E7:A0 RSSI: 0xffffffad (-83)
+[CHG] Device 0E:30:31:25:E9:2C RSSI: 0xffffffb5 (-75)
+[CHG] Device 64:B7:08:01:CD:BE RSSI: 0xffffffaa (-86)
+[CHG] Device 30:ED:A0:F3:D4:AE RSSI: 0xffffffd3 (-45)
+[CHG] Device C8:3F:ED:EE:5B:C8 RSSI: 0xffffffaf (-81)
+[CHG] Device 73:13:F1:2B:C5:64 RSSI: 0xffffffb7 (-73)
+[CHG] Device 04:E4:B6:03:69:CB RSSI: 0xffffffd7 (-41)
+[CHG] Device 64:B7:08:01:CD:BE RSSI: 0xffffffb1 (-79)
+[CHG] Device 7B:64:1E:BE:58:B2 RSSI: 0xffffffb4 (-76)
+[CHG] Device 34:13:43:E3:D9:2D RSSI: 0xffffffaa (-86)
+[CHG] Device 34:13:43:E3:D9:2D ManufacturerData.Key: 0x45e5 (17893)
+[CHG] Device 34:13:43:E3:D9:2D ManufacturerData.Value:
+  63 98 7d 19 8a 03 e8 63 24 07 17 fe 8e 77 70 00  c.}....c$....wp.
+  00 d2 fd 34 00 00 21 8c ea 21 20                 ...4..!..!
+[CHG] Device 34:13:43:E3:D9:2D ManufacturerData.Key: 0x0211 (529)
+[CHG] Device 34:13:43:E3:D9:2D ManufacturerData.Value:
+  11 02 2d d9 e3 43 6e 00 01 2d 00 34 13 43 e3 d9  ..-..Cn..-.4.C..
+  2c 06 07 08 09 0a 0b 0c 0d 0e 0f                 ,..........
+[CHG] Device 7B:17:8E:2F:E1:FD RSSI: 0xffffffae (-82)
+[CHG] Device 30:ED:A0:F3:D4:AE RSSI: 0xffffffd3 (-45)
+[CHG] Device 34:13:43:E3:41:E9 RSSI: 0xffffffaa (-86)
+[CHG] Device 34:13:43:E3:41:E9 ManufacturerData.Key: 0x45e5 (17893)
+[CHG] Device 34:13:43:E3:41:E9 ManufacturerData.Value:
+  03 e8 d3 5a 49 63 97 57 f0 59 17 fd 3b a8 ee 00  ...ZIc.W.Y..;...
+  00 6e 63 07 00 00 da 87 97 d3 ca                 .nc........
+[CHG] Device 34:13:43:E3:41:E9 ManufacturerData.Key: 0x0211 (529)
+[CHG] Device 34:13:43:E3:41:E9 ManufacturerData.Value:
+  11 22 e9 41 e3 43                                .".A.C
+[CHG] Device 34:13:43:E3:41:E9 AdvertisingFlags:
+  00                                               .
+[CHG] Device 0E:30:31:25:E9:2C RSSI: 0xffffffb0 (-80)
+[CHG] Device 34:13:43:E6:6C:C3 RSSI: 0xffffffaa (-86)
+[CHG] Device 34:13:43:E6:6C:C3 ManufacturerData.Key: 0x45e5 (17893)
+[CHG] Device 34:13:43:E6:6C:C3 ManufacturerData.Value:
+  17 fe 7d 19 8a 03 e7 63 24 07 63 97 8e 77 70 00  ..}....c$.c..wp.
+  00 d2 fd 34 00 00 21 8c ea 21 1e                 ...4..!..!.
+[CHG] Device 34:13:43:E6:6C:C3 ManufacturerData.Key: 0x0211 (529)
+[CHG] Device 34:13:43:E6:6C:C3 ManufacturerData.Value:
+  11 22 c3 6c e6 43                                .".l.C
+[CHG] Device 40:3D:48:41:4C:F7 RSSI: 0xffffffaa (-86)
+[CHG] Device 64:B7:08:01:CD:BE RSSI: 0xffffffaf (-81)
+[CHG] Device 30:ED:A0:F3:D4:AE RSSI: 0xffffffd3 (-45)
+[CHG] Device 64:B7:08:01:CD:BE RSSI: 0xffffffad (-83)
+[CHG] Device 5F:67:12:3E:5C:EC RSSI: 0xffffffb4 (-76)
+[CHG] Device 5F:67:12:3E:5C:EC ManufacturerData.Key: 0x004c (76)
+[CHG] Device 5F:67:12:3E:5C:EC ManufacturerData.Value:
+  01 00 00 00 00 00 00 00 00 00 00 00 00 80 00 00  ................
+  00                                               .
+[CHG] Device 58:F1:3F:1F:FE:85 RSSI: 0xffffffb3 (-77)
+[CHG] Device D8:51:54:B3:E6:AF RSSI: 0xffffffaa (-86)
+[CHG] Device 51:14:CE:27:F3:4A RSSI: 0xffffffb2 (-78)
+[CHG] Device 0E:30:31:25:E9:2C RSSI: 0xffffffb0 (-80)
+[CHG] Device 30:ED:A0:F3:D4:AE RSSI: 0xffffffd5 (-43)
+[CHG] Device 7B:64:1E:BE:58:B2 RSSI: 0xffffffaf (-81)
+[CHG] Device 04:E4:B6:03:69:CB RSSI: 0xffffffd0 (-48)
+[CHG] Device 64:B7:08:01:CD:BE RSSI: 0xffffffaa (-86)
+[CHG] Device 34:13:43:E3:D9:2D RSSI: 0xffffffaa (-86)
+[CHG] Device 34:13:43:E3:D9:2D ManufacturerData.Key: 0x45e5 (17893)
+[CHG] Device 34:13:43:E3:D9:2D ManufacturerData.Value:
+  63 99 7d 19 8a 03 e9 63 24 07 17 ff 8e 77 70 00  c.}....c$....wp.
+  00 d2 fd 34 00 00 21 8c ea 21 23                 ...4..!..!#
+[CHG] Device 34:13:43:E3:D9:2D ManufacturerData.Key: 0x0211 (529)
+[CHG] Device 34:13:43:E3:D9:2D ManufacturerData.Value:
+  11 02 2d d9 e3 43 6e 00 01 2d 00 34 13 43 e3 d9  ..-..Cn..-.4.C..
+  2c 06 07 08 09 0a 0b 0c 0d 0e 0f                 ,..........
+[CHG] Device F3:32:89:BA:95:60 RSSI: 0xffffffaa (-86)
+[CHG] Device 73:13:F1:2B:C5:64 RSSI: 0xffffffb2 (-78)
+[CHG] Device 30:ED:A0:F3:D4:AE RSSI: 0xffffffd5 (-43)
+[CHG] Device 63:8E:9D:C5:4E:B5 RSSI: 0xffffffac (-84)
+[CHG] Device CC:0C:7C:1E:2F:98 RSSI: 0xffffffb1 (-79)
+[CHG] Device 51:14:CE:27:F3:4A RSSI: 0xffffffb7 (-73)
+[CHG] Device 51:14:CE:27:F3:4A ManufacturerData.Key: 0x004c (76)
+[CHG] Device 51:14:CE:27:F3:4A ManufacturerData.Value:
+  0c 0e 00 ed 8d 19 10 06 cf b2 7c 03 c1 06 2e 71  ..........|....q
+  10 06 49 1d ae 4e 32 08                          ..I..N2.
+[CHG] Device 58:F1:3F:1F:FE:85 RSSI: 0xffffffb3 (-77)
+[CHG] Device 7B:17:8E:2F:E1:FD RSSI: 0xffffffae (-82)
+[CHG] Device FC:CF:B6:63:90:E2 RSSI: 0xffffffaa (-86)
+[CHG] Device 64:B7:08:01:CD:BE RSSI: 0xffffffb0 (-80)
+[CHG] Device 73:13:F1:2B:C5:64 RSSI: 0xffffffb7 (-73)
+[CHG] Device 73:13:F1:2B:C5:64 ManufacturerData.Key: 0x004c (76)
+[CHG] Device 73:13:F1:2B:C5:64 ManufacturerData.Value:
+  0c 0e 00 ed 8d 19 10 06 cf b2 7c 03 c1 06 2e 71  ..........|....q
+  10 06 49 1d ae 4e 32 08                          ..I..N2.
+[CHG] Device 51:14:CE:27:F3:4A RSSI: 0xffffffb7 (-73)
+[CHG] Device 04:E4:B6:03:69:CB RSSI: 0xffffffdc (-36)
+[CHG] Device 5A:F6:CF:90:8F:EF RSSI: 0xffffffad (-83)
+[CHG] Device 0E:30:31:25:E9:2C RSSI: 0xffffffaf (-81)
+[CHG] Device 73:13:F1:2B:C5:64 RSSI: 0xffffffb7 (-73)
+[CHG] Device 30:ED:A0:F3:D4:AE RSSI: 0xffffffd4 (-44)
+[CHG] Device 51:14:CE:27:F3:4A RSSI: 0xffffffb7 (-73)
+[CHG] Device 64:B7:08:01:CD:BE RSSI: 0xffffffad (-83)
+[CHG] Device 5F:67:12:3E:5C:EC RSSI: 0xffffffb1 (-79)
+[CHG] Device 5F:67:12:3E:5C:EC ManufacturerData.Key: 0x004c (76)
+[CHG] Device 5F:67:12:3E:5C:EC ManufacturerData.Value:
+  01 00 00 00 00 00 00 00 00 00 00 00 00 80 00 00  ................
+  00                                               .
+[CHG] Device 51:14:CE:27:F3:4A RSSI: 0xffffffb7 (-73)
+[CHG] Device 73:13:F1:2B:C5:64 RSSI: 0xffffffb7 (-73)
+[CHG] Device 64:B7:08:01:CD:BE RSSI: 0xffffffb0 (-80)
+[CHG] Device 7B:64:1E:BE:58:B2 RSSI: 0xffffffaf (-81)
+[CHG] Device 51:14:CE:27:F3:4A RSSI: 0xffffffb7 (-73)
+[CHG] Device 73:13:F1:2B:C5:64 RSSI: 0xffffffb3 (-77)
+[CHG] Device 34:13:43:E3:D9:2D RSSI: 0xffffffaa (-86)
+[CHG] Device 0E:30:31:25:E9:2C RSSI: 0xffffffb5 (-75)
+[CHG] Device 64:B7:08:01:CD:BE RSSI: 0xffffffaa (-86)
+[CHG] Device 51:14:CE:27:F3:4A RSSI: 0xffffffb7 (-73)
+[CHG] Device 30:ED:A0:F3:D4:AE RSSI: 0xffffffd3 (-45)
+[CHG] Device 73:13:F1:2B:C5:64 RSSI: 0xffffffb3 (-77)
+[CHG] Device 58:F1:3F:1F:FE:85 RSSI: 0xffffffb6 (-74)
+[CHG] Device 51:14:CE:27:F3:4A RSSI: 0xffffffb2 (-78)
+[CHG] Device 73:13:F1:2B:C5:64 RSSI: 0xffffffaa (-86)
+[CHG] Device 51:14:CE:27:F3:4A RSSI: 0xffffffb7 (-73)
+[CHG] Device 0E:30:31:25:E9:2C RSSI: 0xffffffb5 (-75)
+[CHG] Device 5A:F6:CF:90:8F:EF RSSI: 0xffffffb3 (-77)
+[CHG] Device 51:14:CE:27:F3:4A RSSI: 0xffffffb3 (-77)
+[CHG] Device 34:13:43:E6:6C:C3 RSSI: 0xffffffaa (-86)
+[CHG] Device 34:13:43:E6:6C:C3 AdvertisingFlags:
+  05                                               .
+[CHG] Device 73:13:F1:2B:C5:64 RSSI: 0xffffffb7 (-73)
+[CHG] Device 51:14:CE:27:F3:4A RSSI: 0xffffffb3 (-77)
+[CHG] Device 04:E4:B6:03:69:CB RSSI: 0xffffffd7 (-41)
+[CHG] Device 34:13:43:E6:6C:C3 RSSI: 0xffffffaa (-86)
+[CHG] Device 34:13:43:E6:6C:C3 ManufacturerData.Key: 0x45e5 (17893)
+[CHG] Device 34:13:43:E6:6C:C3 ManufacturerData.Value:
+  17 82 7d 19 8a 03 ea 63 24 07 63 99 8e 77 70 00  ..}....c$.c..wp.
+  00 d2 fd 34 00 00 21 8c ea 21 a7                 ...4..!..!.
+[CHG] Device 34:13:43:E6:6C:C3 ManufacturerData.Key: 0x0211 (529)
+[CHG] Device 34:13:43:E6:6C:C3 ManufacturerData.Value:
+  11 22 c3 6c e6 43                                .".l.C
+[CHG] Device 34:13:43:E6:6C:C3 AdvertisingFlags:
+  00                                               .
+[CHG] Device 5F:67:12:3E:5C:EC RSSI: 0xffffffb1 (-79)
+[CHG] Device 5F:67:12:3E:5C:EC ManufacturerData.Key: 0x004c (76)
+[CHG] Device 5F:67:12:3E:5C:EC ManufacturerData.Value:
+  01 00 00 00 00 00 00 00 00 00 00 00 00 80 00 00  ................
+  00                                               .
+[CHG] Device 51:14:CE:27:F3:4A RSSI: 0xffffffb3 (-77)
+[CHG] Device 58:F1:3F:1F:FE:85 RSSI: 0xffffffb3 (-77)
+[CHG] Device 34:13:43:E6:6C:C3 RSSI: 0xffffffaa (-86)
+[CHG] Device 30:ED:A0:F3:D4:AE RSSI: 0xffffffd5 (-43)
+[CHG] Device 64:B7:08:01:CD:BE RSSI: 0xffffffb0 (-80)
+[CHG] Device 73:13:F1:2B:C5:64 RSSI: 0xffffffb6 (-74)
+[CHG] Device 7B:64:1E:BE:58:B2 RSSI: 0xffffffaf (-81)
+[CHG] Device 73:13:F1:2B:C5:64 RSSI: 0xffffffb7 (-73)
+[CHG] Device 51:14:CE:27:F3:4A RSSI: 0xffffffb2 (-78)
+[CHG] Device 0E:30:31:25:E9:2C RSSI: 0xffffffb5 (-75)
+[CHG] Device 73:13:F1:2B:C5:64 RSSI: 0xffffffb7 (-73)
+[CHG] Device 5A:F6:CF:90:8F:EF RSSI: 0xffffffaa (-86)
+[CHG] Device 64:B7:08:01:CD:BE RSSI: 0xffffffaf (-81)
+[CHG] Device 04:E4:B6:03:69:CB RSSI: 0xffffffdc (-36)
+[CHG] Device 63:8E:9D:C5:4E:B5 RSSI: 0xffffffaa (-86)
+[CHG] Device 73:13:F1:2B:C5:64 RSSI: 0xffffffb3 (-77)
+[CHG] Device 51:14:CE:27:F3:4A RSSI: 0xffffffb6 (-74)
+[CHG] Device 80:F3:DA:1E:B3:BE RSSI: 0xffffffaa (-86)
+[CHG] Device 34:13:43:E6:6C:C3 RSSI: 0xffffffaa (-86)
+[CHG] Device 34:13:43:E6:6C:C3 AdvertisingFlags:
+  05                                               .
+[CHG] Device 73:13:F1:2B:C5:64 RSSI: 0xffffffaa (-86)
+[CHG] Device 30:ED:A0:F3:D4:AE RSSI: 0xffffffd4 (-44)
+[CHG] Device 64:B7:08:01:CD:BE RSSI: 0xffffffad (-83)
+[CHG] Device 5F:67:12:3E:5C:EC RSSI: 0xffffffb1 (-79)
+[CHG] Device 5F:67:12:3E:5C:EC ManufacturerData.Key: 0x004c (76)
+[CHG] Device 5F:67:12:3E:5C:EC ManufacturerData.Value:
+  01 00 00 00 00 00 00 00 00 00 00 00 00 80 00 00  ................
+  00                                               .
+[CHG] Device 73:13:F1:2B:C5:64 RSSI: 0xffffffaa (-86)
+[CHG] Device 51:14:CE:27:F3:4A RSSI: 0xffffffb7 (-73)
+[CHG] Device D3:16:C9:AA:14:17 RSSI: 0xffffffb1 (-79)
+[CHG] Device 64:B7:08:01:CD:BE RSSI: 0xffffffaf (-81)
+[CHG] Device 04:E4:B6:03:69:CB RSSI: 0xffffffd1 (-47)
+[CHG] Device 73:13:F1:2B:C5:64 RSSI: 0xffffffaa (-86)
+[CHG] Device 34:13:43:E6:6C:C3 RSSI: 0xffffffaa (-86)
+[CHG] Device 34:13:43:E6:6C:C3 ManufacturerData.Key: 0x45e5 (17893)
+[CHG] Device 34:13:43:E6:6C:C3 ManufacturerData.Value:
+  17 83 7d 19 8a 03 eb 63 24 07 63 9a 8e 77 70 00  ..}....c$.c..wp.
+  00 d2 fd 34 00 00 21 8c ea 21 aa                 ...4..!..!.
+[CHG] Device 34:13:43:E6:6C:C3 ManufacturerData.Key: 0x0211 (529)
+[CHG] Device 34:13:43:E6:6C:C3 ManufacturerData.Value:
+  11 22 c3 6c e6 43                                .".l.C
+[CHG] Device 34:13:43:E6:6C:C3 AdvertisingFlags:
+  00                                               .
+[CHG] Device E8:0E:72:B8:D2:AF RSSI: 0xffffffaa (-86)
+[CHG] Device 34:13:43:E6:6C:C3 RSSI: 0xffffffaa (-86)
+[CHG] Device 5A:F6:CF:90:8F:EF RSSI: 0xffffffae (-82)
+[CHG] Device 73:13:F1:2B:C5:64 RSSI: 0xffffffb7 (-73)
+[CHG] Device 64:B7:08:01:CD:BE RSSI: 0xffffffaa (-86)
+[CHG] Device 30:ED:A0:F3:D4:AE RSSI: 0xffffffd4 (-44)
+[CHG] Device 51:14:CE:27:F3:4A RSSI: 0xffffffb3 (-77)
+[CHG] Device 58:F1:3F:1F:FE:85 RSSI: 0xffffffb7 (-73)
+[CHG] Device 64:B7:08:01:CD:BE RSSI: 0xffffffac (-84)
+[CHG] Device 34:13:43:E3:D9:2D RSSI: 0xffffffaa (-86)
+[CHG] Device 34:13:43:E3:D9:2D ManufacturerData.Key: 0x45e5 (17893)
+[CHG] Device 34:13:43:E3:D9:2D ManufacturerData.Value:
+  63 99 7d 19 8a 03 e9 63 24 07 17 ff 8e 77 70 00  c.}....c$....wp.
+  00 d2 fd 34 00 00 21 8c ea 21 23                 ...4..!..!#
+[CHG] Device 34:13:43:E3:D9:2D ManufacturerData.Key: 0x0211 (529)
+[CHG] Device 34:13:43:E3:D9:2D ManufacturerData.Value:
+  11 02 2d d9 e3 43 6e 00 01 2d 00 34 13 43 e3 d9  ..-..Cn..-.4.C..
+  2c 06 07 08 09 0a 0b 0c 0d 0e 0f                 ,..........
+[CHG] Device 34:13:43:E3:D9:2D AdvertisingFlags:
+  05                                               .
+[CHG] Device 0E:30:31:25:E9:2C RSSI: 0xffffffaa (-86)
+[CHG] Device 73:13:F1:2B:C5:64 RSSI: 0xffffffb3 (-77)
+[CHG] Device 40:3D:48:41:4C:F7 RSSI: 0xffffffaa (-86)
+[CHG] Device 30:ED:A0:F3:D4:AE RSSI: 0xffffffd3 (-45)
+[CHG] Device 04:E4:B6:03:69:CB RSSI: 0xffffffd7 (-41)
+[CHG] Device 73:13:F1:2B:C5:64 RSSI: 0xffffffaa (-86)
+[CHG] Device 51:14:CE:27:F3:4A RSSI: 0xffffffb6 (-74)
+[CHG] Device 57:A3:E5:7B:AA:C9 RSSI: 0xffffffaa (-86)
+[CHG] Device 64:B7:08:01:CD:BE RSSI: 0xffffffaa (-86)
+[CHG] Device 73:13:F1:2B:C5:64 RSSI: 0xffffffaa (-86)
+[CHG] Device 0E:30:31:25:E9:2C RSSI: 0xffffffaa (-86)
+[CHG] Device 64:B7:08:01:CD:BE RSSI: 0xffffffb0 (-80)
+[CHG] Device 5F:67:12:3E:5C:EC RSSI: 0xffffffb1 (-79)
+[CHG] Device 5F:67:12:3E:5C:EC ManufacturerData.Key: 0x004c (76)
+[CHG] Device 5F:67:12:3E:5C:EC ManufacturerData.Value:
+  01 00 00 00 00 00 00 00 00 00 00 00 00 80 00 00  ................
+  00                                               .
+[CHG] Device 73:13:F1:2B:C5:64 RSSI: 0xffffffb7 (-73)
+[CHG] Device 5A:F6:CF:90:8F:EF RSSI: 0xffffffb2 (-78)
+[CHG] Device 30:ED:A0:F3:D4:AE RSSI: 0xffffffd4 (-44)
+[CHG] Device 34:13:43:E6:6C:C3 RSSI: 0xffffffaa (-86)
+[CHG] Device 58:F1:3F:1F:FE:85 RSSI: 0xffffffaa (-86)
+[CHG] Device 7B:17:8E:2F:E1:FD RSSI: 0xffffffaa (-86)
+[CHG] Device 73:13:F1:2B:C5:64 RSSI: 0xffffffb7 (-73)
+[CHG] Device 64:B7:08:01:CD:BE RSSI: 0xffffffaa (-86)
+[CHG] Device 57:BA:FA:37:A1:85 RSSI: 0xffffffaa (-86)
+[CHG] Device 51:14:CE:27:F3:4A RSSI: 0xffffffb7 (-73)
+[CHG] Device 04:E4:B6:03:69:CB RSSI: 0xffffffdc (-36)
+[CHG] Device 64:B7:08:01:CD:BE RSSI: 0xffffffac (-84)
+[CHG] Device 0E:30:31:25:E9:2C RSSI: 0xffffffab (-85)
+[CHG] Device 34:13:43:E6:6C:C3 RSSI: 0xffffffaa (-86)
+[CHG] Device 34:13:43:E6:6C:C3 ManufacturerData.Key: 0x45e5 (17893)
+[CHG] Device 34:13:43:E6:6C:C3 ManufacturerData.Value:
+  17 84 7d 19 8a 03 ec 63 24 07 63 9c 8e 77 70 00  ..}....c$.c..wp.
+  00 d2 fd 34 00 00 21 8c ea 21 ae                 ...4..!..!.
+[CHG] Device 34:13:43:E6:6C:C3 ManufacturerData.Key: 0x0211 (529)
+[CHG] Device 34:13:43:E6:6C:C3 ManufacturerData.Value:
+  11 22 c3 6c e6 43                                .".l.C
+[CHG] Device 51:14:CE:27:F3:4A RSSI: 0xffffffb7 (-73)
+[CHG] Device 73:13:F1:2B:C5:64 RSSI: 0xffffffb7 (-73)
+[CHG] Device 64:B7:08:01:CD:BE RSSI: 0xffffffaf (-81)
+[CHG] Device 51:14:CE:27:F3:4A RSSI: 0xffffffb7 (-73)
+[CHG] Device 73:13:F1:2B:C5:64 RSSI: 0xffffffb7 (-73)
+[CHG] Device 40:01:00:F1:E7:A0 RSSI: 0xffffffaa (-86)
+[CHG] Device 63:8E:9D:C5:4E:B5 RSSI: 0xffffffab (-85)
+[CHG] Device 73:13:F1:2B:C5:64 RSSI: 0xffffffb7 (-73)
+[CHG] Device 51:14:CE:27:F3:4A RSSI: 0xffffffb3 (-77)
+[CHG] Device 0E:30:31:25:E9:2C RSSI: 0xffffffb0 (-80)
+[CHG] Device 73:13:F1:2B:C5:64 RSSI: 0xffffffb3 (-77)
+[CHG] Device 64:B7:08:01:CD:BE RSSI: 0xffffffad (-83)
+[CHG] Device 80:F3:DA:1C:20:3A RSSI: 0xffffffac (-84)
+[CHG] Device 04:E4:B6:03:69:CB RSSI: 0xffffffd0 (-48)
+[CHG] Device 30:ED:A0:F3:D4:AE RSSI: 0xffffffd5 (-43)
+[CHG] Device 51:14:CE:27:F3:4A RSSI: 0xffffffb7 (-73)
+[CHG] Device 5F:94:8D:2B:D5:5A RSSI: 0xffffffaa (-86)
+[CHG] Device 51:14:CE:27:F3:4A RSSI: 0xffffffb3 (-77)
+[CHG] Device 0E:30:31:25:E9:2C RSSI: 0xffffffb5 (-75)
+[CHG] Device 80:F3:DA:1E:B3:BE RSSI: 0xffffffaa (-86)
+[CHG] Device 7B:64:1E:BE:58:B2 RSSI: 0xffffffac (-84)
+[CHG] Device 51:14:CE:27:F3:4A RSSI: 0xffffffaa (-86)
+[CHG] Device 30:ED:A0:F3:D4:AE RSSI: 0xffffffd5 (-43)
+[CHG] Device 73:13:F1:2B:C5:64 RSSI: 0xffffffb3 (-77)
+[CHG] Device 51:14:CE:27:F3:4A RSSI: 0xffffffaa (-86)
+[CHG] Device 34:13:43:E6:6C:C3 RSSI: 0xffffffaa (-86)
+[CHG] Device 04:E4:B6:03:69:CB RSSI: 0xffffffdc (-36)
+[CHG] Device 73:13:F1:2B:C5:64 RSSI: 0xffffffb3 (-77)
+[CHG] Device 58:F1:3F:1F:FE:85 RSSI: 0xffffffb3 (-77)
+[CHG] Device 64:B7:08:01:CD:BE RSSI: 0xffffffb0 (-80)
+[CHG] Device 34:13:43:E3:D9:2D RSSI: 0xffffffaa (-86)
+[CHG] Device 34:13:43:E3:D9:2D ManufacturerData.Key: 0x45e5 (17893)
+[CHG] Device 34:13:43:E3:D9:2D ManufacturerData.Value:
+  63 99 7d 19 8a 03 e9 63 24 07 17 ff 8e 77 70 00  c.}....c$....wp.
+  00 d2 fd 34 00 00 21 8c ea 21 23                 ...4..!..!#
+[CHG] Device 34:13:43:E3:D9:2D ManufacturerData.Key: 0x0211 (529)
+[CHG] Device 34:13:43:E3:D9:2D ManufacturerData.Value:
+  11 02 2d d9 e3 43 6e 00 01 2d 00 34 13 43 e3 d9  ..-..Cn..-.4.C..
+  2c 06 07 08 09 0a 0b 0c 0d 0e 0f                 ,..........
+[CHG] Device 0E:30:31:25:E9:2C RSSI: 0xffffffb5 (-75)
+[CHG] Device 7B:17:8E:2F:E1:FD RSSI: 0xffffffaa (-86)
+[CHG] Device 73:13:F1:2B:C5:64 RSSI: 0xffffffb3 (-77)
+[CHG] Device 30:ED:A0:F3:D4:AE RSSI: 0xffffffd4 (-44)
+[CHG] Device 63:8E:9D:C5:4E:B5 RSSI: 0xffffffab (-85)
+[CHG] Device 51:14:CE:27:F3:4A RSSI: 0xffffffaa (-86)
+[CHG] Device 0E:30:31:25:E9:2C RSSI: 0xffffffb0 (-80)
+[CHG] Device 04:E4:B6:03:69:CB RSSI: 0xffffffd0 (-48)
+[CHG] Device 64:B7:08:01:CD:BE RSSI: 0xffffffb0 (-80)
+[CHG] Device 73:13:F1:2B:C5:64 RSSI: 0xffffffb7 (-73)
+[CHG] Device 5F:67:12:3E:5C:EC RSSI: 0xffffffb3 (-77)
+[CHG] Device 5F:67:12:3E:5C:EC ManufacturerData.Key: 0x004c (76)
+[CHG] Device 5F:67:12:3E:5C:EC ManufacturerData.Value:
+  10 07 3e 1f 74 dc a7 10 78                       ..>.t...x
+[CHG] Device 51:14:CE:27:F3:4A RSSI: 0xffffffaa (-86)
+[CHG] Device 2C:41:A1:F7:62:C9 RSSI: 0xffffffaa (-86)
+[CHG] Device 58:F1:3F:1F:FE:85 RSSI: 0xffffffb7 (-73)
+[CHG] Device 64:B7:08:01:CD:BE RSSI: 0xffffffaa (-86)
+[CHG] Device 7B:17:8E:2F:E1:FD RSSI: 0xffffffb2 (-78)
+[CHG] Device 7B:64:1E:BE:58:B2 RSSI: 0xffffffb4 (-76)
+[CHG] Device 80:F3:DA:1D:33:AE RSSI: 0xffffffac (-84)
+[CHG] Device 73:13:F1:2B:C5:64 RSSI: 0xffffffb7 (-73)
+[CHG] Device 30:ED:A0:F3:D4:AE RSSI: 0xffffffd4 (-44)
+[CHG] Device 5A:F6:CF:90:8F:EF RSSI: 0xffffffb3 (-77)
+[CHG] Device 40:01:00:F1:E7:A0 RSSI: 0xffffffaa (-86)
+[CHG] Device 34:13:43:E6:6C:C3 RSSI: 0xffffffaa (-86)
+[CHG] Device 34:13:43:E6:6C:C3 ManufacturerData.Key: 0x45e5 (17893)
+[CHG] Device 34:13:43:E6:6C:C3 ManufacturerData.Value:
+  17 85 7d 19 8a 03 ed 63 24 07 63 9d 8e 77 70 00  ..}....c$.c..wp.
+  00 d2 fd 34 00 00 21 8c ea 21 b1                 ...4..!..!.
+[CHG] Device 34:13:43:E6:6C:C3 ManufacturerData.Key: 0x0211 (529)
+[CHG] Device 34:13:43:E6:6C:C3 ManufacturerData.Value:
+  11 22 c3 6c e6 43                                .".l.C
+[CHG] Device 64:B7:08:01:CD:BE RSSI: 0xffffffaa (-86)
+[CHG] Device 73:13:F1:2B:C5:64 RSSI: 0xffffffb7 (-73)
+[CHG] Device 51:14:CE:27:F3:4A RSSI: 0xffffffb7 (-73)
+[CHG] Device 51:14:CE:27:F3:4A RSSI: 0xffffffb6 (-74)
+[CHG] Device 0E:30:31:25:E9:2C RSSI: 0xffffffb5 (-75)
+[CHG] Device 73:13:F1:2B:C5:64 RSSI: 0xffffffb3 (-77)
+[CHG] Device EA:D1:69:D6:AE:60 RSSI: 0xffffffab (-85)
+[CHG] Device 73:13:F1:2B:C5:64 RSSI: 0xffffffb7 (-73)
+[CHG] Device 30:ED:A0:F3:D4:AE RSSI: 0xffffffd3 (-45)
+[CHG] Device 51:14:CE:27:F3:4A RSSI: 0xffffffb3 (-77)
+[CHG] Device 58:F1:3F:1F:FE:85 RSSI: 0xffffffb3 (-77)
+[CHG] Device 57:A3:E5:7B:AA:C9 RSSI: 0xffffffaa (-86)
+[CHG] Device 64:B7:08:01:CD:BE RSSI: 0xffffffb0 (-80)
+[CHG] Device 34:13:43:E6:6C:C3 RSSI: 0xffffffaa (-86)
+[CHG] Device 34:13:43:E6:6C:C3 ManufacturerData.Key: 0x45e5 (17893)
+[CHG] Device 34:13:43:E6:6C:C3 ManufacturerData.Value:
+  17 86 7d 19 8a 03 ee 63 24 07 63 9e 8e 77 70 00  ..}....c$.c..wp.
+  00 d2 fd 34 00 00 21 8c ea 21 b4                 ...4..!..!.
+[CHG] Device 34:13:43:E6:6C:C3 ManufacturerData.Key: 0x0211 (529)
+[CHG] Device 34:13:43:E6:6C:C3 ManufacturerData.Value:
+  11 22 c3 6c e6 43                                .".l.C
+[CHG] Device 7B:17:8E:2F:E1:FD RSSI: 0xffffffab (-85)
+[CHG] Device 51:14:CE:27:F3:4A RSSI: 0xffffffb3 (-77)
+[CHG] Device 73:13:F1:2B:C5:64 RSSI: 0xffffffb3 (-77)
+[CHG] Device 0E:30:31:25:E9:2C RSSI: 0xffffffb5 (-75)
+[CHG] Device 51:14:CE:27:F3:4A RSSI: 0xffffffb7 (-73)
+[CHG] Device 5F:67:12:3E:5C:EC RSSI: 0xffffffb4 (-76)
+[CHG] Device 64:B7:08:01:CD:BE RSSI: 0xffffffaa (-86)
+[CHG] Device 51:14:CE:27:F3:4A RSSI: 0xffffffb7 (-73)
+[CHG] Device 73:13:F1:2B:C5:64 RSSI: 0xffffffb3 (-77)
+[CHG] Device 5A:F6:CF:90:8F:EF RSSI: 0xffffffad (-83)
+[CHG] Device 80:F3:DA:1C:20:3A RSSI: 0xffffffac (-84)
+[CHG] Device 7B:64:1E:BE:58:B2 RSSI: 0xffffffae (-82)
+[CHG] Device 51:14:CE:27:F3:4A RSSI: 0xffffffb7 (-73)
+[CHG] Device 40:01:00:F1:E7:A0 RSSI: 0xffffffaa (-86)
+[CHG] Device 51:14:CE:27:F3:4A RSSI: 0xffffffb7 (-73)
+[CHG] Device E6:69:A2:FF:55:30 RSSI: 0xffffffb6 (-74)
+[CHG] Device 64:B7:08:01:CD:BE RSSI: 0xffffffaa (-86)
+[CHG] Device 34:13:43:E3:D9:2D RSSI: 0xffffffaa (-86)
+[CHG] Device 34:13:43:E3:D9:2D ManufacturerData.Key: 0x45e5 (17893)
+[CHG] Device 34:13:43:E3:D9:2D ManufacturerData.Value:
+  63 9f 7d 19 8a 03 ef 63 24 07 17 86 8e 77 70 00  c.}....c$....wp.
+  00 d2 fd 34 00 00 21 8c ea 21 b6                 ...4..!..!.
+[CHG] Device 34:13:43:E3:D9:2D ManufacturerData.Key: 0x0211 (529)
+[CHG] Device 34:13:43:E3:D9:2D ManufacturerData.Value:
+  11 02 2d d9 e3 43 6e 00 01 2d 00 34 13 43 e3 d9  ..-..Cn..-.4.C..
+  2c 06 07 08 09 0a 0b 0c 0d 0e 0f                 ,..........
+[CHG] Device 34:13:43:E3:D9:2D AdvertisingFlags:
+  00                                               .
+[CHG] Device 51:14:CE:27:F3:4A RSSI: 0xffffffb7 (-73)
+[CHG] Device 30:ED:A0:F3:D4:AE RSSI: 0xffffffd4 (-44)
+[CHG] Device 7B:17:8E:2F:E1:FD RSSI: 0xffffffb2 (-78)
+[CHG] Device 51:14:CE:27:F3:4A RSSI: 0xffffffb7 (-73)
+[CHG] Device 04:E4:B6:03:69:CB RSSI: 0xffffffd7 (-41)
+[CHG] Device 51:14:CE:27:F3:4A RSSI: 0xffffffb7 (-73)
+[CHG] Device 38:A5:C9:C3:BD:F8 RSSI: 0xffffffaa (-86)
+[CHG] Device 0E:30:31:25:E9:2C RSSI: 0xffffffab (-85)
+[CHG] Device 64:B7:08:01:CD:BE RSSI: 0xffffffb0 (-80)
+[CHG] Device 34:13:43:E3:41:E9 RSSI: 0xffffffaa (-86)
+[CHG] Device 34:13:43:E3:41:E9 ManufacturerData.Key: 0x45e5 (17893)
+[CHG] Device 34:13:43:E3:41:E9 ManufacturerData.Value:
+  03 f0 d3 5a 49 63 9f 57 f0 59 17 86 3b a8 ee 00  ...ZIc.W.Y..;...
+  00 6e 63 07 00 00 da 87 97 d3 63                 .nc.......c
+[CHG] Device 34:13:43:E3:41:E9 ManufacturerData.Key: 0x0211 (529)
+[CHG] Device 34:13:43:E3:41:E9 ManufacturerData.Value:
+  11 22 e9 41 e3 43                                .".A.C
+[CHG] Device 57:A3:E5:7B:AA:C9 RSSI: 0xffffffaa (-86)
+[CHG] Device 73:13:F1:2B:C5:64 RSSI: 0xffffffb7 (-73)
+[CHG] Device 3A:ED:3B:6B:E7:6D RSSI: 0xffffffaa (-86)
+[CHG] Device 51:14:CE:27:F3:4A RSSI: 0xffffffb2 (-78)
+[CHG] Device 30:ED:A0:F3:D4:AE RSSI: 0xffffffd4 (-44)
+[CHG] Device 5A:F6:CF:90:8F:EF RSSI: 0xffffffb3 (-77)
+[CHG] Device 51:14:CE:27:F3:4A RSSI: 0xffffffb4 (-76)
+[CHG] Device FC:CF:B6:63:90:E2 RSSI: 0xffffffb6 (-74)
+[CHG] Device 64:B7:08:01:CD:BE RSSI: 0xffffffaa (-86)
+[CHG] Device 7B:64:1E:BE:58:B2 RSSI: 0xffffffae (-82)
+[CHG] Device 04:E4:B6:03:69:CB RSSI: 0xffffffdc (-36)
+[CHG] Device 7B:17:8E:2F:E1:FD RSSI: 0xffffffaa (-86)
+[CHG] Device 30:ED:A0:F3:D4:AE RSSI: 0xffffffd5 (-43)
+[CHG] Device 0E:30:31:25:E9:2C RSSI: 0xffffffb5 (-75)
+[CHG] Device 64:B7:08:01:CD:BE RSSI: 0xffffffb0 (-80)
+[CHG] Device 38:A5:C9:C3:BD:F8 RSSI: 0xffffffaa (-86)
+[CHG] Device 38:A5:C9:C3:BD:F8 ManufacturerData.Key: 0x07d0 (2000)
+[CHG] Device 38:A5:C9:C3:BD:F8 ManufacturerData.Value:
+  81 03 00 00 0c 00 59 11 ca f7 58 df 67 1c e7 18  ......Y...X.g...
+  df 46 d9 e1 f8 60                                .F...`
+[CHG] Device 80:F3:DA:1D:33:AE RSSI: 0xffffffab (-85)
+[CHG] Device 64:B7:08:01:CD:BE RSSI: 0xffffffaa (-86)
+[CHG] Device 40:3D:48:41:4C:F7 RSSI: 0xffffffaa (-86)
+[CHG] Device 30:ED:A0:F3:D4:AE RSSI: 0xffffffd5 (-43)
+[CHG] Device 34:13:43:E6:6C:C3 RSSI: 0xffffffaa (-86)
+[CHG] Device 34:13:43:E6:6C:C3 AdvertisingFlags:
+  05                                               .
+[CHG] Device 58:F1:3F:1F:FE:85 RSSI: 0xffffffb6 (-74)
+[CHG] Device 34:13:43:E3:D9:2D RSSI: 0xffffffaa (-86)
+[CHG] Device 34:13:43:E3:D9:2D ManufacturerData.Key: 0x45e5 (17893)
+[CHG] Device 34:13:43:E3:D9:2D ManufacturerData.Value:
+  63 a0 7d 19 8a 03 f0 63 24 07 17 87 8e 77 70 00  c.}....c$....wp.
+  00 d2 fd 34 00 00 21 8c ea 21 b9                 ...4..!..!.
+[CHG] Device 34:13:43:E3:D9:2D ManufacturerData.Key: 0x0211 (529)
+[CHG] Device 34:13:43:E3:D9:2D ManufacturerData.Value:
+  11 02 2d d9 e3 43 6e 00 01 2d 00 34 13 43 e3 d9  ..-..Cn..-.4.C..
+  2c 06 07 08 09 0a 0b 0c 0d 0e 0f                 ,..........
+[CHG] Device 5A:F6:CF:90:8F:EF RSSI: 0xffffffaa (-86)
+[CHG] Device 04:E4:B6:03:69:CB RSSI: 0xffffffd0 (-48)
+[CHG] Device 57:A3:E5:7B:AA:C9 RSSI: 0xffffffaa (-86)
+[CHG] Device 64:B7:08:01:CD:BE RSSI: 0xffffffaf (-81)
+[CHG] Device 0E:30:31:25:E9:2C RSSI: 0xffffffaf (-81)
+[CHG] Device 7B:17:8E:2F:E1:FD RSSI: 0xffffffb0 (-80)
+[CHG] Device 30:ED:A0:F3:D4:AE RSSI: 0xffffffd4 (-44)
+[CHG] Device 34:13:43:E6:6C:C3 RSSI: 0xffffffaa (-86)
+[CHG] Device 34:13:43:E6:6C:C3 ManufacturerData.Key: 0x45e5 (17893)
+[CHG] Device 34:13:43:E6:6C:C3 ManufacturerData.Value:
+  17 88 7d 19 8a 03 f0 63 24 07 63 9f 8e 77 70 00  ..}....c$.c..wp.
+  00 d2 fd 34 00 00 21 8c ea 21 b9                 ...4..!..!.
+[CHG] Device 34:13:43:E6:6C:C3 ManufacturerData.Key: 0x0211 (529)
+[CHG] Device 34:13:43:E6:6C:C3 ManufacturerData.Value:
+  11 22 c3 6c e6 43                                .".l.C
+[CHG] Device 34:13:43:E6:6C:C3 AdvertisingFlags:
+  00                                               .
+[CHG] Device 5F:67:12:3E:5C:EC RSSI: 0xffffffb2 (-78)
+[CHG] Device 5F:67:12:3E:5C:EC ManufacturerData.Key: 0x004c (76)
+[CHG] Device 5F:67:12:3E:5C:EC ManufacturerData.Value:
+  01 00 00 00 00 00 00 00 00 00 00 00 00 80 00 00  ................
+  00                                               .
+[CHG] Device 64:B7:08:01:CD:BE RSSI: 0xffffffaa (-86)
+[CHG] Device 40:01:00:F1:E7:A0 RSSI: 0xffffffaa (-86)
+[CHG] Device 57:BA:FA:37:A1:85 RSSI: 0xffffffaa (-86)
+[CHG] Device 7B:64:1E:BE:58:B2 RSSI: 0xffffffae (-82)
+[CHG] Device 34:13:43:E3:D9:2D RSSI: 0xffffffaa (-86)
+[CHG] Device 34:13:43:E3:D9:2D ManufacturerData.Key: 0x45e5 (17893)
+[CHG] Device 34:13:43:E3:D9:2D ManufacturerData.Value:
+  63 a0 7d 19 8a 03 f0 63 24 07 17 87 8e 77 70 00  c.}....c$....wp.
+  00 d2 fd 34 00 00 21 8c ea 21 b9                 ...4..!..!.
+[CHG] Device 34:13:43:E3:D9:2D ManufacturerData.Key: 0x0211 (529)
+[CHG] Device 34:13:43:E3:D9:2D ManufacturerData.Value:
+  11 22 2d d9 e3 43                                ."-..C
+[CHG] Device 34:13:43:E3:D9:2D AdvertisingFlags:
+  05                                               .
+[CHG] Device 04:E4:B6:03:69:CB RSSI: 0xffffffd7 (-41)
+[CHG] Device 51:14:CE:27:F3:4A RSSI: 0xffffffb3 (-77)
+[CHG] Device 58:F1:3F:1F:FE:85 RSSI: 0xffffffb3 (-77)
+[CHG] Device 30:ED:A0:F3:D4:AE RSSI: 0xffffffd5 (-43)
+[CHG] Device 73:13:F1:2B:C5:64 RSSI: 0xffffffb7 (-73)
+[CHG] Device 5A:F6:CF:90:8F:EF RSSI: 0xffffffac (-84)
+[CHG] Device 80:F3:DA:1C:20:3A RSSI: 0xffffffaf (-81)
+[CHG] Device 34:13:43:E3:D9:2D RSSI: 0xffffffaa (-86)
+[CHG] Device 34:13:43:E3:D9:2D AdvertisingFlags:
+  00                                               .
+[CHG] Device 64:B7:08:01:CD:BE RSSI: 0xffffffaa (-86)
+[CHG] Device 7B:17:8E:2F:E1:FD RSSI: 0xffffffad (-83)
+[CHG] Device 0E:30:31:25:E9:2C RSSI: 0xffffffb5 (-75)
+[CHG] Device 64:B7:08:01:CD:BE RSSI: 0xffffffb1 (-79)
+[CHG] Device 30:ED:A0:F3:D4:AE RSSI: 0xffffffd4 (-44)
+[CHG] Device 34:13:43:E3:D9:2D RSSI: 0xffffffaa (-86)
+[CHG] Device 34:13:43:E3:D9:2D ManufacturerData.Key: 0x45e5 (17893)
+[CHG] Device 34:13:43:E3:D9:2D ManufacturerData.Value:
+  63 a1 7d 19 8a 03 f0 63 24 07 17 87 8e 77 70 00  c.}....c$....wp.
+  00 d2 fd 34 00 00 21 8c ea 21 ba                 ...4..!..!.
+[CHG] Device 34:13:43:E3:D9:2D ManufacturerData.Key: 0x0211 (529)
+[CHG] Device 34:13:43:E3:D9:2D ManufacturerData.Value:
+  11 22 2d d9 e3 43                                ."-..C
+[CHG] Device CD:EB:05:9F:1D:DB RSSI: 0xffffffaa (-86)
+[CHG] Device 04:E4:B6:03:69:CB RSSI: 0xffffffd7 (-41)
+[CHG] Device 38:A5:C9:C3:BD:F8 RSSI: 0xffffffaa (-86)
+[CHG] Device 58:F1:3F:1F:FE:85 RSSI: 0xffffffb6 (-74)
+[CHG] Device 0E:30:31:25:E9:2C RSSI: 0xffffffb5 (-75)
+[CHG] Device 64:B7:08:01:CD:BE RSSI: 0xffffffad (-83)
+[CHG] Device 57:BA:FA:37:A1:85 RSSI: 0xffffffaa (-86)
+[CHG] Device 7B:64:1E:BE:58:B2 RSSI: 0xffffffab (-85)
+[CHG] Device 7B:17:8E:2F:E1:FD RSSI: 0xffffffb0 (-80)
+[CHG] Device 34:13:43:E3:41:E9 RSSI: 0xffffffaa (-86)
+[CHG] Device 34:13:43:E3:41:E9 ManufacturerData.Key: 0x45e5 (17893)
+[CHG] Device 34:13:43:E3:41:E9 ManufacturerData.Value:
+  03 f2 d3 5a 49 63 a0 57 f0 59 17 88 3b a8 ee 00  ...ZIc.W.Y..;...
+  00 6e 63 07 00 00 da 87 97 d3 68                 .nc.......h
+[CHG] Device 34:13:43:E3:41:E9 ManufacturerData.Key: 0x0211 (529)
+[CHG] Device 34:13:43:E3:41:E9 ManufacturerData.Value:
+  11 22 e9 41 e3 43                                .".A.C
+[CHG] Device 34:13:43:E6:6C:C3 RSSI: 0xffffffaa (-86)
+[CHG] Device 34:13:43:E6:6C:C3 ManufacturerData.Key: 0x45e5 (17893)
+[CHG] Device 34:13:43:E6:6C:C3 ManufacturerData.Value:
+  17 89 7d 19 8a 03 f1 63 24 07 63 a0 8e 77 70 00  ..}....c$.c..wp.
+  00 d2 fd 34 00 00 21 8c ea 21 bc                 ...4..!..!.
+[CHG] Device 34:13:43:E6:6C:C3 ManufacturerData.Key: 0x0211 (529)
+[CHG] Device 34:13:43:E6:6C:C3 ManufacturerData.Value:
+  11 22 c3 6c e6 43                                .".l.C
+[CHG] Device 64:B7:08:01:CD:BE RSSI: 0xffffffb0 (-80)
+[CHG] Device D3:16:C9:AA:14:17 RSSI: 0xffffffb1 (-79)
+[CHG] Device 04:E4:B6:03:69:CB RSSI: 0xffffffd7 (-41)
+[CHG] Device E8:0E:72:B8:D2:AF RSSI: 0xffffffac (-84)
+[CHG] Device 64:B7:08:01:CD:BE RSSI: 0xffffffad (-83)
+[CHG] Device 51:14:CE:27:F3:4A RSSI: 0xffffffb3 (-77)
+[NEW] Device E5:46:EA:A5:F4:63 E5-46-EA-A5-F4-63
+[CHG] Device 38:A5:C9:C3:BD:F8 RSSI: 0xffffffaa (-86)
+[CHG] Device 58:F1:3F:1F:FE:85 RSSI: 0xffffffaa (-86)
+[CHG] Device 73:13:F1:2B:C5:64 RSSI: 0xffffffb7 (-73)
+[CHG] Device 0E:30:31:25:E9:2C RSSI: 0xffffffaa (-86)
+[NEW] Device 7F:E6:4F:5D:5C:E6 7F-E6-4F-5D-5C-E6
+[CHG] Device DE:DE:71:B2:64:7D RSSI: 0xffffffab (-85)
+[CHG] Device 7B:17:8E:2F:E1:FD RSSI: 0xffffffae (-82)
+[CHG] Device 3A:ED:3B:6B:E7:6D RSSI: 0xffffffaa (-86)
+[CHG] Device 5F:67:12:3E:5C:EC RSSI: 0xffffffb2 (-78)
+[CHG] Device 5F:67:12:3E:5C:EC ManufacturerData.Key: 0x004c (76)
+[CHG] Device 5F:67:12:3E:5C:EC ManufacturerData.Value:
+  01 00 00 00 00 00 00 00 00 00 00 00 00 80 00 00  ................
+  00                                               .
+[CHG] Device 64:B7:08:01:CD:BE RSSI: 0xffffffaa (-86)
+[CHG] Device 04:E4:B6:03:69:CB RSSI: 0xffffffdc (-36)
+[CHG] Device 5A:F6:CF:90:8F:EF RSSI: 0xffffffae (-82)
+[CHG] Device 0E:30:31:25:E9:2C RSSI: 0xffffffac (-84)
+[CHG] Device 64:B7:08:01:CD:BE RSSI: 0xffffffac (-84)
+[CHG] Device 34:13:43:E6:6C:C3 RSSI: 0xffffffaa (-86)
+[CHG] Device 7B:64:1E:BE:58:B2 RSSI: 0xffffffb5 (-75)
+[CHG] Device 30:ED:A0:F3:D4:AE RSSI: 0xffffffd4 (-44)
+[CHG] Device 34:13:43:E6:6C:C3 RSSI: 0xffffffaa (-86)
+[CHG] Device 34:13:43:E6:6C:C3 ManufacturerData.Key: 0x45e5 (17893)
+[CHG] Device 34:13:43:E6:6C:C3 ManufacturerData.Value:
+  17 8a 7d 19 8a 03 f2 63 24 07 63 a2 8e 77 70 00  ..}....c$.c..wp.
+  00 d2 fd 34 00 00 21 8c ea 21 c0                 ...4..!..!.
+[CHG] Device 34:13:43:E6:6C:C3 ManufacturerData.Key: 0x0211 (529)
+[CHG] Device 34:13:43:E6:6C:C3 ManufacturerData.Value:
+  11 22 c3 6c e6 43                                .".l.C
+[CHG] Device 51:14:CE:27:F3:4A RSSI: 0xffffffb6 (-74)
+[CHG] Device 58:F1:3F:1F:FE:85 RSSI: 0xffffffb6 (-74)
+[CHG] Device 0E:30:31:25:E9:2C RSSI: 0xffffffaa (-86)
+[CHG] Device 63:8E:9D:C5:4E:B5 RSSI: 0xffffffab (-85)
+[CHG] Device 64:B7:08:01:CD:BE RSSI: 0xffffffac (-84)
+[CHG] Device 30:ED:A0:F3:D4:AE RSSI: 0xffffffd4 (-44)
+[CHG] Device 7F:E6:4F:5D:5C:E6 RSSI: 0xffffffaa (-86)
+[CHG] Device 7F:E6:4F:5D:5C:E6 ManufacturerData.Key: 0x004c (76)
+[CHG] Device 7F:E6:4F:5D:5C:E6 ManufacturerData.Value:
+  10 07 7a 1f 6f e4 8c a7 78                       ..z.o...x
+[CHG] Device 57:A3:E5:7B:AA:C9 RSSI: 0xffffffaa (-86)
+[CHG] Device D1:2C:7A:65:60:D1 RSSI: 0xffffffad (-83)
+[CHG] Device 5A:F6:CF:90:8F:EF RSSI: 0xffffffb2 (-78)
+[CHG] Device 80:F3:DA:1C:20:3A RSSI: 0xffffffaf (-81)
+[CHG] Device 0E:30:31:25:E9:2C RSSI: 0xffffffac (-84)
+[CHG] Device 5F:67:12:3E:5C:EC RSSI: 0xffffffb2 (-78)
+[CHG] Device 5F:67:12:3E:5C:EC ManufacturerData.Key: 0x004c (76)
+[CHG] Device 5F:67:12:3E:5C:EC ManufacturerData.Value:
+  10 07 3e 1f 74 dc a7 10 78                       ..>.t...x
+[CHG] Device 58:F1:3F:1F:FE:85 RSSI: 0xffffffaa (-86)
+[CHG] Device 30:ED:A0:F3:D4:AE RSSI: 0xffffffd5 (-43)
+[CHG] Device 2C:41:A1:F7:62:C9 RSSI: 0xffffffaa (-86)
+[CHG] Device 73:13:F1:2B:C5:64 RSSI: 0xffffffb6 (-74)
+[CHG] Device 64:B7:08:01:CD:BE RSSI: 0xffffffac (-84)
+[CHG] Device 04:E4:B6:03:69:CB RSSI: 0xffffffd7 (-41)
+[CHG] Device 7B:17:8E:2F:E1:FD RSSI: 0xffffffae (-82)
+[CHG] Device 64:B7:08:01:CD:BE RSSI: 0xffffffb0 (-80)
+[CHG] Device 34:13:43:E6:6C:C3 RSSI: 0xffffffaa (-86)
+[CHG] Device 30:ED:A0:F3:D4:AE RSSI: 0xffffffd5 (-43)
+[CHG] Device 34:13:43:E6:6C:C3 RSSI: 0xffffffaa (-86)
+[CHG] Device 34:13:43:E6:6C:C3 ManufacturerData.Key: 0x45e5 (17893)
+[CHG] Device 34:13:43:E6:6C:C3 ManufacturerData.Value:
+  17 8b 7d 19 8a 03 f3 63 24 07 63 a3 8e 77 70 00  ..}....c$.c..wp.
+  00 d2 fd 34 00 00 21 8c ea 21 c3                 ...4..!..!.
+[CHG] Device 34:13:43:E6:6C:C3 ManufacturerData.Key: 0x0211 (529)
+[CHG] Device 34:13:43:E6:6C:C3 ManufacturerData.Value:
+  11 22 c3 6c e6 43                                .".l.C
+[CHG] Device 63:8E:9D:C5:4E:B5 RSSI: 0xffffffaa (-86)
+[CHG] Device 58:F1:3F:1F:FE:85 RSSI: 0xffffffb6 (-74)
+[CHG] Device 57:A3:E5:7B:AA:C9 RSSI: 0xffffffaa (-86)
+[CHG] Device 7B:17:8E:2F:E1:FD RSSI: 0xffffffae (-82)
+[CHG] Device 40:01:00:F1:E7:A0 RSSI: 0xffffffaf (-81)
+[CHG] Device 5F:67:12:3E:5C:EC RSSI: 0xffffffb4 (-76)
+[CHG] Device 5F:67:12:3E:5C:EC ManufacturerData.Key: 0x004c (76)
+[CHG] Device 5F:67:12:3E:5C:EC ManufacturerData.Value:
+  01 00 00 00 00 00 00 00 00 00 00 00 00 80 00 00  ................
+  00                                               .
+[CHG] Device 34:13:43:E3:D9:2D RSSI: 0xffffffaa (-86)
+[CHG] Device 34:13:43:E3:D9:2D ManufacturerData.Key: 0x45e5 (17893)
+[CHG] Device 34:13:43:E3:D9:2D ManufacturerData.Value:
+  63 a3 7d 19 8a 03 f3 63 24 07 17 8a 8e 77 70 00  c.}....c$....wp.
+  00 d2 fd 34 00 00 21 8c ea 21 c2                 ...4..!..!.
+[CHG] Device 34:13:43:E3:D9:2D ManufacturerData.Key: 0x0211 (529)
+[CHG] Device 34:13:43:E3:D9:2D ManufacturerData.Value:
+  11 22 2d d9 e3 43                                ."-..C
+[CHG] Device 0E:30:31:25:E9:2C RSSI: 0xffffffb5 (-75)
+[CHG] Device 64:B7:08:01:CD:BE RSSI: 0xffffffaa (-86)
+[CHG] Device 30:ED:A0:F3:D4:AE RSSI: 0xffffffd4 (-44)
+[CHG] Device 3A:ED:3B:6B:E7:6D RSSI: 0xffffffaa (-86)
+[CHG] Device 64:B7:08:01:CD:BE RSSI: 0xffffffac (-84)
+[CHG] Device 7B:64:1E:BE:58:B2 RSSI: 0xffffffaa (-86)
+[CHG] Device 04:E4:B6:03:69:CB RSSI: 0xffffffd7 (-41)
+[CHG] Device 34:13:43:E3:D9:2D RSSI: 0xffffffaa (-86)
+[CHG] Device 34:13:43:E3:D9:2D ManufacturerData.Key: 0x45e5 (17893)
+[CHG] Device 34:13:43:E3:D9:2D ManufacturerData.Value:
+  63 a4 7d 19 8a 03 f4 63 24 07 17 8b 8e 77 70 00  c.}....c$....wp.
+  00 d2 fd 34 00 00 21 8c ea 21 c5                 ...4..!..!.
+[CHG] Device 34:13:43:E3:D9:2D ManufacturerData.Key: 0x0211 (529)
+[CHG] Device 34:13:43:E3:D9:2D ManufacturerData.Value:
+  11 22 2d d9 e3 43                                ."-..C
+[CHG] Device E4:B6:D6:A2:10:69 RSSI: 0xffffffaa (-86)
+[CHG] Device 51:14:CE:27:F3:4A RSSI: 0xffffffaa (-86)
+[CHG] Device 0E:30:31:25:E9:2C RSSI: 0xffffffae (-82)
+[CHG] Device 73:13:F1:2B:C5:64 RSSI: 0xffffffb4 (-76)
+[CHG] Device 7B:17:8E:2F:E1:FD RSSI: 0xffffffad (-83)
+[CHG] Device 30:ED:A0:F3:D4:AE RSSI: 0xffffffd4 (-44)
+[CHG] Device 40:3D:48:41:4C:F7 RSSI: 0xffffffaa (-86)
+[CHG] Device C8:3F:ED:EE:5B:C8 RSSI: 0xffffffae (-82)
+[CHG] Device 40:01:00:F1:E7:A0 RSSI: 0xffffffab (-85)
+[CHG] Device 34:13:43:E6:6C:C3 RSSI: 0xffffffaa (-86)
+[CHG] Device 34:13:43:E6:6C:C3 ManufacturerData.Key: 0x45e5 (17893)
+[CHG] Device 34:13:43:E6:6C:C3 ManufacturerData.Value:
+  17 8c 7d 19 8a 03 f4 63 24 07 63 a4 8e 77 70 00  ..}....c$.c..wp.
+  00 d2 fd 34 00 00 21 8c ea 21 c6                 ...4..!..!.
+[CHG] Device 34:13:43:E6:6C:C3 ManufacturerData.Key: 0x0211 (529)
+[CHG] Device 34:13:43:E6:6C:C3 ManufacturerData.Value:
+  11 22 c3 6c e6 43                                .".l.C
+[CHG] Device 57:A3:E5:7B:AA:C9 RSSI: 0xffffffaa (-86)
+[CHG] Device 0E:30:31:25:E9:2C RSSI: 0xffffffb1 (-79)
+[CHG] Device 04:E4:B6:03:69:CB RSSI: 0xffffffdc (-36)
+[CHG] Device 64:B7:08:01:CD:BE RSSI: 0xffffffab (-85)
+[CHG] Device 30:ED:A0:F3:D4:AE RSSI: 0xffffffd4 (-44)
+[CHG] Device 5F:67:12:3E:5C:EC RSSI: 0xffffffb3 (-77)
+[CHG] Device 5F:67:12:3E:5C:EC ManufacturerData.Key: 0x004c (76)
+[CHG] Device 5F:67:12:3E:5C:EC ManufacturerData.Value:
+  01 00 00 00 00 00 00 00 00 00 00 00 00 80 00 00  ................
+  00                                               .
+[CHG] Device 51:14:CE:27:F3:4A RSSI: 0xffffffb4 (-76)
+[CHG] Device 2C:41:A1:F7:62:C9 RSSI: 0xffffffaa (-86)
+[CHG] Device 58:F1:3F:1F:FE:85 RSSI: 0xffffffaa (-86)
+[CHG] Device 73:13:F1:2B:C5:64 RSSI: 0xffffffaa (-86)
+[CHG] Device 5A:F6:CF:90:8F:EF RSSI: 0xffffffb3 (-77)
+[CHG] Device 71:0E:AE:F3:AA:10 RSSI: 0xffffffaa (-86)
+[CHG] Device 7B:64:1E:BE:58:B2 RSSI: 0xffffffb5 (-75)
+[CHG] Device 30:ED:A0:F3:D4:AE RSSI: 0xffffffd4 (-44)
+[CHG] Device 04:E4:B6:03:69:CB RSSI: 0xffffffd1 (-47)
+[CHG] Device 64:B7:08:01:CD:BE RSSI: 0xffffffb0 (-80)
+[CHG] Device 0E:30:31:25:E9:2C RSSI: 0xffffffb5 (-75)
+[CHG] Device 40:3D:48:41:4C:F7 RSSI: 0xffffffaa (-86)
+[CHG] Device E6:69:A2:FF:55:30 RSSI: 0xffffffae (-82)
+[CHG] Device 30:ED:A0:F3:D4:AE RSSI: 0xffffffd4 (-44)
+[CHG] Device D8:51:54:B3:E6:AF RSSI: 0xffffffaa (-86)
+[CHG] Device 71:0E:AE:F3:AA:10 RSSI: 0xffffffaa (-86)
+[CHG] Device 51:14:CE:27:F3:4A RSSI: 0xffffffab (-85)
+[CHG] Device 73:13:F1:2B:C5:64 RSSI: 0xffffffb7 (-73)
+[CHG] Device 58:F1:3F:1F:FE:85 RSSI: 0xffffffb4 (-76)
+[CHG] Device 64:B7:08:01:CD:BE RSSI: 0xffffffac (-84)
+[CHG] Device 7B:17:8E:2F:E1:FD RSSI: 0xffffffad (-83)
+[CHG] Device 04:E4:B6:03:69:CB RSSI: 0xffffffd7 (-41)
+[CHG] Device 5F:67:12:3E:5C:EC RSSI: 0xffffffb4 (-76)
+[CHG] Device 5F:67:12:3E:5C:EC ManufacturerData.Key: 0x004c (76)
+[CHG] Device 5F:67:12:3E:5C:EC ManufacturerData.Value:
+  01 00 00 00 00 00 00 00 00 00 00 00 00 80 00 00  ................
+  00                                               .
+[CHG] Device 64:B7:08:01:CD:BE RSSI: 0xffffffaf (-81)
+[CHG] Device 30:ED:A0:F3:D4:AE RSSI: 0xffffffd3 (-45)
+[CHG] Device 0E:30:31:25:E9:2C RSSI: 0xffffffb4 (-76)
+[CHG] Device 64:B7:08:01:CD:BE RSSI: 0xffffffaa (-86)
+[CHG] Device 71:0E:AE:F3:AA:10 RSSI: 0xffffffaa (-86)
+[CHG] Device 7B:64:1E:BE:58:B2 RSSI: 0xffffffb5 (-75)
+[CHG] Device CC:0C:7C:1E:2F:98 RSSI: 0xffffffb5 (-75)
+[CHG] Device 0E:30:31:25:E9:2C RSSI: 0xffffffb5 (-75)
+[CHG] Device FC:CF:B6:63:90:E2 RSSI: 0xffffffb4 (-76)
+[CHG] Device D7:E2:23:91:D7:1A RSSI: 0xffffffae (-82)
+[CHG] Device 30:ED:A0:F3:D4:AE RSSI: 0xffffffd3 (-45)
+[CHG] Device 51:14:CE:27:F3:4A RSSI: 0xffffffb4 (-76)
+[CHG] Device 73:13:F1:2B:C5:64 RSSI: 0xffffffac (-84)
+[CHG] Device 04:E4:B6:03:69:CB RSSI: 0xffffffdc (-36)
+[CHG] Device 40:01:00:F1:E7:A0 RSSI: 0xffffffb0 (-80)
+[CHG] Device C5:4A:AD:30:72:07 RSSI: 0xffffffab (-85)
+[CHG] Device 64:B7:08:01:CD:BE RSSI: 0xffffffaa (-86)
+[CHG] Device 5A:F6:CF:90:8F:EF RSSI: 0xffffffac (-84)
+[CHG] Device 30:ED:A0:F3:D4:AE RSSI: 0xffffffd3 (-45)
+[CHG] Device 5F:67:12:3E:5C:EC RSSI: 0xffffffb0 (-80)
+[CHG] Device 5F:67:12:3E:5C:EC ManufacturerData.Key: 0x004c (76)
+[CHG] Device 5F:67:12:3E:5C:EC ManufacturerData.Value:
+  10 07 3e 1f 74 dc a7 10 78                       ..>.t...x
+[CHG] Device 64:B7:08:01:CD:BE RSSI: 0xffffffaf (-81)
+[CHG] Device 04:E4:B6:03:69:CB RSSI: 0xffffffd0 (-48)
+[CHG] Device 51:14:CE:27:F3:4A RSSI: 0xffffffb7 (-73)
+[CHG] Device 64:B7:08:01:CD:BE RSSI: 0xffffffaa (-86)
+[CHG] Device 73:13:F1:2B:C5:64 RSSI: 0xffffffb3 (-77)
+[CHG] Device 30:ED:A0:F3:D4:AE RSSI: 0xffffffd3 (-45)
+[CHG] Device 71:0E:AE:F3:AA:10 RSSI: 0xffffffaa (-86)
+[CHG] Device 58:F1:3F:1F:FE:85 RSSI: 0xffffffac (-84)
+[CHG] Device 7B:17:8E:2F:E1:FD RSSI: 0xffffffae (-82)
+[CHG] Device 3A:ED:3B:6B:E7:6D RSSI: 0xffffffaa (-86)
+[CHG] Device 0E:30:31:25:E9:2C RSSI: 0xffffffaa (-86)
+[CHG] Device 64:B7:08:01:CD:BE RSSI: 0xffffffaa (-86)
+[CHG] Device 5A:F6:CF:90:8F:EF RSSI: 0xffffffb3 (-77)
+[CHG] Device 80:F3:DA:1C:20:3A RSSI: 0xffffffaa (-86)
+[CHG] Device 30:ED:A0:F3:D4:AE RSSI: 0xffffffd4 (-44)
+[CHG] Device 04:E4:B6:03:69:CB RSSI: 0xffffffd8 (-40)
+[CHG] Device 64:B7:08:01:CD:BE RSSI: 0xffffffb0 (-80)
+[CHG] Device 71:0E:AE:F3:AA:10 RSSI: 0xffffffaa (-86)
+[CHG] Device 57:A3:E5:7B:AA:C9 RSSI: 0xffffffaa (-86)
+[CHG] Device 0E:30:31:25:E9:2C RSSI: 0xffffffae (-82)
+[CHG] Device 64:B7:08:01:CD:BE RSSI: 0xffffffaf (-81)
+[CHG] Device 80:F3:DA:1E:B3:BE RSSI: 0xffffffaa (-86)
+[CHG] Device 73:13:F1:2B:C5:64 RSSI: 0xffffffad (-83)
+[CHG] Device 7B:17:8E:2F:E1:FD RSSI: 0xffffffad (-83)
+[CHG] Device 30:ED:A0:F3:D4:AE RSSI: 0xffffffd5 (-43)
+[CHG] Device 5F:67:12:3E:5C:EC RSSI: 0xffffffb0 (-80)
+[CHG] Device 64:B7:08:01:CD:BE RSSI: 0xffffffaa (-86)
+[CHG] Device 34:13:43:E6:6C:C3 RSSI: 0xffffffaa (-86)
+[CHG] Device 34:13:43:E6:6C:C3 ManufacturerData.Key: 0x45e5 (17893)
+[CHG] Device 34:13:43:E6:6C:C3 ManufacturerData.Value:
+  17 8e 7d 19 8a 03 f6 63 24 07 63 a5 8e 77 70 00  ..}....c$.c..wp.
+  00 d2 fd 34 00 00 21 8c ea 21 cb                 ...4..!..!.
+[CHG] Device 34:13:43:E6:6C:C3 ManufacturerData.Key: 0x0211 (529)
+[CHG] Device 34:13:43:E6:6C:C3 ManufacturerData.Value:
+  11 22 c3 6c e6 43                                .".l.C
+[CHG] Device 64:B7:08:01:CD:BE RSSI: 0xffffffad (-83)
+[CHG] Device 71:0E:AE:F3:AA:10 RSSI: 0xffffffaa (-86)
+[CHG] Device CD:EB:05:9F:1D:DB RSSI: 0xffffffaf (-81)
+[CHG] Device 04:E4:B6:03:69:CB RSSI: 0xffffffdc (-36)
+[CHG] Device 64:B7:08:01:CD:BE RSSI: 0xffffffae (-82)
+[CHG] Device 30:ED:A0:F3:D4:AE RSSI: 0xffffffd5 (-43)
+[CHG] Device 64:B7:08:01:CD:BE RSSI: 0xffffffb0 (-80)
+[CHG] Device 51:14:CE:27:F3:4A RSSI: 0xffffffb5 (-75)
+[CHG] Device 58:F1:3F:1F:FE:85 RSSI: 0xffffffb4 (-76)
+[CHG] Device 73:13:F1:2B:C5:64 RSSI: 0xffffffb4 (-76)
+[CHG] Device 7B:17:8E:2F:E1:FD RSSI: 0xffffffaf (-81)
+[CHG] Device 63:8E:9D:C5:4E:B5 RSSI: 0xffffffab (-85)
+[CHG] Device 30:ED:A0:F3:D4:AE RSSI: 0xffffffd4 (-44)
+[CHG] Device 57:A3:E5:7B:AA:C9 RSSI: 0xffffffaa (-86)
+[CHG] Device 16:16:44:1F:34:4F RSSI: 0xffffffaa (-86)
+[CHG] Device 04:E4:B6:03:69:CB RSSI: 0xffffffd0 (-48)
+[CHG] Device 80:F3:DA:1D:33:AE RSSI: 0xffffffaa (-86)
+[CHG] Device 5F:67:12:3E:5C:EC RSSI: 0xffffffb2 (-78)
+[CHG] Device 64:B7:08:01:CD:BE RSSI: 0xffffffaa (-86)
+[CHG] Device 34:13:43:E3:D9:2D RSSI: 0xffffffaa (-86)
+[CHG] Device 34:13:43:E3:D9:2D ManufacturerData.Key: 0x45e5 (17893)
+[CHG] Device 34:13:43:E3:D9:2D ManufacturerData.Value:
+  63 a8 7d 19 8a 03 f8 63 24 07 17 8f 8e 77 70 00  c.}....c$....wp.
+  00 d2 fd 34 00 00 21 8c ea 21 d1                 ...4..!..!.
+[CHG] Device 34:13:43:E3:D9:2D ManufacturerData.Key: 0x0211 (529)
+[CHG] Device 34:13:43:E3:D9:2D ManufacturerData.Value:
+  11 22 2d d9 e3 43                                ."-..C
+[CHG] Device 64:B7:08:01:CD:BE RSSI: 0xffffffad (-83)
+[CHG] Device 2C:41:A1:F7:62:C9 RSSI: 0xffffffaa (-86)
+[CHG] Device 51:14:CE:27:F3:4A RSSI: 0xffffffac (-84)
+[CHG] Device 7B:64:1E:BE:58:B2 RSSI: 0xffffffaa (-86)
+[CHG] Device 73:13:F1:2B:C5:64 RSSI: 0xffffffb8 (-72)
+[CHG] Device 7B:17:8E:2F:E1:FD RSSI: 0xffffffaf (-81)
+[CHG] Device 0E:30:31:25:E9:2C RSSI: 0xffffffb6 (-74)
+[CHG] Device 40:01:00:F1:E7:A0 RSSI: 0xffffffad (-83)
+[CHG] Device 04:E4:B6:03:69:CB RSSI: 0xffffffd7 (-41)
+[CHG] Device 64:B7:08:01:CD:BE RSSI: 0xffffffaa (-86)
+[CHG] Device 63:8E:9D:C5:4E:B5 RSSI: 0xffffffaa (-86)
+[CHG] Device 0E:30:31:25:E9:2C RSSI: 0xffffffb6 (-74)
+[CHG] Device 57:A3:E5:7B:AA:C9 RSSI: 0xffffffaa (-86)
+[CHG] Device 64:B7:08:01:CD:BE RSSI: 0xffffffaf (-81)
+[CHG] Device 30:ED:A0:F3:D4:AE RSSI: 0xffffffd4 (-44)
+[CHG] Device 51:14:CE:27:F3:4A RSSI: 0xffffffb8 (-72)
+[CHG] Device 80:F3:DA:1C:20:3A RSSI: 0xffffffab (-85)
+[CHG] Device 73:13:F1:2B:C5:64 RSSI: 0xffffffb4 (-76)
+[CHG] Device 04:E4:B6:03:69:CB RSSI: 0xffffffd0 (-48)
+[CHG] Device 7B:17:8E:2F:E1:FD RSSI: 0xffffffaf (-81)
+[CHG] Device 5F:67:12:3E:5C:EC RSSI: 0xffffffb2 (-78)
+[CHG] Device 34:13:43:E3:D9:2D RSSI: 0xffffffaa (-86)
+[CHG] Device 64:B7:08:01:CD:BE RSSI: 0xffffffaa (-86)
+[CHG] Device 7B:64:1E:BE:58:B2 RSSI: 0xffffffab (-85)
+[CHG] Device 30:ED:A0:F3:D4:AE RSSI: 0xffffffd4 (-44)
+[CHG] Device 64:B7:08:01:CD:BE RSSI: 0xffffffad (-83)
+[CHG] Device 40:01:00:F1:E7:A0 RSSI: 0xffffffaf (-81)
+[CHG] Device 34:13:43:E6:6C:C3 RSSI: 0xffffffaa (-86)
+[CHG] Device 34:13:43:E6:6C:C3 ManufacturerData.Key: 0x45e5 (17893)
+[CHG] Device 34:13:43:E6:6C:C3 ManufacturerData.Value:
+  17 90 7d 19 8a 03 f8 63 24 07 63 a7 8e 77 70 00  ..}....c$.c..wp.
+  00 d2 fd 34 00 00 21 8c ea 21 d1                 ...4..!..!.
+[CHG] Device 34:13:43:E6:6C:C3 ManufacturerData.Key: 0x0211 (529)
+[CHG] Device 34:13:43:E6:6C:C3 ManufacturerData.Value:
+  11 22 c3 6c e6 43                                .".l.C
+[CHG] Device 64:B7:08:01:CD:BE RSSI: 0xffffffaa (-86)
+[CHG] Device 04:E4:B6:03:69:CB RSSI: 0xffffffd7 (-41)
+[CHG] Device 73:13:F1:2B:C5:64 RSSI: 0xffffffb8 (-72)
+[CHG] Device 58:F1:3F:1F:FE:85 RSSI: 0xffffffb4 (-76)
+[CHG] Device 64:B7:08:01:CD:BE RSSI: 0xffffffad (-83)
+[CHG] Device 34:13:43:E6:6C:C3 RSSI: 0xffffffaa (-86)
+[CHG] Device 34:13:43:E6:6C:C3 ManufacturerData.Key: 0x45e5 (17893)
+[CHG] Device 34:13:43:E6:6C:C3 ManufacturerData.Value:
+  17 91 7d 19 8a 03 f9 63 24 07 63 a9 8e 77 70 00  ..}....c$.c..wp.
+  00 d2 fd 34 00 00 21 8c ea 21 d5                 ...4..!..!.
+[CHG] Device 34:13:43:E6:6C:C3 ManufacturerData.Key: 0x0211 (529)
+[CHG] Device 34:13:43:E6:6C:C3 ManufacturerData.Value:
+  11 22 c3 6c e6 43                                .".l.C
+[CHG] Device 7B:17:8E:2F:E1:FD RSSI: 0xffffffac (-84)
+[CHG] Device 5A:F6:CF:90:8F:EF RSSI: 0xffffffb0 (-80)
+[CHG] Device 64:B7:08:01:CD:BE RSSI: 0xffffffb0 (-80)
+[CHG] Device 0E:30:31:25:E9:2C RSSI: 0xffffffad (-83)
+[CHG] Device 64:B7:08:01:CD:BE RSSI: 0xffffffaa (-86)
+[CHG] Device 30:ED:A0:F3:D4:AE RSSI: 0xffffffd4 (-44)
+[CHG] Device 5F:67:12:3E:5C:EC RSSI: 0xffffffb4 (-76)
+[CHG] Device 5F:67:12:3E:5C:EC ManufacturerData.Key: 0x004c (76)
+[CHG] Device 5F:67:12:3E:5C:EC ManufacturerData.Value:
+  01 00 00 00 00 00 00 00 00 00 00 00 00 80 00 00  ................
+  00                                               .
+[CHG] Device 04:E4:B6:03:69:CB RSSI: 0xffffffd7 (-41)
+[CHG] Device 64:B7:08:01:CD:BE RSSI: 0xffffffad (-83)
+[CHG] Device 7B:64:1E:BE:58:B2 RSSI: 0xffffffaa (-86)
+[CHG] Device 34:13:43:E3:D9:2D RSSI: 0xffffffaa (-86)
+[CHG] Device 34:13:43:E3:D9:2D ManufacturerData.Key: 0x45e5 (17893)
+[CHG] Device 34:13:43:E3:D9:2D ManufacturerData.Value:
+  63 a9 7d 19 8a 03 f8 63 24 07 17 90 8e 77 70 00  c.}....c$....wp.
+  00 d2 fd 34 00 00 21 8c ea 21 d3                 ...4..!..!.
+[CHG] Device 34:13:43:E3:D9:2D ManufacturerData.Key: 0x0211 (529)
+[CHG] Device 34:13:43:E3:D9:2D ManufacturerData.Value:
+  11 22 2d d9 e3 43                                ."-..C
+[CHG] Device 51:14:CE:27:F3:4A RSSI: 0xffffffb3 (-77)
+[CHG] Device 64:B7:08:01:CD:BE RSSI: 0xffffffb0 (-80)
+[CHG] Device 58:F1:3F:1F:FE:85 RSSI: 0xffffffb8 (-72)
+[CHG] Device 30:ED:A0:F3:D4:AE RSSI: 0xffffffd4 (-44)
+[CHG] Device 5A:F6:CF:90:8F:EF RSSI: 0xffffffb4 (-76)
+[CHG] Device 64:B7:08:01:CD:BE RSSI: 0xffffffaa (-86)
+[CHG] Device 34:13:43:E6:6C:C3 RSSI: 0xffffffaa (-86)
+[CHG] Device 40:3D:48:41:4C:F7 RSSI: 0xffffffaa (-86)
+[CHG] Device 64:B7:08:01:CD:BE RSSI: 0xffffffb0 (-80)
+[CHG] Device 04:E4:B6:03:69:CB RSSI: 0xffffffdc (-36)
+[CHG] Device 0E:30:31:25:E9:2C RSSI: 0xffffffb6 (-74)
+[CHG] Device 30:ED:A0:F3:D4:AE RSSI: 0xffffffd5 (-43)
+[CHG] Device 34:13:43:E3:D9:2D RSSI: 0xffffffaa (-86)
+[CHG] Device 34:13:43:E3:D9:2D AdvertisingFlags:
+  05                                               .
+[CHG] Device C8:3F:ED:EE:5B:C8 RSSI: 0xffffffab (-85)
+[CHG] Device 73:13:F1:2B:C5:64 RSSI: 0xffffffb4 (-76)
+[CHG] Device 5F:67:12:3E:5C:EC RSSI: 0xffffffb0 (-80)
+[CHG] Device 5F:67:12:3E:5C:EC ManufacturerData.Key: 0x004c (76)
+[CHG] Device 5F:67:12:3E:5C:EC ManufacturerData.Value:
+  01 00 00 00 00 00 00 00 00 00 00 00 00 80 00 00  ................
+  00                                               .
+[CHG] Device 0E:30:31:25:E9:2C RSSI: 0xffffffab (-85)
+[CHG] Device 30:ED:A0:F3:D4:AE RSSI: 0xffffffd4 (-44)
+[CHG] Device 7B:64:1E:BE:58:B2 RSSI: 0xffffffaa (-86)
+[CHG] Device 80:F3:DA:1C:20:3A RSSI: 0xffffffab (-85)
+[CHG] Device 04:E4:B6:03:69:CB RSSI: 0xffffffd7 (-41)
+[CHG] Device EA:D1:69:D6:AE:60 RSSI: 0xffffffab (-85)
+[CHG] Device 34:13:43:E3:D9:2D RSSI: 0xffffffaa (-86)
+[CHG] Device 34:13:43:E3:D9:2D ManufacturerData.Key: 0x45e5 (17893)
+[CHG] Device 34:13:43:E3:D9:2D ManufacturerData.Value:
+  63 aa 7d 19 8a 03 fa 63 24 07 17 91 8e 77 70 00  c.}....c$....wp.
+  00 d2 fd 34 00 00 21 8c ea 21 d7                 ...4..!..!.
+[CHG] Device 34:13:43:E3:D9:2D ManufacturerData.Key: 0x0211 (529)
+[CHG] Device 34:13:43:E3:D9:2D ManufacturerData.Value:
+  11 22 2d d9 e3 43                                ."-..C
+[CHG] Device 34:13:43:E3:D9:2D AdvertisingFlags:
+  00                                               .
+[CHG] Device 64:B7:08:01:CD:BE RSSI: 0xffffffad (-83)
+[CHG] Device 30:ED:A0:F3:D4:AE RSSI: 0xffffffd4 (-44)
+[CHG] Device 34:13:43:E3:D9:2D RSSI: 0xffffffaa (-86)
+[CHG] Device 34:13:43:E3:D9:2D ManufacturerData.Key: 0x45e5 (17893)
+[CHG] Device 34:13:43:E3:D9:2D ManufacturerData.Value:
+  63 ab 7d 19 8a 03 fb 63 24 07 17 92 8e 77 70 00  c.}....c$....wp.
+  00 d2 fd 34 00 00 21 8c ea 21 da                 ...4..!..!.
+[CHG] Device 34:13:43:E3:D9:2D ManufacturerData.Key: 0x0211 (529)
+[CHG] Device 34:13:43:E3:D9:2D ManufacturerData.Value:
+  11 22 2d d9 e3 43                                ."-..C
+[CHG] Device 40:3D:48:41:4C:F7 RSSI: 0xffffffaa (-86)
+[CHG] Device 51:14:CE:27:F3:4A RSSI: 0xffffffae (-82)
+[CHG] Device 64:B7:08:01:CD:BE RSSI: 0xffffffb0 (-80)
+[CHG] Device 58:F1:3F:1F:FE:85 RSSI: 0xffffffb8 (-72)
+[CHG] Device 3A:ED:3B:6B:E7:6D RSSI: 0xffffffaa (-86)
+[CHG] Device 73:13:F1:2B:C5:64 RSSI: 0xffffffb8 (-72)
+[CHG] Device 7B:17:8E:2F:E1:FD RSSI: 0xffffffb1 (-79)
+[CHG] Device 34:13:43:E6:6C:C3 RSSI: 0xffffffaa (-86)
+[CHG] Device 34:13:43:E6:6C:C3 ManufacturerData.Key: 0x45e5 (17893)
+[CHG] Device 34:13:43:E6:6C:C3 ManufacturerData.Value:
+  17 92 7d 19 8a 03 fa 63 24 07 63 aa 8e 77 70 00  ..}....c$.c..wp.
+  00 d2 fd 34 00 00 21 8c ea 21 d8                 ...4..!..!.
+[CHG] Device 34:13:43:E6:6C:C3 ManufacturerData.Key: 0x0211 (529)
+[CHG] Device 34:13:43:E6:6C:C3 ManufacturerData.Value:
+  11 22 c3 6c e6 43                                .".l.C
+[CHG] Device 04:E4:B6:03:69:CB RSSI: 0xffffffdc (-36)
+[CHG] Device 7F:E6:4F:5D:5C:E6 RSSI: 0xffffffaa (-86)
+[CHG] Device 7F:E6:4F:5D:5C:E6 ManufacturerData.Key: 0x004c (76)
+[CHG] Device 7F:E6:4F:5D:5C:E6 ManufacturerData.Value:
+  01 00 00 00 00 00 00 00 00 00 00 00 00 80 00 00  ................
+  00                                               .
+[CHG] Device 38:A5:C9:C3:BD:F8 RSSI: 0xffffffaa (-86)
+[CHG] Device 0E:30:31:25:E9:2C RSSI: 0xffffffaa (-86)
+[CHG] Device F2:4B:63:EA:1F:03 RSSI: 0xffffffaa (-86)
+[CHG] Device 64:B7:08:01:CD:BE RSSI: 0xffffffae (-82)
+[CHG] Device E6:69:A2:FF:55:30 RSSI: 0xffffffb1 (-79)
+[CHG] Device D8:51:54:B3:E6:AF RSSI: 0xffffffb5 (-75)
+[CHG] Device 5F:67:12:3E:5C:EC RSSI: 0xffffffb2 (-78)
+[CHG] Device 5F:67:12:3E:5C:EC ManufacturerData.Key: 0x004c (76)
+[CHG] Device 5F:67:12:3E:5C:EC ManufacturerData.Value:
+  10 07 3e 1f 74 dc a7 10 78                       ..>.t...x
+[CHG] Device 3A:ED:3B:6B:E7:6D RSSI: 0xffffffaa (-86)
+[CHG] Device 34:13:43:E6:6C:C3 RSSI: 0xffffffaa (-86)
+[CHG] Device 34:13:43:E6:6C:C3 AdvertisingFlags:
+  05                                               .
+[CHG] Device 64:B7:08:01:CD:BE RSSI: 0xffffffb0 (-80)
+[CHG] Device 7B:64:1E:BE:58:B2 RSSI: 0xffffffaa (-86)
+[CHG] Device 0E:30:31:25:E9:2C RSSI: 0xffffffb0 (-80)
+[CHG] Device 51:14:CE:27:F3:4A RSSI: 0xffffffb7 (-73)
+[CHG] Device 58:F1:3F:1F:FE:85 RSSI: 0xffffffb4 (-76)
+[CHG] Device 73:13:F1:2B:C5:64 RSSI: 0xffffffb3 (-77)
+[CHG] Device 7B:17:8E:2F:E1:FD RSSI: 0xffffffab (-85)
+[CHG] Device 64:B7:08:01:CD:BE RSSI: 0xffffffad (-83)
+[CHG] Device CC:0C:7C:1E:2F:98 RSSI: 0xffffffb1 (-79)
+[CHG] Device 0E:30:31:25:E9:2C RSSI: 0xffffffb0 (-80)
+[CHG] Device 64:B7:08:01:CD:BE RSSI: 0xffffffb1 (-79)
+[CHG] Device FC:CF:B6:63:90:E2 RSSI: 0xffffffb7 (-73)
+[CHG] Device D1:C9:DA:7D:30:AD RSSI: 0xffffffaa (-86)
+[CHG] Device D7:E2:23:91:D7:1A RSSI: 0xffffffaa (-86)
+[CHG] Device 5A:F6:CF:90:8F:EF RSSI: 0xffffffb3 (-77)
+[CHG] Device 64:B7:08:01:CD:BE RSSI: 0xffffffad (-83)
+[CHG] Device 7F:E6:4F:5D:5C:E6 RSSI: 0xffffffaa (-86)
+[CHG] Device 7F:E6:4F:5D:5C:E6 ManufacturerData.Key: 0x004c (76)
+[CHG] Device 7F:E6:4F:5D:5C:E6 ManufacturerData.Value:
+  01 00 00 00 00 00 00 00 00 00 00 00 00 80 00 00  ................
+  00                                               .
+[CHG] Device 34:13:43:E6:6C:C3 RSSI: 0xffffffaa (-86)
+[CHG] Device 34:13:43:E6:6C:C3 ManufacturerData.Key: 0x45e5 (17893)
+[CHG] Device 34:13:43:E6:6C:C3 ManufacturerData.Value:
+  17 93 7d 19 8a 03 fb 63 24 07 63 ab 8e 77 70 00  ..}....c$.c..wp.
+  00 d2 fd 34 00 00 21 8c ea 21 db                 ...4..!..!.
+[CHG] Device 34:13:43:E6:6C:C3 ManufacturerData.Key: 0x0211 (529)
+[CHG] Device 34:13:43:E6:6C:C3 ManufacturerData.Value:
+  11 22 c3 6c e6 43                                .".l.C
+[CHG] Device 34:13:43:E6:6C:C3 AdvertisingFlags:
+  00                                               .
+[CHG] Device 04:E4:B6:03:69:CB RSSI: 0xffffffdc (-36)
+[CHG] Device C5:4A:AD:30:72:07 RSSI: 0xffffffaa (-86)
+[CHG] Device 0E:30:31:25:E9:2C RSSI: 0xffffffaf (-81)
+[CHG] Device 30:ED:A0:F3:D4:AE RSSI: 0xffffffd5 (-43)
+[CHG] Device 58:F1:3F:1F:FE:85 RSSI: 0xffffffb8 (-72)
+[CHG] Device 73:13:F1:2B:C5:64 RSSI: 0xffffffb8 (-72)
+[CHG] Device 7B:17:8E:2F:E1:FD RSSI: 0xffffffb3 (-77)
+[CHG] Device 57:BA:FA:37:A1:85 RSSI: 0xffffffaa (-86)
+[CHG] Device 7B:64:1E:BE:58:B2 RSSI: 0xffffffb5 (-75)
+[CHG] Device 34:13:43:E6:6C:C3 RSSI: 0xffffffaa (-86)
+[CHG] Device 34:13:43:E6:6C:C3 ManufacturerData.Key: 0x45e5 (17893)
+[CHG] Device 34:13:43:E6:6C:C3 ManufacturerData.Value:
+  17 94 7d 19 8a 03 fc 63 24 07 63 ab 8e 77 70 00  ..}....c$.c..wp.
+  00 d2 fd 34 00 00 21 8c ea 21 dd                 ...4..!..!.
+[CHG] Device 34:13:43:E6:6C:C3 ManufacturerData.Key: 0x0211 (529)
+[CHG] Device 34:13:43:E6:6C:C3 ManufacturerData.Value:
+  11 22 c3 6c e6 43                                .".l.C
+[CHG] Device 64:B7:08:01:CD:BE RSSI: 0xffffffad (-83)
+[CHG] Device 0E:30:31:25:E9:2C RSSI: 0xffffffab (-85)
+[CHG] Device 64:B7:08:01:CD:BE RSSI: 0xffffffb0 (-80)
+[CHG] Device 04:E4:B6:03:69:CB RSSI: 0xffffffd1 (-47)
+[CHG] Device 80:F3:DA:1C:20:3A RSSI: 0xffffffab (-85)
+[CHG] Device 64:B7:08:01:CD:BE RSSI: 0xffffffaf (-81)
+[CHG] Device 3A:ED:3B:6B:E7:6D RSSI: 0xffffffaa (-86)
+[CHG] Device 51:14:CE:27:F3:4A RSSI: 0xffffffb8 (-72)
+[CHG] Device 7B:17:8E:2F:E1:FD RSSI: 0xffffffac (-84)
+[CHG] Device 73:13:F1:2B:C5:64 RSSI: 0xffffffad (-83)
+[CHG] Device 64:B7:08:01:CD:BE RSSI: 0xffffffaa (-86)
+[CHG] Device 0E:30:31:25:E9:2C RSSI: 0xffffffb6 (-74)
+[CHG] Device 57:A3:E5:7B:AA:C9 RSSI: 0xffffffaa (-86)
+[CHG] Device 80:F3:DA:1E:B3:BE RSSI: 0xffffffaa (-86)
+[CHG] Device 3A:ED:3B:6B:E7:6D RSSI: 0xffffffaa (-86)
+[CHG] Device 5F:67:12:3E:5C:EC RSSI: 0xffffffb2 (-78)
+[CHG] Device 5F:67:12:3E:5C:EC ManufacturerData.Key: 0x004c (76)
+[CHG] Device 5F:67:12:3E:5C:EC ManufacturerData.Value:
+  01 00 00 00 00 00 00 00 00 00 00 00 00 80 00 00  ................
+  00                                               .
+[CHG] Device 04:E4:B6:03:69:CB RSSI: 0xffffffd7 (-41)
+[CHG] Device 64:B7:08:01:CD:BE RSSI: 0xffffffb0 (-80)
+[CHG] Device 30:ED:A0:F3:D4:AE RSSI: 0xffffffd5 (-43)
+[CHG] Device 2C:41:A1:F7:62:C9 RSSI: 0xffffffaa (-86)
+[CHG] Device 7B:64:1E:BE:58:B2 RSSI: 0xffffffb5 (-75)
+[CHG] Device 64:B7:08:01:CD:BE RSSI: 0xffffffaa (-86)
+[CHG] Device 51:14:CE:27:F3:4A RSSI: 0xffffffad (-83)
+[CHG] Device 58:F1:3F:1F:FE:85 RSSI: 0xffffffb7 (-73)
+[CHG] Device 3A:ED:3B:6B:E7:6D RSSI: 0xffffffaa (-86)
+[CHG] Device 7B:17:8E:2F:E1:FD RSSI: 0xffffffb3 (-77)
+[CHG] Device 73:13:F1:2B:C5:64 RSSI: 0xffffffb3 (-77)
+[CHG] Device 30:ED:A0:F3:D4:AE RSSI: 0xffffffd4 (-44)
+[CHG] Device CD:EB:05:9F:1D:DB RSSI: 0xffffffb0 (-80)
+[CHG] Device 0E:30:31:25:E9:2C RSSI: 0xffffffaa (-86)
+[CHG] Device 04:E4:B6:03:69:CB RSSI: 0xffffffdc (-36)
+[CHG] Device 63:8E:9D:C5:4E:B5 RSSI: 0xffffffab (-85)
+[CHG] Device 34:13:43:E3:D9:2D RSSI: 0xffffffaa (-86)
+[CHG] Device 34:13:43:E3:D9:2D AdvertisingFlags:
+  05                                               .
+[CHG] Device 57:A3:E5:7B:AA:C9 RSSI: 0xffffffaa (-86)
+[CHG] Device 30:ED:A0:F3:D4:AE RSSI: 0xffffffd4 (-44)
+[CHG] Device 0E:30:31:25:E9:2C RSSI: 0xffffffad (-83)
+[CHG] Device 51:14:CE:27:F3:4A RSSI: 0xffffffb6 (-74)
+[CHG] Device E8:0E:72:B8:D2:AF RSSI: 0xffffffaa (-86)
+[CHG] Device 5F:67:12:3E:5C:EC RSSI: 0xffffffb4 (-76)
+[CHG] Device 5F:67:12:3E:5C:EC ManufacturerData.Key: 0x004c (76)
+[CHG] Device 5F:67:12:3E:5C:EC ManufacturerData.Value:
+  01 00 00 00 00 00 00 00 00 00 00 00 00 80 00 00  ................
+  00                                               .
+[CHG] Device 58:F1:3F:1F:FE:85 RSSI: 0xffffffb2 (-78)
+[CHG] Device 64:B7:08:01:CD:BE RSSI: 0xffffffb0 (-80)
+[CHG] Device 7B:17:8E:2F:E1:FD RSSI: 0xffffffae (-82)
+[CHG] Device 73:13:F1:2B:C5:64 RSSI: 0xffffffb7 (-73)
+[CHG] Device 04:E4:B6:03:69:CB RSSI: 0xffffffd8 (-40)
+[CHG] Device 34:13:43:E3:41:E9 RSSI: 0xffffffaa (-86)
+[CHG] Device 34:13:43:E3:41:E9 ManufacturerData.Key: 0x45e5 (17893)
+[CHG] Device 34:13:43:E3:41:E9 ManufacturerData.Value:
+  03 fe d3 5a 49 63 ac 57 f0 59 17 94 3b a8 ee 00  ...ZIc.W.Y..;...
+  00 6e 63 07 00 00 da 87 97 d3 8c                 .nc........
+[CHG] Device 34:13:43:E3:41:E9 ManufacturerData.Key: 0x0211 (529)
+[CHG] Device 34:13:43:E3:41:E9 ManufacturerData.Value:
+  11 22 e9 41 e3 43                                .".A.C
+[CHG] Device 64:B7:08:01:CD:BE RSSI: 0xffffffaa (-86)
+[CHG] Device 30:ED:A0:F3:D4:AE RSSI: 0xffffffd4 (-44)
+[CHG] Device 0E:30:31:25:E9:2C RSSI: 0xffffffab (-85)
+[CHG] Device 34:13:43:E6:6C:C3 RSSI: 0xffffffaa (-86)
+[CHG] Device 34:13:43:E6:6C:C3 ManufacturerData.Key: 0x45e5 (17893)
+[CHG] Device 34:13:43:E6:6C:C3 ManufacturerData.Value:
+  17 95 7d 19 8a 03 fd 63 24 07 63 ad 8e 77 70 00  ..}....c$.c..wp.
+  00 d2 fd 34 00 00 21 8c ea 21 e1                 ...4..!..!.
+[CHG] Device 34:13:43:E6:6C:C3 ManufacturerData.Key: 0x0211 (529)
+[CHG] Device 34:13:43:E6:6C:C3 ManufacturerData.Value:
+  11 22 c3 6c e6 43                                .".l.C
+[CHG] Device 64:B7:08:01:CD:BE RSSI: 0xffffffad (-83)
+[CHG] Device 63:8E:9D:C5:4E:B5 RSSI: 0xffffffab (-85)
+[CHG] Device 30:ED:A0:F3:D4:AE RSSI: 0xffffffd4 (-44)
+[CHG] Device 0E:30:31:25:E9:2C RSSI: 0xffffffaf (-81)
+[CHG] Device 51:14:CE:27:F3:4A RSSI: 0xffffffab (-85)
+[CHG] Device 58:F1:3F:1F:FE:85 RSSI: 0xffffffb7 (-73)
+[CHG] Device 04:E4:B6:03:69:CB RSSI: 0xffffffdc (-36)
+[CHG] Device 40:01:00:F1:E7:A0 RSSI: 0xffffffab (-85)
+[CHG] Device 7B:17:8E:2F:E1:FD RSSI: 0xffffffb2 (-78)
+[CHG] Device 73:13:F1:2B:C5:64 RSSI: 0xffffffb3 (-77)
+[CHG] Device 57:A3:E5:7B:AA:C9 RSSI: 0xffffffaa (-86)
+[CHG] Device 64:B7:08:01:CD:BE RSSI: 0xffffffaa (-86)
+[CHG] Device 80:F3:DA:1C:20:3A RSSI: 0xffffffab (-85)
+[CHG] Device 34:13:43:E6:6C:C3 RSSI: 0xffffffaa (-86)
+[CHG] Device 34:13:43:E6:6C:C3 ManufacturerData.Key: 0x45e5 (17893)
+[CHG] Device 34:13:43:E6:6C:C3 ManufacturerData.Value:
+  17 95 7d 19 8a 03 fd 63 24 07 63 ad 8e 77 70 00  ..}....c$.c..wp.
+  00 d2 fd 34 00 00 21 8c ea 21 e1                 ...4..!..!.
+[CHG] Device 34:13:43:E6:6C:C3 ManufacturerData.Key: 0x0211 (529)
+[CHG] Device 34:13:43:E6:6C:C3 ManufacturerData.Value:
+  11 02 c3 6c e6 43 6e 00 01 c3 00 34 13 43 e6 6c  ...l.Cn....4.C.l
+  c2 06 07 08 09 0a 0b 0c 0d 0e 0f                 ...........
+[CHG] Device 34:13:43:E6:6C:C3 AdvertisingFlags:
+  05                                               .
+[CHG] Device 30:ED:A0:F3:D4:AE RSSI: 0xffffffd4 (-44)
+[CHG] Device 5F:67:12:3E:5C:EC RSSI: 0xffffffb2 (-78)
+[CHG] Device 5F:67:12:3E:5C:EC ManufacturerData.Key: 0x004c (76)
+[CHG] Device 5F:67:12:3E:5C:EC ManufacturerData.Value:
+  01 00 00 00 00 00 00 00 00 00 00 00 00 80 00 00  ................
+  00                                               .
+[CHG] Device 64:B7:08:01:CD:BE RSSI: 0xffffffb0 (-80)
+[CHG] Device 16:16:44:1F:34:4F RSSI: 0xffffffaa (-86)
+[CHG] Device 7B:64:1E:BE:58:B2 RSSI: 0xffffffac (-84)
+[CHG] Device 04:E4:B6:03:69:CB RSSI: 0xffffffd1 (-47)
+[CHG] Device 30:ED:A0:F3:D4:AE RSSI: 0xffffffd3 (-45)
+[CHG] Device 64:B7:08:01:CD:BE RSSI: 0xffffffad (-83)
+[CHG] Device 58:F1:3F:1F:FE:85 RSSI: 0xffffffb3 (-77)
+[CHG] Device 51:14:CE:27:F3:4A RSSI: 0xffffffab (-85)
+[CHG] Device 0E:30:31:25:E9:2C RSSI: 0xffffffb0 (-80)
+[CHG] Device 73:13:F1:2B:C5:64 RSSI: 0xffffffab (-85)
+[CHG] Device 7B:17:8E:2F:E1:FD RSSI: 0xffffffae (-82)
+[CHG] Device 40:01:00:F1:E7:A0 RSSI: 0xffffffaa (-86)
+[CHG] Device 5A:F6:CF:90:8F:EF RSSI: 0xffffffb4 (-76)
+[CHG] Device 0E:30:31:25:E9:2C RSSI: 0xffffffae (-82)
+[CHG] Device 64:B7:08:01:CD:BE RSSI: 0xffffffb0 (-80)
+[CHG] Device 34:13:43:E6:6C:C3 RSSI: 0xffffffaa (-86)
+[CHG] Device 34:13:43:E6:6C:C3 ManufacturerData.Key: 0x45e5 (17893)
+[CHG] Device 34:13:43:E6:6C:C3 ManufacturerData.Value:
+  17 95 7d 19 8a 03 fd 63 24 07 63 ad 8e 77 70 00  ..}....c$.c..wp.
+  00 d2 fd 34 00 00 21 8c ea 21 e1                 ...4..!..!.
+[CHG] Device 34:13:43:E6:6C:C3 ManufacturerData.Key: 0x0211 (529)
+[CHG] Device 34:13:43:E6:6C:C3 ManufacturerData.Value:
+  11 02 c3 6c e6 43 6e 00 01 c3 00 34 13 43 e6 6c  ...l.Cn....4.C.l
+  c2 06 07 08 09 0a 0b 0c 0d 0e 0f                 ...........
+[CHG] Device 58:F1:3F:1F:FE:85 RSSI: 0xffffffb6 (-74)
+[CHG] Device 51:14:CE:27:F3:4A RSSI: 0xffffffb6 (-74)
+[CHG] Device 73:13:F1:2B:C5:64 RSSI: 0xffffffb7 (-73)
+[CHG] Device 30:ED:A0:F3:D4:AE RSSI: 0xffffffd3 (-45)
+[CHG] Device 7B:17:8E:2F:E1:FD RSSI: 0xffffffad (-83)
+[CHG] Device 0E:30:31:25:E9:2C RSSI: 0xffffffb6 (-74)
+[CHG] Device 7B:64:1E:BE:58:B2 RSSI: 0xffffffad (-83)
+[CHG] Device 34:13:43:E3:D9:2D RSSI: 0xffffffaa (-86)
+[CHG] Device 34:13:43:E3:D9:2D ManufacturerData.Key: 0x45e5 (17893)
+[CHG] Device 34:13:43:E3:D9:2D ManufacturerData.Value:
+  63 af 7d 19 8a 03 fe 63 24 07 17 95 8e 77 70 00  c.}....c$....wp.
+  00 d2 fd 34 00 00 21 8c ea 21 e4                 ...4..!..!.
+[CHG] Device 34:13:43:E3:D9:2D ManufacturerData.Key: 0x0211 (529)
+[CHG] Device 34:13:43:E3:D9:2D ManufacturerData.Value:
+  11 22 2d d9 e3 43                                ."-..C
+[CHG] Device 34:13:43:E3:D9:2D AdvertisingFlags:
+  00                                               .
+[CHG] Device 64:B7:08:01:CD:BE RSSI: 0xffffffaa (-86)
+[CHG] Device 80:F3:DA:1D:33:AE RSSI: 0xffffffab (-85)
+[CHG] Device 30:ED:A0:F3:D4:AE RSSI: 0xffffffd3 (-45)
+[CHG] Device 5A:F6:CF:90:8F:EF RSSI: 0xffffffaa (-86)
+[CHG] Device 0E:30:31:25:E9:2C RSSI: 0xffffffb6 (-74)
+[CHG] Device 34:13:43:E6:6C:C3 RSSI: 0xffffffaa (-86)
+[CHG] Device 34:13:43:E6:6C:C3 ManufacturerData.Key: 0x45e5 (17893)
+[CHG] Device 34:13:43:E6:6C:C3 ManufacturerData.Value:
+  17 97 7d 19 8a 03 fe 63 24 07 63 af 8e 77 70 00  ..}....c$.c..wp.
+  00 d2 fd 34 00 00 21 8c ea 21 e6                 ...4..!..!.
+[CHG] Device 34:13:43:E6:6C:C3 ManufacturerData.Key: 0x0211 (529)
+[CHG] Device 34:13:43:E6:6C:C3 ManufacturerData.Value:
+  11 02 c3 6c e6 43 6e 00 01 c3 00 34 13 43 e6 6c  ...l.Cn....4.C.l
+  c2 06 07 08 09 0a 0b 0c 0d 0e 0f                 ...........
+[CHG] Device 34:13:43:E6:6C:C3 AdvertisingFlags:
+  00                                               .
+[CHG] Device 58:F1:3F:1F:FE:85 RSSI: 0xffffffb3 (-77)
+[CHG] Device 57:A3:E5:7B:AA:C9 RSSI: 0xffffffaa (-86)
+[CHG] Device 7B:17:8E:2F:E1:FD RSSI: 0xffffffae (-82)
+[CHG] Device 64:B7:08:01:CD:BE RSSI: 0xffffffaa (-86)
+[CHG] Device 30:ED:A0:F3:D4:AE RSSI: 0xffffffd3 (-45)
+[CHG] Device 34:13:43:E6:6C:C3 RSSI: 0xffffffaa (-86)
+[CHG] Device 34:13:43:E6:6C:C3 ManufacturerData.Key: 0x45e5 (17893)
+[CHG] Device 34:13:43:E6:6C:C3 ManufacturerData.Value:
+  17 97 7d 19 8a 03 fe 63 24 07 63 af 8e 77 70 00  ..}....c$.c..wp.
+  00 d2 fd 34 00 00 21 8c ea 21 e6                 ...4..!..!.
+[CHG] Device 34:13:43:E6:6C:C3 ManufacturerData.Key: 0x0211 (529)
+[CHG] Device 34:13:43:E6:6C:C3 ManufacturerData.Value:
+  11 02 c3 6c e6 43 6e 00 01 c3 00 34 13 43 e6 6c  ...l.Cn....4.C.l
+  c2 06 07 08 09 0a 0b 0c 0d 0e 0f                 ...........
+[CHG] Device 34:13:43:E6:6C:C3 AdvertisingFlags:
+  05                                               .
+[NEW] Device 0B:3E:3A:A2:B0:39 0B-3E-3A-A2-B0-39
+[CHG] Device 0E:30:31:25:E9:2C RSSI: 0xffffffb6 (-74)
+[CHG] Device 04:E4:B6:03:69:CB RSSI: 0xffffffd7 (-41)
+[CHG] Device 5F:67:12:3E:5C:EC RSSI: 0xffffffb3 (-77)
+[CHG] Device 5F:67:12:3E:5C:EC ManufacturerData.Key: 0x004c (76)
+[CHG] Device 5F:67:12:3E:5C:EC ManufacturerData.Value:
+  01 00 00 00 00 00 00 00 00 00 00 00 00 80 00 00  ................
+  00                                               .
+[CHG] Device 2C:41:A1:F7:62:C9 RSSI: 0xffffffaa (-86)
+[CHG] Device 2C:41:A1:F7:62:C9 TxPower: 0x000a (10)
+[CHG] Device 7B:64:1E:BE:58:B2 RSSI: 0xffffffaa (-86)
+[CHG] Device 30:ED:A0:F3:D4:AE RSSI: 0xffffffd3 (-45)
+[CHG] Device 80:F3:DA:1C:20:3A RSSI: 0xffffffaa (-86)
+[CHG] Device 0B:3E:3A:A2:B0:39 RSSI: 0xffffffaa (-86)
+[CHG] Device 64:B7:08:01:CD:BE RSSI: 0xffffffaa (-86)
+[CHG] Device 5A:F6:CF:90:8F:EF RSSI: 0xffffffb3 (-77)
+[CHG] Device 0E:30:31:25:E9:2C RSSI: 0xffffffaa (-86)
+[CHG] Device 51:14:CE:27:F3:4A RSSI: 0xffffffb4 (-76)
+[CHG] Device 73:13:F1:2B:C5:64 RSSI: 0xffffffb4 (-76)
+[CHG] Device 7B:17:8E:2F:E1:FD RSSI: 0xffffffb2 (-78)
+[CHG] Device 04:E4:B6:03:69:CB RSSI: 0xffffffdc (-36)
+[CHG] Device 34:13:43:E3:D9:2D RSSI: 0xffffffaa (-86)
+[CHG] Device 34:13:43:E3:D9:2D AdvertisingFlags:
+  05                                               .
+[CHG] Device 71:0E:AE:F3:AA:10 RSSI: 0xffffffaa (-86)
+[CHG] Device 40:3D:48:41:4C:F7 RSSI: 0xffffffaa (-86)
+[CHG] Device 30:ED:A0:F3:D4:AE RSSI: 0xffffffd4 (-44)
+[CHG] Device EA:D1:69:D6:AE:60 RSSI: 0xffffffaa (-86)
+[CHG] Device 64:B7:08:01:CD:BE RSSI: 0xffffffb1 (-79)
+[CHG] Device 0B:3E:3A:A2:B0:39 RSSI: 0xffffffaa (-86)
+[CHG] Device 0E:30:31:25:E9:2C RSSI: 0xffffffac (-84)
+[CHG] Device 34:13:43:E6:6C:C3 RSSI: 0xffffffaa (-86)
+[CHG] Device 34:13:43:E6:6C:C3 ManufacturerData.Key: 0x45e5 (17893)
+[CHG] Device 34:13:43:E6:6C:C3 ManufacturerData.Value:
+  17 98 7d 19 8a 03 ff 63 24 07 63 b0 8e 77 70 00  ..}....c$.c..wp.
+  00 d2 fd 34 00 00 21 8c ea 21 e9                 ...4..!..!.
+[CHG] Device 34:13:43:E6:6C:C3 ManufacturerData.Key: 0x0211 (529)
+[CHG] Device 34:13:43:E6:6C:C3 ManufacturerData.Value:
+  11 02 c3 6c e6 43 6e 00 01 c3 00 34 13 43 e6 6c  ...l.Cn....4.C.l
+  c2 06 07 08 09 0a 0b 0c 0d 0e 0f                 ...........
+[CHG] Device 34:13:43:E6:6C:C3 AdvertisingFlags:
+  00                                               .
+[CHG] Device 57:A3:E5:7B:AA:C9 RSSI: 0xffffffaa (-86)
+[CHG] Device 64:B7:08:01:CD:BE RSSI: 0xffffffaa (-86)
+[CHG] Device 0B:3E:3A:A2:B0:39 RSSI: 0xffffffaa (-86)
+[CHG] Device 5F:67:12:3E:5C:EC RSSI: 0xffffffb4 (-76)
+[CHG] Device 5F:67:12:3E:5C:EC ManufacturerData.Key: 0x004c (76)
+[CHG] Device 5F:67:12:3E:5C:EC ManufacturerData.Value:
+  01 00 00 00 00 00 00 00 00 00 00 00 00 80 00 00  ................
+  00                                               .
+[CHG] Device 58:F1:3F:1F:FE:85 RSSI: 0xffffffb4 (-76)
+[CHG] Device 04:E4:B6:03:69:CB RSSI: 0xffffffd1 (-47)
+[CHG] Device 7B:17:8E:2F:E1:FD RSSI: 0xffffffae (-82)
+[CHG] Device 73:13:F1:2B:C5:64 RSSI: 0xffffffb7 (-73)
+[CHG] Device F2:4B:63:EA:1F:03 RSSI: 0xffffffab (-85)
+[CHG] Device 57:BA:FA:37:A1:85 RSSI: 0xffffffaa (-86)
+[CHG] Device D8:51:54:B3:E6:AF RSSI: 0xffffffaa (-86)
+[CHG] Device 64:B7:08:01:CD:BE RSSI: 0xffffffaa (-86)
+[CHG] Device 30:ED:A0:F3:D4:AE RSSI: 0xffffffd5 (-43)
+[CHG] Device 0B:3E:3A:A2:B0:39 RSSI: 0xffffffaa (-86)
+[NEW] Device F5:FD:02:6B:9C:42 F5-FD-02-6B-9C-42
+[CHG] Device 64:B7:08:01:CD:BE RSSI: 0xffffffad (-83)
+[CHG] Device 0E:30:31:25:E9:2C RSSI: 0xffffffaf (-81)
+[CHG] Device 40:01:00:F1:E7:A0 RSSI: 0xffffffaa (-86)
+[CHG] Device 71:0E:AE:F3:AA:10 RSSI: 0xffffffaa (-86)
+[CHG] Device 64:B7:08:01:CD:BE RSSI: 0xffffffaf (-81)
+[CHG] Device 80:F3:DA:1D:33:AE RSSI: 0xffffffab (-85)
+[CHG] Device 04:E4:B6:03:69:CB RSSI: 0xffffffd7 (-41)
+[CHG] Device 30:ED:A0:F3:D4:AE RSSI: 0xffffffd5 (-43)
+[CHG] Device 34:13:43:E3:D9:2D RSSI: 0xffffffaa (-86)
+[CHG] Device 34:13:43:E3:D9:2D ManufacturerData.Key: 0x45e5 (17893)
+[CHG] Device 34:13:43:E3:D9:2D ManufacturerData.Value:
+  63 b2 7d 19 8a 03 83 63 24 07 17 99 8e 77 70 00  c.}....c$....wp.
+  00 d2 fd 34 00 00 21 8c ea 21 70                 ...4..!..!p
+[CHG] Device 34:13:43:E3:D9:2D ManufacturerData.Key: 0x0211 (529)
+[CHG] Device 34:13:43:E3:D9:2D ManufacturerData.Value:
+  11 22 2d d9 e3 43                                ."-..C
+[CHG] Device 34:13:43:E3:D9:2D AdvertisingFlags:
+  00                                               .
+[CHG] Device 64:B7:08:01:CD:BE RSSI: 0xffffffaa (-86)
+[CHG] Device 57:A3:E5:7B:AA:C9 RSSI: 0xffffffaa (-86)
+[CHG] Device 51:14:CE:27:F3:4A RSSI: 0xffffffb3 (-77)
+[CHG] Device 73:13:F1:2B:C5:64 RSSI: 0xffffffb3 (-77)
+[CHG] Device CC:0C:7C:1E:2F:98 RSSI: 0xffffffb5 (-75)
+[CHG] Device 0E:30:31:25:E9:2C RSSI: 0xffffffaf (-81)
+[CHG] Device 5A:F6:CF:90:8F:EF RSSI: 0xffffffb3 (-77)
+[CHG] Device 5F:94:8D:2B:D5:5A RSSI: 0xffffffaa (-86)
+[CHG] Device FC:CF:B6:63:90:E2 RSSI: 0xffffffb4 (-76)
+[CHG] Device 38:A5:C9:C3:BD:F8 RSSI: 0xffffffaa (-86)
+[CHG] Device 71:0E:AE:F3:AA:10 RSSI: 0xffffffaa (-86)
+[CHG] Device 30:ED:A0:F3:D4:AE RSSI: 0xffffffd5 (-43)
+[CHG] Device 2C:41:A1:F7:62:C9 RSSI: 0xffffffaa (-86)
+[CHG] Device 7B:64:1E:BE:58:B2 RSSI: 0xffffffb6 (-74)
+[CHG] Device 0E:30:31:25:E9:2C RSSI: 0xffffffae (-82)
+[CHG] Device 34:13:43:E6:6C:C3 RSSI: 0xffffffaa (-86)
+[CHG] Device 34:13:43:E6:6C:C3 ManufacturerData.Key: 0x45e5 (17893)
+[CHG] Device 34:13:43:E6:6C:C3 ManufacturerData.Value:
+  17 9a 7d 19 8a 03 83 63 24 07 63 b2 8e 77 70 00  ..}....c$.c..wp.
+  00 d2 fd 34 00 00 21 8c ea 21 71                 ...4..!..!q
+[CHG] Device 34:13:43:E6:6C:C3 ManufacturerData.Key: 0x0211 (529)
+[CHG] Device 34:13:43:E6:6C:C3 ManufacturerData.Value:
+  11 02 c3 6c e6 43 6e 00 01 c3 00 34 13 43 e6 6c  ...l.Cn....4.C.l
+  c2 06 07 08 09 0a 0b 0c 0d 0e 0f                 ...........
+[CHG] Device 16:16:44:1F:34:4F RSSI: 0xffffffaa (-86)
+[CHG] Device 40:01:00:F1:E7:A0 RSSI: 0xffffffaa (-86)
+[CHG] Device 64:B7:08:01:CD:BE RSSI: 0xffffffb0 (-80)
+[CHG] Device 51:14:CE:27:F3:4A RSSI: 0xffffffb0 (-80)
+[CHG] Device 30:ED:A0:F3:D4:AE RSSI: 0xffffffd4 (-44)
+[CHG] Device 73:13:F1:2B:C5:64 RSSI: 0xffffffb7 (-73)
+[CHG] Device 80:F3:DA:1C:20:3A RSSI: 0xffffffaa (-86)
+[CHG] Device 5A:F6:CF:90:8F:EF RSSI: 0xffffffaa (-86)
+[CHG] Device 04:E4:B6:03:69:CB RSSI: 0xffffffd7 (-41)
+[CHG] Device 30:ED:A0:F3:D4:AE RSSI: 0xffffffd4 (-44)
+[CHG] Device 64:B7:08:01:CD:BE RSSI: 0xffffffab (-85)
+[CHG] Device 80:F3:DA:1E:B3:BE RSSI: 0xffffffaa (-86)
+[CHG] Device 0E:30:31:25:E9:2C RSSI: 0xffffffb6 (-74)
+[CHG] Device 5F:67:12:3E:5C:EC RSSI: 0xffffffb2 (-78)
+[CHG] Device 5F:67:12:3E:5C:EC ManufacturerData.Key: 0x004c (76)
+[CHG] Device 5F:67:12:3E:5C:EC ManufacturerData.Value:
+  01 00 00 00 00 00 00 00 00 00 00 00 00 80 00 00  ................
+  00                                               .
+[CHG] Device 58:F1:3F:1F:FE:85 RSSI: 0xffffffb7 (-73)
+[CHG] Device 51:14:CE:27:F3:4A RSSI: 0xffffffb4 (-76)
+[CHG] Device 7B:17:8E:2F:E1:FD RSSI: 0xffffffb2 (-78)
+[CHG] Device 7B:64:1E:BE:58:B2 RSSI: 0xffffffb5 (-75)
+[CHG] Device 30:ED:A0:F3:D4:AE RSSI: 0xffffffd3 (-45)
+[CHG] Device 04:E4:B6:03:69:CB RSSI: 0xffffffd0 (-48)
+[CHG] Device 0E:30:31:25:E9:2C RSSI: 0xffffffb6 (-74)
+[CHG] Device 5A:F6:CF:90:8F:EF RSSI: 0xffffffb3 (-77)
+[CHG] Device 64:B7:08:01:CD:BE RSSI: 0xffffffac (-84)
+[CHG] Device 63:8E:9D:C5:4E:B5 RSSI: 0xffffffac (-84)
+[CHG] Device 30:ED:A0:F3:D4:AE RSSI: 0xffffffd3 (-45)
+[CHG] Device 34:13:43:E6:6C:C3 RSSI: 0xffffffaa (-86)
+[CHG] Device 34:13:43:E6:6C:C3 ManufacturerData.Key: 0x45e5 (17893)
+[CHG] Device 34:13:43:E6:6C:C3 ManufacturerData.Value:
+  17 9a 7d 19 8a 03 83 63 24 07 63 b2 8e 77 70 00  ..}....c$.c..wp.
+  00 d2 fd 34 00 00 21 8c ea 21 71                 ...4..!..!q
+[CHG] Device 34:13:43:E6:6C:C3 ManufacturerData.Key: 0x0211 (529)
+[CHG] Device 34:13:43:E6:6C:C3 ManufacturerData.Value:
+  11 22 c3 6c e6 43                                .".l.C
+[CHG] Device 34:13:43:E6:6C:C3 AdvertisingFlags:
+  05                                               .
+[CHG] Device 57:A3:E5:7B:AA:C9 RSSI: 0xffffffaa (-86)
+[CHG] Device 0E:30:31:25:E9:2C RSSI: 0xffffffaa (-86)
+[CHG] Device CD:EB:05:9F:1D:DB RSSI: 0xffffffaa (-86)
+[CHG] Device 58:F1:3F:1F:FE:85 RSSI: 0xffffffab (-85)
+[CHG] Device 80:F3:DA:1D:33:AE RSSI: 0xffffffab (-85)
+[CHG] Device 64:B7:08:01:CD:BE RSSI: 0xffffffaa (-86)
+[CHG] Device 30:ED:A0:F3:D4:AE RSSI: 0xffffffd3 (-45)
+[CHG] Device 5F:67:12:3E:5C:EC RSSI: 0xffffffb2 (-78)
+[CHG] Device 5F:67:12:3E:5C:EC ManufacturerData.Key: 0x004c (76)
+[CHG] Device 5F:67:12:3E:5C:EC ManufacturerData.Value:
+  01 00 00 00 00 00 00 00 00 00 00 00 00 80 00 00  ................
+  00                                               .
+[CHG] Device 0B:3E:3A:A2:B0:39 RSSI: 0xffffffaa (-86)
+[CHG] Device 0E:30:31:25:E9:2C RSSI: 0xffffffb6 (-74)
+[CHG] Device 2C:41:A1:F7:62:C9 RSSI: 0xffffffaa (-86)
+[CHG] Device 64:B7:08:01:CD:BE RSSI: 0xffffffab (-85)
+[CHG] Device 40:01:00:F1:E7:A0 RSSI: 0xffffffaa (-86)
+[CHG] Device 7B:64:1E:BE:58:B2 RSSI: 0xffffffb6 (-74)
+[CHG] Device 5A:F6:CF:90:8F:EF RSSI: 0xffffffb3 (-77)
+[CHG] Device E8:0E:72:B8:D2:AF RSSI: 0xffffffaa (-86)
+[CHG] Device D3:16:C9:AA:14:17 RSSI: 0xffffffb3 (-77)
+[CHG] Device 64:B7:08:01:CD:BE RSSI: 0xffffffaf (-81)
+[CHG] Device 04:E4:B6:03:69:CB RSSI: 0xffffffd0 (-48)
+[CHG] Device 30:ED:A0:F3:D4:AE RSSI: 0xffffffd5 (-43)
+[CHG] Device 51:14:CE:27:F3:4A RSSI: 0xffffffb7 (-73)
+[CHG] Device 73:13:F1:2B:C5:64 RSSI: 0xffffffb8 (-72)
+[CHG] Device 0E:30:31:25:E9:2C RSSI: 0xffffffaa (-86)
+[CHG] Device 63:8E:9D:C5:4E:B5 RSSI: 0xffffffab (-85)
+[CHG] Device DE:DE:71:B2:64:7D RSSI: 0xffffffaf (-81)
+[CHG] Device 5F:94:8D:2B:D5:5A RSSI: 0xffffffaa (-86)
+[CHG] Device 0E:30:31:25:E9:2C RSSI: 0xffffffaa (-86)
+[CHG] Device 64:B7:08:01:CD:BE RSSI: 0xffffffaa (-86)
+[CHG] Device 04:E4:B6:03:69:CB RSSI: 0xffffffdc (-36)
+[CHG] Device 71:0E:AE:F3:AA:10 RSSI: 0xffffffaa (-86)
+[CHG] Device 5A:F6:CF:90:8F:EF RSSI: 0xffffffaa (-86)
+[CHG] Device 5F:67:12:3E:5C:EC RSSI: 0xffffffb1 (-79)
+[CHG] Device 5F:67:12:3E:5C:EC ManufacturerData.Key: 0x004c (76)
+[CHG] Device 5F:67:12:3E:5C:EC ManufacturerData.Value:
+  01 00 00 00 00 00 00 00 00 00 00 00 00 80 00 00  ................
+  00                                               .
+[CHG] Device 64:B7:08:01:CD:BE RSSI: 0xffffffac (-84)
+[CHG] Device 51:14:CE:27:F3:4A RSSI: 0xffffffb4 (-76)
+[CHG] Device 58:F1:3F:1F:FE:85 RSSI: 0xffffffaa (-86)
+[CHG] Device 30:ED:A0:F3:D4:AE RSSI: 0xffffffd5 (-43)
+[CHG] Device 7B:17:8E:2F:E1:FD RSSI: 0xffffffac (-84)
+[CHG] Device 7B:64:1E:BE:58:B2 RSSI: 0xffffffaa (-86)
+[CHG] Device 0E:30:31:25:E9:2C RSSI: 0xffffffaa (-86)
+[CHG] Device 34:13:43:E3:D9:2D RSSI: 0xffffffaa (-86)
+[CHG] Device 34:13:43:E3:D9:2D ManufacturerData.Key: 0x45e5 (17893)
+[CHG] Device 34:13:43:E3:D9:2D ManufacturerData.Value:
+  63 b2 7d 19 8a 03 83 63 24 07 17 99 8e 77 70 00  c.}....c$....wp.
+  00 d2 fd 34 00 00 21 8c ea 21 70                 ...4..!..!p
+[CHG] Device 34:13:43:E3:D9:2D ManufacturerData.Key: 0x0211 (529)
+[CHG] Device 34:13:43:E3:D9:2D ManufacturerData.Value:
+  11 02 2d d9 e3 43 6e 00 01 2d 00 34 13 43 e3 d9  ..-..Cn..-.4.C..
+  2c 06 07 08 09 0a 0b 0c 0d 0e 0f                 ,..........
+[CHG] Device 34:13:43:E3:D9:2D AdvertisingFlags:
+  05                                               .
+[CHG] Device 34:13:43:E6:6C:C3 RSSI: 0xffffffaa (-86)
+[CHG] Device 34:13:43:E6:6C:C3 ManufacturerData.Key: 0x45e5 (17893)
+[CHG] Device 34:13:43:E6:6C:C3 ManufacturerData.Value:
+  17 9c 7d 19 8a 03 85 63 24 07 63 b3 8e 77 70 00  ..}....c$.c..wp.
+  00 d2 fd 34 00 00 21 8c ea 21 76                 ...4..!..!v
+[CHG] Device 34:13:43:E6:6C:C3 ManufacturerData.Key: 0x0211 (529)
+[CHG] Device 34:13:43:E6:6C:C3 ManufacturerData.Value:
+  11 22 c3 6c e6 43                                .".l.C
+[CHG] Device 34:13:43:E6:6C:C3 AdvertisingFlags:
+  00                                               .
+[CHG] Device 71:0E:AE:F3:AA:10 RSSI: 0xffffffaa (-86)
+[CHG] Device C8:3F:ED:EE:5B:C8 RSSI: 0xffffffaa (-86)
+[CHG] Device C8:3F:ED:EE:5B:C8 ManufacturerData.Key: 0x004c (76)
+[CHG] Device C8:3F:ED:EE:5B:C8 ManufacturerData.Value:
+  12 02 14 03                                      ....
+[CHG] Device 30:ED:A0:F3:D4:AE RSSI: 0xffffffd5 (-43)
+[CHG] Device D1:2C:7A:65:60:D1 RSSI: 0xffffffad (-83)
+[CHG] Device 0E:30:31:25:E9:2C RSSI: 0xffffffaf (-81)
+[CHG] Device 57:A3:E5:7B:AA:C9 RSSI: 0xffffffaa (-86)
+[CHG] Device 5A:F6:CF:90:8F:EF RSSI: 0xffffffb3 (-77)
+[CHG] Device 64:B7:08:01:CD:BE RSSI: 0xffffffaa (-86)
+[CHG] Device 7B:17:8E:2F:E1:FD RSSI: 0xffffffaf (-81)
+[CHG] Device 73:13:F1:2B:C5:64 RSSI: 0xffffffb3 (-77)

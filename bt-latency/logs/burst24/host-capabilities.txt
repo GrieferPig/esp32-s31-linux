@@ -1,0 +1,63 @@
+$ bluetoothctl show
+Controller F0:6E:0B:D8:CE:45 (public)
+	Manufacturer: 0x0048 (72)
+	Version: 0x08 (8)
+	Name: BasedSurface
+	Alias: BasedSurface
+	Class: 0x006c010c (7078156)
+	Powered: yes
+	PowerState: on
+	Discoverable: no
+	DiscoverableTimeout: 0x000000b4 (180)
+	Pairable: no
+	UUID: A/V Remote Control        (0000110e-0000-1000-8000-00805f9b34fb)
+	UUID: Handsfree Audio Gateway   (0000111f-0000-1000-8000-00805f9b34fb)
+	UUID: PnP Information           (00001200-0000-1000-8000-00805f9b34fb)
+	UUID: SIM Access                (0000112d-0000-1000-8000-00805f9b34fb)
+	UUID: Audio Source              (0000110a-0000-1000-8000-00805f9b34fb)
+	UUID: A/V Remote Control Target (0000110c-0000-1000-8000-00805f9b34fb)
+	UUID: Generic Access Profile    (00001800-0000-1000-8000-00805f9b34fb)
+	UUID: Generic Attribute Profile (00001801-0000-1000-8000-00805f9b34fb)
+	UUID: Audio Sink                (0000110b-0000-1000-8000-00805f9b34fb)
+	UUID: Device Information        (0000180a-0000-1000-8000-00805f9b34fb)
+	UUID: Vendor specific           (03b80e5a-ede8-4b33-a751-6ce34ec4c700)
+	UUID: Handsfree                 (0000111e-0000-1000-8000-00805f9b34fb)
+	Modalias: usb:v1D6Bp0246d0553
+	Discovering: no
+	Roles: central
+	Roles: peripheral
+Advertising Features:
+	ActiveInstances: 0x00 (0)
+	SupportedInstances: 0x05 (5)
+	SupportedIncludes: tx-power
+	SupportedIncludes: appearance
+	SupportedIncludes: local-name
+	SupportedCapabilities.MaxAdvLen: 0x1f (31)
+	SupportedCapabilities.MaxScnRspLen: 0x1f (31)
+$ btmgmt info
+Index list with 1 item
+hci0:	Primary controller
+	addr F0:6E:0B:D8:CE:45 version 8 manufacturer 72 class 0x6c010c
+	supported settings: powered connectable fast-connectable discoverable bondable link-security ssp br/edr le advertising secure-conn debug-keys privacy static-addr phy-configuration
+	current settings: powered ssp br/edr le secure-conn
+	name BasedSurface
+	short name
+$ btmgmt phy
+Get PHY Configuration failed with status 0x14 (Permission Denied)
+$ hcitool -i hci0 cmd 0x04 0x0001
+< HCI Command: ogf 0x04, ocf 0x0001, plen 0
+> HCI Event: 0x0e plen 12
+  01 01 10 00 08 00 83 08 48 00 15 70
+$ lsusb
+Bus 001 Device 001: ID 1d6b:0002 Linux Foundation 2.0 root hub
+Bus 001 Device 002: ID 045e:0901 Microsoft Corp. Surface Dock Hub
+Bus 001 Device 003: ID 045e:0903 Microsoft Corp. Surface Dock Hub
+Bus 001 Device 004: ID 045e:0904 Microsoft Corp. Surface Dock Extender
+Bus 001 Device 005: ID 10c4:ea60 Silicon Labs CP210x UART Bridge
+Bus 001 Device 007: ID 054c:09cc Sony Corp. DualShock 4 [CUH-ZCT2x]
+Bus 001 Device 008: ID 1286:204c Marvell Semiconductor, Inc. Bluetooth and Wireless LAN Composite
+Bus 001 Device 012: ID 303a:1001 Espressif USB JTAG/serial debug unit
+Bus 002 Device 001: ID 1d6b:0003 Linux Foundation 3.0 root hub
+Bus 002 Device 002: ID 045e:0900 Microsoft Corp. Surface Dock Hub
+Bus 002 Device 003: ID 045e:0902 Microsoft Corp. Surface Dock Hub
+Bus 002 Device 004: ID 045e:07c6 Microsoft Corp. RTL8153 GigE [Surface Ethernet Adapter]

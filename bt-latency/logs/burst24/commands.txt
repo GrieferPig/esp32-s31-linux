@@ -1,0 +1,27 @@
+Host cwd: /home/grieferpig/esp32-s31-linux, branch bt-latency-fix.
+Board UART: /dev/ttyUSB0, tty.setraw, B115200, CR terminator.
+Initial board commands:
+ps; ls -l /tmp/bleb24.pklg; tail -40 /tmp/btstack.log; ip link show wlan0
+cat /tmp/bleb24.log
+dd if=/tmp/bleb24.pklg bs=1K count=3 2>/dev/null | base64
+Host:
+timeout 25 bluetoothctl --timeout 22 scan le
+python3 -u bt-latency/ble_bulk_run.py 30:ED:A0:F3:D4:AE ff10 ff12 40
+bluetoothctl --agent NoInputNoOutput
+  agent on
+  default-agent
+  info 30:ED:A0:F3:D4:AE
+  scan le
+  pair 30:ED:A0:F3:D4:AE
+  scan off
+  quit
+python3 -u bt-latency/logs/burst24/run-bonded.py 30:ED:A0:F3:D4:AE ff10 ff12 40
+run-bonded.py is the original harness with AlreadyExists accepted as BONDED;
+Device1 info independently confirmed Paired=yes and Bonded=yes.
+Board capture frozen after run:
+kill -STOP 245; ls -l /tmp/bleb24.pklg; tail -20 /tmp/bleb24.log
+Host pulls (sequential, count <=300):
+python3 bt-latency/pull_pklg_chunk.py /tmp/bleb24.pklg bt-latency/logs/burst24/chunk0.bin 0 300
+python3 bt-latency/pull_pklg_chunk.py /tmp/bleb24.pklg bt-latency/logs/burst24/chunk1.bin 300 300
+python3 bt-latency/pull_pklg_chunk.py /tmp/bleb24.pklg bt-latency/logs/burst24/chunk2.bin 600 300
+python3 bt-latency/pull_pklg_chunk.py /tmp/bleb24.pklg bt-latency/logs/burst24/chunk3.bin 900 230

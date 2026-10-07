@@ -1,0 +1,24 @@
+kill -STOP 245; ls -l /tmp/bleb24.pklg; tail -20 /tmp/bleb24.log
+-rw-r--r--    1 root     root       1156264 Jan  1 00:40 /tmp/bleb24.pklg
+S31 Classic scan command 0x0c1c status=0
+S31 Classic scan command 0x0c1a status=0
+S31 Classic scan command 0x0c1e status=0
+S31 BLE DLE: pipeline busy, task path only
+S31 BLE link params @connect: update=0 dle=0 phy=-1
+S31 BLE stream: ATT MTU 517
+S31 BLE DLE: pipeline busy, task path only
+S31 BLE link params @mtu: update=0 dle=0 phy=-1
+S31 BLE stream: notifications enabled
+S31 BLE stream: 0 notifies, 0 bytes, seq=0
+S31 BLE DLE: direct 0x2022 sent from pump
+S31 BLE stream: 0 notifies, 0 bytes, seq=0
+S31 BLE stream: 256 notifies, 129024 bytes, seq=256
+S31 BLE stream: 512 notifies, 258048 bytes, seq=512
+S31 BLE stream: 768 notifies, 387072 bytes, seq=768
+S31 BLE stream: 1024 notifies, 516096 bytes, seq=1024
+S31 BLE stream: 1280 notifies, 645120 bytes, seq=1280
+S31 BLE stream: 1536 notifies, 774144 bytes, seq=1536
+S31 BLE stream: 1792 notifies, 903168 bytes, seq=1792
+S31 BLE stream: 2048 notifies, 1032192 bytes, seq=2048
+[1]+  Stopped (signal)           /usr/sbin/s31-btstack-a2dp -u 0 -l /tmp/bleb24.pklg 1>/tmp/bleb24.log 2>&1
+~ #
