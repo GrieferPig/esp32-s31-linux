@@ -1,0 +1,158 @@
+[
+  {
+    "protocol": "Classic SPP",
+    "run": "runs/rr20-0",
+    "bytes": 8738730,
+    "duration": 40.00009766000585,
+    "KiBs": 213.34737950296673,
+    "frames": 8827,
+    "frame_size": 990,
+    "partial": 0,
+    "gap_events": 0,
+    "duplicates": 0,
+    "bad_pattern_frames": 0,
+    "last_seq": 8826,
+    "stop": "deadline",
+    "host_interarrival_gaps": {
+      "p50_ms": 3.9868329986347817,
+      "p95_ms": 10.95380700280657,
+      "p99_ms": 15.053333998366725,
+      "max_ms": 41.01451799942879
+    },
+    "cpu_busy_pct_snapshot_window": 73.6945261094778,
+    "memory_before_kB": {
+      "MemFree": 6704,
+      "MemAvailable": 9060,
+      "Cached": 3272
+    },
+    "memory_after_kB": {
+      "MemFree": 6856,
+      "MemAvailable": 9204,
+      "Cached": 3272
+    },
+    "counter_delta": {
+      "ticks": 4240,
+      "worker_passes": 10502,
+      "heap_used": 0,
+      "heap_peak": 0,
+      "hci_rx_dropped": 0,
+      "hci_tx_dropped": 0
+    }
+  },
+  {
+    "protocol": "Classic SPP",
+    "run": "runs/rr20-1",
+    "bytes": 8690220,
+    "duration": 40.00012561499898,
+    "KiBs": 212.16290794766337,
+    "frames": 8778,
+    "frame_size": 990,
+    "partial": 0,
+    "gap_events": 0,
+    "duplicates": 0,
+    "bad_pattern_frames": 0,
+    "last_seq": 8777,
+    "stop": "deadline",
+    "host_interarrival_gaps": {
+      "p50_ms": 3.968354001699481,
+      "p95_ms": 11.016391996236052,
+      "p99_ms": 15.059831996040884,
+      "max_ms": 38.01871800533263
+    },
+    "cpu_busy_pct_snapshot_window": 67.2338792221085,
+    "memory_before_kB": {
+      "MemFree": 6844,
+      "MemAvailable": 9192,
+      "Cached": 3272
+    },
+    "memory_after_kB": {
+      "MemFree": 6908,
+      "MemAvailable": 9256,
+      "Cached": 3272
+    },
+    "counter_delta": {
+      "ticks": 4608,
+      "worker_passes": 10802,
+      "heap_used": 0,
+      "heap_peak": 0,
+      "hci_rx_dropped": 0,
+      "hci_tx_dropped": 0
+    }
+  },
+  {
+    "protocol": "BLE notify",
+    "run": "ble/rr20-0",
+    "bytes": 1297395,
+    "packets": 2621,
+    "first_seq": 0,
+    "last_seq": 2620,
+    "gaps": 0,
+    "duplicates": 0,
+    "bad_patterns": 0,
+    "duration": 40.00017605999892,
+    "KiBs": 31.67454320168645,
+    "host_interarrival_gaps": {
+      "p50_ms": 14.737672994669992,
+      "p95_ms": 24.129697994794697,
+      "p99_ms": 29.993577998538967,
+      "max_ms": 58.77188999875216
+    },
+    "cpu_busy_pct_snapshot_window": 59.73988439306358,
+    "memory_before_kB": {
+      "MemFree": 6904,
+      "MemAvailable": 9264,
+      "Cached": 3272
+    },
+    "memory_after_kB": {
+      "MemFree": 6968,
+      "MemAvailable": 9328,
+      "Cached": 3272
+    },
+    "counter_delta": {
+      "ticks": 4147,
+      "worker_passes": 12140,
+      "heap_used": 0,
+      "heap_peak": 4224,
+      "hci_rx_dropped": 0,
+      "hci_tx_dropped": 0
+    }
+  },
+  {
+    "protocol": "BLE notify",
+    "run": "ble/rr20-1",
+    "bytes": 1295415,
+    "packets": 2617,
+    "first_seq": 0,
+    "last_seq": 2616,
+    "gaps": 0,
+    "duplicates": 0,
+    "bad_patterns": 0,
+    "duration": 40.000065519998316,
+    "KiBs": 31.626290969574224,
+    "host_interarrival_gaps": {
+      "p50_ms": 14.74053499987349,
+      "p95_ms": 24.077980997390114,
+      "p99_ms": 30.04504300042754,
+      "max_ms": 42.29433400178095
+    },
+    "cpu_busy_pct_snapshot_window": 60.55936073059361,
+    "memory_before_kB": {
+      "MemFree": 6816,
+      "MemAvailable": 9176,
+      "Cached": 3272
+    },
+    "memory_after_kB": {
+      "MemFree": 6880,
+      "MemAvailable": 9240,
+      "Cached": 3272
+    },
+    "counter_delta": {
+      "ticks": 4140,
+      "worker_passes": 12098,
+      "heap_used": 0,
+      "heap_peak": 0,
+      "hci_rx_dropped": 0,
+      "hci_tx_dropped": 0
+    }
+  }
+]

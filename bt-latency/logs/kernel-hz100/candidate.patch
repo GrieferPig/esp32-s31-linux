@@ -1,0 +1,22 @@
+--- a/configs/kernel/common.config
++++ b/configs/kernel/common.config
+@@ -43,15 +43,12 @@
+ CONFIG_TIMERFD=y
+ CONFIG_DMATEST=y
+ CONFIG_HIGH_RES_TIMERS=y
+-# 1000 Hz Linux scheduling for the radio compat tasks (kthreads): finer
+-# CFS preemption, exact msecs_to_jiffies, precise delayed_work.  The
+-# payload FreeRTOS ABI tick is unchanged (s31_linux_tick_count still
+-# reports 10 ms units; s31_ticks_to_jiffies scales by HZ symbolically),
+-# so closed Wi-Fi/BT libraries observe identical wall-time behavior.
+-# CONFIG_HZ_100 is not set
++# Diagnostic control: reduce Linux scheduler ticks; radio ABI ticks and
++# explicit 40 ms BT batching stay unchanged. High-resolution timers remain on.
++CONFIG_HZ_100=y
+ # CONFIG_HZ_250 is not set
+ # CONFIG_HZ_300 is not set
+-CONFIG_HZ_1000=y
++# CONFIG_HZ_1000 is not set
+ CONFIG_BT_ESP32S31=y
+ CONFIG_ESP32S31_WIFI=y
+ CONFIG_MAC80211=y

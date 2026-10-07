@@ -1,0 +1,1 @@
+PATH="$HOME/.local/bin:$PATH" ESP_TOOLS="$HOME/.espressif/tools/riscv32-esp-elf/esp-16.1.0_20260609/riscv32-esp-elf" S31_ALLOW_UNPINNED=1 make build image

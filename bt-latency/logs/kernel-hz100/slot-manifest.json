@@ -1,0 +1,50 @@
+[
+  {
+    "offset": "0x2000",
+    "name": "spl_app.bin",
+    "size": 38560,
+    "erase_end": "0xc000",
+    "sha256": "4cfa3d593e30cbec4be20ae9f6cdb15218a1b74e8034a51b486267c692e31334",
+    "same_as_HZ1000": false
+  },
+  {
+    "offset": "0xe000",
+    "name": "u-boot.itb",
+    "size": 253208,
+    "erase_end": "0x4c000",
+    "sha256": "092d6096c1c32d5034c32278ea8d5b3f4219da4a7e3ca371ae20ee551d26d0f7",
+    "same_as_HZ1000": false
+  },
+  {
+    "offset": "0x5e000",
+    "name": "esp32s31_generic.dtb",
+    "size": 26352,
+    "erase_end": "0x65000",
+    "sha256": "4466f703a78eedb33669a990728974f9b7f3b3a370157372901a90b0603f2522",
+    "same_as_HZ1000": true
+  },
+  {
+    "offset": "0x6e000",
+    "name": "radio.bin",
+    "size": 1527216,
+    "erase_end": "0x1e3000",
+    "sha256": "8974efa25b36b3125ffbd40d131d7f10fd4a87e3925e9788427e53dd8137cc37",
+    "same_as_HZ1000": true
+  },
+  {
+    "offset": "0x400000",
+    "name": "xipImage",
+    "size": 6228940,
+    "erase_end": "0x9f1000",
+    "sha256": "af5c2a9b038522398249f2e72df5c41ea0ec595bc395bda6f0c08885eba90740",
+    "same_as_HZ1000": false
+  },
+  {
+    "offset": "0xa00000",
+    "name": "rootfs.sqfs",
+    "size": 3272704,
+    "erase_end": "0xd1f000",
+    "sha256": "72110be28b04537cac13415d90a3621633f9dfeca0fea519a710ece768f8217e",
+    "same_as_HZ1000": false
+  }
+]

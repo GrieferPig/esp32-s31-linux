@@ -1,0 +1,2 @@
+49f8ee469d22c9dc0ca3ac7eff7687a637a16169f8239471374a44be800a8707 /usr/sbin/s31-btstack-a2dp
+Same hash on previous HZ1000 image and HZ100 build target.

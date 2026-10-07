@@ -1,0 +1,1 @@
+Combo Wi-Fi scan passed; observed BSS: 55

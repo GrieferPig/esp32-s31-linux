@@ -1,0 +1,14 @@
+rr20-0 exit 0 pair: BONDED in 0.0s
+connect: UP in 0.0s
+char ff12 objects: FOUND char0008 after 0s
+notify acquired: mtu=517
+STREAM bytes=1297395 pkts=2621 first=0 last=2620 gaps=0 dups=0 bad_patterns=0 dur=40.0s rate=32435 B/s (31.67 KiB/s)
+
+{"cpu_busy_pct_aggregate": 59.73988439306358, "counter_delta": {"ticks": 4147, "worker_passes": 12140, "heap_used": 0, "heap_peak": 4224, "hci_rx_dropped": 0, "hci_tx_dropped": 0}, "memory_before_kB": {"MemFree": 6904, "MemAvailable": 9264, "Cached": 3272}, "memory_after_kB": {"MemFree": 6968, "MemAvailable": 9328, "Cached": 3272}, "tasks": [{"pid": "216", "name": "btdm", "user_ticks": 0, "system_ticks": 2338, "total_ticks": 2338}, {"pid": "35", "name": "kworker/u11:0-s31-radio", "user_ticks": 0, "system_ticks": 1592, "total_ticks": 1592}, {"pid": "213", "name": "s31-btstack-a2d", "user_ticks": 368, "system_ticks": 406, "total_ticks": 774}, {"pid": "15", "name": "migration/0", "user_ticks": 0, "system_ticks": 35, "total_ticks": 35}], "note": "CPU spans snapshots around receiver, including connection/discovery and snapshot overhead; throughput uses only40s receive window."}
+rr20-1 exit 0 pair: BONDED in 0.0s
+connect: UP in 0.0s
+char ff12 objects: FOUND char0008 after 0s
+notify acquired: mtu=517
+STREAM bytes=1295415 pkts=2617 first=0 last=2616 gaps=0 dups=0 bad_patterns=0 dur=40.0s rate=32385 B/s (31.63 KiB/s)
+
+{"cpu_busy_pct_aggregate": 60.55936073059361, "counter_delta": {"ticks": 4140, "worker_passes": 12098, "heap_used": 0, "heap_peak": 0, "hci_rx_dropped": 0, "hci_tx_dropped": 0}, "memory_before_kB": {"MemFree": 6816, "MemAvailable": 9176, "Cached": 3272}, "memory_after_kB": {"MemFree": 6880, "MemAvailable": 9240, "Cached": 3272}, "tasks": [{"pid": "216", "name": "btdm", "user_ticks": 0, "system_ticks": 2353, "total_ticks": 2353}, {"pid": "35", "name": "kworker/u11:0-s31-radio", "user_ticks": 0, "system_ticks": 1575, "total_ticks": 1575}, {"pid": "239", "name": "s31-btstack-a2d", "user_ticks": 341, "system_ticks": 451, "total_ticks": 792}, {"pid": "15", "name": "migration/0", "user_ticks": 0, "system_ticks": 34, "total_ticks": 34}], "note": "CPU spans snapshots around receiver, including connection/discovery and snapshot overhead; throughput uses only40s receive window."}

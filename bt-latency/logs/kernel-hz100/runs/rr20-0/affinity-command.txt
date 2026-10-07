@@ -1,0 +1,1 @@
+taskset -p 2 $(cat /tmp/opt.pid)
