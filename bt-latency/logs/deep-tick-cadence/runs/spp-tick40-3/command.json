@@ -1,0 +1,12 @@
+{
+  "board_command": "echo 40 > /sys/module/esp32s31_radio/parameters/bt_tick_ms; test \"$(cat /sys/module/esp32s31_radio/parameters/bt_tick_ms)\" = \"40\"",
+  "argv": [
+    "python3",
+    "/home/grieferpig/esp32-s31-linux/bt-latency/fresh_spp_run.py",
+    "bt-latency/logs/deep-tick-cadence/runs/spp-tick40-3"
+  ],
+  "env": {
+    "S31_BOARD_STATS": "1",
+    "S31_SPP_FRAME_SIZE": "990"
+  }
+}

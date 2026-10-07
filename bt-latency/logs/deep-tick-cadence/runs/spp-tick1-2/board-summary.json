@@ -1,0 +1,29 @@
+{
+  "cpu_busy_pct_aggregate": 88.71576959395657,
+  "cpu_system_irq_softirq_pct": 73.80783758262511,
+  "counter_delta": {
+    "ticks": 4777,
+    "worker_passes": 7544,
+    "heap_used": 0,
+    "heap_peak": 0,
+    "hci_rx_dropped": 0,
+    "hci_tx_dropped": 0
+  },
+  "before": {
+    "ticks": 84702,
+    "worker_passes": 78326,
+    "heap_used": 144560,
+    "heap_peak": 151440,
+    "hci_rx_dropped": 0,
+    "hci_tx_dropped": 0
+  },
+  "after": {
+    "ticks": 89479,
+    "worker_passes": 85870,
+    "heap_used": 144560,
+    "heap_peak": 151440,
+    "hci_rx_dropped": 0,
+    "hci_tx_dropped": 0
+  },
+  "note": "CPU spans snapshots around receiver, including connect/discovery overhead; throughput uses only40s receiver window."
+}
