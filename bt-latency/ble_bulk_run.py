@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Gapless BLE bulk run: pair -> connect -> wait for 0xff12 -> stream bench.
+"""AcquireNotify-only BLE host-fd run: pair -> connect -> wait for 0xff12 -> stream bench.
 
 Collapses all host-side gaps so a flapping LE link (supervision deaths
 observed) cannot expire between steps. Prints pair/connect timings plus
@@ -59,7 +59,7 @@ def run_ctl(cmds, timeout, match_any):
 def main():
     addr, svc16, char16, seconds = sys.argv[1], sys.argv[2], sys.argv[3], float(sys.argv[4])
     res, dt = run_ctl(["agent on", "default-agent", f"pair {addr}"],
-                      60, [("BONDED", ["paired: yes", "pairing successful"]),
+                      60, [("BONDED", ["paired: yes", "pairing successful", "org.bluez.error.alreadyexists"]),
                            ("FAILED", ["failed to pair"]),
                            ("NOTAVAIL", ["not available"])])
     print(f"pair: {res} in {dt:.1f}s", flush=True)
@@ -97,13 +97,12 @@ def main():
           f"after {time.monotonic() - t0:.0f}s", flush=True)
     if not char_path:
         return 1
-    # subscribe + stream (retry: BlueZ reports InProgress while resolving)
+    # AcquireNotify owns the notification session. Do not call StartNotify first.
     ch = dbus.Interface(bus.get_object("org.bluez", char_path),
                         "org.bluez.GattCharacteristic1")
     fd_obj = mtu = None
     for attempt in range(4):
         try:
-            ch.StartNotify()
             fd_obj, mtu = ch.AcquireNotify(dbus.Dictionary({}, signature="sv"))
             break
         except Exception as e:
@@ -112,12 +111,16 @@ def main():
     if fd_obj is None:
         return 1
     print(f"notify acquired: mtu={mtu}", flush=True)
-    f = os.fdopen(fd_obj.take(), "rb", buffering=0)
+    fd = fd_obj.take()
+    os.set_blocking(fd, False)
+    f = os.fdopen(fd, "rb", buffering=0)
     total = pkts = gaps = dups = 0
     first_seq = last_seq = None
     t0 = time.monotonic()
     deadline = t0 + seconds
     while time.monotonic() < deadline:
+        if not select.select([fd], [], [], max(0, deadline-time.monotonic()))[0]:
+            break
         try:
             chunk = f.read(65536)
         except BlockingIOError:
@@ -143,10 +146,7 @@ def main():
     print(f"STREAM bytes={total} pkts={pkts} first={first_seq} last={last_seq} "
           f"gaps={gaps} dups={dups} dur={dur:.1f}s "
           f"rate={total/max(dur, 1e-3):.0f} B/s ({total/max(dur, 1e-3)/1024:.2f} KiB/s)", flush=True)
-    try:
-        ch.StopNotify()
-    except Exception:
-        pass
+    f.close()
     return 0
 
 
