@@ -6,6 +6,12 @@ def snapshot(dest,phase):
     if os.environ.get('S31_BOARD_STATS') != '1':
         return
     command='echo CPU_STAT; cat /proc/stat; echo MEMORY; cat /proc/meminfo; echo RADIO_HEALTH; cat /sys/devices/platform/soc/soc:radio/radio_health; echo PROCESS_STAT; cat /proc/[0-9]*/stat'
+    if os.environ.get('S31_BOARD_PROFILE') == '1':
+        if phase == 'before':
+            command += '; echo 0 > /proc/profile'
+        else:
+            command = 'cat /proc/profile > /tmp/s31-bench.profile; ' + command
+    (dest/(phase+'-board-command.txt')).write_text(command+'\n')
     start=time.monotonic()
     result=subprocess.run(['python3',str(Path(__file__).with_name('board_command.py')),command,'12'],capture_output=True)
     end=time.monotonic()

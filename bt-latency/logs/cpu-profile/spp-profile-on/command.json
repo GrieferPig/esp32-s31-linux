@@ -1,0 +1,12 @@
+{
+  "argv": [
+    "python3",
+    "/home/grieferpig/esp32-s31-linux/bt-latency/fresh_spp_run.py",
+    "bt-latency/logs/cpu-profile/spp-profile-on"
+  ],
+  "env": {
+    "S31_BOARD_STATS": "1",
+    "S31_SPP_FRAME_SIZE": "990",
+    "S31_BOARD_PROFILE": "1"
+  }
+}
