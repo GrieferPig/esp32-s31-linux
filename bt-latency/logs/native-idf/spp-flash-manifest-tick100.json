@@ -1,0 +1,30 @@
+[
+  {
+    "offset": "0x2000",
+    "file": "/home/grieferpig/esp32-s31-linux/bt-latency/native-idf/spp/build/bootloader/bootloader.bin",
+    "size": 21344,
+    "erase_end": "0x8000",
+    "sha256": "d29a6b2429d318ec0658a69752ded040c70f00f3a5425f45cfa2d243311ef8bb"
+  },
+  {
+    "offset": "0x10000",
+    "file": "/home/grieferpig/esp32-s31-linux/bt-latency/native-idf/spp/build/partition_table/partition-table.bin",
+    "size": 3072,
+    "erase_end": "0x11000",
+    "sha256": "e6e4113cfdabc662f8f59f63b68e5997f08ccbae19db411cdf4b0210b3c412a8"
+  },
+  {
+    "offset": "0x11000",
+    "file": "/home/grieferpig/esp32-s31-linux/bt-latency/native-idf/spp/build/benchmark-nvs-empty.bin",
+    "size": 24576,
+    "erase_end": "0x17000",
+    "sha256": "1df8949b2e345ab8c00cb81fb6b83686e20a4080f969e5cd8b8d520a07cdaba2"
+  },
+  {
+    "offset": "0x20000",
+    "file": "/home/grieferpig/esp32-s31-linux/bt-latency/native-idf/spp/build/bt_spp_acceptor_demo.bin",
+    "size": 906240,
+    "erase_end": "0xfe000",
+    "sha256": "cfa9226ab2a513fc4a66395e31485c0e3360890e49ab901ae7d0d8b92f6556c2"
+  }
+]

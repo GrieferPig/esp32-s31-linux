@@ -1,0 +1,2 @@
+connected 1.357549s
+{"bytes": 8820900, "duration": 40.000210416998016, "KiBs": 215.35287105863395, "frames": 8910, "frame_size": 990, "partial": 0, "gap_events": 1, "duplicates": 0, "bad_pattern_frames": 0, "last_seq": 8910, "stop": "deadline"}
