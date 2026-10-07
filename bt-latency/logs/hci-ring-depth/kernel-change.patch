@@ -1,0 +1,140 @@
+diff --git a/drivers/platform/esp32s31-radio-smode.c b/drivers/platform/esp32s31-radio-smode.c
+index dda7efe3d6b01..446b1dd53825a 100644
+--- a/drivers/platform/esp32s31-radio-smode.c
++++ b/drivers/platform/esp32s31-radio-smode.c
+@@ -69,7 +69,12 @@ MODULE_PARM_DESC(bt_tick_ms, "Bluetooth-only timer batch, clamped to 1..40 ms (d
+ static unsigned int s31_radio_bt_tx_buffers;
+ module_param_named(bt_tx_buffers, s31_radio_bt_tx_buffers, uint, 0444);
+ MODULE_PARM_DESC(bt_tx_buffers, "BT-only Classic TX buffers at init: 0=SDK default, or 3..10");
+-
++static unsigned int s31_radio_bt_hci_rx_slots = 8;
++module_param_named(bt_hci_rx_slots, s31_radio_bt_hci_rx_slots, uint, 0444);
++MODULE_PARM_DESC(bt_hci_rx_slots, "BT-only HCI RX ring slots: 8,16,32 (default 8)");
++static unsigned int s31_radio_bt_hci_tx_slots = 4;
++module_param_named(bt_hci_tx_slots, s31_radio_bt_hci_tx_slots, uint, 0444);
++MODULE_PARM_DESC(bt_hci_tx_slots, "BT-only HCI TX ring slots: 4,8,16 (default 4)");
+ 
+ #ifndef MODULE
+ static int __init s31_radio_disable_setup(char *value)
+@@ -694,8 +699,10 @@ enum s31_radio_command_type {
+ 
+ /* H4 type plus Linux HCI_MAX_FRAME_SIZE (1028-byte ACL header/payload). */
+ #define S31_HCI_FRAME_SIZE	ESP32S31_RADIO_HCI_FRAME_MAX
+-#define S31_HCI_RX_SLOTS	8
+-#define S31_HCI_TX_SLOTS	4
++#define S31_HCI_RX_SLOTS_DEFAULT	8
++#define S31_HCI_TX_SLOTS_DEFAULT	4
++static unsigned int s31_hci_rx_slots = S31_HCI_RX_SLOTS_DEFAULT;
++static unsigned int s31_hci_tx_slots = S31_HCI_TX_SLOTS_DEFAULT;
+ 
+ struct s31_hci_frame {
+ 	u16 length;
+@@ -1552,7 +1559,7 @@ int s31_radio_vhci_receive(u8 *frame, u16 length)
+ 	}
+ 	spin_lock_irqsave(&s31_hci_lock, flags);
+ 	was_empty = s31_hci_rx_head == s31_hci_rx_tail;
+-	next = (s31_hci_rx_head + 1) % S31_HCI_RX_SLOTS;
++	next = (s31_hci_rx_head + 1) & (s31_hci_rx_slots - 1);
+ 	if (next == s31_hci_rx_tail) {
+ 		atomic_inc(&s31_hci_rx_dropped);
+ 		spin_unlock_irqrestore(&s31_hci_lock, flags);
+@@ -1711,8 +1718,8 @@ static void s31_radio_hci_process_tx(void)
+ 			if (coex_result != -EOPNOTSUPP) {
+ 				complete[6] = coex_result ? 0x12 : 0;
+ 				s31_radio_vhci_receive(complete, sizeof(complete));
+-				s31_hci_tx_tail = (s31_hci_tx_tail + 1) %
+-						   S31_HCI_TX_SLOTS;
++				s31_hci_tx_tail = (s31_hci_tx_tail + 1) &
++						 (s31_hci_tx_slots - 1);
+ 				freed = true;
+ 				continue;
+ 			}
+@@ -1720,7 +1727,7 @@ static void s31_radio_hci_process_tx(void)
+ 
+ 		if (s31_radio_vhci_try_send(frame->data, frame->length))
+ 			break;
+-		s31_hci_tx_tail = (s31_hci_tx_tail + 1) % S31_HCI_TX_SLOTS;
++		s31_hci_tx_tail = (s31_hci_tx_tail + 1) & (s31_hci_tx_slots - 1);
+ 		freed = true;
+ 	}
+ 	/* The direct-HCI endpoint uses the same readiness edge for RX data and
+@@ -1771,7 +1778,7 @@ static void s31_radio_hci_deliver_rx(void)
+ 		spin_unlock_irqrestore(&s31_hci_lock, flags);
+ 
+ 		ops->receive(context, frame->data, frame->length);
+-		s31_hci_rx_tail = (s31_hci_rx_tail + 1) % S31_HCI_RX_SLOTS;
++		s31_hci_rx_tail = (s31_hci_rx_tail + 1) & (s31_hci_rx_slots - 1);
+ 	}
+ }
+ 
+@@ -2150,7 +2157,7 @@ int esp32s31_radio_hci_send(u8 packet_type, const u8 *data, size_t length)
+ 	if (atomic_read(&s31_radio_state) != ESP32S31_RADIO_READY)
+ 		return -ENODEV;
+ 	spin_lock_irqsave(&s31_hci_lock, flags);
+-	next = (s31_hci_tx_head + 1) % S31_HCI_TX_SLOTS;
++	next = (s31_hci_tx_head + 1) & (s31_hci_tx_slots - 1);
+ 	if (next == s31_hci_tx_tail) {
+ 		spin_unlock_irqrestore(&s31_hci_lock, flags);
+ 		return -EAGAIN;
+@@ -2181,7 +2188,7 @@ bool esp32s31_radio_hci_tx_has_space(void)
+ 	unsigned int head = smp_load_acquire(&s31_hci_tx_head);
+ 	unsigned int tail = READ_ONCE(s31_hci_tx_tail);
+ 
+-	return (head + 1) % S31_HCI_TX_SLOTS != tail;
++	return ((head + 1) & (s31_hci_tx_slots - 1)) != tail;
+ }
+ EXPORT_SYMBOL_GPL(esp32s31_radio_hci_tx_has_space);
+ 
+@@ -2220,7 +2227,7 @@ void esp32s31_radio_hci_consume(void)
+ 	spin_lock_irqsave(&s31_hci_lock, flags);
+ 	if (s31_hci_rx_tail != smp_load_acquire(&s31_hci_rx_head))
+ 		smp_store_release(&s31_hci_rx_tail,
+-				  (s31_hci_rx_tail + 1) % S31_HCI_RX_SLOTS);
++				  (s31_hci_rx_tail + 1) & (s31_hci_rx_slots - 1));
+ 	spin_unlock_irqrestore(&s31_hci_lock, flags);
+ }
+ EXPORT_SYMBOL_GPL(esp32s31_radio_hci_consume);
+@@ -2246,7 +2253,7 @@ int esp32s31_radio_hci_dequeue(u8 *data, size_t capacity)
+ 		return -EMSGSIZE;
+ 	}
+ 	memcpy(data, frame->data, length);
+-	s31_hci_rx_tail = (s31_hci_rx_tail + 1) % S31_HCI_RX_SLOTS;
++	s31_hci_rx_tail = (s31_hci_rx_tail + 1) & (s31_hci_rx_slots - 1);
+ 	spin_unlock_irqrestore(&s31_hci_lock, flags);
+ 	return length;
+ }
+@@ -3033,6 +3040,22 @@ int s31_radio_runtime_init(bool enable_wifi, bool enable_bt)
+ 	    (s31_radio_bt_tx_buffers < 3 || s31_radio_bt_tx_buffers > 10))
+ 		return -EINVAL;
+ 
++	s31_hci_rx_slots = S31_HCI_RX_SLOTS_DEFAULT;
++	s31_hci_tx_slots = S31_HCI_TX_SLOTS_DEFAULT;
++	if (enable_bt && !enable_wifi) {
++		unsigned int rx = s31_radio_bt_hci_rx_slots;
++		unsigned int tx = s31_radio_bt_hci_tx_slots;
++
++		if ((rx != 8 && rx != 16 && rx != 32) ||
++		    (tx != 4 && tx != 8 && tx != 16))
++			return -EINVAL;
++		s31_hci_rx_slots = rx;
++		s31_hci_tx_slots = tx;
++	}
++	if (enable_bt)
++		pr_info("esp32s31-radio: HCI rings rx=%u tx=%u\n",
++			s31_hci_rx_slots, s31_hci_tx_slots);
++
+ 	pr_info("esp32s31-radio: late init entered\n");
+ 	/* Reload within one module lifetime must not reuse indices or pending
+ 	 * events referencing the previous payload heap.  Frontends are detached. */
+@@ -3144,9 +3167,9 @@ int s31_radio_runtime_init(bool enable_wifi, bool enable_bt)
+ 	 * Keep both sides in the same internal-SRAM ownership domain as the blob. */
+ 	if (enable_bt) {
+ 		s31_hci_rx = s31_radio_sram_alloc(sizeof(*s31_hci_rx) *
+-						 S31_HCI_RX_SLOTS);
++						 s31_hci_rx_slots);
+ 		s31_hci_tx = s31_radio_sram_alloc(sizeof(*s31_hci_tx) *
+-						 S31_HCI_TX_SLOTS);
++						 s31_hci_tx_slots);
+ 	}
+ 	if (enable_wifi) {
+ 		if (!s31_radio_workerless) {
