@@ -1,0 +1,112 @@
+{
+  "artifacts": {
+    "esp32s31_generic.dtb": "4466f703a78eedb33669a990728974f9b7f3b3a370157372901a90b0603f2522",
+    "radio.bin": "8974efa25b36b3125ffbd40d131d7f10fd4a87e3925e9788427e53dd8137cc37",
+    "radio.json": "4cba3b1efad259640b939f1d690311b484d28721fd90469d33f1284c7c92e491",
+    "rootfs.sqfs": "625d3b05e0a8edbe77fcbcabafb1c240024f6b3c6ddbfa7ceb2795ac03f8d0e7",
+    "s31_full_flash.bin": "e6e35e20d2a1acf5aa85384b37525b239361657b5b2b9a6ced4280ed007898d0",
+    "spl_app.bin": "2839edd1ba2bdb7c2be05666d668480cf52547c5d4a48c81da13ffc8021c72a0",
+    "u-boot.itb": "88fae7f1d1aac0d111ce4bf27901b3da5ad21ed1fcba3c243351687ad541e5ce",
+    "xipImage": "e7ec2811e4c6a493cb12b4c5e0ee609e06e8075edff3166fdd64f74108af0aa6"
+  },
+  "build_provenance": {
+    "rootfs": {
+      "details": {
+        "mode": "native-buildroot",
+        "module_sha256": "116bc759013b84a74b327c917130b365ceefa36da3a1fe796b3edecfda2e1a25",
+        "packaged_module_sha256": "78e4b91504dc612061118d90828ad04a3df6af391beb806c5350f786e46eea30",
+        "rootfs_sha256": "625d3b05e0a8edbe77fcbcabafb1c240024f6b3c6ddbfa7ceb2795ac03f8d0e7"
+      },
+      "sha256": "79f39129410e28cce97709d5c6cc3122fd6354c6dc965c8692747b9de880076d"
+    }
+  },
+  "compiler": {
+    "installed_release": "esp32s31-linux-gcc-15.2.0-5",
+    "sha256": "09d1f8936214ca5683cc2cdd525cad4cc53f2a9d20ea6a0d481679d013a1fbde",
+    "version": "riscv32-esp-linux-musl-gcc (crosstool-NG esp-16.0.0_00000000.33-d799a78) 15.2.0"
+  },
+  "expected_dependencies": {
+    "BTSTACK_REF": "431d58d5613fd8fae38afe50282b25302de84bf7",
+    "ESP_ELF_RELEASE": "esp-15.2.0_20251204",
+    "ESP_IDF_REF": "a602e67b0bf9ee0806dc4e1df7afc9affedf5c33",
+    "TOOLCHAIN_RELEASE_TAG": "esp32s31-linux-gcc-15.2.0-5"
+  },
+  "generated_configs": {
+    "buildroot/.config": "43ffb3d56527adb26ee0cc655d2b37cfa0b488f19d8aee3c8fcdd61d5927469f",
+    "generated/radio-kernel-symbols.txt": "3eee6328ad8e0ce0af7fe0acf32f3972532734ea24f9d21ada265a58bc6cd770",
+    "idf-radio/sdkconfig": "bf9b1f8d597fd1a4a73049d3942b4196037e98fca58b0dacece194bbc10d42b5",
+    "linux/.config": "da456874d4b5bc95e58fca144e435314f7a4e666528027dd1dafdf233ba83b9b",
+    "reports/buildroot-inputs.json": "d67481743a5d52cb714310a48ae3992bb6d59e787ba164f7c96937ffe4b503e5",
+    "reports/buildroot.config": "43ffb3d56527adb26ee0cc655d2b37cfa0b488f19d8aee3c8fcdd61d5927469f",
+    "reports/linux-inputs.json": "71ee3602336a2226d1f3faedee80a630c748de02ad3c2b8f2e3d380a616462ad",
+    "reports/linux.config": "da456874d4b5bc95e58fca144e435314f7a4e666528027dd1dafdf233ba83b9b",
+    "reports/resolved-config.json": "6165f317a297d422c7d13e9ce250b10b0f24966acb31edb4a232373b0c3f5e76",
+    "reports/uboot-inputs.json": "06a76d211863f2880ce76913556924884132f83a491aeea63fb5fb6abaeb4dbb"
+  },
+  "idf": {
+    "commit": "08e0d30a74ad0bfd5a34933142b80f45619ee410",
+    "dirty": false,
+    "other_untracked_entries": 0,
+    "tracked_diff_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "untracked_source_files": {}
+  },
+  "radio_binding": {
+    "kernel_module_sha256": "116bc759013b84a74b327c917130b365ceefa36da3a1fe796b3edecfda2e1a25",
+    "kernel_vmlinux_sha256": "bf526c595604226a568851a46edc8a57223b3ff62b46e778020177d6ab43991b",
+    "radio_imports_sha256": "45f452b560a277cd2b1ebbe822d46db2dbc8c5f723d70fabf650d29957d57d01",
+    "radio_payload_sha256": "4554242b9d33f93638bef2a798c2a4bbcb5f2c65ed09866e5a6ccb01a5868c0b"
+  },
+  "schema_version": 3,
+  "source_configs": {
+    "configs/build-versions.mk": "511daed037287caeceee6f84e31b4d4ca5b95606bd147139de8e5d3c4a731aa1",
+    "configs/esp32s31-layout.cfg": "fe8cdf2b3cb6959fcc4bb30711a7c527d4a1a2822d363b61b05b753592d7f04d",
+    "configs/kernel/board.config": "489623d434df31a4481885b4c6fccb0ab938c7ff95631aaaf5716f06a85c027b",
+    "configs/kernel/common.config": "7fdd8619e30bc50a50f73f71d0f49abe1e7a3bc35e07be24decf2fa6cae86f7f"
+  },
+  "sources": {
+    ".": {
+      "commit": "19133cdb6c93b04b501708497007249609f4f24d",
+      "dirty": true,
+      "other_untracked_entries": 0,
+      "tracked_diff_sha256": "7ff736d14d3519f59b8aaca90d6e1bf976db9c05fd95eff1b8bae2da6ff49d09",
+      "untracked_source_files": {
+        "BT_DEBUG_MISSION.md": "40de7c52c21e0d3b67b0362ae11052da77fdb5892530d29935ee5a1def2758f3"
+      }
+    },
+    "buildroot": {
+      "commit": "cb857ba4c87a93e5265a9e4a3f32071abf39e14a",
+      "dirty": false,
+      "other_untracked_entries": 0,
+      "tracked_diff_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "untracked_source_files": {}
+    },
+    "docs": {
+      "commit": "45e088299d115abeb2d5663f0e06a90b16dd5ebe",
+      "dirty": false,
+      "other_untracked_entries": 0,
+      "tracked_diff_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "untracked_source_files": {}
+    },
+    "linux-esp32-s31": {
+      "commit": "7a76873da67f2b47e7fcca1ea1f05868858cb878",
+      "dirty": true,
+      "other_untracked_entries": 0,
+      "tracked_diff_sha256": "74eafb888312405d2f1f199ce7a53fc7fae0e109c67d3429c8fd44242ef4b2b4",
+      "untracked_source_files": {}
+    },
+    "opensbi-esp32-s31": {
+      "commit": "344cfcb22d9ecae84e6bb571b4e312edf5c776bf",
+      "dirty": false,
+      "other_untracked_entries": 0,
+      "tracked_diff_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "untracked_source_files": {}
+    },
+    "u-boot-esp32-s31": {
+      "commit": "5806e424058cec63094ea0e76b2f8f95298817fb",
+      "dirty": false,
+      "other_untracked_entries": 0,
+      "tracked_diff_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "untracked_source_files": {}
+    }
+  }
+}

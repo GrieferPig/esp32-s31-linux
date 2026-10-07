@@ -1,0 +1,14 @@
+{
+  "kernel": {
+    "path": "/home/grieferpig/esp32-s31-linux/out/linux/vmlinux",
+    "sha256": "2f2c647d07d85ee40f416a17f03e561de1c14d962f964a3b6c4c1131d68a0de9"
+  },
+  "payload": {
+    "path": "/home/grieferpig/esp32-s31-linux/out/images/radio-xip.elf",
+    "sha256": "50c4d830dd6d7585341053257ed4fe4083f2f710342625de8bfd71bf417337f5"
+  },
+  "module": {
+    "path": "/home/grieferpig/esp32-s31-linux/out/linux/drivers/platform/esp32s31-radio.ko",
+    "sha256": "116bc759013b84a74b327c917130b365ceefa36da3a1fe796b3edecfda2e1a25"
+  }
+}

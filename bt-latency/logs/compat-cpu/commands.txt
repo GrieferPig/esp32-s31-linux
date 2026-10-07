@@ -1,0 +1,19 @@
+All commands ran on basedsurface in /home/grieferpig/esp32-s31-linux.
+Build: see build-command.txt (same command for all diagnostic builds).
+python3 -u bt-latency/logs/compat-cpu/flash.py 7dac05d932ed649e
+python3 -u bt-latency/logs/compat-cpu/run.py
+# First two setup attempts: missing kallsyms; first control: profiler allocation failed.
+# Corrected allocation and rebuilt:
+python3 bt-latency/logs/compat-cpu/freeze.py
+python3 -u bt-latency/logs/compat-cpu/flash.py 1bf66f2f941d592f
+python3 -u bt-latency/logs/compat-cpu/run.py
+# One SPP connection aborted before payload; preserved and retried:
+S31_RESUME_FROM=1 python3 -u bt-latency/logs/compat-cpu/run.py
+python3 -m unittest discover -s tools/tests -p test_s31_hil_flash_safety.py
+# For each completed run:
+python3 bt-latency/analyze_cpu_comparison.py linux RUN_DIRECTORY
+python3 bt-latency/logs/compat-cpu/analyze.py RUN_DIRECTORY
+# Restore:
+python3 -u bt-latency/logs/compat-cpu/flash.py e168e8c0f293a4d4
+python3 -u bt-latency/logs/compat-cpu/restore-check.py
+python3 bt-latency/logs/compat-cpu/archive.py

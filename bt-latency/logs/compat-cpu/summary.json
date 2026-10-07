@@ -1,0 +1,132 @@
+{
+  "runs": [
+    {
+      "protocol": "ble",
+      "run": 0,
+      "profile": false,
+      "cpu": 68.35135585154771,
+      "KiBs": 31.952531670811414
+    },
+    {
+      "protocol": "ble",
+      "run": 1,
+      "profile": true,
+      "cpu": 66.85586685681773,
+      "KiBs": 31.940446946833767
+    },
+    {
+      "protocol": "ble",
+      "run": 2,
+      "profile": true,
+      "cpu": 67.8401263358799,
+      "KiBs": 31.517485092479312
+    },
+    {
+      "protocol": "ble",
+      "run": 3,
+      "profile": false,
+      "cpu": 66.75645921997355,
+      "KiBs": 31.879961711314756
+    },
+    {
+      "protocol": "spp",
+      "run": 0,
+      "profile": false,
+      "cpu": 80.1870819582304,
+      "KiBs": 213.44382260334203
+    },
+    {
+      "protocol": "spp",
+      "run": 1,
+      "profile": true,
+      "cpu": 79.83831969490429,
+      "KiBs": 212.40466870019776
+    },
+    {
+      "protocol": "spp",
+      "run": 2,
+      "profile": true,
+      "cpu": 80.55362277904969,
+      "KiBs": 215.28047141307192
+    },
+    {
+      "protocol": "spp",
+      "run": 3,
+      "profile": false,
+      "cpu": 79.33784089113053,
+      "KiBs": 213.25030619517142
+    }
+  ],
+  "means": {
+    "ble/off": {
+      "CPU": 67.55390753576063,
+      "KiBs": 31.916246691063087
+    },
+    "ble/on": {
+      "CPU": 67.34799659634882,
+      "KiBs": 31.72896601965654
+    },
+    "spp/off": {
+      "CPU": 79.76246142468045,
+      "KiBs": 213.34706439925674
+    },
+    "spp/on": {
+      "CPU": 80.19597123697699,
+      "KiBs": 213.84257005663483
+    }
+  },
+  "profiles": [
+    {
+      "protocol": "ble",
+      "run": 1,
+      "total_samples": 3401,
+      "irq_boundary_samples": 1197,
+      "categories": {
+        "other radio payload PC": 920,
+        "generic kernel PC": 1372,
+        "RTOS compatibility direct PC": 191,
+        "other radio module PC": 191,
+        "unresolved PC": 20
+      }
+    },
+    {
+      "protocol": "ble",
+      "run": 2,
+      "total_samples": 3835,
+      "irq_boundary_samples": 1337,
+      "categories": {
+        "other radio payload PC": 852,
+        "RTOS compatibility direct PC": 227,
+        "generic kernel PC": 1338,
+        "other radio module PC": 222,
+        "unresolved PC": 20
+      }
+    },
+    {
+      "protocol": "spp",
+      "run": 1,
+      "total_samples": 4414,
+      "irq_boundary_samples": 1621,
+      "categories": {
+        "other radio payload PC": 1024,
+        "generic kernel PC": 1157,
+        "other radio module PC": 102,
+        "RTOS compatibility direct PC": 148,
+        "unresolved PC": 10
+      }
+    },
+    {
+      "protocol": "spp",
+      "run": 2,
+      "total_samples": 4422,
+      "irq_boundary_samples": 1611,
+      "categories": {
+        "other radio payload PC": 1040,
+        "generic kernel PC": 1169,
+        "RTOS compatibility direct PC": 179,
+        "other radio module PC": 111,
+        "unresolved PC": 14
+      }
+    }
+  ]
+}

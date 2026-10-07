@@ -1,0 +1,20 @@
+{
+  "base": "0xa11b8000",
+  "sections": [
+    {
+      "name": ".exit.text",
+      "offset": 0,
+      "size": 16
+    },
+    {
+      "name": ".text",
+      "offset": 16,
+      "size": 43032
+    },
+    {
+      "name": ".text.unlikely",
+      "offset": 43048,
+      "size": 126
+    }
+  ]
+}

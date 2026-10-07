@@ -1,0 +1,53 @@
+{
+  "radio_categories": {
+    "other radio payload PC": 1
+  },
+  "samples": 2,
+  "lost": 0,
+  "regions": {
+    "payload": 1,
+    "kernel": 1
+  },
+  "tasks": {
+    "btdm": 1,
+    "sh": 1
+  },
+  "hotspots": [
+    {
+      "task": "btdm",
+      "region": "payload",
+      "symbol": "r_sym_ble_xTAeRgg4NMBn0MVP1JZ6",
+      "hits": 1
+    },
+    {
+      "task": "sh",
+      "region": "kernel",
+      "symbol": "file_close_fd_locked",
+      "hits": 1
+    }
+  ],
+  "rows": [
+    {
+      "cpu": 0,
+      "pid": 221,
+      "task": "btdm",
+      "user": 0,
+      "pc": "0xbe0ab8a4",
+      "hits": 1,
+      "symbol": "r_sym_ble_xTAeRgg4NMBn0MVP1JZ6",
+      "offset": 2,
+      "region": "payload"
+    },
+    {
+      "cpu": 1,
+      "pid": 78,
+      "task": "sh",
+      "user": 0,
+      "pc": "0xc00d7788",
+      "hits": 1,
+      "symbol": "file_close_fd_locked",
+      "offset": 2,
+      "region": "kernel"
+    }
+  ]
+}

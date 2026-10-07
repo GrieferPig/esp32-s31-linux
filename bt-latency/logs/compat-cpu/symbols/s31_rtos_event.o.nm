@@ -1,0 +1,23 @@
+         U memset
+         U s31_linux_printf
+         U s31_linux_sync_create
+         U s31_linux_sync_destroy
+         U s31_linux_sync_lock
+         U s31_linux_sync_sequence
+         U s31_linux_sync_unlock
+         U s31_linux_sync_wait
+         U s31_linux_sync_wake
+         U s31_rtos_current
+         U s31_rtos_free
+         U s31_rtos_get_tick
+         U s31_rtos_in_isr
+         U s31_rtos_malloc
+00000000 00000004 b s31_event_create_count
+00000000 00000004 b s31_event_set_count
+00000000 00000030 t s31_event_task_name
+00000000 00000004 b s31_event_wait_count
+00000000 0000002a T vEventGroupDelete
+00000000 00000042 T xEventGroupClearBits
+00000000 00000078 T xEventGroupCreate
+00000000 00000086 T xEventGroupSetBits
+00000000 000001c8 T xEventGroupWaitBits

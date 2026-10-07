@@ -1,0 +1,13 @@
+{
+  "accepted_dist": "e168e8c0f293a4d4",
+  "full_six_slots_restored": true,
+  "explicit_digest_matches": 6,
+  "persist_written": false,
+  "kernel_source_clean": true,
+  "production_changes_retained": false,
+  "wifi_scan_bss": 57,
+  "wifi_association_tested": false,
+  "ble_advertising_confirmed": true,
+  "btstack_priority": "RR20",
+  "btstack_cpu": 1
+}

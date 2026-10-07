@@ -1,0 +1,1 @@
+gzip -c /tmp/compat-pc.txt > /tmp/compat-pc.txt.gz; test $(wc -c < /tmp/compat-pc.txt.gz) -le 307200 && { sha256sum /tmp/compat-pc.txt; printf '\nPROFILE_%s\n' BEGIN; dd if=/tmp/compat-pc.txt.gz bs=1K skip=0 count=300 2>/dev/null | base64; printf '\nPROFILE_%s\n' END; }

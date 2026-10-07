@@ -1,0 +1,6 @@
+{
+  "replay_path": "/tmp/s31-compat-replay-34rxj343/compat-cpu",
+  "gzip_round_trips_verified": 244,
+  "profiles_reproduced": 8,
+  "from_staged_file_selection": true
+}

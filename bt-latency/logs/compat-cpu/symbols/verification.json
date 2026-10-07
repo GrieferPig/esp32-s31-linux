@@ -1,0 +1,7 @@
+{
+  "kernel_elf_matches_manifest": true,
+  "module_elf_matches_manifest": true,
+  "payload_elf_objcopy_body_matches_flashed_radio": true,
+  "radio_header_bytes": 4096,
+  "body_sha256": "c75c933d07ca8bd1a4d9c0329fe1a3ac766f3e2ddd2c94bf94912fc8d3c30d7d"
+}

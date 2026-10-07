@@ -1,0 +1,39 @@
+{
+  "flash": [
+    "python3",
+    "tools/device/flash.py",
+    "--artifact-dir",
+    "dist/7dac05d932ed649e",
+    "--slot",
+    "all",
+    "--port",
+    "/dev/ttyUSB0",
+    "--baud",
+    "921600",
+    "--esptool",
+    "/home/grieferpig/.espressif/python_env/idf6.2_py3.13_env/bin/esptool"
+  ],
+  "verify": [
+    "/home/grieferpig/.espressif/python_env/idf6.2_py3.13_env/bin/esptool",
+    "--chip",
+    "esp32s31",
+    "--port",
+    "/dev/ttyUSB0",
+    "--baud",
+    "921600",
+    "--no-stub",
+    "verify-flash",
+    "0x2000",
+    "dist/7dac05d932ed649e/spl_app.bin",
+    "0xe000",
+    "dist/7dac05d932ed649e/u-boot.itb",
+    "0x5e000",
+    "dist/7dac05d932ed649e/esp32s31_generic.dtb",
+    "0x6e000",
+    "dist/7dac05d932ed649e/radio.bin",
+    "0x400000",
+    "dist/7dac05d932ed649e/xipImage",
+    "0xa00000",
+    "dist/7dac05d932ed649e/rootfs.sqfs"
+  ]
+}

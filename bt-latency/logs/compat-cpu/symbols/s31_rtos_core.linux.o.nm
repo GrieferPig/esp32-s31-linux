@@ -1,0 +1,72 @@
+         U heap_caps_free
+         U heap_caps_malloc
+         U memset
+         U s31_linux_critical_enter
+         U s31_linux_critical_exit
+         U s31_linux_current_cookie
+         U s31_linux_current_cpu
+         U s31_linux_printf
+         U s31_linux_sync_create
+         U s31_linux_sync_destroy
+         U s31_linux_sync_lock
+         U s31_linux_sync_sequence
+         U s31_linux_sync_unlock
+         U s31_linux_sync_wait
+         U s31_linux_sync_wake
+         U s31_linux_task_create
+         U s31_linux_task_delay
+         U s31_linux_task_exit_current
+         U s31_linux_task_set_priority
+         U s31_linux_task_stop
+         U s31_linux_task_yield
+         U s31_linux_tick_count
+         U s31_linux_timers_tick
+         U s31_radio_coex_worker_tick
+         U strncpy
+00000000 00000040 T pvTaskGetThreadLocalStoragePointer
+00000000 00000068 b s31_foreign_tcb
+00000000 00000004 b s31_orphan_critical_depth
+00000000 00000004 b s31_orphan_critical_flags
+00000000 00000026 T s31_rtos_can_yield
+00000000 0000001c T s31_rtos_current
+00000000 00000008 T s31_rtos_free
+00000000 00000008 T s31_rtos_get_tick
+00000000 00000002 T s31_rtos_hard_tick
+00000000 0000000e T s31_rtos_in_isr
+00000000 0000005a T s31_rtos_init
+00000000 00000004 B s31_rtos_isr_depth
+00000000 0000000e T s31_rtos_malloc
+00000000 0000000e t s31_rtos_stack_malloc
+00000000 0000003e t s31_rtos_task_entry
+00000000 00000034 T s31_rtos_task_release
+00000000 00000018 T s31_rtos_tick
+00000000 00000002 T s31_rtos_use_internal_stacks
+00000000 00000004 b s31_scheduler_started
+00000000 00000004 b s31_task_delete_count
+00000000 00000004 b s31_task_priority_set_count
+00000000 000000e4 T ulTaskGenericNotifyTake
+00000000 0000001a T uxTaskPriorityGet
+00000000 0000002c T vPortEnterCritical
+00000000 0000002a T vPortExitCritical
+00000000 00000008 T vPortExitCriticalMultiCore
+00000000 00000002 T vPortYieldFromISR
+00000000 0000001e T vTaskDelay
+00000000 000000a6 T vTaskDelete
+00000000 00000024 T vTaskGenericNotifyGiveFromISR
+00000000 0000005e T vTaskPrioritySet
+00000000 00000040 T vTaskSetThreadLocalStoragePointerAndDelCallback
+00000000 00000046 T vTaskSuspend
+00000000 00000002 T vTaskSuspendAll
+00000000 00000014 T xPortEnterCriticalTimeout
+00000000 00000008 T xPortGetCoreID
+00000000 0000000e T xPortInIsrContext
+00000000 00000136 T xTaskCreatePinnedToCore
+00000000 00000086 T xTaskGenericNotify
+00000000 00000114 T xTaskGenericNotifyWait
+00000000 0000001a T xTaskGetCoreID
+00000000 00000008 T xTaskGetCurrentTaskHandle
+00000000 00000048 T xTaskGetCurrentTaskHandleForCore
+00000000 00000010 T xTaskGetSchedulerState
+00000000 00000008 T xTaskGetTickCount
+00000000 00000008 T xTaskGetTickCountFromISR
+00000000 00000004 T xTaskResumeAll

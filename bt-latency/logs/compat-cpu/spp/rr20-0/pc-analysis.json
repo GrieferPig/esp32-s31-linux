@@ -1,0 +1,92 @@
+{
+  "radio_categories": {
+    "other radio payload PC": 1,
+    "other radio module PC": 1
+  },
+  "samples": 4,
+  "lost": 0,
+  "regions": {
+    "payload": 1,
+    "user": 1,
+    "module": 1,
+    "kernel": 1
+  },
+  "tasks": {
+    "btdm": 1,
+    "sh": 1,
+    "kworker/u11:0+s31-radio": 1,
+    "pid0": 1
+  },
+  "hotspots": [
+    {
+      "task": "btdm",
+      "region": "payload",
+      "symbol": "wr_btdm_osal_get_time_forever",
+      "hits": 1
+    },
+    {
+      "task": "sh",
+      "region": "user",
+      "symbol": "userspace",
+      "hits": 1
+    },
+    {
+      "task": "kworker/u11:0+s31-radio",
+      "region": "module",
+      "symbol": "s31_radio_blob_run_pending_isrs",
+      "hits": 1
+    },
+    {
+      "task": "pid0",
+      "region": "kernel",
+      "symbol": "finish_task_switch.isra.0",
+      "hits": 1
+    }
+  ],
+  "rows": [
+    {
+      "cpu": 0,
+      "pid": 220,
+      "task": "btdm",
+      "user": 0,
+      "pc": "0xbe0773da",
+      "hits": 1,
+      "symbol": "wr_btdm_osal_get_time_forever",
+      "offset": 0,
+      "region": "payload"
+    },
+    {
+      "cpu": 0,
+      "pid": 77,
+      "task": "sh",
+      "user": 1,
+      "pc": "0x691287c2",
+      "hits": 1,
+      "symbol": "userspace",
+      "offset": 0,
+      "region": "user"
+    },
+    {
+      "cpu": 1,
+      "pid": 35,
+      "task": "kworker/u11:0+s31-radio",
+      "user": 0,
+      "pc": "0xa11b9f92",
+      "hits": 1,
+      "symbol": "s31_radio_blob_run_pending_isrs",
+      "offset": 226,
+      "region": "module"
+    },
+    {
+      "cpu": 1,
+      "pid": 0,
+      "task": "pid0",
+      "user": 0,
+      "pc": "0xc081b73a",
+      "hits": 1,
+      "symbol": "finish_task_switch.isra.0",
+      "offset": 146,
+      "region": "kernel"
+    }
+  ]
+}

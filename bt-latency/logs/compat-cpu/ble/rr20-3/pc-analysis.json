@@ -1,0 +1,52 @@
+{
+  "radio_categories": {
+    "generic kernel PC": 1
+  },
+  "samples": 2,
+  "lost": 0,
+  "regions": {
+    "kernel": 2
+  },
+  "tasks": {
+    "btdm": 1,
+    "sh": 1
+  },
+  "hotspots": [
+    {
+      "task": "btdm",
+      "region": "kernel",
+      "symbol": "schedule_timeout",
+      "hits": 1
+    },
+    {
+      "task": "sh",
+      "region": "kernel",
+      "symbol": "new_slab",
+      "hits": 1
+    }
+  ],
+  "rows": [
+    {
+      "cpu": 0,
+      "pid": 221,
+      "task": "btdm",
+      "user": 0,
+      "pc": "0xc044c80a",
+      "hits": 1,
+      "symbol": "schedule_timeout",
+      "offset": 2,
+      "region": "kernel"
+    },
+    {
+      "cpu": 1,
+      "pid": 78,
+      "task": "sh",
+      "user": 0,
+      "pc": "0xc08187d6",
+      "hits": 1,
+      "symbol": "new_slab",
+      "offset": 248,
+      "region": "kernel"
+    }
+  ]
+}

@@ -1,0 +1,5 @@
+Traceback (most recent call last):
+  File "/home/grieferpig/esp32-s31-linux/bt-latency/spp_checked_bench.py", line 8, in <module>
+    sock.settimeout(15);t=time.monotonic();sock.connect((addr,ch));print(f'connected {time.monotonic()-t:.6f}s',flush=True)
+                                           ~~~~~~~~~~~~^^^^^^^^^^^
+ConnectionAbortedError: [Errno 103] Software caused connection abort

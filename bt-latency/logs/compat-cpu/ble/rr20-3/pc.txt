@@ -1,0 +1,5 @@
+# timer-PC diagnostic; CPU PID USER PC HITS
+# cpu=0 samples=1 lost=0
+0 221 0 c044c80a 1
+# cpu=1 samples=1 lost=0
+1 78 0 c08187d6 1

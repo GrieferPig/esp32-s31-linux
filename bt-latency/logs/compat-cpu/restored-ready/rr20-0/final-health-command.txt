@@ -1,0 +1,1 @@
+cat /sys/devices/platform/soc/soc:radio/radio_health; cat /sys/module/esp32s31_radio/parameters/mode; ps

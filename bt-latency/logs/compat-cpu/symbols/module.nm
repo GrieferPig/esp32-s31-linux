@@ -1,0 +1,728 @@
+         U ___ratelimit
+         U __alloc_skb
+         U __cond_resched
+         U __cpu_online_mask
+         U __gro_flush
+         U __ieee80211_schedule_txq
+         U __init_swait_queue_head
+         U __init_waitqueue_head
+         U __kmalloc_cache_noprof
+         U __mmiowb_state
+         U __msecs_to_jiffies
+         U __mutex_init
+         U __napi_schedule
+         U __netdev_alloc_skb
+         U __netif_napi_del_locked
+         U __per_cpu_offset
+         U __platform_driver_register
+         U __put_task_struct_rcu_cb
+         U __sbi_ecall
+         U __wake_up
+         U _copy_from_user
+         U _copy_to_user
+         U _dev_err
+         U _dev_info
+         U _dev_warn
+         U _find_first_bit
+         U _find_next_bit
+         U _printk
+         U _raw_spin_lock
+         U _raw_spin_lock_bh
+         U _raw_spin_lock_irqsave
+         U _raw_spin_unlock_bh
+         U _raw_spin_unlock_irqrestore
+         U alloc_netdev_dummy
+         U call_rcu
+         U cancel_delayed_work_sync
+         U cancel_work_sync
+         U complete
+         U crc32_le
+         U delayed_work_timer_fn
+         U destroy_workqueue
+         U dev_err_probe
+         U device_create_file
+         U device_remove_file
+         U disable_irq_nosync
+         U enable_irq
+         U esp32s31_alloc_radio_workqueue
+         U esp32s31_current_uses_init_mm
+         U esp32s31_executable_address
+         U esp32s31_irq_poll
+         U esp32s31_kthread_unuse_init_mm
+         U esp32s31_kthread_use_init_mm
+         U esp32s31_radio_idle_poll_set
+         U esp32s31_radio_wifi_iram_get
+         U esp32s31_radio_xip_get
+         U esp32s31_radio_xip_ram
+         U esp32s31_sched_setscheduler
+         U finish_wait
+         U flush_icache_all
+         U flush_work
+         U free_irq
+         U free_netdev
+         U gen_pool_add_owner
+         U gen_pool_alloc_algo_owner
+         U gen_pool_avail
+         U gen_pool_best_fit
+         U gen_pool_create
+         U gen_pool_destroy
+         U gen_pool_for_each_chunk
+         U gen_pool_free_owner
+         U gen_pool_set_algo
+         U gen_pool_size
+         U generic_atomic64_add
+         U generic_atomic64_read
+         U hci_alloc_dev_priv
+         U hci_free_dev
+         U hci_recv_frame
+         U hci_register_dev
+         U hci_resume_dev
+         U hci_suspend_dev
+         U hci_unregister_dev
+         U hrtimer_cancel
+         U hrtimer_setup
+         U hrtimer_start_range_ns
+         U hrtimer_try_to_cancel
+         U ieee80211_alloc_hw_nm
+         U ieee80211_channel_to_freq_khz
+         U ieee80211_emulate_add_chanctx
+         U ieee80211_emulate_change_chanctx
+         U ieee80211_emulate_remove_chanctx
+         U ieee80211_free_hw
+         U ieee80211_free_txskb
+         U ieee80211_hdrlen
+         U ieee80211_next_txq
+         U ieee80211_register_hw
+         U ieee80211_rx_napi
+         U ieee80211_start_tx_ba_session
+         U ieee80211_stop_queues
+         U ieee80211_stop_tx_ba_cb_irqsafe
+         U ieee80211_tx_dequeue
+         U ieee80211_tx_status_ext
+         U ieee80211_tx_status_irqsafe
+         U ieee80211_tx_status_skb
+         U ieee80211_txq_schedule_start
+         U ieee80211_unregister_hw
+         U ieee80211_vif_to_wdev
+         U ieee80211_wake_queues
+         U init_wait_entry
+         U ioremap_prot
+         U iounmap
+         U irq_create_fwspec_mapping
+         U irq_dispose_mapping
+         U irq_get_irq_data
+         U jiffies
+         U jiffies_to_msecs
+         U jiffies_to_usecs
+         U kfree
+         U kmalloc_caches
+         U kthread_bind
+         U kthread_create_on_node
+         U kthread_data
+         U kthread_should_stop
+         U kthread_stop
+         U ktime_get_mono_fast_ns
+         U ktime_get_real_seconds
+         U memchr
+         U memcpy
+         U memremap
+         U memset
+         U memunmap
+         U misc_deregister
+         U misc_register
+         U msleep
+         U mutex_lock
+         U mutex_lock_interruptible
+         U mutex_trylock
+         U mutex_unlock
+         U napi_alloc_skb
+         U napi_complete_done
+         U napi_disable
+         U napi_enable
+         U napi_schedule_prep
+         U netif_napi_add_weight_locked
+         U netif_receive_skb_list
+         U nonseekable_open
+         U noop_llseek
+         U nr_cpu_ids
+         U of_find_compatible_node
+         U of_node_put
+         U param_ops_bool
+         U param_ops_charp
+         U param_ops_int
+         U param_ops_uint
+         U platform_driver_unregister
+         U prepare_to_wait_event
+         U pskb_expand_head
+         U queue_delayed_work_on
+         U queue_work_on
+         U refcount_warn_saturate
+         U request_threaded_irq
+         U s31_linux_pmu_radio_vote
+         U s31_linux_pmu_reclaim_after_radio_init
+         U sched_show_task
+         U schedule
+         U schedule_timeout
+         U set_user_nice
+         U sk_skb_reason_drop
+         U skb_copy_bits
+         U skb_dequeue
+         U skb_put
+         U skb_queue_tail
+         U skb_trim
+         U smp_call_function_single_async
+         U strcmp
+         U synchronize_net
+         U sysfs_emit
+         U system_dfl_wq
+         U system_highpri_wq
+         U system_percpu_wq
+         U timer_init_key
+         U usleep_range_state
+         U vprintk
+         U wait_for_completion
+         U wait_for_completion_timeout
+         U wake_up_process
+         U yield
+00000000 00000004 d __UNIQUE_ID___addressable_cleanup_module285
+00000000 00000004 d __UNIQUE_ID___addressable_init_module284
+00000000 0000000a r __UNIQUE_ID_modinfo289
+00000000 00000001 d __already_done.5
+00000000 00000188 r __mod_device_table__kmod_esp32s31_radio__of__esp32s31_radio_of_match
+00000000 00000014 r __param_direct_hci
+00000000 00000005 r __param_str_mode
+00000000 00000180 D __this_module
+00000000 A _esp_err_msg_tbl_end
+00000000 A _esp_err_msg_tbl_start
+00000000 00000018 r _note_19
+00000000 00000010 T cleanup_module
+00000000 00000068 d esp32s31_radio_driver
+00000000 00000010 t esp32s31_radio_driver_exit
+00000000 00000018 t esp32s31_radio_driver_init
+00000000 00000188 r esp32s31_radio_of_match
+00000000 00000110 t esp32s31_radio_resume
+00000000 00000018 T init_module
+00000000 00000040 d s31_foreign_blob_context
+00000000 00000520 R s31_fw_import_table
+00000000 00000100 b s31_idf_rx_cache_blocks
+00000000 00000004 b s31_radio_configured_features
+00000000 00000001 d s31_radio_direct_hci
+00000000 0000007e t sm_sta_add
+00000001 00000001 d __already_done.4
+00000004 00000004 d s31_radio_mode
+00000004 00000001 b s31_radio_suspended
+00000005 00000001 b s31_radio_started
+00000008 00000004 r s31_native_tx_budget
+00000008 00000004 d s31_shutdown_result
+00000008 00000001 b s31_softmac_rx_pending
+0000000a 0000000f r __UNIQUE_ID_modinfo288
+0000000c 00000004 d s31_bt_disable_result
+0000000c 00000004 r s31_idf_rx_cache_limit
+0000000c 00000004 b s31_native_tx_budget_exhaustions
+00000010 00000004 d s31_bt_enable_result
+00000010 00000001 r s31_native_queue_irq_service
+00000010 00000001 r s31_native_queue_poll
+00000010 00000004 b s31_radio_commands_completed
+00000014 00000006 r __func__.1
+00000014 00000014 r __param_mode
+00000014 00000004 d s31_bt_init_result
+00000014 00000004 b s31_radio_worker_passes
+00000018 00000018 r _note_18
+00000018 00000004 b s31_radio_state
+00000018 00000004 d s31_wifi_init_result
+00000019 0000001e r __UNIQUE_ID_modinfo287
+0000001c 00000004 r ciphers.3
+0000001c 00000008 d s31_radio_commands
+0000001c 00000004 b s31_radio_features
+00000020 00000001 b s31_radio_init_dead
+00000020 00000004 r sm_gro_batch
+00000021 00000001 b s31_radio_hw_checked
+00000024 00000004 d s31_coex_last_status
+00000024 00000004 b s31_radio_next_tick
+00000024 00000001 r sm_rx_ba
+00000028 00000014 r __param_bt_hci_tx_slots
+00000028 00000004 d s31_hci_tx_slots
+00000028 00000004 b s31_radio_worker_stack
+00000028 00000004 r sm_data_tx_rate
+0000002c 00000004 d s31_hci_rx_slots
+0000002c 00000004 b s31_radio_command_lock
+0000002c 00000004 r sm_io_cpu
+00000030 00000008 r s31_hci_direct_ops
+00000030 00000004 d s31_radio_bt_hci_tx_slots
+00000030 00000001 b s31_wifi_disconnected_ready
+00000031 00000001 b s31_wifi_connected_ready
+00000034 00000004 d s31_radio_bt_hci_rx_slots
+00000034 00000004 b s31_wifi_connect_status
+00000037 0000003e r __UNIQUE_ID_modinfo286
+00000038 00000008 r s31_hci_ops
+00000038 00000004 d s31_radio_bt_worker_cpu
+00000038 00000002 b s31_wifi_event_reason
+0000003a 00000001 b s31_wifi_event_channel
+0000003c 00000014 r __param_bt_hci_rx_slots
+0000003c 00000004 d s31_radio_bt_tick_ms
+0000003c 00000006 b s31_wifi_event_bssid
+00000042 00000001 b s31_wifi_control_poisoned
+00000044 00000004 b s31_wifi_control_result
+00000048 00000004 b s31_wifi_control_buffer
+0000004c 00000004 b s31_wifi_disconnect_reason
+00000050 00000014 r __param_bt_tx_buffers
+00000050 00000004 b s31_wifi_connect_params
+00000054 00000004 b s31_wifi_tx_lock
+00000058 00000004 b s31_wifi_rx_lock
+0000005c 00000004 b s31_wifi_tx_retry_at
+00000060 00000004 b s31_wifi_tx_tail
+00000064 00000014 r __param_bt_worker_cpu
+00000064 00000004 b s31_wifi_tx_head
+00000068 00000010 d dev_attr_radio_health
+00000068 00000004 b s31_wifi_rx_tail
+0000006c 00000004 b s31_wifi_rx_head
+00000070 00000004 b s31_wifi_tx
+00000074 00000004 b s31_wifi_rx_data
+00000075 0000003a r __UNIQUE_ID_modinfo283
+00000078 00000014 r __param_bt_tick_ms
+00000078 00000004 b s31_wifi_rx
+00000078 0000000c d s31_wifi_rx_space_waitq
+0000007c 00000001 b s31_native_servicing
+00000080 00000004 b s31_native_generation
+00000084 00000004 b s31_native_passes
+00000084 00000014 d s31_wifi_registration_lock
+00000088 00000004 b s31_native_task
+0000008c 00000014 r __param_bt_gate_sleep
+0000008c 00000001 b s31_native_started
+0000008d 00000001 b s31_radio_workerless
+00000090 00000004 b s31_radio_runner
+00000094 00000004 b s31_radio_wq
+00000098 00000010 d s31_radio_control_work
+00000098 00000001 b s31_wifi_scan_ready
+00000099 00000001 b s31_wifi_scan_inflight
+0000009c 00000004 b s31_wifi_scan_status
+000000a0 00000002 b s31_wifi_scan_count
+000000a4 00000004 b s31_wifi_context
+000000a8 0000001c d _rs.6
+000000a8 00000004 b s31_wifi_ops
+000000ac 00000001 b s31_coex_pending_status
+000000ad 00000001 b s31_coex_pending_op
+000000ae 00000001 b s31_coex_bt_status
+000000af 00000019 r __UNIQUE_ID_modinfo282
+000000b0 00000004 b s31_coex_cmd_completes
+000000b4 00000002 b s31_acl_packet_type
+000000b8 00000004 b s31_acl_packet_type_events
+000000c0 00000008 b s31_hci_acl_tx_bytes
+000000c4 0000001c d _rs.4
+000000c8 0000002c r __UNIQUE_ID_modinfo281
+000000c8 00000008 b s31_hci_acl_tx_packets
+000000d0 00000008 b s31_hci_acl_rx_bytes
+000000d8 00000008 b s31_hci_acl_rx_packets
+000000e0 0000001c d _rs.3
+000000e0 00000004 b s31_hci_tx_dropped
+000000e4 00000004 b s31_hci_rx_dropped
+000000e8 00000004 b s31_hci_context
+000000ec 00000004 b s31_hci_ops
+000000f0 00000004 b s31_hci_lock
+000000f4 00000014 r __UNIQUE_ID_modinfo280
+000000f4 00000004 b s31_hci_tx_tail
+000000f8 00000004 b s31_hci_tx_head
+000000fc 00000004 b s31_hci_rx_tail
+000000fc 00000010 d s31_radio_health_work
+00000100 00000004 b s31_hci_rx_head
+00000100 00000540 b s31_idf_irqs
+00000104 00000004 b s31_hci_tx
+00000108 00000004 b s31_hci_rx
+00000108 0000001b R s31_radio_modinfo_anchor
+0000010c 00000004 b s31_radio_pending_isrs
+0000010c 00000010 d s31_shutdown_done
+00000110 000000c4 t esp32s31_radio_suspend
+00000110 00000004 b s31_wifi_rx_direct_pending
+00000114 00000004 b s31_wifi_rx_cb
+00000118 00000004 b s31_wifi_tx_no_mem
+0000011c 0000001c d _rs.1
+0000011c 00000004 b s31_wifi_tx_done
+00000120 00000004 b s31_wifi_rx_freed
+00000123 00000043 r __UNIQUE_ID_modinfo586
+00000124 00000004 b s31_wifi_rx_delivered
+00000128 00000004 b s31_wifi_tx_dropped
+0000012c 00000004 b s31_wifi_rx_dropped
+00000130 00000004 b s31_idf_rx_cache_flushes
+00000134 00000004 b s31_idf_rx_cache_misses
+00000138 00000004 b s31_idf_rx_cache_hits
+00000138 0000000c d s31_radio_bt_disable_waitq
+0000013c 00000004 b s31_idf_rx_cache_count
+00000140 00000004 b s31_idf_rx_cache_lock
+00000144 00000004 b s31_idf_alloc_failures
+00000144 00000014 d s31_wifi_control_mutex
+00000148 00000004 b s31_radio_heap_high_low
+0000014c 00000004 b s31_radio_heap_high_upper
+00000150 00000004 b s31_radio_heap_high_main
+00000154 00000004 b s31_radio_heap_size
+00000158 00000004 b s31_radio_heap_tail_base
+00000158 00000010 d s31_wifi_control_done
+0000015c 00000004 b s31_radio_heap_end
+00000160 00000004 b s31_radio_heap_base
+00000164 00000004 b s31_radio_heap2_linux
+00000166 0000001e r __UNIQUE_ID_modinfo585
+00000168 00000014 d s31_blob_mutex
+00000168 00000004 b s31_radio_heap_low_size
+0000016c 00000004 b s31_radio_heap_low_base
+00000170 00000004 b s31_radio_heap_low_linux
+00000174 00000004 b s31_radio_heap_linux
+00000178 00000004 b s31_radio_heap_peak
+0000017c 0000000c d s31_blob_sleep_waitq
+0000017c 00000004 b s31_radio_heap_pool
+00000180 00000004 b s31_radio_bt_tx_buffers
+00000184 00000044 r __UNIQUE_ID_modinfo584
+00000184 00000004 b s31_native_wait_schedules
+00000188 0000001c d _rs.1
+00000188 0000005c r esp32s31_radio_pm_ops
+00000188 00000004 b s31_native_wait_timer_arms
+0000018c 00000001 b s31_gate_hook_busy
+00000190 00000004 B s31_blob_gate_wait_hook
+00000194 00000004 b s31_native_queue_empty_skips
+00000198 00000004 b s31_native_queue_polls
+0000019c 00000004 b s31_task_list_lock
+000001a0 00000004 b s31_task_list
+000001a4 0000001c d _rs.2
+000001a4 00000001 b s31_bt_gate_sleep
+000001a8 00000004 b s31_critical_lock
+000001ac 00000004 b s31_sync_stop_generation
+000001b0 00000004 b s31_xip_image
+000001b4 00000004 b s31_sm_frontend
+000001b8 00000004 b sm_hw_bssid_filter_updates
+000001bc 00000001 b sm_hw_bssid_filter_active
+000001c0 00000004 b sm_rx_view_hits
+000001c4 00000004 b sm_direct_tx_calls
+000001c8 0000001e r __UNIQUE_ID_modinfo583
+000001c8 00000004 b sm_direct_status_calls
+000001cc 00000004 b sm_tx_sg_frames
+000001d4 000000a4 t esp32s31_radio_remove
+000001e4 0000000b r __param_str_direct_hci
+000001e6 0000004f r __UNIQUE_ID_modinfo582
+00000214 00000038 r s31_heap_hist_max
+00000235 0000001c r __UNIQUE_ID_modinfo581
+0000024c 00000017 r __func__.5
+00000251 00000048 r __UNIQUE_ID_modinfo580
+00000264 0000001a r __func__.0
+00000278 000000aa t radio_health_show
+00000280 000000c0 R _mtvt_table
+00000299 0000001b r __UNIQUE_ID_modinfo579
+000002b4 0000004d r __UNIQUE_ID_modinfo578
+00000301 00000019 r __UNIQUE_ID_modinfo577
+0000031a 0000005f r __UNIQUE_ID_modinfo304
+00000322 00000202 t esp32s31_radio_probe
+00000340 00000010 r __param_str_bt_hci_tx_slots
+00000350 00000010 r __param_str_bt_hci_rx_slots
+00000360 0000000e r __param_str_bt_tx_buffers
+00000370 0000000e r __param_str_bt_worker_cpu
+00000379 0000001c r __UNIQUE_ID_modinfo303
+00000380 0000000b r __param_str_bt_tick_ms
+0000038c 0000001a r __func__.0
+00000395 00000023 r __UNIQUE_ID_modinfo273
+000003a8 0000000e r __param_str_bt_gate_sleep
+000003b8 00000029 r __UNIQUE_ID_modinfo272
+000003b8 00000020 r sm_radio_ops
+000003d8 000001e4 r sm_ops
+000003e1 00000027 r __UNIQUE_ID_modinfo271
+00000408 00000009 r __UNIQUE_ID_modinfo270
+00000411 00000009 r __UNIQUE_ID_modinfo269
+0000041a 00000014 r __UNIQUE_ID_modinfo268
+0000042e 00000025 r __UNIQUE_ID_modinfo268
+00000520 00000004 R s31_fw_import_count
+00000524 00000056 t esp32s31_radio_shutdown
+0000057a 00000004 T esp32s31_radio_is_disabled
+0000057e 00000058 t s31_radio_sram_linux_alias
+000005bc 00000018 r bitrate.4
+000005d4 00000088 r s31_hci_direct_fops
+000005d6 00000056 t s31_idf_rx_cache_pop
+0000062c 00000002 T _interrupt_handler
+0000062e 0000002a t s31_radio_irq_handle
+00000640 000000a8 b s31_heap_hist
+00000658 0000003e t s31_radio_wifi_rx_occupancy
+00000696 00000038 t s31_radio_wifi_tx_pending
+000006ce 0000005c T esp32s31_radio_hci_unregister
+000006e8 b __key.2
+000006e8 00000030 b s31_radio_hrtimer
+00000718 0000002c b s31_radio_work
+0000072a 0000002a T esp32s31_radio_hci_tx_has_space
+00000744 00000540 b s31_wifi_scan_aps
+00000754 0000001c T esp32s31_radio_hci_rx_pending
+00000770 0000007c T esp32s31_radio_hci_peek
+000007ec 0000005a T esp32s31_radio_hci_consume
+00000846 0000003a T esp32s31_radio_hci_purge
+00000880 0000004c T esp32s31_radio_wifi_tx_has_space
+000008cc 0000004c t s31_idf_rx_cache_flush
+00000918 000000a4 t s31_radio_heap_alloc
+000009bc 0000017a t s31_idf_alloc
+00000b36 000000e2 T esp32s31_radio_hci_dequeue
+00000c18 00000044 t s31_radio_heap_reset_chunk
+00000c5c 00000034 T esp32s31_radio_wifi_rx_complete
+00000c84 b __key.2
+00000c84 b __key.3
+00000c84 0000005c b s31_fw
+00000c90 000000e6 T esp32s31_radio_wifi_rx_dequeue
+00000ce0 b __key.0
+00000ce0 0000049c b s31_hci
+00000d76 0000001e t init_completion
+00000d94 00000090 T esp32s31_radio_wifi_register
+00000e24 00000062 T esp32s31_radio_wifi_unregister
+00000e86 0000002c T esp32s31_radio_wifi_rx_pending
+00000eb2 00000034 t s31_radio_control_kick
+00000ee6 00000208 t s31_radio_sync_irq_registrations
+000010ee 00000016 t s31_radio_gate_wait_sync
+00001104 00000042 t __raw_spin_unlock.constprop.0
+00001146 00000052 t s31_radio_queue
+0000117c b __key.1
+0000117c b __key.2
+0000117c b __key.3
+00001198 00000014 t s31_radio_hrtimer_fn
+000011ac 00000058 t s31_radio_update_state
+00001204 0000007e t s31_radio_fail_commands
+00001282 00000008 T s31_linux_wall_time_seconds
+0000128a 00000028 T __wrap_heap_caps_malloc
+000012b2 00000110 T __wrap_heap_caps_free
+000013c2 00000020 T __wrap_heap_caps_calloc
+000013e2 0000007c T __wrap_heap_caps_realloc
+0000145e 00000012 T __wrap_heap_caps_aligned_alloc
+00001470 00000020 T __wrap_heap_caps_aligned_calloc
+00001490 0000000a T __wrap_heap_caps_malloc_default
+0000149a 0000000a T __wrap_heap_caps_realloc_default
+000014a4 00000020 T __wrap_heap_caps_malloc_prefer
+000014c4 00000010 T __wrap_heap_caps_get_free_size
+000014d4 00000114 T s31_radio_heap_report
+000015e8 00000058 T s31_radio_sram_alloc
+00001640 00000038 T s31_radio_sram_free
+00001678 00000008 T wifi_module_enable
+00001680 00000008 T wifi_module_disable
+00001688 00000004 T esp_deep_sleep_register_phy_hook
+0000168c 00000002 T touch_hal_prepare_deep_sleep
+0000168e 00000004 T temperature_sensor_hal_init
+00001692 00000014 T temperature_sensor_hal_get_degree
+000016a6 00000002 T temperature_sensor_hal_i2c_saradc_reg_backup
+000016a8 00000002 T temperature_sensor_hal_i2c_saradc_reg_restore
+000016aa 00000004 T intr_handler_get
+000016ae 00000066 T __wrap_esp_log_timestamp
+00001714 00000008 T __wrap_esp_intr_ptr_in_isr_region
+0000171c 00000010 T s31_radio_is_bt_only
+0000172c 0000000c T s31_radio_payload_uses_fp
+00001738 00000010 T s31_radio_report_wifi_init
+00001748 0000000a T s31_radio_report_bt_init
+00001752 0000000a T s31_radio_report_bt_enable
+0000175c 00000018 T s31_radio_report_shutdown
+00001774 00000028 T s31_linux_tick_count
+0000179c 000003b8 t s31_radio_process_commands
+00001b54 000000b8 t s31_radio_control_workfn
+00001c0c 00000124 T __wrap_esp_intr_alloc
+00001d30 00000132 T s31_radio_wifi_intr_configure
+00001e62 0000003e T s31_radio_wifi_intr_set_isr
+00001ea0 000000e4 T s31_radio_blob_run_pending_isrs
+00001f84 00000046 T s31_radio_native_attach
+00001fca 0000001c T s31_radio_native_current
+00001fe6 0000016c t s31_radio_wifi_process_tx
+00002152 0000002c T s31_radio_native_wake
+0000217e 000000c4 t s31_radio_hardirq
+00002242 0000001a t s31_radio_wake
+0000225c 0000003c T s31_radio_report_bt_disable
+00002298 00000030 T __wrap_esp_intr_enable
+000022c8 0000002e T __wrap_esp_intr_disable
+000022f6 00000048 T __wrap_esp_intr_free
+0000233e 00000064 T s31_radio_wifi_intr_mask
+000023a2 00000052 t s31_radio_submit_command
+000023f4 0000007c T esp32s31_radio_get_health
+00002470 0000005c t s31_radio_health_workfn
+000024cc 00000066 T esp32s31_radio_wifi_get_mac
+00002532 0000005a T esp32s31_radio_wifi_scan
+0000258c 00000078 T esp32s31_radio_wifi_connect
+00002604 00000064 T esp32s31_radio_wifi_disconnect
+00002668 0000006c T esp32s31_radio_bt_enable
+000026d4 00000102 T esp32s31_radio_bt_disable
+000027d6 0000011a T esp32s31_radio_wifi_control
+000028f0 0000008c T esp32s31_radio_hci_register
+0000297c 0000018c T esp32s31_radio_hci_send
+00002b08 0000029a t s31_radio_wifi_enqueue
+00002da2 0000000a T esp32s31_radio_wifi_send_interface
+00002dac 0000000e T esp32s31_radio_wifi_send
+00002dba 00000026 T esp32s31_radio_softmac_send_skb
+00002de0 0000001e T s31_radio_vhci_send_available
+00002dfe 0000024e T s31_radio_vhci_receive
+0000304c 00000226 t s31_radio_run_blob_pass
+00003272 00000516 t s31_radio_workfn
+00003788 0000018a T s31_radio_wifi_receive_zerocopy
+00003912 0000000c T s31_radio_wifi_receive
+0000391e 000000c4 T s31_radio_wifi_rx_throttle
+000039e2 0000004c T s31_radio_wifi_connected
+00003a2e 0000001a T s31_radio_wifi_disconnected
+00003a48 0000005a T s31_radio_wifi_scan_complete
+00003aa2 0000001c T s31_radio_wifi_control_complete
+00003abe 00000036 T s31_radio_wifi_receive_aux
+00003af4 0000001e T s31_radio_wifi_ap_station
+00003b12 0000000e T s31_radio_native_generation
+00003b20 00000032 T s31_radio_native_pending
+00003b52 0000000a T s31_radio_softmac_rx_pending_set
+00003b5c 00000052 T s31_radio_native_service_due
+00003bae 0000009c T s31_radio_native_poll
+00003c4a 00000996 T s31_radio_runtime_init
+000045e0 00000078 T s31_radio_runtime_wait_ready
+00004658 00000396 T s31_radio_runtime_shutdown
+000049ee 0000007e t s31_payload_run
+00004a6c 0000003c t s31_payload_sp_restore
+00004aa8 00000042 t s31_payload_fp_save_area
+00004aea 0000003e t s31_payload_fp_restore_area
+00004b28 00000080 t s31_direct_isr_fp_save
+00004ba8 00000080 t s31_direct_isr_fp_restore
+00004c28 00000036 t s31_linux_current_task
+00004c5e 0000001a t s31_blob_fpu_end
+00004c78 0000003a t __raw_spin_unlock
+00004cb2 00000028 t s31_blob_fpu_begin
+00004cda 00000020 t s31_native_wait_expired
+00004cfa 0000002e t s31_blob_unlock
+00004d28 00000006 t s31_task_kernel_call.part.0
+00004d2e 0000005a t s31_task_kernel_call
+00004d88 00000020 t s31_blob_install_context
+00004da8 00000024 t s31_blob_restore_context
+00004dcc 00000036 t s31_blob_context_current
+00004e02 0000003e t s31_blob_active
+00004e40 0000004c t s31_blob_set_active
+00004e8c 000000be t s31_blob_lock
+00004f4a 000002d0 t s31_task_create_on_linux_stack
+0000521a 000000a8 t s31_ticks_to_jiffies
+000052c2 00000050 T s31_linux_call_on_stack
+00005312 00000018 T s31_linux_blob_holder
+0000532a 00000018 T s31_linux_blob_held_by_current
+00005342 000000ac T s31_linux_trace_wifi_event
+000053ee 00000112 T s31_linux_blob_run_direct_isr
+00005500 00000008 T s31_linux_time_ns
+00005508 00000006 T s31_linux_current_cpu
+0000550e 00000024 T s31_linux_printf
+00005532 0000006a T s31_linux_task_dump_all
+0000559c 00000016 T s31_linux_current_cookie
+000055b2 000000e8 T s31_linux_tasks_stop_all
+0000569a 000000ce T s31_linux_task_set_priority
+00005768 00000046 T s31_linux_sync_create
+000057ae 00000008 T s31_linux_sync_destroy
+000057b6 0000003c T s31_linux_sync_lock
+000057f2 00000056 T s31_linux_sync_unlock
+00005848 0000000e T s31_linux_sync_sequence
+00005856 0000001e T s31_linux_sync_wake
+00005874 00000036 T s31_linux_critical_enter
+000058aa 00000046 T s31_linux_critical_exit
+000058f0 00000052 T s31_linux_critical_suspend
+00005942 00000040 T s31_linux_critical_resume
+00005982 0000006c T s31_linux_blob_enter
+000059ee 0000005c T s31_linux_blob_leave
+00005a4a 00000128 t s31_linux_task_main
+00005b72 0000003c T s31_linux_task_exit_current
+00005bae 00000132 T s31_linux_blob_suspend
+00005ce0 00000080 T s31_linux_task_create
+00005d60 0000005e T s31_linux_task_delay
+00005dbe 0000000a T s31_linux_task_yield
+00005dc8 0000007e T s31_linux_blob_resume
+00005e46 00000034 t s31_create_on_kernel_stack
+00005e7a 00000034 t s31_stop_on_kernel_stack
+00005eae 000000ae T s31_linux_task_stop
+00005f5c 0000005e t s31_delay_on_kernel_stack
+00005fba 0000023e t s31_wait_on_kernel_stack
+000061f8 00000102 T s31_linux_sync_wait
+000062fa 00000056 t s31_fw_import_lookup.constprop.0
+00006350 000000f2 t s31_fw_xip_reset
+00006442 00000016 T s31_radio_fw_wifi_iram_size
+00006458 00000016 T s31_radio_fw_reset
+0000646e 000002c6 T s31_radio_fw_load
+00006734 0000001e T s31_radio_fw_unload
+00006752 0000000a T s31_radio_stack_task
+0000675c 0000000a T s31_radio_bt_enable_task
+00006766 0000000a T s31_radio_bt_disable_task
+00006770 0000000a T s31_radio_shutdown_task
+0000677a 0000000a T s31_radio_vhci_try_send
+00006784 00000012 T s31_radio_coex_status
+00006796 0000000a T s31_radio_wifi_scan_task
+000067a0 0000000a T s31_radio_wifi_control_task
+000067aa 0000000a T s31_radio_wifi_try_send_interface
+000067b4 0000000a T s31_radio_wifi_connect_task
+000067be 0000000a T s31_radio_wifi_disconnect_task
+000067c8 0000000a T s31_radio_wifi_read_mac
+000067d2 0000000a T s31_radio_wifi_clock_enable
+000067dc 0000000a T s31_radio_wifi_clock_disable
+000067e6 0000000a T s31_radio_wifi_try_send
+000067f0 0000000a T s31_rtos_init
+000067fa 0000000a T s31_rtos_tick
+00006804 0000000a T s31_linux_timer_next_due_us
+0000680e 0000000a T s31_rtos_hard_tick
+00006818 0000000a T s31_rtos_free
+00006822 0000000a T s31_rtos_task_release
+0000682c 0000000a T xTaskCreatePinnedToCore
+00006836 0000000a T s31_radio_fw_isr_depth
+00006840 00000026 t __skb_dequeue
+00006866 0000002a t ether_addr_equal
+00006890 00000038 t sm_io_target
+000068c8 00000002 t sm_scan
+000068ca 00000002 t sm_unused_rx
+000068cc 00000002 t sm_connected
+000068ce 00000002 t sm_disconnected
+000068d0 0000000c t sm_remove
+000068dc 00000058 t sm_tx_ba_disable
+00006934 0000001c t sm_sta_pre_remove
+00006950 00000012 t sm_rts
+00006962 00000026 t sm_can_aggregate
+00006988 00000026 t sm_pending_clear
+000069ae 00000016 t _ieee80211_hw_set
+000069c4 00000120 t sm_conf_tx
+00006ae4 0000007c t sm_config
+00006b60 00000032 t sm_status_io
+00006b92 000000b2 t sm_prepare_status
+00006c44 0000007c t sm_add
+00006cc0 00000068 t sm_wakeup
+00006d28 00000040 t sm_tx_retire_locked
+00006d68 00000220 t sm_stop
+00006f88 0000000e t kfree_skb
+00006f96 00000166 t sm_trim_idle_rx_skbs
+000070fc 000001a2 t sm_key
+0000729e 0000002a t napi_schedule.isra.0
+000072c8 00000058 t sm_rx_kick
+00007320 00000046 t sm_rx_io
+00007366 0000009c t sm_schedule_rx_locked
+00007402 0000006a t sm_wake_txq
+0000746c 00000088 t sm_status
+000074f4 0000025c t sm_submit_queued
+00007750 00000072 t sm_flush_tx
+000077c2 00000016 t schedule_delayed_work.isra.0
+000077d8 0000010c t sm_start
+000078e4 00000088 t sm_timer
+0000796c 000000ce t sm_register
+00007a3a 00000022 t sm_queue_filter_locked
+00007a5c 0000003c t sm_sw_scan_complete
+00007a98 0000004c t sm_filter
+00007ae4 0000004a t sm_sw_scan_start
+00007b2e 000001fa t sm_bss_changed
+00007d28 0000014e t sm_tx_ba_flush
+00007e76 00000090 t sm_sta_remove
+00007f06 000001ec t sm_io
+000080f2 00000262 t sm_tx_ba_action
+00008354 00000140 t sm_ampdu
+00008494 0000004a t sm_alloc_rx_skb
+000084de 000002d8 t sm_tx_inner
+000087b6 00000008 t sm_tx
+000087be 00000602 t sm_aux
+00008dc0 000000d2 t sm_napi_status
+00008e92 000006c4 t sm_napi_poll
+00009556 000000e2 t sm_filter_io
+00009638 0000042a T s31_radio_wifi_frontend_init
+00009a62 00000146 T s31_radio_wifi_frontend_exit
+00009ba8 00000020 T s31_radio_wifi_frontend_suspend
+00009bc8 00000004 T s31_radio_wifi_frontend_resume
+00009bcc 00000004 t s31_hci_close
+00009bd0 0000001c t s31_hci_open
+00009bec 00000048 t s31_hci_direct_release
+00009c34 00000012 t s31_hci_direct_rx_ready
+00009c46 000000d6 t s31_hci_direct_open
+00009d1c 00000052 t s31_hci_direct_poll
+00009d6e 00000088 t s31_hci_direct_write
+00009df6 0000023e t s31_hci_direct_read
+0000a034 000000e4 t s31_hci_send_frame
+0000a118 00000238 t s31_hci_receive
+0000a350 00000016 t schedule_delayed_work.isra.0
+0000a366 00000124 t s31_hci_register_work
+0000a48a 00000004 t s31_hci_flush
+0000a48e 00000148 T s31_radio_btdm_frontend_init
+0000a5d6 000000b4 T s31_radio_btdm_frontend_suspend
+0000a68a 000000ce T s31_radio_btdm_frontend_resume
+0000a758 000000c0 T s31_radio_btdm_frontend_exit
+20109c00 A MODEM_SYSCON
+2010f000 A MODEM_LPCON

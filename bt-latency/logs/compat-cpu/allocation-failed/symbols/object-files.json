@@ -1,0 +1,9 @@
+{
+  "s31_rtos_event.o.nm": "/home/grieferpig/esp32-s31-linux/out/radio/s31_rtos/s31_rtos_event.o",
+  "s31_rtos_core.linux.o.nm": "/home/grieferpig/esp32-s31-linux/out/radio/s31_rtos/s31_rtos_core.linux.o",
+  "s31_rtos_queue.o.nm": "/home/grieferpig/esp32-s31-linux/out/radio/s31_rtos/s31_rtos_queue.o",
+  "s31_linux_locks.o.nm": "/home/grieferpig/esp32-s31-linux/out/radio/s31_linux_locks.o",
+  "s31_linux_timer.o.nm": "/home/grieferpig/esp32-s31-linux/out/radio/s31_linux_timer.o",
+  "esp32s31-radio-rtos.o.nm": "/home/grieferpig/esp32-s31-linux/out/linux/drivers/platform/esp32s31-radio-rtos.o",
+  "esp32s31-radio-smode.o.nm": "/home/grieferpig/esp32-s31-linux/out/linux/drivers/platform/esp32s31-radio-smode.o"
+}

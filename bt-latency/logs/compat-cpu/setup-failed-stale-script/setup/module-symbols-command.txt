@@ -1,0 +1,1 @@
+cat /sys/module/esp32s31_radio/sections/.text; grep '\[esp32s31_radio\]' /proc/kallsyms

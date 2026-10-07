@@ -1,0 +1,19 @@
+{
+  "argv": [
+    "python3",
+    "-u",
+    "/home/grieferpig/esp32-s31-linux/bt-latency/logs/compat-cpu/matrix.py",
+    "/home/grieferpig/esp32-s31-linux/bt-latency/logs/compat-cpu/ble",
+    "rr20",
+    "rr20",
+    "rr20",
+    "rr20"
+  ],
+  "S31_CPU_PROTOCOL": "ble",
+  "profile_order": [
+    0,
+    1,
+    1,
+    0
+  ]
+}

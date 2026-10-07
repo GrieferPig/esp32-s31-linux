@@ -1,0 +1,51 @@
+{
+  "radio_categories": {},
+  "samples": 2,
+  "lost": 0,
+  "regions": {
+    "kernel": 1,
+    "user": 1
+  },
+  "tasks": {
+    "sh": 1,
+    "s31-btstack-a2d": 1
+  },
+  "hotspots": [
+    {
+      "task": "sh",
+      "region": "kernel",
+      "symbol": "proc_notify_change",
+      "hits": 1
+    },
+    {
+      "task": "s31-btstack-a2d",
+      "region": "user",
+      "symbol": "userspace",
+      "hits": 1
+    }
+  ],
+  "rows": [
+    {
+      "cpu": 0,
+      "pid": 77,
+      "task": "sh",
+      "user": 0,
+      "pc": "0xc010489c",
+      "hits": 1,
+      "symbol": "proc_notify_change",
+      "offset": 42,
+      "region": "kernel"
+    },
+    {
+      "cpu": 1,
+      "pid": 305,
+      "task": "s31-btstack-a2d",
+      "user": 1,
+      "pc": "0x690c85f4",
+      "hits": 1,
+      "symbol": "userspace",
+      "offset": 0,
+      "region": "user"
+    }
+  ]
+}

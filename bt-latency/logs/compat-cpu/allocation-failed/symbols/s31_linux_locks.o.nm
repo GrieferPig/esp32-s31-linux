@@ -1,0 +1,49 @@
+         U memset
+         U s31_rtos_free
+         U s31_rtos_in_isr
+         U s31_rtos_malloc
+         U vPortEnterCritical
+         U vPortExitCritical
+         U vQueueDelete
+         U xQueueCreateMutex
+         U xQueueGiveFromISR
+         U xQueueGiveMutexRecursive
+         U xQueueReceiveFromISR
+         U xQueueSemaphoreTake
+         U xQueueTakeMutexRecursive
+00000000 00000054 B __lock___arc4random_mutex
+00000000 00000054 B __lock___at_quick_exit_mutex
+00000000 00000054 B __lock___atexit_recursive_mutex
+00000000 00000054 B __lock___dd_hash_mutex
+00000000 00000054 B __lock___env_recursive_mutex
+00000000 00000054 B __lock___libc_recursive_mutex
+00000000 00000054 B __lock___malloc_recursive_mutex
+00000000 00000054 B __lock___sfp_recursive_mutex
+00000000 00000054 B __lock___sinit_recursive_mutex
+00000000 00000054 B __lock___tz_mutex
+00000000 0000000c T __retarget_lock_acquire
+00000000 0000000c T __retarget_lock_acquire_recursive
+00000000 00000016 T __retarget_lock_close
+00000000 00000016 T __retarget_lock_close_recursive
+00000000 0000002a T __retarget_lock_init
+00000000 0000002a T __retarget_lock_init_recursive
+00000000 00000008 T __retarget_lock_release
+00000000 00000008 T __retarget_lock_release_recursive
+00000000 0000000c T __retarget_lock_try_acquire
+00000000 0000000c T __retarget_lock_try_acquire_recursive
+00000000 00000036 T _lock_acquire
+00000000 00000036 T _lock_acquire_recursive
+00000000 0000006a T _lock_close
+00000000 00000008 T _lock_close_recursive
+00000000 00000038 T _lock_init
+00000000 00000008 T _lock_init_recursive
+00000000 00000010 T _lock_release
+00000000 00000008 T _lock_release_recursive
+00000000 0000003a T _lock_try_acquire
+00000000 0000003a T _lock_try_acquire_recursive
+00000000 00000030 T esp_libc_locks_init
+00000000 00000030 T esp_newlib_locks_init
+00000000 000000a2 t s31_lock_get
+00000000 00000066 t s31_lock_give
+00000000 0000006c t s31_lock_take
+00000000 00000180 b s31_locks

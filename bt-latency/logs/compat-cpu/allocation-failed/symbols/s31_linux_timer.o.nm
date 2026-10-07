@@ -1,0 +1,22 @@
+         U __udivdi3
+         U memset
+         U s31_linux_printf
+         U s31_linux_time_ns
+         U s31_rtos_free
+         U s31_rtos_malloc
+00000000 0000006e T __wrap_esp_timer_create
+00000000 0000003a T __wrap_esp_timer_delete
+00000000 00000008 T __wrap_esp_timer_get_time
+00000000 00000008 T __wrap_esp_timer_is_active
+00000000 00000074 T __wrap_esp_timer_restart
+00000000 0000003c T __wrap_esp_timer_start_once
+00000000 0000004a T __wrap_esp_timer_start_once_at
+00000000 00000038 T __wrap_esp_timer_start_periodic
+00000000 0000005a T __wrap_esp_timer_start_periodic_at
+00000000 00000022 T __wrap_esp_timer_stop
+00000000 0000005c T s31_linux_timer_next_due_us
+00000000 000000ca T s31_linux_timer_report
+00000000 000000f8 T s31_linux_timers_tick
+00000000 00000020 t s31_timer_now_us
+00000000 0000008c t s31_timer_start
+00000000 00000004 b s31_timers

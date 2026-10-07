@@ -1,0 +1,50 @@
+         U memcpy
+         U memset
+         U s31_linux_printf
+         U s31_linux_sync_create
+         U s31_linux_sync_destroy
+         U s31_linux_sync_lock
+         U s31_linux_sync_sequence
+         U s31_linux_sync_unlock
+         U s31_linux_sync_wait
+         U s31_linux_sync_wake
+         U s31_linux_trace_wifi_event
+         U s31_rtos_current
+         U s31_rtos_free
+         U s31_rtos_get_tick
+         U s31_rtos_in_isr
+         U s31_rtos_malloc
+00000000 0000002e t s31_queue_event_id
+00000000 0000001a t s31_queue_is_wifi_main
+00000000 000000ac t s31_queue_send_locked
+00000000 0000004c t s31_queue_take_locked
+00000000 00000004 b s31_queue_trace_enabled
+00000000 000000a6 t s31_queue_trace_receive
+00000000 00000004 b s31_queue_trace_receive_count
+00000000 00000004 b s31_queue_trace_rxevent_receive_count
+00000000 00000004 b s31_queue_trace_rxevent_send_count
+00000000 000000a6 t s31_queue_trace_send
+00000000 00000004 b s31_queue_trace_send_count
+00000000 0000000a t s31_queue_valid
+00000000 0000000a T s31_rtos_trace_queues
+00000000 00000034 t s31_wait_remaining
+00000000 00000044 T uxQueueMessagesWaiting
+00000000 00000008 T uxQueueMessagesWaitingFromISR
+00000000 00000036 T vQueueDelete
+00000000 0000006e T xQueueCreateCountingSemaphore
+00000000 00000058 T xQueueCreateMutex
+00000000 00000050 T xQueueCreateMutexStatic
+00000000 00000082 T xQueueGenericCreate
+00000000 0000006a T xQueueGenericCreateStatic
+00000000 00000018 T xQueueGenericGetStaticBuffers
+00000000 0000005a T xQueueGenericReset
+00000000 00000118 T xQueueGenericSend
+00000000 0000009e T xQueueGenericSendFromISR
+00000000 00000042 T xQueueGetMutexHolder
+00000000 0000000e T xQueueGiveFromISR
+00000000 0000007a T xQueueGiveMutexRecursive
+00000000 0000001c T xQueueIsQueueEmptyFromISR
+00000000 000000f6 T xQueueReceive
+00000000 0000007e T xQueueReceiveFromISR
+00000000 000000e6 T xQueueSemaphoreTake
+00000000 00000008 T xQueueTakeMutexRecursive
