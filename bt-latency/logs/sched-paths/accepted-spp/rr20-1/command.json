@@ -1,0 +1,15 @@
+{
+  "argv": [
+    "python3",
+    "/home/grieferpig/esp32-s31-linux/bt-latency/fresh_spp_run.py",
+    "/home/grieferpig/esp32-s31-linux/bt-latency/logs/sched-paths/accepted-spp/rr20-1"
+  ],
+  "platform": "linux",
+  "kind": "spp",
+  "env": {
+    "S31_CPU_PROTOCOL": "spp",
+    "S31_BOARD_STATS": "0",
+    "S31_SPP_FRAME_SIZE": "990",
+    "S31_STREAM_STARTED_FILE": "/home/grieferpig/esp32-s31-linux/bt-latency/logs/sched-paths/accepted-spp/rr20-1/stream-start.json"
+  }
+}

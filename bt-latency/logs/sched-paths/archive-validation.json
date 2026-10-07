@@ -1,0 +1,10 @@
+{
+  "gzip_sha256_checks": 288,
+  "staged_gzip_bytes_match": true,
+  "complete_cost_profiles": 8,
+  "enabled_steady_profiles": 4,
+  "parse_errors": 0,
+  "exact_per_cpu_conservation": true,
+  "staged_paths_owned": true,
+  "kernel_clean": true
+}

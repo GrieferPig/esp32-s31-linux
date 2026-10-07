@@ -1,0 +1,19 @@
+{
+  "argv": [
+    "python3",
+    "-u",
+    "/home/grieferpig/esp32-s31-linux/bt-latency/logs/sched-paths/matrix.py",
+    "/home/grieferpig/esp32-s31-linux/bt-latency/logs/sched-paths/spp",
+    "rr20",
+    "rr20",
+    "rr20",
+    "rr20"
+  ],
+  "S31_CPU_PROTOCOL": "spp",
+  "profile_order": [
+    0,
+    1,
+    1,
+    0
+  ]
+}

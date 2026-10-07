@@ -1,0 +1,1 @@
+cat /tmp/cpu-idle-sample.txt

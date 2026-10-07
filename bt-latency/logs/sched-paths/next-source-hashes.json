@@ -1,0 +1,6 @@
+{
+  "arch/riscv/kernel/esp32s31-ext.c": "7fa0751f3eaafe53382920c9ea7987d644cba3bab1f38903df036a05ab647847",
+  "arch/riscv/include/asm/switch_to.h": "cff1a44a547d22f9f0f45a7ae5ad6d96f80d4160ac2744853d1b96a515cfc635",
+  "arch/riscv/kernel/entry.S": "b6fffd860660228861318d81fb1413101cd71dbc6b61a6b66191073705d92f51",
+  "arch/riscv/mm/context.c": "f52ddf62b5e6b7f30176adfaae615c2c9f9dc56b2d2f15873fd659f8a01e8951"
+}

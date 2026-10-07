@@ -1,0 +1,1 @@
+ESP32_CONFIG_DIR=/tmp/cfg S31_RADIO_VOLATILE_MODE=combo /usr/sbin/s31-overlay apply radio-combo --volatile

@@ -1,0 +1,1730 @@
+[
+  {
+    "path": "accepted-ble/rr20-0/affinity.raw",
+    "gzip": "accepted-ble/rr20-0/affinity.raw.gz",
+    "sha256": "400f090147345a42041b23360e48dba3822de0c17787d690f090d4476ba3a2bd",
+    "bytes": 107
+  },
+  {
+    "path": "accepted-ble/rr20-0/cpu-analysis.log",
+    "gzip": "accepted-ble/rr20-0/cpu-analysis.log.gz",
+    "sha256": "35336360d1253a7a05890f46a6cdaa0a26a0eecf97f6600b1f735b21534846dc",
+    "bytes": 1142
+  },
+  {
+    "path": "accepted-ble/rr20-0/cpu-idle.raw",
+    "gzip": "accepted-ble/rr20-0/cpu-idle.raw.gz",
+    "sha256": "7472d7432098e1bc966549e7c0aa97da00b390c02a08dde53ed9745d873ff521",
+    "bytes": 379
+  },
+  {
+    "path": "accepted-ble/rr20-0/cpu-sample.raw",
+    "gzip": "accepted-ble/rr20-0/cpu-sample.raw.gz",
+    "sha256": "2b14ce69292effde125f376cc86d1b313579c079bafe573ccac1ccaf4b632a88",
+    "bytes": 35
+  },
+  {
+    "path": "accepted-ble/rr20-0/final-log.raw",
+    "gzip": "accepted-ble/rr20-0/final-log.raw.gz",
+    "sha256": "362a0082b05b0939f09b75445294f12962de29083a7f51c462ccbcefc8daeb77",
+    "bytes": 2124
+  },
+  {
+    "path": "accepted-ble/rr20-0/fresh-pair.raw",
+    "gzip": "accepted-ble/rr20-0/fresh-pair.raw.gz",
+    "sha256": "fbeeaacd340528fd3793907088508a604c696bdbdfa2317f599eec625c48eb93",
+    "bytes": 249417
+  },
+  {
+    "path": "accepted-ble/rr20-0/host-rx.bin",
+    "gzip": "accepted-ble/rr20-0/host-rx.bin.gz",
+    "sha256": "64d42d751600bb3fbc027c58a8326f72595fbfaa95fc98399e97b4f358ff016d",
+    "bytes": 1292445
+  },
+  {
+    "path": "accepted-ble/rr20-0/host-rx.json",
+    "gzip": "accepted-ble/rr20-0/host-rx.json.gz",
+    "sha256": "3fe8bdaf867975757513268f29f07125f16ebb29fac62b547837757d02dc5946",
+    "bytes": 157002
+  },
+  {
+    "path": "accepted-ble/rr20-0/init0.raw",
+    "gzip": "accepted-ble/rr20-0/init0.raw.gz",
+    "sha256": "e206076e2c67031eefb613a199632e5da8b034d4c68f88b41fe66c69e5321104",
+    "bytes": 1044
+  },
+  {
+    "path": "accepted-ble/rr20-0/launch0.raw",
+    "gzip": "accepted-ble/rr20-0/launch0.raw.gz",
+    "sha256": "268ede49605e2cdf90cb833990925c24243913d57baa10efba106c19911694ed",
+    "bytes": 39
+  },
+  {
+    "path": "accepted-ble/rr20-0/matrix-wrapper.txt",
+    "gzip": "accepted-ble/rr20-0/matrix-wrapper.txt.gz",
+    "sha256": "a8c853a5141e38909f46b9e3a84d039d10df6fe957e737146b450ddfa00de6b6",
+    "bytes": 227
+  },
+  {
+    "path": "accepted-ble/rr20-0/priority.raw",
+    "gzip": "accepted-ble/rr20-0/priority.raw.gz",
+    "sha256": "c6a5ccbc202d730d73b4675b7c16f7e065526a36bb3ba3f67dc52d5824866ff2",
+    "bytes": 558
+  },
+  {
+    "path": "accepted-ble/rr20-0/stop.raw",
+    "gzip": "accepted-ble/rr20-0/stop.raw.gz",
+    "sha256": "e61326a27a1e1a88ad27706d531f4e7bd311443de2aa0b06ba86c4e4db750942",
+    "bytes": 39
+  },
+  {
+    "path": "accepted-ble/rr20-1/affinity.raw",
+    "gzip": "accepted-ble/rr20-1/affinity.raw.gz",
+    "sha256": "a4aef58740a2875c516c5ee31b579000d4f1e8e44f0a12ad0ee570bc8c4cd9a0",
+    "bytes": 107
+  },
+  {
+    "path": "accepted-ble/rr20-1/cpu-analysis.log",
+    "gzip": "accepted-ble/rr20-1/cpu-analysis.log.gz",
+    "sha256": "4e004f76a1111d809223d8830df1f0dcca1b4dd1289c6a228176777fbe4027a1",
+    "bytes": 1140
+  },
+  {
+    "path": "accepted-ble/rr20-1/cpu-idle.raw",
+    "gzip": "accepted-ble/rr20-1/cpu-idle.raw.gz",
+    "sha256": "51eb3553faa35a1a638ee8845a3e87044a85c5a1a739f6a076ceba92856872c4",
+    "bytes": 384
+  },
+  {
+    "path": "accepted-ble/rr20-1/cpu-sample.raw",
+    "gzip": "accepted-ble/rr20-1/cpu-sample.raw.gz",
+    "sha256": "b3195ea4e6fae225ad15ddfc186da8fe70964e17f583976519bbc1155eeff5ba",
+    "bytes": 39
+  },
+  {
+    "path": "accepted-ble/rr20-1/final-log.raw",
+    "gzip": "accepted-ble/rr20-1/final-log.raw.gz",
+    "sha256": "676cf4ea47591f27b3eff7d9126ce66ea29b5301d6e1bff3af6c3a2a92674e1e",
+    "bytes": 2124
+  },
+  {
+    "path": "accepted-ble/rr20-1/fresh-pair.raw",
+    "gzip": "accepted-ble/rr20-1/fresh-pair.raw.gz",
+    "sha256": "364d5560ef7c543149d35a9397151979e815f55f3738297ef075a69903131cfd",
+    "bytes": 234255
+  },
+  {
+    "path": "accepted-ble/rr20-1/host-rx.bin",
+    "gzip": "accepted-ble/rr20-1/host-rx.bin.gz",
+    "sha256": "e7abf78a33ce95fa18adae9e0927d33d0dde3e22129a06ed3ccca8c55af0f7de",
+    "bytes": 1314720
+  },
+  {
+    "path": "accepted-ble/rr20-1/host-rx.json",
+    "gzip": "accepted-ble/rr20-1/host-rx.json.gz",
+    "sha256": "4b00fdddcc7c80cb290004ad08dd4026c2ad97596964360ec3ea21bd88d42b96",
+    "bytes": 159700
+  },
+  {
+    "path": "accepted-ble/rr20-1/init0.raw",
+    "gzip": "accepted-ble/rr20-1/init0.raw.gz",
+    "sha256": "1e70507cf6f1168ec10358d88698fdc873f9ba22e03ee629e3696742262a9cbd",
+    "bytes": 1044
+  },
+  {
+    "path": "accepted-ble/rr20-1/launch0.raw",
+    "gzip": "accepted-ble/rr20-1/launch0.raw.gz",
+    "sha256": "00f1c24744ac8fcf8236833a9886b777d9d0f49d5eea7ac0f1b2b43d296fbdf8",
+    "bytes": 39
+  },
+  {
+    "path": "accepted-ble/rr20-1/matrix-wrapper.txt",
+    "gzip": "accepted-ble/rr20-1/matrix-wrapper.txt.gz",
+    "sha256": "2dab502c821e7f551f9589aec864b71768ed7b606db368526a62f2421102b0a9",
+    "bytes": 227
+  },
+  {
+    "path": "accepted-ble/rr20-1/priority.raw",
+    "gzip": "accepted-ble/rr20-1/priority.raw.gz",
+    "sha256": "bc049a69b3e7aea9de0e8fd2ac7c85399fc0465bef19b3e25ff736d17200f844",
+    "bytes": 559
+  },
+  {
+    "path": "accepted-ble/rr20-1/stop.raw",
+    "gzip": "accepted-ble/rr20-1/stop.raw.gz",
+    "sha256": "eb18443c8a1c358fda456836414b57ba2a1e9188e05651a6c5117ce547dcabf1",
+    "bytes": 64
+  },
+  {
+    "path": "accepted-ble/setup/binary-hashes.raw",
+    "gzip": "accepted-ble/setup/binary-hashes.raw.gz",
+    "sha256": "d9861b758925c42c4909df50f2e9816ab4aa667ad2c4da681dcacc63869f078e",
+    "bytes": 230
+  },
+  {
+    "path": "accepted-ble/setup/boot.raw",
+    "gzip": "accepted-ble/setup/boot.raw.gz",
+    "sha256": "16a57931c374ea7c68247a24c12a38cca42029d0d4e7498d5958ba5ca2d15b3f",
+    "bytes": 159340
+  },
+  {
+    "path": "accepted-ble/setup/bringup.raw",
+    "gzip": "accepted-ble/setup/bringup.raw.gz",
+    "sha256": "3e089aeb45b86fec5e01fb014fa94624ec7f151d8d2f1b45d061c124e720bc5a",
+    "bytes": 147
+  },
+  {
+    "path": "accepted-ble/setup/configuration.raw",
+    "gzip": "accepted-ble/setup/configuration.raw.gz",
+    "sha256": "bb82f37a6aab53cdc6d93c4ac3e8c8706e0ffa6866c53f763ce93636af135a47",
+    "bytes": 39
+  },
+  {
+    "path": "accepted-ble/setup/login.raw",
+    "gzip": "accepted-ble/setup/login.raw.gz",
+    "sha256": "4bf10daec7a31575971ba1f3093afa0e1c016d864bcd2a55fddd1fa5874a9566",
+    "bytes": 11
+  },
+  {
+    "path": "accepted-ble/setup/overlay.raw",
+    "gzip": "accepted-ble/setup/overlay.raw.gz",
+    "sha256": "d05ae1bea26d806c2ddf2c3d65f033d83d2b04026d1b0fefc3ae44ceb3c365fd",
+    "bytes": 39
+  },
+  {
+    "path": "accepted-ble/setup/probe-upload/upload.raw",
+    "gzip": "accepted-ble/setup/probe-upload/upload.raw.gz",
+    "sha256": "75addaffe39bb7094a9bc101bac924bc237b6077c8c6e36bf5cd051b02431ea5",
+    "bytes": 594
+  },
+  {
+    "path": "accepted-ble/setup/reset.raw",
+    "gzip": "accepted-ble/setup/reset.raw.gz",
+    "sha256": "cefd095491b0faa7aff1e8bcc5474c2f5ff930a28c2d4d955a171c350f418bb4",
+    "bytes": 360
+  },
+  {
+    "path": "accepted-ble/setup/shell.raw",
+    "gzip": "accepted-ble/setup/shell.raw.gz",
+    "sha256": "c121f4af13a1e40747d4e5231aec83a1c69c6fdbea4698d9631df13e958ef49a",
+    "bytes": 34
+  },
+  {
+    "path": "accepted-ble.log",
+    "gzip": "accepted-ble.log.gz",
+    "sha256": "848b7d7133cbfed05b1391ef3ccf3ac968615487ac3191bee3576660799f8b73",
+    "bytes": 531
+  },
+  {
+    "path": "accepted-controls.log",
+    "gzip": "accepted-controls.log.gz",
+    "sha256": "f70c411adb8ddbc55af7b1440609d8589727f3664628a972d32f664ddbdc23a4",
+    "bytes": 66
+  },
+  {
+    "path": "accepted-spp/rr20-0/affinity.raw",
+    "gzip": "accepted-spp/rr20-0/affinity.raw.gz",
+    "sha256": "3b35089ce44804bac80011d801dfbdb8a515f634e0ebc47cf023f73f9823904e",
+    "bytes": 107
+  },
+  {
+    "path": "accepted-spp/rr20-0/cpu-analysis.log",
+    "gzip": "accepted-spp/rr20-0/cpu-analysis.log.gz",
+    "sha256": "4a77ed5d9fe2c7e747bbf9cbff36badf17ced6f5e6ca32b60a2354bc0408ce51",
+    "bytes": 1205
+  },
+  {
+    "path": "accepted-spp/rr20-0/cpu-idle.raw",
+    "gzip": "accepted-spp/rr20-0/cpu-idle.raw.gz",
+    "sha256": "9834e6d60b30a5ca1255707a1d606ab3e57f9a683a2d4f671def76d4f7d594a4",
+    "bytes": 381
+  },
+  {
+    "path": "accepted-spp/rr20-0/cpu-sample.raw",
+    "gzip": "accepted-spp/rr20-0/cpu-sample.raw.gz",
+    "sha256": "cab7ee6cc4b713b645b14144410d5b00541b934451f16a502e91ec8a84a4e5a3",
+    "bytes": 39
+  },
+  {
+    "path": "accepted-spp/rr20-0/final-log.raw",
+    "gzip": "accepted-spp/rr20-0/final-log.raw.gz",
+    "sha256": "3fb34eed8eab502814534152bc786da6f6862618e53eb64af23338467ce433e8",
+    "bytes": 3752
+  },
+  {
+    "path": "accepted-spp/rr20-0/fresh-pair.raw",
+    "gzip": "accepted-spp/rr20-0/fresh-pair.raw.gz",
+    "sha256": "edf7f948793e9b655d43402f4918a08aa768fb2fa3e58b9e3fcdda7f23ba6494",
+    "bytes": 9337
+  },
+  {
+    "path": "accepted-spp/rr20-0/host-rx.bin",
+    "gzip": "accepted-spp/rr20-0/host-rx.bin.gz",
+    "sha256": "daabac8e05b97fe9d577b48e1dc0a63b1d6a863ce2366892f55f1fc14e328da5",
+    "bytes": 8781300
+  },
+  {
+    "path": "accepted-spp/rr20-0/host-rx.json",
+    "gzip": "accepted-spp/rr20-0/host-rx.json.gz",
+    "sha256": "f6334255c76d41c7e892221c8bca05b0d497311eec0fe11cdd7b13ccb674d3ee",
+    "bytes": 427735
+  },
+  {
+    "path": "accepted-spp/rr20-0/init0.raw",
+    "gzip": "accepted-spp/rr20-0/init0.raw.gz",
+    "sha256": "5702af4e28f50f87d85c2595b33a1424d7820d419995677e7709d81e98961d78",
+    "bytes": 1002
+  },
+  {
+    "path": "accepted-spp/rr20-0/launch0.raw",
+    "gzip": "accepted-spp/rr20-0/launch0.raw.gz",
+    "sha256": "12a5e4cee8e7112947b845f366202a08f79d666b5069f5880b3fea0e5b27a663",
+    "bytes": 39
+  },
+  {
+    "path": "accepted-spp/rr20-0/matrix-wrapper.txt",
+    "gzip": "accepted-spp/rr20-0/matrix-wrapper.txt.gz",
+    "sha256": "460bc24437ecb887df69ddbc971cb798fcd175b3bf971d91e2a1798b96785abf",
+    "bytes": 245
+  },
+  {
+    "path": "accepted-spp/rr20-0/priority.raw",
+    "gzip": "accepted-spp/rr20-0/priority.raw.gz",
+    "sha256": "a4e3facef3f9b678d9cfcf78ed7ac6b7c1af82e2d790d8b1dccce60fe9bea161",
+    "bytes": 557
+  },
+  {
+    "path": "accepted-spp/rr20-0/stop.raw",
+    "gzip": "accepted-spp/rr20-0/stop.raw.gz",
+    "sha256": "1c99d9134c5441447e3cff4213333b73cb436f402897fbcf4416267f85732a69",
+    "bytes": 39
+  },
+  {
+    "path": "accepted-spp/rr20-1/affinity.raw",
+    "gzip": "accepted-spp/rr20-1/affinity.raw.gz",
+    "sha256": "a42da12a25240d5118d61085337265ab9cfb6be340ce3e4b532c947b59d163ce",
+    "bytes": 107
+  },
+  {
+    "path": "accepted-spp/rr20-1/cpu-analysis.log",
+    "gzip": "accepted-spp/rr20-1/cpu-analysis.log.gz",
+    "sha256": "d4429d4b643c803ce0144c387ee01ceb55c215166cd3275926ae3e97ee49c18a",
+    "bytes": 1197
+  },
+  {
+    "path": "accepted-spp/rr20-1/cpu-idle.raw",
+    "gzip": "accepted-spp/rr20-1/cpu-idle.raw.gz",
+    "sha256": "7eb35db41090044f2d662cfc3a5992f9120685e0637aa5e76a58409a1c7bb489",
+    "bytes": 391
+  },
+  {
+    "path": "accepted-spp/rr20-1/cpu-sample.raw",
+    "gzip": "accepted-spp/rr20-1/cpu-sample.raw.gz",
+    "sha256": "e2cf7edb0d19b2643e4d4da2cfaa10346562c6e20f88df0a3f3f908597f13a7d",
+    "bytes": 39
+  },
+  {
+    "path": "accepted-spp/rr20-1/final-log.raw",
+    "gzip": "accepted-spp/rr20-1/final-log.raw.gz",
+    "sha256": "c3cb5043d205c05555b3a7fcf3a6970f9e3cabb9f10ebb4c15b90b810b5bd27b",
+    "bytes": 3897
+  },
+  {
+    "path": "accepted-spp/rr20-1/fresh-pair.raw",
+    "gzip": "accepted-spp/rr20-1/fresh-pair.raw.gz",
+    "sha256": "57a6e0665bbaa4bab7ac2bcf7b275ee696639000c14944b4f6749dfd84c2d2cd",
+    "bytes": 7450
+  },
+  {
+    "path": "accepted-spp/rr20-1/host-rx.bin",
+    "gzip": "accepted-spp/rr20-1/host-rx.bin.gz",
+    "sha256": "fe1ac779eb796e6f49f2ba900984489d50ae71e367e8c664c1b29e5c7021ddfb",
+    "bytes": 8711010
+  },
+  {
+    "path": "accepted-spp/rr20-1/host-rx.json",
+    "gzip": "accepted-spp/rr20-1/host-rx.json.gz",
+    "sha256": "5ff76b22d2cfe66ee2948f35bbabd207a2c7cd763e87dd37aae26c8448fd2b85",
+    "bytes": 424583
+  },
+  {
+    "path": "accepted-spp/rr20-1/init0.raw",
+    "gzip": "accepted-spp/rr20-1/init0.raw.gz",
+    "sha256": "fa9c22191381de10ce545d52c46dc2c2f4f743127ce9ed254ac54117286ad40c",
+    "bytes": 1002
+  },
+  {
+    "path": "accepted-spp/rr20-1/launch0.raw",
+    "gzip": "accepted-spp/rr20-1/launch0.raw.gz",
+    "sha256": "2acad76fb62f79c9455aa54530db677c0f00896b5ceb851214e7da091a0e34c8",
+    "bytes": 39
+  },
+  {
+    "path": "accepted-spp/rr20-1/matrix-wrapper.txt",
+    "gzip": "accepted-spp/rr20-1/matrix-wrapper.txt.gz",
+    "sha256": "2434c95e58f6cd866f792d8d4cf3b1763e6280d83fdce1bc38b1ea703b723b7b",
+    "bytes": 244
+  },
+  {
+    "path": "accepted-spp/rr20-1/priority.raw",
+    "gzip": "accepted-spp/rr20-1/priority.raw.gz",
+    "sha256": "a74a1188ee305fb6d0ebc0bc25787622aea41a774987248d82591f5fcd896e5a",
+    "bytes": 559
+  },
+  {
+    "path": "accepted-spp/rr20-1/stop.raw",
+    "gzip": "accepted-spp/rr20-1/stop.raw.gz",
+    "sha256": "514f5c2bd1195e0e7b294ee2908f6ac870e207f686b856080f39b249571df2dd",
+    "bytes": 64
+  },
+  {
+    "path": "accepted-spp/setup/binary-hashes.raw",
+    "gzip": "accepted-spp/setup/binary-hashes.raw.gz",
+    "sha256": "9efbd23f8481fabfc86e85858258ad5730941bf7c394c7bad77b3e9df702f49a",
+    "bytes": 230
+  },
+  {
+    "path": "accepted-spp/setup/boot.raw",
+    "gzip": "accepted-spp/setup/boot.raw.gz",
+    "sha256": "b7feb977ab76f18dfb2ae54f2d67695c8c517d3eacfb162e1f2e72ece307ca41",
+    "bytes": 159251
+  },
+  {
+    "path": "accepted-spp/setup/bringup.raw",
+    "gzip": "accepted-spp/setup/bringup.raw.gz",
+    "sha256": "69056f50cf80a126c31efe7578f222756c9ac3b3496f5ae37125b4e8df3446fa",
+    "bytes": 147
+  },
+  {
+    "path": "accepted-spp/setup/configuration.raw",
+    "gzip": "accepted-spp/setup/configuration.raw.gz",
+    "sha256": "5edfb3f4a8a0e60abc7403a8dbed55696a58b06dc804a125090569a735efb68a",
+    "bytes": 39
+  },
+  {
+    "path": "accepted-spp/setup/login.raw",
+    "gzip": "accepted-spp/setup/login.raw.gz",
+    "sha256": "4bf10daec7a31575971ba1f3093afa0e1c016d864bcd2a55fddd1fa5874a9566",
+    "bytes": 11
+  },
+  {
+    "path": "accepted-spp/setup/overlay.raw",
+    "gzip": "accepted-spp/setup/overlay.raw.gz",
+    "sha256": "601955f559068e12656d6102422619ecfd0a80fd06d26a1ee10a8265a8be9a5c",
+    "bytes": 39
+  },
+  {
+    "path": "accepted-spp/setup/probe-upload/upload.raw",
+    "gzip": "accepted-spp/setup/probe-upload/upload.raw.gz",
+    "sha256": "dea7ae5126097c442ff42e36f994e75760078684c4353a1ede981abe646b7d97",
+    "bytes": 594
+  },
+  {
+    "path": "accepted-spp/setup/reset.raw",
+    "gzip": "accepted-spp/setup/reset.raw.gz",
+    "sha256": "59e0d8ba398269c7100415a6bc9dc89ba9855fe29033382f90c3e78794aef93c",
+    "bytes": 363
+  },
+  {
+    "path": "accepted-spp/setup/shell.raw",
+    "gzip": "accepted-spp/setup/shell.raw.gz",
+    "sha256": "c121f4af13a1e40747d4e5231aec83a1c69c6fdbea4698d9631df13e958ef49a",
+    "bytes": 34
+  },
+  {
+    "path": "accepted-spp.log",
+    "gzip": "accepted-spp.log.gz",
+    "sha256": "26c3760235077d4acb53dadbed6f51bbae344e924d59f89dc3f6fd853bbf42a1",
+    "bytes": 566
+  },
+  {
+    "path": "accounting-tests.log",
+    "gzip": "accounting-tests.log.gz",
+    "sha256": "ece5c0c196969a9ba12d8be5c297a8595ec1429abadf27def5d71868dd3ec81c",
+    "bytes": 117
+  },
+  {
+    "path": "ble/rr20-0/affinity.raw",
+    "gzip": "ble/rr20-0/affinity.raw.gz",
+    "sha256": "0a610e2aafc711f4aea0bc98aa0cc89f262bec9262d7ff6f901973391582a2e3",
+    "bytes": 107
+  },
+  {
+    "path": "ble/rr20-0/cost-analysis.log",
+    "gzip": "ble/rr20-0/cost-analysis.log.gz",
+    "sha256": "25a17f29ae76fa838c902003282a024015547c139b2aba0b1065d962e537f861",
+    "bytes": 1610
+  },
+  {
+    "path": "ble/rr20-0/cpu-analysis.log",
+    "gzip": "ble/rr20-0/cpu-analysis.log.gz",
+    "sha256": "adc5ff63d352854123dbff9617d62b26b3bab95eae00de17ac7b30c633eb3726",
+    "bytes": 1149
+  },
+  {
+    "path": "ble/rr20-0/cpu-idle.raw",
+    "gzip": "ble/rr20-0/cpu-idle.raw.gz",
+    "sha256": "ac3bdc5bfdc7ee934ff96657b628477ff6ba15d3c167548b12e682694045212e",
+    "bytes": 380
+  },
+  {
+    "path": "ble/rr20-0/cpu-sample.raw",
+    "gzip": "ble/rr20-0/cpu-sample.raw.gz",
+    "sha256": "e68108f9d71c5a5c9d0c9312aec2393640902dfdaf379b32d62db8a026050373",
+    "bytes": 39
+  },
+  {
+    "path": "ble/rr20-0/final-log.raw",
+    "gzip": "ble/rr20-0/final-log.raw.gz",
+    "sha256": "8beedd6eade536585612d24a49d113559fe0240d540eb1a0afcde72326a3ed83",
+    "bytes": 2124
+  },
+  {
+    "path": "ble/rr20-0/fresh-pair.raw",
+    "gzip": "ble/rr20-0/fresh-pair.raw.gz",
+    "sha256": "3d964c82869502f137a245d487d11b5dc09e56084161b5cc7f0f09990d8049ed",
+    "bytes": 217819
+  },
+  {
+    "path": "ble/rr20-0/host-rx.bin",
+    "gzip": "ble/rr20-0/host-rx.bin.gz",
+    "sha256": "859657961e61be0c5f0a02f536604ac7bd13586e5ab1b8109c2317dc93d62c41",
+    "bytes": 1294425
+  },
+  {
+    "path": "ble/rr20-0/host-rx.json",
+    "gzip": "ble/rr20-0/host-rx.json.gz",
+    "sha256": "79ba941afcd3a219b13c496dbd8e5d3faedb779a644e4641f1219796e20479cf",
+    "bytes": 157253
+  },
+  {
+    "path": "ble/rr20-0/init0.raw",
+    "gzip": "ble/rr20-0/init0.raw.gz",
+    "sha256": "9884e0f9b6aec76e2a174df287df4f4a333d253ceb90749913e4bf63ba5c8434",
+    "bytes": 1044
+  },
+  {
+    "path": "ble/rr20-0/launch0.raw",
+    "gzip": "ble/rr20-0/launch0.raw.gz",
+    "sha256": "5656f7c1c2190fb09f48894d1734672e8b1e48f8b50b3805eb7e3034f43c19d2",
+    "bytes": 39
+  },
+  {
+    "path": "ble/rr20-0/matrix-wrapper.txt",
+    "gzip": "ble/rr20-0/matrix-wrapper.txt.gz",
+    "sha256": "1ffb0826e0c7188a167e5434e8aa85ce9a01e397cdda56b24e5effa647ba8ec0",
+    "bytes": 340
+  },
+  {
+    "path": "ble/rr20-0/priority.raw",
+    "gzip": "ble/rr20-0/priority.raw.gz",
+    "sha256": "6d43f74dc4d6d7812338d34e52e7249091a934aef7fdd3464736a3c54a3eed7e",
+    "bytes": 558
+  },
+  {
+    "path": "ble/rr20-0/profile-pull.raw",
+    "gzip": "ble/rr20-0/profile-pull.raw.gz",
+    "sha256": "43ff862a630987755c105bee39a2d7c8d12b3dd8a406c048e50e82d80a3b9026",
+    "bytes": 1396
+  },
+  {
+    "path": "ble/rr20-0/stop.raw",
+    "gzip": "ble/rr20-0/stop.raw.gz",
+    "sha256": "9e1886ad42ba741b8c22ddb2e0d7f28b52e75b83df1fc7f37c07be718ee507b4",
+    "bytes": 39
+  },
+  {
+    "path": "ble/rr20-0/tasks.raw",
+    "gzip": "ble/rr20-0/tasks.raw.gz",
+    "sha256": "249a0f0abd78b6bf965e80fde43d99623911ffc967b28690f7c9b0cf741ac649",
+    "bytes": 8797
+  },
+  {
+    "path": "ble/rr20-1/affinity.raw",
+    "gzip": "ble/rr20-1/affinity.raw.gz",
+    "sha256": "73d20d060f3addcf8803a0f21a85cfda929e9bdaa0669c1b17bb13fa9d48bd72",
+    "bytes": 107
+  },
+  {
+    "path": "ble/rr20-1/cost-analysis.log",
+    "gzip": "ble/rr20-1/cost-analysis.log.gz",
+    "sha256": "bd275adacdd1abcd0782340ab79e17dc1c3ba6c22a6f93f5a6daadb3e920ecaf",
+    "bytes": 1665
+  },
+  {
+    "path": "ble/rr20-1/cpu-analysis.log",
+    "gzip": "ble/rr20-1/cpu-analysis.log.gz",
+    "sha256": "5e6b447d4053c1e7ee3eea8c9b2b500b8f3c8922d783963bd305d6e5e26b7e64",
+    "bytes": 1145
+  },
+  {
+    "path": "ble/rr20-1/cpu-idle.raw",
+    "gzip": "ble/rr20-1/cpu-idle.raw.gz",
+    "sha256": "51cd38aea68e01733bdbc451f12cea72a7c1dc0372d4cdfe141a721c355b2613",
+    "bytes": 384
+  },
+  {
+    "path": "ble/rr20-1/cpu-sample.raw",
+    "gzip": "ble/rr20-1/cpu-sample.raw.gz",
+    "sha256": "545a5f7ab6df8881719f4a930e935d6d3fc723026232e21ac16d5ff88ee645be",
+    "bytes": 35
+  },
+  {
+    "path": "ble/rr20-1/final-log.raw",
+    "gzip": "ble/rr20-1/final-log.raw.gz",
+    "sha256": "72c286aa15e039d29ce35d8bae96e8074da80197663c7b2a61a5bf12ee9c015e",
+    "bytes": 2124
+  },
+  {
+    "path": "ble/rr20-1/fresh-pair.raw",
+    "gzip": "ble/rr20-1/fresh-pair.raw.gz",
+    "sha256": "b968e6ba59e37777dc5b2332a8003edf363065ece1b9ecaaf2258d8a9a31b36a",
+    "bytes": 210636
+  },
+  {
+    "path": "ble/rr20-1/host-rx.bin",
+    "gzip": "ble/rr20-1/host-rx.bin.gz",
+    "sha256": "6dda1badbccb9f094061469216b73100974f4579e5d33fb5d00064e04bcdcfcf",
+    "bytes": 1305315
+  },
+  {
+    "path": "ble/rr20-1/host-rx.json",
+    "gzip": "ble/rr20-1/host-rx.json.gz",
+    "sha256": "9a75baa4a64160331d48047fd567a70434f2c91f860939de6efdc324916112ef",
+    "bytes": 158575
+  },
+  {
+    "path": "ble/rr20-1/init0.raw",
+    "gzip": "ble/rr20-1/init0.raw.gz",
+    "sha256": "eb8c71cfea5dc246b2f34d6adae2bca172c0af93833de0689fde210c05361c70",
+    "bytes": 1044
+  },
+  {
+    "path": "ble/rr20-1/launch0.raw",
+    "gzip": "ble/rr20-1/launch0.raw.gz",
+    "sha256": "77638a60033c9ee38a3ee1204397be39bae9b4b91a455c7d209d714f1e78c1b2",
+    "bytes": 39
+  },
+  {
+    "path": "ble/rr20-1/matrix-wrapper.txt",
+    "gzip": "ble/rr20-1/matrix-wrapper.txt.gz",
+    "sha256": "a392d14329c703c55cc81e549e78a2d94d72584363b8437264f130072528c1aa",
+    "bytes": 341
+  },
+  {
+    "path": "ble/rr20-1/priority.raw",
+    "gzip": "ble/rr20-1/priority.raw.gz",
+    "sha256": "82f911929573764a8192e9ee4a5cb292c47d7b74c3f71a49eadb74d4bca8eb28",
+    "bytes": 559
+  },
+  {
+    "path": "ble/rr20-1/profile-pull.raw",
+    "gzip": "ble/rr20-1/profile-pull.raw.gz",
+    "sha256": "62ea9a39523090ca6704ff33385cc701259834be21ff081e54c4fe4048eafa96",
+    "bytes": 1726
+  },
+  {
+    "path": "ble/rr20-1/stop.raw",
+    "gzip": "ble/rr20-1/stop.raw.gz",
+    "sha256": "1cd1f1793317e73ac2982bcf052dcb3e48dc08bb550ef9903f8cf4bac220bfdf",
+    "bytes": 64
+  },
+  {
+    "path": "ble/rr20-1/tasks.raw",
+    "gzip": "ble/rr20-1/tasks.raw.gz",
+    "sha256": "d9e1209596febb1d7b47e89788e9516a03bba6e9a78595e6aa49e3d03f4e2bba",
+    "bytes": 8819
+  },
+  {
+    "path": "ble/rr20-2/affinity.raw",
+    "gzip": "ble/rr20-2/affinity.raw.gz",
+    "sha256": "82d9f459c72d7cadff2a13672dae69b6f3c2ff353f153776d3a1e6b612a1c03e",
+    "bytes": 107
+  },
+  {
+    "path": "ble/rr20-2/cost-analysis.log",
+    "gzip": "ble/rr20-2/cost-analysis.log.gz",
+    "sha256": "241dff9619502fe6a8979dc90d437e0cb1e80682b69a23d0360bd0a8c7a413e6",
+    "bytes": 1666
+  },
+  {
+    "path": "ble/rr20-2/cpu-analysis.log",
+    "gzip": "ble/rr20-2/cpu-analysis.log.gz",
+    "sha256": "333db3efdc9ec516ac3cf2224014ae9e34fc8df2bd4021adc8c59acf1984a570",
+    "bytes": 1140
+  },
+  {
+    "path": "ble/rr20-2/cpu-idle.raw",
+    "gzip": "ble/rr20-2/cpu-idle.raw.gz",
+    "sha256": "0cfa7a3275c4ec81acaf4c75f379300e24b14be677a506d048e83b36bf4e6ef7",
+    "bytes": 392
+  },
+  {
+    "path": "ble/rr20-2/cpu-sample.raw",
+    "gzip": "ble/rr20-2/cpu-sample.raw.gz",
+    "sha256": "5a175b3e19359e157e1e470b1e4bd504be2ee4c01cf2b7d6c6a2659017efb5b0",
+    "bytes": 39
+  },
+  {
+    "path": "ble/rr20-2/final-log.raw",
+    "gzip": "ble/rr20-2/final-log.raw.gz",
+    "sha256": "69cbc6c100215cb301106b33fc36ce84d1a155017312f90a88f4bcfe3eb0bbac",
+    "bytes": 2124
+  },
+  {
+    "path": "ble/rr20-2/fresh-pair.raw",
+    "gzip": "ble/rr20-2/fresh-pair.raw.gz",
+    "sha256": "69991e3baf3b5b31fd5780de8f667d8bebbb030e8c6cb3947a7acc32b674d46e",
+    "bytes": 192677
+  },
+  {
+    "path": "ble/rr20-2/host-rx.bin",
+    "gzip": "ble/rr20-2/host-rx.bin.gz",
+    "sha256": "7bce23bdc6ded047a4381e1877099ce4df02f1acd0151c37cfc8dd5812ca418f",
+    "bytes": 1302345
+  },
+  {
+    "path": "ble/rr20-2/host-rx.json",
+    "gzip": "ble/rr20-2/host-rx.json.gz",
+    "sha256": "70d19185f6f0ba64d01f0bc5036fba39199b9a3fba384fb7b6ed5adf2ad2b92b",
+    "bytes": 158192
+  },
+  {
+    "path": "ble/rr20-2/init0.raw",
+    "gzip": "ble/rr20-2/init0.raw.gz",
+    "sha256": "d958d08094d8f3faaae2db571c8987e6e5e4b180d4aab06839622c2f5bbad06a",
+    "bytes": 1044
+  },
+  {
+    "path": "ble/rr20-2/launch0.raw",
+    "gzip": "ble/rr20-2/launch0.raw.gz",
+    "sha256": "4e972f62a22ba0e52c5ca6aa633dc0e09abad7ccd8247c768756c27f06a0ae6e",
+    "bytes": 35
+  },
+  {
+    "path": "ble/rr20-2/matrix-wrapper.txt",
+    "gzip": "ble/rr20-2/matrix-wrapper.txt.gz",
+    "sha256": "716cfa49b28a035f446a6ca27c050e358cd707e610e07077e8fb0ea98f656809",
+    "bytes": 341
+  },
+  {
+    "path": "ble/rr20-2/priority.raw",
+    "gzip": "ble/rr20-2/priority.raw.gz",
+    "sha256": "d816f97f5c88f3a8d06e771556f74052c7fda97ba192ca4c231e9531e2a5f872",
+    "bytes": 559
+  },
+  {
+    "path": "ble/rr20-2/profile-pull.raw",
+    "gzip": "ble/rr20-2/profile-pull.raw.gz",
+    "sha256": "6b3bae56f45197b8de4202efd4568a375547d05e16bc14ed61ca2e38ac840c9f",
+    "bytes": 1734
+  },
+  {
+    "path": "ble/rr20-2/stop.raw",
+    "gzip": "ble/rr20-2/stop.raw.gz",
+    "sha256": "0cb768d42bf9c9af2324c415248d39a7cdf09e5512d08e23c946f75c1b1a7063",
+    "bytes": 64
+  },
+  {
+    "path": "ble/rr20-2/tasks.raw",
+    "gzip": "ble/rr20-2/tasks.raw.gz",
+    "sha256": "78e77c4aa4e43da8652282cb08ff750e17cb5bda8e38af2c0e837b30a2d12e0a",
+    "bytes": 8821
+  },
+  {
+    "path": "ble/rr20-3/affinity.raw",
+    "gzip": "ble/rr20-3/affinity.raw.gz",
+    "sha256": "74f7b6e4ad4fd704e93518dfcc197b8944a834ff4d15da103cf868d6d4d4ba25",
+    "bytes": 107
+  },
+  {
+    "path": "ble/rr20-3/cost-analysis.log",
+    "gzip": "ble/rr20-3/cost-analysis.log.gz",
+    "sha256": "63913824fd1a2c535550325144c732903578e3fe3619298d45015d2ec90384c9",
+    "bytes": 1617
+  },
+  {
+    "path": "ble/rr20-3/cpu-analysis.log",
+    "gzip": "ble/rr20-3/cpu-analysis.log.gz",
+    "sha256": "b1a2bd2198d57ba5fe3554c792ebe0b7a3c98064f940ba297ea1228d50a82e07",
+    "bytes": 1143
+  },
+  {
+    "path": "ble/rr20-3/cpu-idle.raw",
+    "gzip": "ble/rr20-3/cpu-idle.raw.gz",
+    "sha256": "43565bb5a9383f4f038f8db6565747b4c05be598add9694d8c2b8edb619d59be",
+    "bytes": 394
+  },
+  {
+    "path": "ble/rr20-3/cpu-sample.raw",
+    "gzip": "ble/rr20-3/cpu-sample.raw.gz",
+    "sha256": "8b63918f2d8f8dafca165995a1c58f062cdd62b34329b7e83b015e87d55f0ff1",
+    "bytes": 39
+  },
+  {
+    "path": "ble/rr20-3/final-log.raw",
+    "gzip": "ble/rr20-3/final-log.raw.gz",
+    "sha256": "af371f7146ec64b76fd5047caa9445b3e5008be59b73e4ab602c957b92d33769",
+    "bytes": 2124
+  },
+  {
+    "path": "ble/rr20-3/fresh-pair.raw",
+    "gzip": "ble/rr20-3/fresh-pair.raw.gz",
+    "sha256": "c8de6561931b6a9d640c3c01102421d8878327578f870c00999704ddcb528574",
+    "bytes": 207798
+  },
+  {
+    "path": "ble/rr20-3/host-rx.bin",
+    "gzip": "ble/rr20-3/host-rx.bin.gz",
+    "sha256": "35e17cfc52fd48373b9aec14b2baee235600b12793ebeb6618fbcfb829024908",
+    "bytes": 1316205
+  },
+  {
+    "path": "ble/rr20-3/host-rx.json",
+    "gzip": "ble/rr20-3/host-rx.json.gz",
+    "sha256": "dc92414c6e2993fa9d5810244e26a4665aaab825704f59693f59e1cf51039777",
+    "bytes": 159893
+  },
+  {
+    "path": "ble/rr20-3/init0.raw",
+    "gzip": "ble/rr20-3/init0.raw.gz",
+    "sha256": "f9ad2f7e38ec2dde0ff203f4c558960b3e687149e2b98a6119f79802b75c88a3",
+    "bytes": 1044
+  },
+  {
+    "path": "ble/rr20-3/launch0.raw",
+    "gzip": "ble/rr20-3/launch0.raw.gz",
+    "sha256": "4aadc932d046d51347700da3388e991dd7a1940106e0fef2e006a09ae0ee0b16",
+    "bytes": 39
+  },
+  {
+    "path": "ble/rr20-3/matrix-wrapper.txt",
+    "gzip": "ble/rr20-3/matrix-wrapper.txt.gz",
+    "sha256": "7ba12e2c153626ed6ab6973df8129bbff262d5d87d1283bbe40ee56171213fd2",
+    "bytes": 340
+  },
+  {
+    "path": "ble/rr20-3/priority.raw",
+    "gzip": "ble/rr20-3/priority.raw.gz",
+    "sha256": "e25a589901422986e04a4e1b7bb573ce70a8d0577a5898ac3735e91b11e95542",
+    "bytes": 559
+  },
+  {
+    "path": "ble/rr20-3/profile-pull.raw",
+    "gzip": "ble/rr20-3/profile-pull.raw.gz",
+    "sha256": "c26e07b19d8f7a4a5b9b641f6f846824b7870263e132466b2c23ca78d6bb07ca",
+    "bytes": 1504
+  },
+  {
+    "path": "ble/rr20-3/stop.raw",
+    "gzip": "ble/rr20-3/stop.raw.gz",
+    "sha256": "ed4ecde94df836fce512eb737bfa17957514db6a5cc51f3bd476215b1d7bb7c6",
+    "bytes": 64
+  },
+  {
+    "path": "ble/rr20-3/tasks.raw",
+    "gzip": "ble/rr20-3/tasks.raw.gz",
+    "sha256": "dc0341b8600cd990a458d0fd4a121687dbeed32fdedc4134a40009754bcc8eaf",
+    "bytes": 8673
+  },
+  {
+    "path": "ble/setup/binary-hashes.raw",
+    "gzip": "ble/setup/binary-hashes.raw.gz",
+    "sha256": "4fba85c9220d6017aec785e3ca0ad042480a77290e4622a09e1ce0592db0ea45",
+    "bytes": 230
+  },
+  {
+    "path": "ble/setup/boot.raw",
+    "gzip": "ble/setup/boot.raw.gz",
+    "sha256": "c2d0dbc85fb7a8ead6a2c35b5fff592ab43186e34fa0a065ede31b6a283f6cb7",
+    "bytes": 159252
+  },
+  {
+    "path": "ble/setup/bringup.raw",
+    "gzip": "ble/setup/bringup.raw.gz",
+    "sha256": "04ca4c052715b836e4d24bba403f998df93121a7825d38be7dc49e2ee9f0ae5d",
+    "bytes": 147
+  },
+  {
+    "path": "ble/setup/configuration.raw",
+    "gzip": "ble/setup/configuration.raw.gz",
+    "sha256": "7724b4c734c3e4c8c31bd722fb512e0b3c2853085d1b6d6b9a9b102feec8f118",
+    "bytes": 39
+  },
+  {
+    "path": "ble/setup/login.raw",
+    "gzip": "ble/setup/login.raw.gz",
+    "sha256": "4bf10daec7a31575971ba1f3093afa0e1c016d864bcd2a55fddd1fa5874a9566",
+    "bytes": 11
+  },
+  {
+    "path": "ble/setup/module-symbols.raw",
+    "gzip": "ble/setup/module-symbols.raw.gz",
+    "sha256": "853841e01d5cf71cc3820e0445db1931204f7c640d9baa9e7ca2c072959a8484",
+    "bytes": 81
+  },
+  {
+    "path": "ble/setup/overlay.raw",
+    "gzip": "ble/setup/overlay.raw.gz",
+    "sha256": "9c33e88a886e6f8e5bfb0b14897e4af7ff8747bcb3ec3818f3830f43346e151f",
+    "bytes": 39
+  },
+  {
+    "path": "ble/setup/probe-upload/upload.raw",
+    "gzip": "ble/setup/probe-upload/upload.raw.gz",
+    "sha256": "ada030bcf928f48da093d440510efa722e0ea4cf18122fff6b6e04135dccac07",
+    "bytes": 594
+  },
+  {
+    "path": "ble/setup/profiler-ready.raw",
+    "gzip": "ble/setup/profiler-ready.raw.gz",
+    "sha256": "df283292e0486c3962163f71ef34d988d01be3e2927fb66689587058147a08c3",
+    "bytes": 4939
+  },
+  {
+    "path": "ble/setup/reset.raw",
+    "gzip": "ble/setup/reset.raw.gz",
+    "sha256": "e1d7967e266c17f49e1aca816a6c1f011581fbfea2cb3cc96c5e97b710ab08f9",
+    "bytes": 361
+  },
+  {
+    "path": "ble/setup/shell.raw",
+    "gzip": "ble/setup/shell.raw.gz",
+    "sha256": "c121f4af13a1e40747d4e5231aec83a1c69c6fdbea4698d9631df13e958ef49a",
+    "bytes": 34
+  },
+  {
+    "path": "ble-matrix.log",
+    "gzip": "ble-matrix.log.gz",
+    "sha256": "c0fff3a4024b4c09da741ce82289a365c6680b452e02bc9a8850db46f29d38ee",
+    "bytes": 1013
+  },
+  {
+    "path": "build.log",
+    "gzip": "build.log.gz",
+    "sha256": "2f1ee3185138d49f9e6b9a0db61374212ccd003dacc757cf8ce193effc65097d",
+    "bytes": 232488
+  },
+  {
+    "path": "diagnostic/arch/riscv/kernel/traps.c",
+    "gzip": "diagnostic/arch/riscv/kernel/traps.c.gz",
+    "sha256": "da5110a68a4fe6583859da62039548fa426b98ff9f7746065df2fa67cc6beb37",
+    "bytes": 12958
+  },
+  {
+    "path": "diagnostic/drivers/platform/esp32s31-radio-rtos.c",
+    "gzip": "diagnostic/drivers/platform/esp32s31-radio-rtos.c.gz",
+    "sha256": "9fc57e62c56120d5982f1318343c1083bd0ccddb887566a98b1543cb186bd82f",
+    "bytes": 40584
+  },
+  {
+    "path": "diagnostic/drivers/platform/esp32s31-radio-smode.c",
+    "gzip": "diagnostic/drivers/platform/esp32s31-radio-smode.c.gz",
+    "sha256": "de1521c30aafb0a41503c0e8899e34e54bc306b19f925d055630ed7ec5e400db",
+    "bytes": 114877
+  },
+  {
+    "path": "diagnostic/include/linux/s31_cost.h",
+    "gzip": "diagnostic/include/linux/s31_cost.h.gz",
+    "sha256": "b19b20cdd50f8ebf74217bea75514fde8e638f0cb5fd8658a52e93679ae37298",
+    "bytes": 1287
+  },
+  {
+    "path": "diagnostic/include/linux/sched.h",
+    "gzip": "diagnostic/include/linux/sched.h.gz",
+    "sha256": "cbe063c1f16aec58b00e3b27395578cb70ac898a15c08417443ee82fc3f5cd09",
+    "bytes": 71053
+  },
+  {
+    "path": "diagnostic/kernel/Makefile",
+    "gzip": "diagnostic/kernel/Makefile.gz",
+    "sha256": "fd098fa352394415584f38cf894b7ae788ecb80a3f35330093d8beaa627f63bb",
+    "bytes": 7157
+  },
+  {
+    "path": "diagnostic/kernel/fork.c",
+    "gzip": "diagnostic/kernel/fork.c.gz",
+    "sha256": "37a13b7e71331868dcb10872d5cba515f4de3137fffbbf63953f8d79f2a984c6",
+    "bytes": 81569
+  },
+  {
+    "path": "diagnostic/kernel/s31_cost.c",
+    "gzip": "diagnostic/kernel/s31_cost.c.gz",
+    "sha256": "4a98c697cc3184a52e763e75d32ee562d87e83c4bb8184098d99bc2cef09972f",
+    "bytes": 8720
+  },
+  {
+    "path": "diagnostic/kernel/sched/core.c",
+    "gzip": "diagnostic/kernel/sched/core.c.gz",
+    "sha256": "db879ee7da9e6325cb315ababe535174bc0b2fb127205a112c561dc8b89ed18b",
+    "bytes": 290188
+  },
+  {
+    "path": "diagnostic/kernel/softirq.c",
+    "gzip": "diagnostic/kernel/softirq.c.gz",
+    "sha256": "1acb9365d6f73c49566864deb1be0a03c9ad0f61b78e3259a1a0f87ffb823341",
+    "bytes": 28838
+  },
+  {
+    "path": "diagnostic-flash.log",
+    "gzip": "diagnostic-flash.log.gz",
+    "sha256": "8d9696390b46b2a792d105b6c37e2f46ec7bb0cea46a52c0437b3aeb14a2848a",
+    "bytes": 45634
+  },
+  {
+    "path": "diagnostic-verify.log",
+    "gzip": "diagnostic-verify.log.gz",
+    "sha256": "571a884d88802b20db8b3edbd41bfe09b32fe6582c803d436a51f968acd1d134",
+    "bytes": 1360
+  },
+  {
+    "path": "diagnostic.patch",
+    "gzip": "diagnostic.patch.gz",
+    "sha256": "084cecb7eef58c33119c6899d57f06b46a670be795231b0c0c5fa31af8149586",
+    "bytes": 21780
+  },
+  {
+    "path": "flash-safety-tests.log",
+    "gzip": "flash-safety-tests.log.gz",
+    "sha256": "fb6add1d7c7ac6f82861c4420d20f2b802f6d360a73867c7a7b70513e580937a",
+    "bytes": 104
+  },
+  {
+    "path": "next-source/arch/riscv/include/asm/switch_to.h",
+    "gzip": "next-source/arch/riscv/include/asm/switch_to.h.gz",
+    "sha256": "cff1a44a547d22f9f0f45a7ae5ad6d96f80d4160ac2744853d1b96a515cfc635",
+    "bytes": 3471
+  },
+  {
+    "path": "next-source/arch/riscv/kernel/entry.S",
+    "gzip": "next-source/arch/riscv/kernel/entry.S.gz",
+    "sha256": "b6fffd860660228861318d81fb1413101cd71dbc6b61a6b66191073705d92f51",
+    "bytes": 14476
+  },
+  {
+    "path": "next-source/arch/riscv/kernel/esp32s31-ext.c",
+    "gzip": "next-source/arch/riscv/kernel/esp32s31-ext.c.gz",
+    "sha256": "7fa0751f3eaafe53382920c9ea7987d644cba3bab1f38903df036a05ab647847",
+    "bytes": 5903
+  },
+  {
+    "path": "next-source/arch/riscv/mm/context.c",
+    "gzip": "next-source/arch/riscv/mm/context.c.gz",
+    "sha256": "f52ddf62b5e6b7f30176adfaae615c2c9f9dc56b2d2f15873fd659f8a01e8951",
+    "bytes": 10764
+  },
+  {
+    "path": "original/arch/riscv/kernel/traps.c",
+    "gzip": "original/arch/riscv/kernel/traps.c.gz",
+    "sha256": "7a46cea11c0893dd5581576485af202952167304109b2a839a51e98fb427935a",
+    "bytes": 12846
+  },
+  {
+    "path": "original/drivers/platform/esp32s31-radio-rtos.c",
+    "gzip": "original/drivers/platform/esp32s31-radio-rtos.c.gz",
+    "sha256": "bcd3f2a3948a050a1aff37e79096cfe0988b4f4cff540dce75e0c15cd4753f2f",
+    "bytes": 39886
+  },
+  {
+    "path": "original/drivers/platform/esp32s31-radio-smode.c",
+    "gzip": "original/drivers/platform/esp32s31-radio-smode.c.gz",
+    "sha256": "5fec65d11f2dfe0d0365a62de82e0ca66642f8e49b6caf7be6f225d38e271cc0",
+    "bytes": 114336
+  },
+  {
+    "path": "original/include/linux/sched.h",
+    "gzip": "original/include/linux/sched.h.gz",
+    "sha256": "7b710eff26f2e1811f693c704f472450e84b4027f9e31c66213260dfd565c0d5",
+    "bytes": 70998
+  },
+  {
+    "path": "original/kernel/Makefile",
+    "gzip": "original/kernel/Makefile.gz",
+    "sha256": "e8f15d7edc4a1176c07ee85589b6b5f736d9962708142892fc4aeb64f2173412",
+    "bytes": 7136
+  },
+  {
+    "path": "original/kernel/fork.c",
+    "gzip": "original/kernel/fork.c.gz",
+    "sha256": "208c4cb84966e179cb8940acc2f4e14d5328d97f62b7d67f04e4353690fb55da",
+    "bytes": 81495
+  },
+  {
+    "path": "original/kernel/sched/core.c",
+    "gzip": "original/kernel/sched/core.c.gz",
+    "sha256": "b00ef10d5ebed7f36a89ab7c82a87297cec386af899ff2914bbb8f1419ef6456",
+    "bytes": 290102
+  },
+  {
+    "path": "original/kernel/softirq.c",
+    "gzip": "original/kernel/softirq.c.gz",
+    "sha256": "2977db7e908b0cdfc382034b7a104a7a8e961a4f1c509411cf4770fe1d876692",
+    "bytes": 28716
+  },
+  {
+    "path": "ready.log",
+    "gzip": "ready.log.gz",
+    "sha256": "e3c0d20f2141278539befae64eafd0f43e219b74f2bb627440bfa716dc1662dd",
+    "bytes": 63
+  },
+  {
+    "path": "restore-check.log",
+    "gzip": "restore-check.log.gz",
+    "sha256": "0f736ab2146f6363960372246e97a35db05895ab570e159a045e8006ee4cb2f3",
+    "bytes": 25
+  },
+  {
+    "path": "restore-flash.log",
+    "gzip": "restore-flash.log.gz",
+    "sha256": "da630c3b3068d413db64093758d7b8ad3fa2e860d0c32350f0cb588ee4281f20",
+    "bytes": 45482
+  },
+  {
+    "path": "restore-verify.log",
+    "gzip": "restore-verify.log.gz",
+    "sha256": "f44da280c106ccf9a1ceed6f49708030f2da511ce3495ed139ac031543141c90",
+    "bytes": 1360
+  },
+  {
+    "path": "restored-ready/rr20-0/affinity.raw",
+    "gzip": "restored-ready/rr20-0/affinity.raw.gz",
+    "sha256": "6efd5d41fc6895d56423f076e674eac0cb01872049a483b72d2a1ee418030f20",
+    "bytes": 107
+  },
+  {
+    "path": "restored-ready/rr20-0/final-health.raw",
+    "gzip": "restored-ready/rr20-0/final-health.raw.gz",
+    "sha256": "dd76121a301aab955e7a14dfe8ce0f4bde88beabeee03f4b8086ebe552043d9e",
+    "bytes": 2135
+  },
+  {
+    "path": "restored-ready/rr20-0/final-log.raw",
+    "gzip": "restored-ready/rr20-0/final-log.raw.gz",
+    "sha256": "7057475c94e561c30f2256a0c4cfe8792acd86ec949cfe5a0375d5d4b931e11e",
+    "bytes": 1044
+  },
+  {
+    "path": "restored-ready/rr20-0/init0.raw",
+    "gzip": "restored-ready/rr20-0/init0.raw.gz",
+    "sha256": "45b89d679ef020536fff80da217aea6ffbc719c8913062b36651e0da1e8c5b91",
+    "bytes": 1044
+  },
+  {
+    "path": "restored-ready/rr20-0/launch0.raw",
+    "gzip": "restored-ready/rr20-0/launch0.raw.gz",
+    "sha256": "a37f756c45698693eb6e7bd5627af6fc2655c025882afaf3010ac2eef2bc2517",
+    "bytes": 39
+  },
+  {
+    "path": "restored-ready/rr20-0/priority.raw",
+    "gzip": "restored-ready/rr20-0/priority.raw.gz",
+    "sha256": "aae1f799f9f555ecbd001b70d8d36b3623e783d89adddcce99f93e95b5bb5fb4",
+    "bytes": 557
+  },
+  {
+    "path": "restored-ready/rr20-0/stop.raw",
+    "gzip": "restored-ready/rr20-0/stop.raw.gz",
+    "sha256": "e80983c82fdbc8d5e7c995218fb39a26497fe86a644b65f6f9e71844e97c7511",
+    "bytes": 39
+  },
+  {
+    "path": "restored-ready/setup/binary-hashes.raw",
+    "gzip": "restored-ready/setup/binary-hashes.raw.gz",
+    "sha256": "20a630fa04f5c853b2940fada8af6b295c4044a10120ef1343a10e2057881db9",
+    "bytes": 230
+  },
+  {
+    "path": "restored-ready/setup/boot.raw",
+    "gzip": "restored-ready/setup/boot.raw.gz",
+    "sha256": "7be02c505e2e183ca67549d52465d0e5dd0d3f86c4dcfc7852dfd4a8a6a54852",
+    "bytes": 159384
+  },
+  {
+    "path": "restored-ready/setup/bringup.raw",
+    "gzip": "restored-ready/setup/bringup.raw.gz",
+    "sha256": "ee7ec96ac29aa82371b1a8c4e27b46d53f18695091223fcd750d3f5e3907f2f6",
+    "bytes": 147
+  },
+  {
+    "path": "restored-ready/setup/configuration.raw",
+    "gzip": "restored-ready/setup/configuration.raw.gz",
+    "sha256": "4488ddf4787b2fc9bf4dc92f7125cb70b6e32f879fbd5f9b007b29d73f8574fc",
+    "bytes": 39
+  },
+  {
+    "path": "restored-ready/setup/login.raw",
+    "gzip": "restored-ready/setup/login.raw.gz",
+    "sha256": "4bf10daec7a31575971ba1f3093afa0e1c016d864bcd2a55fddd1fa5874a9566",
+    "bytes": 11
+  },
+  {
+    "path": "restored-ready/setup/overlay.raw",
+    "gzip": "restored-ready/setup/overlay.raw.gz",
+    "sha256": "96b85f12a0155c743584e535c4b26a77c7ef9046a0c2b18acc10394f1638bf69",
+    "bytes": 39
+  },
+  {
+    "path": "restored-ready/setup/reset.raw",
+    "gzip": "restored-ready/setup/reset.raw.gz",
+    "sha256": "cefd095491b0faa7aff1e8bcc5474c2f5ff930a28c2d4d955a171c350f418bb4",
+    "bytes": 360
+  },
+  {
+    "path": "restored-ready/setup/shell.raw",
+    "gzip": "restored-ready/setup/shell.raw.gz",
+    "sha256": "c121f4af13a1e40747d4e5231aec83a1c69c6fdbea4698d9631df13e958ef49a",
+    "bytes": 34
+  },
+  {
+    "path": "restored-wifi/boot.raw",
+    "gzip": "restored-wifi/boot.raw.gz",
+    "sha256": "1a5e58d8a9dd9b93f36a3e15f87a75eaa82c33164dde7755fdb6aebc901c67c6",
+    "bytes": 159373
+  },
+  {
+    "path": "restored-wifi/bringup.raw",
+    "gzip": "restored-wifi/bringup.raw.gz",
+    "sha256": "5e48fcef4c412cfe64b7ca7fb16a5236cd7fa13d2cba2b0ae0042d9415feba8e",
+    "bytes": 39
+  },
+  {
+    "path": "restored-wifi/configuration.raw",
+    "gzip": "restored-wifi/configuration.raw.gz",
+    "sha256": "270308ede7ca10af5f3ff92f1ca45f4348fb1272c5a8c3f2c0ca4ed46ded40a1",
+    "bytes": 39
+  },
+  {
+    "path": "restored-wifi/down.raw",
+    "gzip": "restored-wifi/down.raw.gz",
+    "sha256": "568b962446ce3dc3313925c76564dee55c3e705375f09ce5a5502523feaeb64f",
+    "bytes": 39
+  },
+  {
+    "path": "restored-wifi/frontends.raw",
+    "gzip": "restored-wifi/frontends.raw.gz",
+    "sha256": "70f3e2203bc5d4e45422d9a4868e14c3576ea1bf89198177813de18a95c1715b",
+    "bytes": 16671
+  },
+  {
+    "path": "restored-wifi/health.raw",
+    "gzip": "restored-wifi/health.raw.gz",
+    "sha256": "29ac4055c0f423b3e211240a997e54f69c0e67844e9a0ff69b4258a782131cd9",
+    "bytes": 16488
+  },
+  {
+    "path": "restored-wifi/login.raw",
+    "gzip": "restored-wifi/login.raw.gz",
+    "sha256": "4bf10daec7a31575971ba1f3093afa0e1c016d864bcd2a55fddd1fa5874a9566",
+    "bytes": 11
+  },
+  {
+    "path": "restored-wifi/overlay.raw",
+    "gzip": "restored-wifi/overlay.raw.gz",
+    "sha256": "eeed334c06f73c46d419a39b18a0c486e6627667825c0431eb21c2fdb4c69fff",
+    "bytes": 39
+  },
+  {
+    "path": "restored-wifi/reset.raw",
+    "gzip": "restored-wifi/reset.raw.gz",
+    "sha256": "e1d7967e266c17f49e1aca816a6c1f011581fbfea2cb3cc96c5e97b710ab08f9",
+    "bytes": 361
+  },
+  {
+    "path": "restored-wifi/scan.raw",
+    "gzip": "restored-wifi/scan.raw.gz",
+    "sha256": "ca042e8203c02ac6452ebb1bded098275937fdac3a5709f38e55ed37559d0e6b",
+    "bytes": 198119
+  },
+  {
+    "path": "restored-wifi/shell.raw",
+    "gzip": "restored-wifi/shell.raw.gz",
+    "sha256": "c121f4af13a1e40747d4e5231aec83a1c69c6fdbea4698d9631df13e958ef49a",
+    "bytes": 34
+  },
+  {
+    "path": "restored-wifi/up.raw",
+    "gzip": "restored-wifi/up.raw.gz",
+    "sha256": "a6458901a1df64e99d9879d03838a294f7bb16b151325845d2c5ba533a5a9802",
+    "bytes": 35
+  },
+  {
+    "path": "run.log",
+    "gzip": "run.log.gz",
+    "sha256": "6213476e46601b4601ca8ccd5b08cbd28f5c030ce705ff23c2fb26280f4fa4d9",
+    "bytes": 48
+  },
+  {
+    "path": "scratch-apply.log",
+    "gzip": "scratch-apply.log.gz",
+    "sha256": "6015249fef2ff660d2afd9549694c6203437d926b92477d090737843d600b700",
+    "bytes": 377
+  },
+  {
+    "path": "spp/rr20-0/affinity.raw",
+    "gzip": "spp/rr20-0/affinity.raw.gz",
+    "sha256": "c98e14a3eb610d263df4b8270dc1d81b812ded547f99150056e1dac3c2f12919",
+    "bytes": 107
+  },
+  {
+    "path": "spp/rr20-0/cost-analysis.log",
+    "gzip": "spp/rr20-0/cost-analysis.log.gz",
+    "sha256": "539b22dfd89e27990d0367d42600927e3fc78e69476998415c2e502c093e4235",
+    "bytes": 1513
+  },
+  {
+    "path": "spp/rr20-0/cpu-analysis.log",
+    "gzip": "spp/rr20-0/cpu-analysis.log.gz",
+    "sha256": "ff1feaebddd33e768cae7edb53380b73b84effc34127d2e3a4061122ec33f657",
+    "bytes": 1199
+  },
+  {
+    "path": "spp/rr20-0/cpu-idle.raw",
+    "gzip": "spp/rr20-0/cpu-idle.raw.gz",
+    "sha256": "434d4ea278ab174cca9b7b6ff39b9bf7fd3a6de23fd7449cdb92ae5b462756e4",
+    "bytes": 381
+  },
+  {
+    "path": "spp/rr20-0/cpu-sample.raw",
+    "gzip": "spp/rr20-0/cpu-sample.raw.gz",
+    "sha256": "a7e35bcf893aee0b29c0d824016dfae5d68f55822d07089a67eef5826b83cb59",
+    "bytes": 35
+  },
+  {
+    "path": "spp/rr20-0/final-log.raw",
+    "gzip": "spp/rr20-0/final-log.raw.gz",
+    "sha256": "a3d874d9c2cb02d7cc8e6589a4cdb7e55503896874a4c24b496d7e23e9b5b00e",
+    "bytes": 3752
+  },
+  {
+    "path": "spp/rr20-0/fresh-pair.raw",
+    "gzip": "spp/rr20-0/fresh-pair.raw.gz",
+    "sha256": "edf7f948793e9b655d43402f4918a08aa768fb2fa3e58b9e3fcdda7f23ba6494",
+    "bytes": 9337
+  },
+  {
+    "path": "spp/rr20-0/host-rx.bin",
+    "gzip": "spp/rr20-0/host-rx.bin.gz",
+    "sha256": "c56e67d818594a384a044ee5a99207de57f0b95c6ef18868586c0440a7b17f2d",
+    "bytes": 8690220
+  },
+  {
+    "path": "spp/rr20-0/host-rx.json",
+    "gzip": "spp/rr20-0/host-rx.json.gz",
+    "sha256": "dea48fca2a66a55ab891fe80fe822cb4505a6831c0bd479330a91e1288108d6a",
+    "bytes": 424851
+  },
+  {
+    "path": "spp/rr20-0/init0.raw",
+    "gzip": "spp/rr20-0/init0.raw.gz",
+    "sha256": "a3d068b7fc737de5e996ee47349fec1561c23bf101e821b9494b1dfbca79fb39",
+    "bytes": 1002
+  },
+  {
+    "path": "spp/rr20-0/launch0.raw",
+    "gzip": "spp/rr20-0/launch0.raw.gz",
+    "sha256": "333da8c803dee222479e700825b6e5a6fd49b79d77041bdfe90dcbdab943d361",
+    "bytes": 39
+  },
+  {
+    "path": "spp/rr20-0/matrix-wrapper.txt",
+    "gzip": "spp/rr20-0/matrix-wrapper.txt.gz",
+    "sha256": "7a79dedce82ac6362e779ef5fb07009d27351651da8619e06b277df6b208f9a7",
+    "bytes": 359
+  },
+  {
+    "path": "spp/rr20-0/priority.raw",
+    "gzip": "spp/rr20-0/priority.raw.gz",
+    "sha256": "029aaef3a4510537e5529f61467a9e979b02a24f3f107e35c11df5e8a345ba5f",
+    "bytes": 558
+  },
+  {
+    "path": "spp/rr20-0/profile-pull.raw",
+    "gzip": "spp/rr20-0/profile-pull.raw.gz",
+    "sha256": "df583d3a9a71c6e9d2971c5717714c7d3a83cf09b8f18acbc294f9acc426d0ab",
+    "bytes": 1216
+  },
+  {
+    "path": "spp/rr20-0/stop.raw",
+    "gzip": "spp/rr20-0/stop.raw.gz",
+    "sha256": "3d38c29dd16e1ed81c15d7e0b6c09effa51dd3f92c17f696b25a1d6cd5757f2a",
+    "bytes": 39
+  },
+  {
+    "path": "spp/rr20-0/tasks.raw",
+    "gzip": "spp/rr20-0/tasks.raw.gz",
+    "sha256": "4b5cda9fb8112043da6534b72d5f09d31de2efd3a64890178dd5d97521fe3a76",
+    "bytes": 8982
+  },
+  {
+    "path": "spp/rr20-1/affinity.raw",
+    "gzip": "spp/rr20-1/affinity.raw.gz",
+    "sha256": "e546ba018594201c20ed58e8fd165a2924964a53bb480ee5b3a3febf5b5fd5c9",
+    "bytes": 107
+  },
+  {
+    "path": "spp/rr20-1/cost-analysis.log",
+    "gzip": "spp/rr20-1/cost-analysis.log.gz",
+    "sha256": "4d3c7fdf32c1c197917b03efde8e91c79fd04ce968481b072de5bd618e9cb495",
+    "bytes": 1660
+  },
+  {
+    "path": "spp/rr20-1/cpu-analysis.log",
+    "gzip": "spp/rr20-1/cpu-analysis.log.gz",
+    "sha256": "a08e8eb424d18cb6d253565517d2ecf60adc3ecdfc9c5491999d2873c72d80b3",
+    "bytes": 1199
+  },
+  {
+    "path": "spp/rr20-1/cpu-idle.raw",
+    "gzip": "spp/rr20-1/cpu-idle.raw.gz",
+    "sha256": "d4e63cbf524f77fb20c72f4ab447ffe595077f2f0dd2a91d11c8e57efc9d9979",
+    "bytes": 390
+  },
+  {
+    "path": "spp/rr20-1/cpu-sample.raw",
+    "gzip": "spp/rr20-1/cpu-sample.raw.gz",
+    "sha256": "383373805754b7f1882abed976b2ad41f3f98c1cb9fe13f872812df056b8dcc6",
+    "bytes": 35
+  },
+  {
+    "path": "spp/rr20-1/final-log.raw",
+    "gzip": "spp/rr20-1/final-log.raw.gz",
+    "sha256": "544a11a2234cccb40ce040544fac8625808daa57c9847d1bb0aaeef9b9f16aa0",
+    "bytes": 3683
+  },
+  {
+    "path": "spp/rr20-1/fresh-pair.raw",
+    "gzip": "spp/rr20-1/fresh-pair.raw.gz",
+    "sha256": "3f0872e277958947285a277700f0da63fe10200efcf41d01c0e1caaad3386c73",
+    "bytes": 7277
+  },
+  {
+    "path": "spp/rr20-1/host-rx.bin",
+    "gzip": "spp/rr20-1/host-rx.bin.gz",
+    "sha256": "bd469e9774603c48edc1fed1b83dc0b9b8eb62e8e9bbb393ea9c8ca438c22395",
+    "bytes": 8585280
+  },
+  {
+    "path": "spp/rr20-1/host-rx.json",
+    "gzip": "spp/rr20-1/host-rx.json.gz",
+    "sha256": "d42c89c4a4c424812e447c0de8419c4d48eef9f1761d175ae9a8c041c383ddd4",
+    "bytes": 419287
+  },
+  {
+    "path": "spp/rr20-1/init0.raw",
+    "gzip": "spp/rr20-1/init0.raw.gz",
+    "sha256": "970f2bdd8590a039d0c7310fd1799f2dc5bf23ef9f84a5957e280635d8f7041d",
+    "bytes": 1002
+  },
+  {
+    "path": "spp/rr20-1/launch0.raw",
+    "gzip": "spp/rr20-1/launch0.raw.gz",
+    "sha256": "5bbd68881573872c3235ab7e18ec25d5f56a4bc9c376389983e17b6258229c22",
+    "bytes": 39
+  },
+  {
+    "path": "spp/rr20-1/matrix-wrapper.txt",
+    "gzip": "spp/rr20-1/matrix-wrapper.txt.gz",
+    "sha256": "69a0290f7af5e3e0cd2abf57e4f7c64d9884362be5686c2fb771906ba3d6a4e9",
+    "bytes": 359
+  },
+  {
+    "path": "spp/rr20-1/priority.raw",
+    "gzip": "spp/rr20-1/priority.raw.gz",
+    "sha256": "59ae060f2507c1d88a9146cec980e41ff0f774abd5a914aa92634eed225f7164",
+    "bytes": 559
+  },
+  {
+    "path": "spp/rr20-1/profile-pull.raw",
+    "gzip": "spp/rr20-1/profile-pull.raw.gz",
+    "sha256": "6fdab30f715f9f61ee0899beb3eeebba4eead435c94018b468a426328de33c9c",
+    "bytes": 1738
+  },
+  {
+    "path": "spp/rr20-1/stop.raw",
+    "gzip": "spp/rr20-1/stop.raw.gz",
+    "sha256": "95142c74623ae85c3b694aef2b8c425d5c208decda8e097be01775467e5bda5e",
+    "bytes": 64
+  },
+  {
+    "path": "spp/rr20-1/tasks.raw",
+    "gzip": "spp/rr20-1/tasks.raw.gz",
+    "sha256": "7724290888f4f2222e66a0c64c76ca8cd4aa618a0a087e55a605fbd7ae52891f",
+    "bytes": 9002
+  },
+  {
+    "path": "spp/rr20-2/affinity.raw",
+    "gzip": "spp/rr20-2/affinity.raw.gz",
+    "sha256": "8d1a16ce62f36f6399c530a1b0929af0164f4ad3508c914a734df06c5d9ebcea",
+    "bytes": 107
+  },
+  {
+    "path": "spp/rr20-2/cost-analysis.log",
+    "gzip": "spp/rr20-2/cost-analysis.log.gz",
+    "sha256": "5eff1ff378394795693191601ebf0c9d647eac1f1e13edda6a73c4cece4f8bf3",
+    "bytes": 1661
+  },
+  {
+    "path": "spp/rr20-2/cpu-analysis.log",
+    "gzip": "spp/rr20-2/cpu-analysis.log.gz",
+    "sha256": "227ff32f8812ed1e94f6bedb4c71327d8dc409719c7e4b0c37d0658c44236fd0",
+    "bytes": 1197
+  },
+  {
+    "path": "spp/rr20-2/cpu-idle.raw",
+    "gzip": "spp/rr20-2/cpu-idle.raw.gz",
+    "sha256": "0dbe82a1391367f2002dad7ff690aa974d7ccb0f6786999541178ec9b77ea307",
+    "bytes": 392
+  },
+  {
+    "path": "spp/rr20-2/cpu-sample.raw",
+    "gzip": "spp/rr20-2/cpu-sample.raw.gz",
+    "sha256": "f398f59be96d5e6e22dee255ed68587dba43c3a6c06de292f31862b623d740ab",
+    "bytes": 35
+  },
+  {
+    "path": "spp/rr20-2/final-log.raw",
+    "gzip": "spp/rr20-2/final-log.raw.gz",
+    "sha256": "744c7e04be5664bfc2631538fc1bb63dc61a9d2382ade124153fc0ae7ebc87a1",
+    "bytes": 3752
+  },
+  {
+    "path": "spp/rr20-2/fresh-pair.raw",
+    "gzip": "spp/rr20-2/fresh-pair.raw.gz",
+    "sha256": "42c26add66f34f837ad6fc004e3ede69c77202995c29368a2b8c209ce753c884",
+    "bytes": 5523
+  },
+  {
+    "path": "spp/rr20-2/host-rx.bin",
+    "gzip": "spp/rr20-2/host-rx.bin.gz",
+    "sha256": "ce9c3f6b1f29a24006ce46dc5573a1494784c9a08aa07f693b9d3d49a695c6cd",
+    "bytes": 8680320
+  },
+  {
+    "path": "spp/rr20-2/host-rx.json",
+    "gzip": "spp/rr20-2/host-rx.json.gz",
+    "sha256": "473c975e4539ee3593d3c95e62079d0bb448f252a5e5602f0f531d90ba8804ed",
+    "bytes": 422231
+  },
+  {
+    "path": "spp/rr20-2/init0.raw",
+    "gzip": "spp/rr20-2/init0.raw.gz",
+    "sha256": "60d5bbdcedc1e7d9f884253b3aa0d6fc06f89cf536d7eb6ba5ee0621866a1a9c",
+    "bytes": 1002
+  },
+  {
+    "path": "spp/rr20-2/launch0.raw",
+    "gzip": "spp/rr20-2/launch0.raw.gz",
+    "sha256": "25ce34ddff35235c12de5ec72ab3d84e1998e4995daa5ffc48b9b608803ad886",
+    "bytes": 39
+  },
+  {
+    "path": "spp/rr20-2/matrix-wrapper.txt",
+    "gzip": "spp/rr20-2/matrix-wrapper.txt.gz",
+    "sha256": "1839f4e3e821b14c6bbc53b237d3e8f3c23aafe8f227785862252728a6195adc",
+    "bytes": 357
+  },
+  {
+    "path": "spp/rr20-2/priority.raw",
+    "gzip": "spp/rr20-2/priority.raw.gz",
+    "sha256": "c0693d6630682f73dc6d3df70f2dfc13e29419088b2bc757b7803db57d86605e",
+    "bytes": 559
+  },
+  {
+    "path": "spp/rr20-2/profile-pull.raw",
+    "gzip": "spp/rr20-2/profile-pull.raw.gz",
+    "sha256": "3af49aa708f17ea9c267b69decb988fa8fa27348441358e74bd1f008380cf118",
+    "bytes": 1734
+  },
+  {
+    "path": "spp/rr20-2/stop.raw",
+    "gzip": "spp/rr20-2/stop.raw.gz",
+    "sha256": "52dba0841954751607356adae981ee4a69b2135a01af5d7c926594e4c36259ae",
+    "bytes": 64
+  },
+  {
+    "path": "spp/rr20-2/tasks.raw",
+    "gzip": "spp/rr20-2/tasks.raw.gz",
+    "sha256": "95650bf63e5e026c3e80c34d43ef1dc68fb421ab6fa3022063c688aebc4126cc",
+    "bytes": 9005
+  },
+  {
+    "path": "spp/rr20-3/affinity.raw",
+    "gzip": "spp/rr20-3/affinity.raw.gz",
+    "sha256": "6f82bdfb6342241aca4aa9bafc84c49e7d63ed102a4a97a9507097daf0e06c7d",
+    "bytes": 107
+  },
+  {
+    "path": "spp/rr20-3/cost-analysis.log",
+    "gzip": "spp/rr20-3/cost-analysis.log.gz",
+    "sha256": "62542450009c71805093a9e462029b1cf845a10bbabee2ce06470c4ee4bf63c7",
+    "bytes": 1610
+  },
+  {
+    "path": "spp/rr20-3/cpu-analysis.log",
+    "gzip": "spp/rr20-3/cpu-analysis.log.gz",
+    "sha256": "2fd3f9072d1884d288666298280ffef42e9bfee8dc9f94dbdf5b6396f927485c",
+    "bytes": 1199
+  },
+  {
+    "path": "spp/rr20-3/cpu-idle.raw",
+    "gzip": "spp/rr20-3/cpu-idle.raw.gz",
+    "sha256": "5d52f4ff2290ced9787b21324a08fd185754f2b383dee5bb2879183562c7fdc6",
+    "bytes": 394
+  },
+  {
+    "path": "spp/rr20-3/cpu-sample.raw",
+    "gzip": "spp/rr20-3/cpu-sample.raw.gz",
+    "sha256": "05a4307174ed792999709240b8290d9fcbdcb6461d57f2b519529325e5f1c1be",
+    "bytes": 35
+  },
+  {
+    "path": "spp/rr20-3/final-log.raw",
+    "gzip": "spp/rr20-3/final-log.raw.gz",
+    "sha256": "400cf03725559e01114e51e097ea04ff85878495d3a8aea8291ee7b21086d6ba",
+    "bytes": 3752
+  },
+  {
+    "path": "spp/rr20-3/fresh-pair.raw",
+    "gzip": "spp/rr20-3/fresh-pair.raw.gz",
+    "sha256": "57a6e0665bbaa4bab7ac2bcf7b275ee696639000c14944b4f6749dfd84c2d2cd",
+    "bytes": 7450
+  },
+  {
+    "path": "spp/rr20-3/host-rx.bin",
+    "gzip": "spp/rr20-3/host-rx.bin.gz",
+    "sha256": "61c5fe029909eb90abb3a386bfda46f536d910dbc32bbe705bac15e5acf0639b",
+    "bytes": 8613990
+  },
+  {
+    "path": "spp/rr20-3/host-rx.json",
+    "gzip": "spp/rr20-3/host-rx.json.gz",
+    "sha256": "9ff755c29f631bff87660ef6f9f65db6c14bafac373923e7641d71f7d59b7f97",
+    "bytes": 420694
+  },
+  {
+    "path": "spp/rr20-3/init0.raw",
+    "gzip": "spp/rr20-3/init0.raw.gz",
+    "sha256": "539e77150984b9abb991649dfaecb2b3322980000a306695ac8128b7be0b90b4",
+    "bytes": 1002
+  },
+  {
+    "path": "spp/rr20-3/launch0.raw",
+    "gzip": "spp/rr20-3/launch0.raw.gz",
+    "sha256": "3f012a81dd99181bd035c783277032e8416b2a88605fa223d74227994fa837a9",
+    "bytes": 39
+  },
+  {
+    "path": "spp/rr20-3/matrix-wrapper.txt",
+    "gzip": "spp/rr20-3/matrix-wrapper.txt.gz",
+    "sha256": "2b8846635c9f02fd7efa0a6eedcd45987279d24a5c6b4f28289d2f176d2b95ae",
+    "bytes": 358
+  },
+  {
+    "path": "spp/rr20-3/priority.raw",
+    "gzip": "spp/rr20-3/priority.raw.gz",
+    "sha256": "ec02cada20b59f5d0424683accddd9536975a0f5f1a0ecd31033c9898244d00f",
+    "bytes": 559
+  },
+  {
+    "path": "spp/rr20-3/profile-pull.raw",
+    "gzip": "spp/rr20-3/profile-pull.raw.gz",
+    "sha256": "182ca8b6201e9dcb6f8413a0b0ed3fa92912202b13081b36dee3d648f9a59c2c",
+    "bytes": 1438
+  },
+  {
+    "path": "spp/rr20-3/stop.raw",
+    "gzip": "spp/rr20-3/stop.raw.gz",
+    "sha256": "cf85c71c6562cb9152e4420e4e4f53cb5df4f4c2cab33ece847326fdd50a2325",
+    "bytes": 64
+  },
+  {
+    "path": "spp/rr20-3/tasks.raw",
+    "gzip": "spp/rr20-3/tasks.raw.gz",
+    "sha256": "f7e2cb8db7794355f857ad808bc9e25a6568f6d6f4ec11a2c5be64e68e95efff",
+    "bytes": 8864
+  },
+  {
+    "path": "spp/setup/binary-hashes.raw",
+    "gzip": "spp/setup/binary-hashes.raw.gz",
+    "sha256": "1093285af89cfce503789eb842cd848d6f44e1bda31ee6504ceb7f76ab93eed7",
+    "bytes": 230
+  },
+  {
+    "path": "spp/setup/boot.raw",
+    "gzip": "spp/setup/boot.raw.gz",
+    "sha256": "99521af07f2a3b78e952af1a8fb8777c384c216b4d95652c7d544d440c256125",
+    "bytes": 159325
+  },
+  {
+    "path": "spp/setup/bringup.raw",
+    "gzip": "spp/setup/bringup.raw.gz",
+    "sha256": "59cc7e13d13461d591b24ea836b48614a194b7baf86a7e1753b9b5fde4850ef8",
+    "bytes": 147
+  },
+  {
+    "path": "spp/setup/configuration.raw",
+    "gzip": "spp/setup/configuration.raw.gz",
+    "sha256": "aebe5f0528858ca1d8f9005807d3bf4c97db921efa7029a3eed0336675b5f3aa",
+    "bytes": 39
+  },
+  {
+    "path": "spp/setup/login.raw",
+    "gzip": "spp/setup/login.raw.gz",
+    "sha256": "4bf10daec7a31575971ba1f3093afa0e1c016d864bcd2a55fddd1fa5874a9566",
+    "bytes": 11
+  },
+  {
+    "path": "spp/setup/module-symbols.raw",
+    "gzip": "spp/setup/module-symbols.raw.gz",
+    "sha256": "b98f96ff413910d350960ed868eded897627db4893c506381bf0d24876b7473c",
+    "bytes": 81
+  },
+  {
+    "path": "spp/setup/overlay.raw",
+    "gzip": "spp/setup/overlay.raw.gz",
+    "sha256": "76ed6505f011ec55d561311480fe2a9d650272d0e5d47ec517903b4b3a164ec7",
+    "bytes": 39
+  },
+  {
+    "path": "spp/setup/probe-upload/upload.raw",
+    "gzip": "spp/setup/probe-upload/upload.raw.gz",
+    "sha256": "98426c7ad9093b280a5f740b57f7b1838beafa390935269d86ea87ddd3a4b244",
+    "bytes": 594
+  },
+  {
+    "path": "spp/setup/profiler-ready.raw",
+    "gzip": "spp/setup/profiler-ready.raw.gz",
+    "sha256": "30791f005b8008562a3bc9c22bbff88941b4d4483aff7d5ea18d2c44b4add9c5",
+    "bytes": 4939
+  },
+  {
+    "path": "spp/setup/reset.raw",
+    "gzip": "spp/setup/reset.raw.gz",
+    "sha256": "e1d7967e266c17f49e1aca816a6c1f011581fbfea2cb3cc96c5e97b710ab08f9",
+    "bytes": 361
+  },
+  {
+    "path": "spp/setup/shell.raw",
+    "gzip": "spp/setup/shell.raw.gz",
+    "sha256": "c121f4af13a1e40747d4e5231aec83a1c69c6fdbea4698d9631df13e958ef49a",
+    "bytes": 34
+  },
+  {
+    "path": "spp-matrix.log",
+    "gzip": "spp-matrix.log.gz",
+    "sha256": "4b394d6f764eb03663b3d04b97f29c97945cf45540961449b5561b9c4b938961",
+    "bytes": 1084
+  },
+  {
+    "path": "summary.log",
+    "gzip": "summary.log.gz",
+    "sha256": "cecea1aff346a83a8564a47dafa227cc7624c09f8c23fc1dca5d50a51665dc23",
+    "bytes": 5687
+  },
+  {
+    "path": "wifi.log",
+    "gzip": "wifi.log.gz",
+    "sha256": "3c82b02f8203915963abfa0629c233d20037e2ac3ef5ccab0985e8d2f7e96105",
+    "bytes": 42
+  }
+]

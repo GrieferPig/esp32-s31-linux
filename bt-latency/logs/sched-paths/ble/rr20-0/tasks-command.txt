@@ -1,0 +1,1 @@
+cat /proc/[0-9]*/stat; cat /sys/devices/platform/soc/soc:radio/radio_health

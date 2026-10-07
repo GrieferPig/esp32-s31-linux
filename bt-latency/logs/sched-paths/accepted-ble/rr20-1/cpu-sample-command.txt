@@ -1,0 +1,1 @@
+/tmp/cpu-idle-probe 30 > /tmp/cpu-idle-sample.txt

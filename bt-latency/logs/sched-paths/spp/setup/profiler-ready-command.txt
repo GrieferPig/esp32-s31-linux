@@ -1,0 +1,1 @@
+echo 0 > /proc/s31_cost; cat /proc/s31_cost

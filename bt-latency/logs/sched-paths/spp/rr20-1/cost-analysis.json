@@ -1,0 +1,1057 @@
+{
+  "enabled": true,
+  "windows": {
+    "0": {
+      "start": 166203163187,
+      "end": 196459786125,
+      "ns": 30256622938
+    },
+    "1": {
+      "start": 166203050625,
+      "end": 196459699750,
+      "ns": 30256649125
+    }
+  },
+  "capacity_ns": 60513272063,
+  "rows": [
+    {
+      "cpu": 0,
+      "actor": "other",
+      "category": "outside",
+      "ns": 30714571,
+      "entries": 0
+    },
+    {
+      "cpu": 0,
+      "actor": "other",
+      "category": "radio_payload",
+      "ns": 0,
+      "entries": 0
+    },
+    {
+      "cpu": 0,
+      "actor": "other",
+      "category": "radio_integration",
+      "ns": 0,
+      "entries": 0
+    },
+    {
+      "cpu": 0,
+      "actor": "other",
+      "category": "gate",
+      "ns": 0,
+      "entries": 0
+    },
+    {
+      "cpu": 0,
+      "actor": "other",
+      "category": "sync_wait",
+      "ns": 0,
+      "entries": 0
+    },
+    {
+      "cpu": 0,
+      "actor": "other",
+      "category": "sync_wake",
+      "ns": 0,
+      "entries": 0
+    },
+    {
+      "cpu": 0,
+      "actor": "other",
+      "category": "sync_critical",
+      "ns": 0,
+      "entries": 0
+    },
+    {
+      "cpu": 0,
+      "actor": "other",
+      "category": "radio_queue",
+      "ns": 117581304,
+      "entries": 2575
+    },
+    {
+      "cpu": 0,
+      "actor": "other",
+      "category": "scheduler",
+      "ns": 659336594,
+      "entries": 3030
+    },
+    {
+      "cpu": 0,
+      "actor": "other",
+      "category": "read",
+      "ns": 0,
+      "entries": 0
+    },
+    {
+      "cpu": 0,
+      "actor": "other",
+      "category": "write",
+      "ns": 0,
+      "entries": 0
+    },
+    {
+      "cpu": 0,
+      "actor": "other",
+      "category": "select_poll",
+      "ns": 0,
+      "entries": 0
+    },
+    {
+      "cpu": 0,
+      "actor": "other",
+      "category": "time",
+      "ns": 0,
+      "entries": 0
+    },
+    {
+      "cpu": 0,
+      "actor": "other",
+      "category": "other_syscall",
+      "ns": 0,
+      "entries": 0
+    },
+    {
+      "cpu": 0,
+      "actor": "other",
+      "category": "hardirq",
+      "ns": 1610414672,
+      "entries": 0
+    },
+    {
+      "cpu": 0,
+      "actor": "other",
+      "category": "softirq",
+      "ns": 134867443,
+      "entries": 0
+    },
+    {
+      "cpu": 0,
+      "actor": "other",
+      "category": "idle",
+      "ns": 5907659399,
+      "entries": 0
+    },
+    {
+      "cpu": 0,
+      "actor": "radio",
+      "category": "outside",
+      "ns": 0,
+      "entries": 0
+    },
+    {
+      "cpu": 0,
+      "actor": "radio",
+      "category": "radio_payload",
+      "ns": 10520755098,
+      "entries": 8003
+    },
+    {
+      "cpu": 0,
+      "actor": "radio",
+      "category": "radio_integration",
+      "ns": 2515290472,
+      "entries": 5298
+    },
+    {
+      "cpu": 0,
+      "actor": "radio",
+      "category": "gate",
+      "ns": 826280925,
+      "entries": 15310
+    },
+    {
+      "cpu": 0,
+      "actor": "radio",
+      "category": "sync_wait",
+      "ns": 544173070,
+      "entries": 4987
+    },
+    {
+      "cpu": 0,
+      "actor": "radio",
+      "category": "sync_wake",
+      "ns": 494313328,
+      "entries": 39139
+    },
+    {
+      "cpu": 0,
+      "actor": "radio",
+      "category": "sync_critical",
+      "ns": 1282113204,
+      "entries": 334168
+    },
+    {
+      "cpu": 0,
+      "actor": "radio",
+      "category": "radio_queue",
+      "ns": 341674280,
+      "entries": 9093
+    },
+    {
+      "cpu": 0,
+      "actor": "radio",
+      "category": "scheduler",
+      "ns": 2573293999,
+      "entries": 7796
+    },
+    {
+      "cpu": 0,
+      "actor": "radio",
+      "category": "read",
+      "ns": 0,
+      "entries": 0
+    },
+    {
+      "cpu": 0,
+      "actor": "radio",
+      "category": "write",
+      "ns": 0,
+      "entries": 0
+    },
+    {
+      "cpu": 0,
+      "actor": "radio",
+      "category": "select_poll",
+      "ns": 0,
+      "entries": 0
+    },
+    {
+      "cpu": 0,
+      "actor": "radio",
+      "category": "time",
+      "ns": 0,
+      "entries": 0
+    },
+    {
+      "cpu": 0,
+      "actor": "radio",
+      "category": "other_syscall",
+      "ns": 0,
+      "entries": 0
+    },
+    {
+      "cpu": 0,
+      "actor": "radio",
+      "category": "hardirq",
+      "ns": 2490587828,
+      "entries": 0
+    },
+    {
+      "cpu": 0,
+      "actor": "radio",
+      "category": "softirq",
+      "ns": 207566751,
+      "entries": 0
+    },
+    {
+      "cpu": 0,
+      "actor": "radio",
+      "category": "idle",
+      "ns": 0,
+      "entries": 0
+    },
+    {
+      "cpu": 0,
+      "actor": "btstack",
+      "category": "outside",
+      "ns": 0,
+      "entries": 0
+    },
+    {
+      "cpu": 0,
+      "actor": "btstack",
+      "category": "radio_payload",
+      "ns": 0,
+      "entries": 0
+    },
+    {
+      "cpu": 0,
+      "actor": "btstack",
+      "category": "radio_integration",
+      "ns": 0,
+      "entries": 0
+    },
+    {
+      "cpu": 0,
+      "actor": "btstack",
+      "category": "gate",
+      "ns": 0,
+      "entries": 0
+    },
+    {
+      "cpu": 0,
+      "actor": "btstack",
+      "category": "sync_wait",
+      "ns": 0,
+      "entries": 0
+    },
+    {
+      "cpu": 0,
+      "actor": "btstack",
+      "category": "sync_wake",
+      "ns": 0,
+      "entries": 0
+    },
+    {
+      "cpu": 0,
+      "actor": "btstack",
+      "category": "sync_critical",
+      "ns": 0,
+      "entries": 0
+    },
+    {
+      "cpu": 0,
+      "actor": "btstack",
+      "category": "radio_queue",
+      "ns": 0,
+      "entries": 0
+    },
+    {
+      "cpu": 0,
+      "actor": "btstack",
+      "category": "scheduler",
+      "ns": 0,
+      "entries": 0
+    },
+    {
+      "cpu": 0,
+      "actor": "btstack",
+      "category": "read",
+      "ns": 0,
+      "entries": 0
+    },
+    {
+      "cpu": 0,
+      "actor": "btstack",
+      "category": "write",
+      "ns": 0,
+      "entries": 0
+    },
+    {
+      "cpu": 0,
+      "actor": "btstack",
+      "category": "select_poll",
+      "ns": 0,
+      "entries": 0
+    },
+    {
+      "cpu": 0,
+      "actor": "btstack",
+      "category": "time",
+      "ns": 0,
+      "entries": 0
+    },
+    {
+      "cpu": 0,
+      "actor": "btstack",
+      "category": "other_syscall",
+      "ns": 0,
+      "entries": 0
+    },
+    {
+      "cpu": 0,
+      "actor": "btstack",
+      "category": "hardirq",
+      "ns": 0,
+      "entries": 0
+    },
+    {
+      "cpu": 0,
+      "actor": "btstack",
+      "category": "softirq",
+      "ns": 0,
+      "entries": 0
+    },
+    {
+      "cpu": 0,
+      "actor": "btstack",
+      "category": "idle",
+      "ns": 0,
+      "entries": 0
+    },
+    {
+      "cpu": 1,
+      "actor": "other",
+      "category": "outside",
+      "ns": 91011740,
+      "entries": 0
+    },
+    {
+      "cpu": 1,
+      "actor": "other",
+      "category": "radio_payload",
+      "ns": 0,
+      "entries": 0
+    },
+    {
+      "cpu": 1,
+      "actor": "other",
+      "category": "radio_integration",
+      "ns": 0,
+      "entries": 0
+    },
+    {
+      "cpu": 1,
+      "actor": "other",
+      "category": "gate",
+      "ns": 0,
+      "entries": 0
+    },
+    {
+      "cpu": 1,
+      "actor": "other",
+      "category": "sync_wait",
+      "ns": 0,
+      "entries": 0
+    },
+    {
+      "cpu": 1,
+      "actor": "other",
+      "category": "sync_wake",
+      "ns": 0,
+      "entries": 0
+    },
+    {
+      "cpu": 1,
+      "actor": "other",
+      "category": "sync_critical",
+      "ns": 0,
+      "entries": 0
+    },
+    {
+      "cpu": 1,
+      "actor": "other",
+      "category": "radio_queue",
+      "ns": 1472000,
+      "entries": 8
+    },
+    {
+      "cpu": 1,
+      "actor": "other",
+      "category": "scheduler",
+      "ns": 1374732240,
+      "entries": 5899
+    },
+    {
+      "cpu": 1,
+      "actor": "other",
+      "category": "read",
+      "ns": 0,
+      "entries": 0
+    },
+    {
+      "cpu": 1,
+      "actor": "other",
+      "category": "write",
+      "ns": 0,
+      "entries": 0
+    },
+    {
+      "cpu": 1,
+      "actor": "other",
+      "category": "select_poll",
+      "ns": 0,
+      "entries": 0
+    },
+    {
+      "cpu": 1,
+      "actor": "other",
+      "category": "time",
+      "ns": 0,
+      "entries": 0
+    },
+    {
+      "cpu": 1,
+      "actor": "other",
+      "category": "other_syscall",
+      "ns": 0,
+      "entries": 0
+    },
+    {
+      "cpu": 1,
+      "actor": "other",
+      "category": "hardirq",
+      "ns": 2043150277,
+      "entries": 0
+    },
+    {
+      "cpu": 1,
+      "actor": "other",
+      "category": "softirq",
+      "ns": 120551433,
+      "entries": 0
+    },
+    {
+      "cpu": 1,
+      "actor": "other",
+      "category": "idle",
+      "ns": 6371637501,
+      "entries": 0
+    },
+    {
+      "cpu": 1,
+      "actor": "radio",
+      "category": "outside",
+      "ns": 0,
+      "entries": 0
+    },
+    {
+      "cpu": 1,
+      "actor": "radio",
+      "category": "radio_payload",
+      "ns": 1035608613,
+      "entries": 6640
+    },
+    {
+      "cpu": 1,
+      "actor": "radio",
+      "category": "radio_integration",
+      "ns": 1719593500,
+      "entries": 6176
+    },
+    {
+      "cpu": 1,
+      "actor": "radio",
+      "category": "gate",
+      "ns": 360158339,
+      "entries": 6138
+    },
+    {
+      "cpu": 1,
+      "actor": "radio",
+      "category": "sync_wait",
+      "ns": 0,
+      "entries": 0
+    },
+    {
+      "cpu": 1,
+      "actor": "radio",
+      "category": "sync_wake",
+      "ns": 209974378,
+      "entries": 8291
+    },
+    {
+      "cpu": 1,
+      "actor": "radio",
+      "category": "sync_critical",
+      "ns": 301999820,
+      "entries": 32022
+    },
+    {
+      "cpu": 1,
+      "actor": "radio",
+      "category": "radio_queue",
+      "ns": 0,
+      "entries": 0
+    },
+    {
+      "cpu": 1,
+      "actor": "radio",
+      "category": "scheduler",
+      "ns": 1556216812,
+      "entries": 5189
+    },
+    {
+      "cpu": 1,
+      "actor": "radio",
+      "category": "read",
+      "ns": 0,
+      "entries": 0
+    },
+    {
+      "cpu": 1,
+      "actor": "radio",
+      "category": "write",
+      "ns": 0,
+      "entries": 0
+    },
+    {
+      "cpu": 1,
+      "actor": "radio",
+      "category": "select_poll",
+      "ns": 0,
+      "entries": 0
+    },
+    {
+      "cpu": 1,
+      "actor": "radio",
+      "category": "time",
+      "ns": 0,
+      "entries": 0
+    },
+    {
+      "cpu": 1,
+      "actor": "radio",
+      "category": "other_syscall",
+      "ns": 0,
+      "entries": 0
+    },
+    {
+      "cpu": 1,
+      "actor": "radio",
+      "category": "hardirq",
+      "ns": 502997431,
+      "entries": 0
+    },
+    {
+      "cpu": 1,
+      "actor": "radio",
+      "category": "softirq",
+      "ns": 74175198,
+      "entries": 0
+    },
+    {
+      "cpu": 1,
+      "actor": "radio",
+      "category": "idle",
+      "ns": 0,
+      "entries": 0
+    },
+    {
+      "cpu": 1,
+      "actor": "btstack",
+      "category": "outside",
+      "ns": 5635193662,
+      "entries": 0
+    },
+    {
+      "cpu": 1,
+      "actor": "btstack",
+      "category": "radio_payload",
+      "ns": 0,
+      "entries": 0
+    },
+    {
+      "cpu": 1,
+      "actor": "btstack",
+      "category": "radio_integration",
+      "ns": 0,
+      "entries": 0
+    },
+    {
+      "cpu": 1,
+      "actor": "btstack",
+      "category": "gate",
+      "ns": 0,
+      "entries": 0
+    },
+    {
+      "cpu": 1,
+      "actor": "btstack",
+      "category": "sync_wait",
+      "ns": 0,
+      "entries": 0
+    },
+    {
+      "cpu": 1,
+      "actor": "btstack",
+      "category": "sync_wake",
+      "ns": 0,
+      "entries": 0
+    },
+    {
+      "cpu": 1,
+      "actor": "btstack",
+      "category": "sync_critical",
+      "ns": 0,
+      "entries": 0
+    },
+    {
+      "cpu": 1,
+      "actor": "btstack",
+      "category": "radio_queue",
+      "ns": 213437109,
+      "entries": 6626
+    },
+    {
+      "cpu": 1,
+      "actor": "btstack",
+      "category": "scheduler",
+      "ns": 2463352614,
+      "entries": 7735
+    },
+    {
+      "cpu": 1,
+      "actor": "btstack",
+      "category": "read",
+      "ns": 543103464,
+      "entries": 5053
+    },
+    {
+      "cpu": 1,
+      "actor": "btstack",
+      "category": "write",
+      "ns": 1063983931,
+      "entries": 6626
+    },
+    {
+      "cpu": 1,
+      "actor": "btstack",
+      "category": "select_poll",
+      "ns": 2103443190,
+      "entries": 5053
+    },
+    {
+      "cpu": 1,
+      "actor": "btstack",
+      "category": "time",
+      "ns": 842937648,
+      "entries": 16897
+    },
+    {
+      "cpu": 1,
+      "actor": "btstack",
+      "category": "other_syscall",
+      "ns": 15536374,
+      "entries": 26
+    },
+    {
+      "cpu": 1,
+      "actor": "btstack",
+      "category": "hardirq",
+      "ns": 1419101545,
+      "entries": 0
+    },
+    {
+      "cpu": 1,
+      "actor": "btstack",
+      "category": "softirq",
+      "ns": 193280306,
+      "entries": 0
+    },
+    {
+      "cpu": 1,
+      "actor": "btstack",
+      "category": "idle",
+      "ns": 0,
+      "entries": 0
+    }
+  ],
+  "categories": [
+    {
+      "actor": "other",
+      "category": "idle",
+      "ns": 12279296900,
+      "total_capacity_pct": 20.291907017052555
+    },
+    {
+      "actor": "radio",
+      "category": "radio_payload",
+      "ns": 11556363711,
+      "total_capacity_pct": 19.097238204155843
+    },
+    {
+      "actor": "btstack",
+      "category": "outside",
+      "ns": 5635193662,
+      "total_capacity_pct": 9.312326816724163
+    },
+    {
+      "actor": "radio",
+      "category": "radio_integration",
+      "ns": 4234883972,
+      "total_capacity_pct": 6.998272986446821
+    },
+    {
+      "actor": "radio",
+      "category": "scheduler",
+      "ns": 4129510811,
+      "total_capacity_pct": 6.824140672315308
+    },
+    {
+      "actor": "other",
+      "category": "hardirq",
+      "ns": 3653564949,
+      "total_capacity_pct": 6.037625837182124
+    },
+    {
+      "actor": "radio",
+      "category": "hardirq",
+      "ns": 2993585259,
+      "total_capacity_pct": 4.946989572607141
+    },
+    {
+      "actor": "btstack",
+      "category": "scheduler",
+      "ns": 2463352614,
+      "total_capacity_pct": 4.070764197704296
+    },
+    {
+      "actor": "btstack",
+      "category": "select_poll",
+      "ns": 2103443190,
+      "total_capacity_pct": 3.476003062287093
+    },
+    {
+      "actor": "other",
+      "category": "scheduler",
+      "ns": 2034068834,
+      "total_capacity_pct": 3.361359854880006
+    },
+    {
+      "actor": "radio",
+      "category": "sync_critical",
+      "ns": 1584113024,
+      "total_capacity_pct": 2.61779436145973
+    },
+    {
+      "actor": "btstack",
+      "category": "hardirq",
+      "ns": 1419101545,
+      "total_capacity_pct": 2.3451079352023503
+    },
+    {
+      "actor": "radio",
+      "category": "gate",
+      "ns": 1186439264,
+      "total_capacity_pct": 1.9606265263012141
+    },
+    {
+      "actor": "btstack",
+      "category": "write",
+      "ns": 1063983931,
+      "total_capacity_pct": 1.7582654097638164
+    },
+    {
+      "actor": "btstack",
+      "category": "time",
+      "ns": 842937648,
+      "total_capacity_pct": 1.3929797865209186
+    },
+    {
+      "actor": "radio",
+      "category": "sync_wake",
+      "ns": 704287706,
+      "total_capacity_pct": 1.1638565920989536
+    },
+    {
+      "actor": "radio",
+      "category": "sync_wait",
+      "ns": 544173070,
+      "total_capacity_pct": 0.8992623460081034
+    },
+    {
+      "actor": "btstack",
+      "category": "read",
+      "ns": 543103464,
+      "total_capacity_pct": 0.8974947899604211
+    },
+    {
+      "actor": "radio",
+      "category": "radio_queue",
+      "ns": 341674280,
+      "total_capacity_pct": 0.5646270121441871
+    },
+    {
+      "actor": "radio",
+      "category": "softirq",
+      "ns": 281741949,
+      "total_capacity_pct": 0.4655870347031973
+    },
+    {
+      "actor": "other",
+      "category": "softirq",
+      "ns": 255418876,
+      "total_capacity_pct": 0.4220873657833028
+    },
+    {
+      "actor": "btstack",
+      "category": "radio_queue",
+      "ns": 213437109,
+      "total_capacity_pct": 0.3527112346160887
+    },
+    {
+      "actor": "btstack",
+      "category": "softirq",
+      "ns": 193280306,
+      "total_capacity_pct": 0.31940151211584966
+    },
+    {
+      "actor": "other",
+      "category": "outside",
+      "ns": 121726311,
+      "total_capacity_pct": 0.2011563857814059
+    },
+    {
+      "actor": "other",
+      "category": "radio_queue",
+      "ns": 119053304,
+      "total_capacity_pct": 0.1967391614124821
+    },
+    {
+      "actor": "btstack",
+      "category": "other_syscall",
+      "ns": 15536374,
+      "total_capacity_pct": 0.025674324772630333
+    },
+    {
+      "actor": "other",
+      "category": "radio_payload",
+      "ns": 0,
+      "total_capacity_pct": 0.0
+    },
+    {
+      "actor": "other",
+      "category": "radio_integration",
+      "ns": 0,
+      "total_capacity_pct": 0.0
+    },
+    {
+      "actor": "other",
+      "category": "gate",
+      "ns": 0,
+      "total_capacity_pct": 0.0
+    },
+    {
+      "actor": "other",
+      "category": "sync_wait",
+      "ns": 0,
+      "total_capacity_pct": 0.0
+    },
+    {
+      "actor": "other",
+      "category": "sync_wake",
+      "ns": 0,
+      "total_capacity_pct": 0.0
+    },
+    {
+      "actor": "other",
+      "category": "sync_critical",
+      "ns": 0,
+      "total_capacity_pct": 0.0
+    },
+    {
+      "actor": "other",
+      "category": "read",
+      "ns": 0,
+      "total_capacity_pct": 0.0
+    },
+    {
+      "actor": "other",
+      "category": "write",
+      "ns": 0,
+      "total_capacity_pct": 0.0
+    },
+    {
+      "actor": "other",
+      "category": "select_poll",
+      "ns": 0,
+      "total_capacity_pct": 0.0
+    },
+    {
+      "actor": "other",
+      "category": "time",
+      "ns": 0,
+      "total_capacity_pct": 0.0
+    },
+    {
+      "actor": "other",
+      "category": "other_syscall",
+      "ns": 0,
+      "total_capacity_pct": 0.0
+    },
+    {
+      "actor": "radio",
+      "category": "outside",
+      "ns": 0,
+      "total_capacity_pct": 0.0
+    },
+    {
+      "actor": "radio",
+      "category": "read",
+      "ns": 0,
+      "total_capacity_pct": 0.0
+    },
+    {
+      "actor": "radio",
+      "category": "write",
+      "ns": 0,
+      "total_capacity_pct": 0.0
+    },
+    {
+      "actor": "radio",
+      "category": "select_poll",
+      "ns": 0,
+      "total_capacity_pct": 0.0
+    },
+    {
+      "actor": "radio",
+      "category": "time",
+      "ns": 0,
+      "total_capacity_pct": 0.0
+    },
+    {
+      "actor": "radio",
+      "category": "other_syscall",
+      "ns": 0,
+      "total_capacity_pct": 0.0
+    },
+    {
+      "actor": "radio",
+      "category": "idle",
+      "ns": 0,
+      "total_capacity_pct": 0.0
+    },
+    {
+      "actor": "btstack",
+      "category": "radio_payload",
+      "ns": 0,
+      "total_capacity_pct": 0.0
+    },
+    {
+      "actor": "btstack",
+      "category": "radio_integration",
+      "ns": 0,
+      "total_capacity_pct": 0.0
+    },
+    {
+      "actor": "btstack",
+      "category": "gate",
+      "ns": 0,
+      "total_capacity_pct": 0.0
+    },
+    {
+      "actor": "btstack",
+      "category": "sync_wait",
+      "ns": 0,
+      "total_capacity_pct": 0.0
+    },
+    {
+      "actor": "btstack",
+      "category": "sync_wake",
+      "ns": 0,
+      "total_capacity_pct": 0.0
+    },
+    {
+      "actor": "btstack",
+      "category": "sync_critical",
+      "ns": 0,
+      "total_capacity_pct": 0.0
+    },
+    {
+      "actor": "btstack",
+      "category": "idle",
+      "ns": 0,
+      "total_capacity_pct": 0.0
+    }
+  ],
+  "events": {
+    "context_switch": 29305,
+    "worker_call": 5737,
+    "blob_pass": 5737,
+    "radio_queue": 18302,
+    "gate_enter": 5737,
+    "gate_leave": 5737,
+    "gate_suspend": 4987,
+    "gate_resume": 4987,
+    "sync_wait": 4987,
+    "sync_wake": 47430,
+    "deferred_isr": 5094,
+    "direct_isr": 2166,
+    "hardirq": 23760,
+    "softirq": 4686
+  },
+  "parse_errors": 0
+}

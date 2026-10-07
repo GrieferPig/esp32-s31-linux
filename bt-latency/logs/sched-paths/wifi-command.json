@@ -1,0 +1,6 @@
+[
+  "python3",
+  "-u",
+  "bt-latency/wifi_final_check.py",
+  "/home/grieferpig/esp32-s31-linux/bt-latency/logs/sched-paths/restored-wifi"
+]

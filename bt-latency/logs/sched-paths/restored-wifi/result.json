@@ -1,0 +1,7 @@
+{
+  "mode": "combo",
+  "observed_bss": 56,
+  "scan_pass": true,
+  "association": "not tested; no authorized AP",
+  "config": "volatile /tmp/cfg"
+}

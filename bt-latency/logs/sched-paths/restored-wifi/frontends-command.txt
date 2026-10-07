@@ -1,0 +1,1 @@
+cat /sys/module/esp32s31_radio/parameters/mode; ls -l /dev/s31-hci; ip link show wlan0; cat /sys/devices/platform/soc/soc:radio/radio_health; dmesg

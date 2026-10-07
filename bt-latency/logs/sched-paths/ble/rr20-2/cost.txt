@@ -1,0 +1,132 @@
+CPU 0 start=236898678000 end=267065924625 clock_errors=0 state_errors=0
+COST 0 other outside ns=74008306 entries=0
+COST 0 other radio_payload ns=0 entries=0
+COST 0 other radio_integration ns=0 entries=0
+COST 0 other gate ns=0 entries=0
+COST 0 other sync_wait ns=0 entries=0
+COST 0 other sync_wake ns=0 entries=0
+COST 0 other sync_critical ns=0 entries=0
+COST 0 other radio_queue ns=240309047 entries=3221
+COST 0 other scheduler ns=649556724 entries=2840
+COST 0 other read ns=0 entries=0
+COST 0 other write ns=0 entries=0
+COST 0 other select_poll ns=0 entries=0
+COST 0 other time ns=0 entries=0
+COST 0 other other_syscall ns=0 entries=0
+COST 0 other hardirq ns=1526379743 entries=0
+COST 0 other softirq ns=112447363 entries=0
+COST 0 other idle ns=4239252593 entries=0
+COST 0 radio outside ns=0 entries=0
+COST 0 radio radio_payload ns=12171586279 entries=13834
+COST 0 radio radio_integration ns=1988980623 entries=5352
+COST 0 radio gate ns=655783181 entries=15536
+COST 0 radio sync_wait ns=470294284 entries=4995
+COST 0 radio sync_wake ns=340742121 entries=19123
+COST 0 radio sync_critical ns=2170106011 entries=748306
+COST 0 radio radio_queue ns=233179528 entries=5320
+COST 0 radio scheduler ns=2039018475 entries=7983
+COST 0 radio read ns=0 entries=0
+COST 0 radio write ns=0 entries=0
+COST 0 radio select_poll ns=0 entries=0
+COST 0 radio time ns=0 entries=0
+COST 0 radio other_syscall ns=0 entries=0
+COST 0 radio hardirq ns=2978781681 entries=0
+COST 0 radio softirq ns=276820666 entries=0
+COST 0 radio idle ns=0 entries=0
+COST 0 btstack outside ns=0 entries=0
+COST 0 btstack radio_payload ns=0 entries=0
+COST 0 btstack radio_integration ns=0 entries=0
+COST 0 btstack gate ns=0 entries=0
+COST 0 btstack sync_wait ns=0 entries=0
+COST 0 btstack sync_wake ns=0 entries=0
+COST 0 btstack sync_critical ns=0 entries=0
+COST 0 btstack radio_queue ns=0 entries=0
+COST 0 btstack scheduler ns=0 entries=0
+COST 0 btstack read ns=0 entries=0
+COST 0 btstack write ns=0 entries=0
+COST 0 btstack select_poll ns=0 entries=0
+COST 0 btstack time ns=0 entries=0
+COST 0 btstack other_syscall ns=0 entries=0
+COST 0 btstack hardirq ns=0 entries=0
+COST 0 btstack softirq ns=0 entries=0
+COST 0 btstack idle ns=0 entries=0
+EVENT 0 context_switch count=10813
+EVENT 0 worker_call count=2676
+EVENT 0 blob_pass count=2676
+EVENT 0 radio_queue count=8541
+EVENT 0 gate_enter count=2676
+EVENT 0 gate_leave count=2870
+EVENT 0 gate_suspend count=4995
+EVENT 0 gate_resume count=4995
+EVENT 0 sync_wait count=4995
+EVENT 0 sync_wake count=19123
+EVENT 0 deferred_isr count=4144
+EVENT 0 direct_isr count=8586
+EVENT 0 hardirq count=20656
+EVENT 0 softirq count=2097
+CPU 1 start=236898587750 end=267065990125 clock_errors=0 state_errors=0
+COST 1 other outside ns=63628690 entries=0
+COST 1 other radio_payload ns=0 entries=0
+COST 1 other radio_integration ns=0 entries=0
+COST 1 other gate ns=0 entries=0
+COST 1 other sync_wait ns=0 entries=0
+COST 1 other sync_wake ns=0 entries=0
+COST 1 other sync_critical ns=0 entries=0
+COST 1 other radio_queue ns=328750 entries=1
+COST 1 other scheduler ns=997408848 entries=5495
+COST 1 other read ns=0 entries=0
+COST 1 other write ns=0 entries=0
+COST 1 other select_poll ns=0 entries=0
+COST 1 other time ns=0 entries=0
+COST 1 other other_syscall ns=0 entries=0
+COST 1 other hardirq ns=2167621338 entries=0
+COST 1 other softirq ns=236495361 entries=0
+COST 1 other idle ns=16117691402 entries=0
+COST 1 radio outside ns=0 entries=0
+COST 1 radio radio_payload ns=794689498 entries=4224
+COST 1 radio radio_integration ns=1838491787 entries=7598
+COST 1 radio gate ns=472479953 entries=7403
+COST 1 radio sync_wait ns=0 entries=0
+COST 1 radio sync_wake ns=204552107 entries=3217
+COST 1 radio sync_critical ns=193452423 entries=27878
+COST 1 radio radio_queue ns=26188 entries=1
+COST 1 radio scheduler ns=1364650644 entries=5241
+COST 1 radio read ns=0 entries=0
+COST 1 radio write ns=0 entries=0
+COST 1 radio select_poll ns=0 entries=0
+COST 1 radio time ns=0 entries=0
+COST 1 radio other_syscall ns=0 entries=0
+COST 1 radio hardirq ns=433036500 entries=0
+COST 1 radio softirq ns=71208302 entries=0
+COST 1 radio idle ns=0 entries=0
+COST 1 btstack outside ns=1952716825 entries=0
+COST 1 btstack radio_payload ns=0 entries=0
+COST 1 btstack radio_integration ns=0 entries=0
+COST 1 btstack gate ns=0 entries=0
+COST 1 btstack sync_wait ns=0 entries=0
+COST 1 btstack sync_wake ns=0 entries=0
+COST 1 btstack sync_critical ns=0 entries=0
+COST 1 btstack radio_queue ns=67945303 entries=1988
+COST 1 btstack scheduler ns=1071415484 entries=3545
+COST 1 btstack read ns=223005083 entries=1810
+COST 1 btstack write ns=237708064 entries=1988
+COST 1 btstack select_poll ns=942014105 entries=1809
+COST 1 btstack time ns=243984488 entries=5607
+COST 1 btstack other_syscall ns=5322312 entries=8
+COST 1 btstack hardirq ns=406678304 entries=0
+COST 1 btstack softirq ns=60850616 entries=0
+COST 1 btstack idle ns=0 entries=0
+EVENT 1 context_switch count=13563
+EVENT 1 worker_call count=3799
+EVENT 1 blob_pass count=3799
+EVENT 1 radio_queue count=1990
+EVENT 1 gate_enter count=3799
+EVENT 1 gate_leave count=3604
+EVENT 1 gate_suspend count=0
+EVENT 1 gate_resume count=0
+EVENT 1 sync_wait count=0
+EVENT 1 sync_wake count=3217
+EVENT 1 deferred_isr count=2587
+EVENT 1 direct_isr count=0
+EVENT 1 hardirq count=8856
+EVENT 1 softirq count=2699

@@ -1,0 +1,1 @@
+echo 1 > /proc/s31_cost; echo 0 > /proc/s31_cost; /tmp/cpu-idle-probe 30 > /tmp/cpu-idle-sample.txt; echo 0 > /proc/s31_cost; cat /proc/s31_cost > /tmp/s31-cost.txt
