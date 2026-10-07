@@ -1,0 +1,1 @@
+for f in /sys/module/esp32s31_radio/parameters/bt*; do echo "$f"; cat "$f"; done
