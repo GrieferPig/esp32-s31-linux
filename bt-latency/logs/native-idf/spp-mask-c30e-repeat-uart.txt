@@ -1,0 +1,20 @@
+W (258268) BT_HCI: hcif conn complete: hdl 0x801, st 0x0
+I (258268) SPP_ACCEPTOR_DEMO: event: 16
+I (258947) SPP_ACCEPTOR_DEMO: authentication success: BasedSurface bda:[f0:6e:0b:d8:ce:45]
+W (263149) BT_HCI: hcif disc complete: hdl 0x801, rsn 0x13 dev_find 1
+I (263150) SPP_ACCEPTOR_DEMO: event: 17
+W (264491) BT_HCI: hcif conn complete: hdl 0x802, st 0x0
+I (264492) SPP_ACCEPTOR_DEMO: event: 16
+W (264657) BT_APPL: new conn_srvc id:26, app_id:255
+I (264658) SPP_ACCEPTOR_DEMO: ESP_SPP_SRV_OPEN_EVT status:0 handle:385, rem_bda:[f0:6e:0b:d8:ce:45]
+I (264679) SPP_ACCEPTOR_DEMO: BENCH packet_mask=0xc30e request=ESP_OK
+I (264680) SPP_ACCEPTOR_DEMO: BENCH frame_bytes=990
+I (264683) SPP_ACCEPTOR_DEMO: BENCH packet_type status=0 mask=0xc30e
+W (304674) BT_RFCOMM: port_rfc_closed RFCOMM connection in server:1 state 2 closed: Closed (res: 19)
+I (304677) SPP_ACCEPTOR_DEMO: BENCH completed_frames=8916 partial_writes=0
+I (304679) SPP_ACCEPTOR_DEMO: ESP_SPP_CLOSE_EVT status:0 handle:385 close_by_remote:1
+E (304686) BT_BTC: btc_spp_write unable to find RFCOMM slot!
+W (304759) BT_RFCOMM: rfc_find_lcid_mcb LCID reused LCID:0x41 current:0x0
+W (304760) BT_RFCOMM: RFCOMM_DisconnectInd LCID:0x41
+W (306869) BT_HCI: hcif disc complete: hdl 0x802, rsn 0x13 dev_find 1
+I (306870) SPP_ACCEPTOR_DEMO: event: 17

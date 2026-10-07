@@ -70,9 +70,11 @@ static bool stream_running, stream_pending, stream_congested;
 static unsigned stream_offset, partial_writes;
 static uint32_t stream_seq;
 static uint32_t stream_handle;
+static esp_bd_addr_t stream_peer;
+static bool stream_wait_packet_type;
 static void stream_send(uint32_t handle)
 {
-    if (!stream_running || stream_pending || stream_congested) return;
+    if (!stream_running || stream_pending || stream_congested || stream_wait_packet_type) return;
     uint32_t seq = stream_seq;
     if (stream_offset == 0) {
         for (unsigned k = 0; k < 4; k++) stream_data[k] = seq >> (8 * k);
@@ -126,11 +128,21 @@ static void esp_spp_cb(esp_spp_cb_event_t event, esp_spp_cb_param_t *param)
         break;
     case ESP_SPP_DATA_IND_EVT:
         if (!stream_running && param->data_ind.handle == stream_handle &&
-            param->data_ind.len == 5 && memcmp(param->data_ind.data, "S31", 3) == 0) {
+            (param->data_ind.len == 5 || param->data_ind.len == 7) && memcmp(param->data_ind.data, "S31", 3) == 0) {
             uint16_t length = param->data_ind.data[3] | (param->data_ind.data[4] << 8);
             if (length >= 20 && length <= sizeof(stream_data)) {
                 stream_length = length;
                 stream_running = true;
+                if (param->data_ind.len == 7) {
+                    uint16_t mask = param->data_ind.data[5] | (param->data_ind.data[6] << 8);
+                    stream_wait_packet_type = true;
+                    esp_err_t err = esp_bt_gap_set_acl_pkt_types(stream_peer, mask);
+                    ESP_LOGI(SPP_TAG, "BENCH packet_mask=0x%04x request=%s", mask, esp_err_to_name(err));
+                    if (err != ESP_OK) {
+                        stream_running = false;
+                        stream_wait_packet_type = false;
+                    }
+                }
                 ESP_LOGI(SPP_TAG, "BENCH frame_bytes=%u", stream_length);
                 stream_send(stream_handle);
             }
@@ -184,6 +196,8 @@ static void esp_spp_cb(esp_spp_cb_event_t event, esp_spp_cb_param_t *param)
     case ESP_SPP_SRV_OPEN_EVT:
         if (param->srv_open.status == ESP_SPP_SUCCESS) {
             stream_handle = param->srv_open.handle;
+            memcpy(stream_peer, param->srv_open.rem_bda, sizeof(stream_peer));
+            stream_wait_packet_type = false;
             stream_seq = 0;
             stream_offset = partial_writes = 0;
             stream_pending = stream_congested = false;
@@ -209,6 +223,15 @@ void esp_bt_gap_cb(esp_bt_gap_cb_event_t event, esp_bt_gap_cb_param_t *param)
     char bda_str[18] = {0};
 
     switch (event) {
+    case ESP_BT_GAP_ACL_PKT_TYPE_CHANGED_EVT:
+        ESP_LOGI(SPP_TAG, "BENCH packet_type status=%d mask=0x%04x",
+                 param->set_acl_pkt_types.status, param->set_acl_pkt_types.pkt_types);
+        if (stream_wait_packet_type && !memcmp(stream_peer, param->set_acl_pkt_types.bda, sizeof(stream_peer))) {
+            stream_wait_packet_type = false;
+            if (param->set_acl_pkt_types.status == ESP_BT_STATUS_SUCCESS) stream_send(stream_handle);
+            else stream_running = false;
+        }
+        break;
     case ESP_BT_GAP_AUTH_CMPL_EVT:{
         if (param->auth_cmpl.stat == ESP_BT_STATUS_SUCCESS) {
             ESP_LOGI(SPP_TAG, "authentication success: %s bda:[%s]", param->auth_cmpl.device_name,

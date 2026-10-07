@@ -1,0 +1,167 @@
+Waiting to connect to bluetoothd...
+[0;94m[bluetoothctl]> [0m        
+
+[[0;92mNEW[0m] Media /org/bluez/hci0
+[0;94m[bluetoothctl]> [0m
+
+	SupportedUUIDs: 0000110a-0000-1000-8000-00805f9b34fb
+[0;94m[bluetoothctl]> [0m
+
+	SupportedUUIDs: 0000110b-0000-1000-8000-00805f9b34fb
+[0;94m[bluetoothctl]> [0m
+
+Agent registered
+[0;94m[bluetoothctl]> [0m
+
+[[0;93mCHG[0m] Controller F0:6E:0B:D8:CE:45 Pairable: yes
+[0;94m[bluetoothctl]> [0m
+
+hci0 new_settings: powered bondable ssp br/edr le secure-conn
+[0;94m[bluetoothctl]> [0magent on
+Agent is already registered
+[0;94m[bluetoothctl]> [0mdefault-agent
+[0;94m[bluetoothctl]> [0m
+
+Default agent request successful
+[0;94m[bluetoothctl]> [0mremove 30:ED:A0:F3:D4:AD
+[0;94m[bluetoothctl]> [0m
+
+[[0;91mDEL[0m] Device 30:ED:A0:F3:D4:AD S31 Native SPP
+[0;94m[bluetoothctl]> [0m
+
+Device has been removed
+[0;94m[bluetoothctl]> [0mpower off
+[0;94m[bluetoothctl]> [0m
+
+[[0;93mCHG[0m] Controller F0:6E:0B:D8:CE:45 PowerState: on-disabling
+[0;94m[bluetoothctl]> [0m
+
+hci0 class of device changed: 0x000000
+[0;94m[bluetoothctl]> [0m
+
+hci0 new_settings: bondable ssp br/edr le secure-conn
+[0;94m[bluetoothctl]> [0m
+
+Changing power off succeeded
+[0;94m[bluetoothctl]> [0m
+
+[[0;93mCHG[0m] Controller F0:6E:0B:D8:CE:45 PowerState: off
+[0;94m[bluetoothctl]> [0m
+
+[[0;93mCHG[0m] Controller F0:6E:0B:D8:CE:45 Powered: no
+[0;94m[bluetoothctl]> [0m
+
+[[0;93mCHG[0m] Controller F0:6E:0B:D8:CE:45 Discovering: no
+[0;94m[bluetoothctl]> [0m
+
+[[0;93mCHG[0m] Controller F0:6E:0B:D8:CE:45 Class: 0x00000000 (0)
+[0;94m[bluetoothctl]> [0mpower on
+[0;94m[bluetoothctl]> [0m
+
+[[0;93mCHG[0m] Controller F0:6E:0B:D8:CE:45 PowerState: off-enabling
+[0;94m[bluetoothctl]> [0m
+
+hci0 class of device changed: 0x6c010c
+[0;94m[bluetoothctl]> [0m
+
+[[0;93mCHG[0m] Controller F0:6E:0B:D8:CE:45 Class: 0x006c010c (7078156)
+[0;94m[bluetoothctl]> [0m
+
+hci0 new_settings: powered bondable ssp br/edr le secure-conn
+[0;94m[bluetoothctl]> [0m
+
+Changing power on succeeded
+[0;94m[bluetoothctl]> [0m
+
+[[0;93mCHG[0m] Controller F0:6E:0B:D8:CE:45 PowerState: on
+[0;94m[bluetoothctl]> [0m
+
+[[0;93mCHG[0m] Controller F0:6E:0B:D8:CE:45 Powered: yes
+[0;94m[bluetoothctl]> [0mscan bredr
+[0;94m[bluetoothctl]> [0m
+
+SetDiscoveryFilter success
+[0;94m[bluetoothctl]> [0m
+
+Discovery started
+[0;94m[bluetoothctl]> [0m
+
+[[0;93mCHG[0m] Controller F0:6E:0B:D8:CE:45 Discovering: yes
+[0;94m[bluetoothctl]> [0m
+
+[[0;92mNEW[0m] Device 30:ED:A0:F3:D4:AD S31 Native SPP
+[0;94m[bluetoothctl]> [0m
+
+[[0;92mNEW[0m] Device AC:F2:3C:33:62:7C MDIZZLE524
+[0;94m[bluetoothctl]> [0m
+
+[[0;93mCHG[0m] Device 30:ED:A0:F3:D4:AD RSSI: 0xffffffdb (-37)
+[0;94m[bluetoothctl]> [0m
+
+[[0;93mCHG[0m] Device AC:F2:3C:33:62:7C RSSI: 0xffffffa0 (-96)
+[0;94m[bluetoothctl]> [0m
+
+[[0;93mCHG[0m] Device 30:ED:A0:F3:D4:AD RSSI: 0xffffffd9 (-39)
+[0;94m[bluetoothctl]> [0m
+
+[[0;93mCHG[0m] Device 30:ED:A0:F3:D4:AD RSSI: 0xffffffdb (-37)
+[0;94m[bluetoothctl]> [0m
+
+[[0;93mCHG[0m] Device 30:ED:A0:F3:D4:AD RSSI: 0xffffffd8 (-40)
+[0;94m[bluetoothctl]> [0m
+
+[[0;93mCHG[0m] Device 30:ED:A0:F3:D4:AD RSSI: 0xffffffda (-38)
+[0;94m[bluetoothctl]> [0m
+
+[[0;93mCHG[0m] Device 30:ED:A0:F3:D4:AD RSSI: 0xffffffd9 (-39)
+[0;94m[bluetoothctl]> [0m
+
+[[0;93mCHG[0m] Device 30:ED:A0:F3:D4:AD RSSI: 0xffffffdb (-37)
+[0;94m[bluetoothctl]> [0mpair 30:ED:A0:F3:D4:AD
+Attempting to pair with 30:ED:A0:F3:D4:AD
+[0;94m[bluetoothctl]> [0m
+[0;94m[S31 Native SPP]> [0m
+
+[[0;93mCHG[0m] Device 30:ED:A0:F3:D4:AD Connected: yes
+[0;94m[S31 Native SPP]> [0m
+
+[[0;93mCHG[0m] Device 30:ED:A0:F3:D4:AD Bonded: yes
+[0;94m[S31 Native SPP]> [0m
+
+[[0;93mCHG[0m] Device 30:ED:A0:F3:D4:AD UUIDs: 00001101-0000-1000-8000-00805f9b34fb
+[0;94m[S31 Native SPP]> [0m
+
+[[0;93mCHG[0m] Device 30:ED:A0:F3:D4:AD ServicesResolved: yes
+[0;94m[S31 Native SPP]> [0m
+
+[[0;93mCHG[0m] Device 30:ED:A0:F3:D4:AD Paired: yes
+[0;94m[S31 Native SPP]> [0m
+
+Pairing successful
+[0;94m[S31 Native SPP]> [0m
+
+[[0;93mCHG[0m] Device 30:ED:A0:F3:D4:AD ServicesResolved: no
+[0;94m[S31 Native SPP]> [0m
+
+[SIGNAL] org.bluez.Device1.Disconnected org.bluez.Reason.Local Connection terminated by local host
+[0;94m[S31 Native SPP]> [0m
+[0;94m[bluetoothctl]> [0m
+
+[[0;93mCHG[0m] Device 30:ED:A0:F3:D4:AD Connected: no
+[0;94m[bluetoothctl]> [0mscan off
+[0;94m[bluetoothctl]> [0m
+
+[[0;93mCHG[0m] Device AC:F2:3C:33:62:7C TxPower is nil
+[0;94m[bluetoothctl]> [0m
+
+[[0;93mCHG[0m] Device AC:F2:3C:33:62:7C RSSI is nil
+[0;94m[bluetoothctl]> [0m
+
+[[0;93mCHG[0m] Device 30:ED:A0:F3:D4:AD RSSI is nil
+[0;94m[bluetoothctl]> [0m
+
+[[0;93mCHG[0m] Controller F0:6E:0B:D8:CE:45 Discovering: no
+[0;94m[bluetoothctl]> [0m
+
+Discovery stopped
+[0;94m[bluetoothctl]> [0m

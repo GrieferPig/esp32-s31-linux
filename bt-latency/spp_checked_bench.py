@@ -7,7 +7,10 @@ frame_size=int(os.environ.get('S31_SPP_FRAME_SIZE','1012'))
 sock=socket.socket(socket.AF_BLUETOOTH,socket.SOCK_STREAM,socket.BTPROTO_RFCOMM)
 sock.settimeout(15);t=time.monotonic();sock.connect((addr,ch));print(f'connected {time.monotonic()-t:.6f}s',flush=True)
 if os.environ.get('S31_SPP_START_CONTROL'):
- sock.sendall(b'S31'+frame_size.to_bytes(2,'little'))
+ control=b'S31'+frame_size.to_bytes(2,'little')
+ if os.environ.get('S31_SPP_PACKET_MASK'):
+  control+=int(os.environ['S31_SPP_PACKET_MASK'],0).to_bytes(2,'little')
+ sock.sendall(control)
 sock.setblocking(False);start=time.monotonic();deadline=start+seconds
 raw=bytearray();chunks=[];reason='deadline'
 while time.monotonic()<deadline:
