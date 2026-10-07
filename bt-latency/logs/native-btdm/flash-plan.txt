@@ -1,0 +1,31 @@
+[
+  {
+    "offset": "0x2000",
+    "file": "/home/grieferpig/esp32-s31-linux/bt-latency/logs/native-btdm/project/build/bootloader/bootloader.bin",
+    "size": 21344,
+    "erase_end": "0x8000",
+    "sha256": "edbe262f79e1b2572322cb3ff2fc28645ddaff5b7c0f52b5f74f9cd125b11537"
+  },
+  {
+    "offset": "0x10000",
+    "file": "/home/grieferpig/esp32-s31-linux/bt-latency/logs/native-btdm/project/build/partition_table/partition-table.bin",
+    "size": 3072,
+    "erase_end": "0x11000",
+    "sha256": "e6e4113cfdabc662f8f59f63b68e5997f08ccbae19db411cdf4b0210b3c412a8"
+  },
+  {
+    "offset": "0x11000",
+    "file": "/home/grieferpig/esp32-s31-linux/bt-latency/logs/native-btdm/project/build/benchmark-nvs-empty.bin",
+    "size": 24576,
+    "erase_end": "0x17000",
+    "sha256": "1df8949b2e345ab8c00cb81fb6b83686e20a4080f969e5cd8b8d520a07cdaba2"
+  },
+  {
+    "offset": "0x20000",
+    "file": "/home/grieferpig/esp32-s31-linux/bt-latency/logs/native-btdm/project/build/bt_spp_acceptor_demo.bin",
+    "size": 1300688,
+    "erase_end": "0x15e000",
+    "sha256": "29360d936dc11225937fb13bee75b02f0ec34ca3bf20cd402a4c7e49afad110a"
+  }
+]
+COMMAND ["/home/grieferpig/.espressif/python_env/idf6.2_py3.13_env/bin/python", "-m", "esptool", "--chip", "esp32s31", "--port", "/dev/ttyUSB0", "--baud", "921600", "--no-stub", "write-flash", "--flash-mode", "dio", "--flash-size", "16MB", "--flash-freq", "80m", "0x2000", "/home/grieferpig/esp32-s31-linux/bt-latency/logs/native-btdm/project/build/bootloader/bootloader.bin", "0x10000", "/home/grieferpig/esp32-s31-linux/bt-latency/logs/native-btdm/project/build/partition_table/partition-table.bin", "0x11000", "/home/grieferpig/esp32-s31-linux/bt-latency/logs/native-btdm/project/build/benchmark-nvs-empty.bin", "0x20000", "/home/grieferpig/esp32-s31-linux/bt-latency/logs/native-btdm/project/build/bt_spp_acceptor_demo.bin"]

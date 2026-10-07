@@ -1,0 +1,10 @@
+[
+  "/home/grieferpig/.espressif/python_env/idf6.2_py3.13_env/bin/python",
+  "/home/grieferpig/esp32-s31-linux/bt-latency/native-idf/flash_native.py",
+  "spp",
+  "--build-dir",
+  "/home/grieferpig/esp32-s31-linux/bt-latency/logs/native-btdm/project/build",
+  "--log-dir",
+  "/home/grieferpig/esp32-s31-linux/bt-latency/logs/native-btdm",
+  "--execute"
+]

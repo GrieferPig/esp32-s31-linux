@@ -1,0 +1,9 @@
+{
+  "source": "/home/grieferpig/esp32-s31-linux/bt-latency/native-idf/spp",
+  "changes": [
+    "Classic-only to BTDM Kconfig",
+    "retain BLE controller memory",
+    "enable BTDM mode"
+  ],
+  "target_unchanged_KiBs": 214
+}

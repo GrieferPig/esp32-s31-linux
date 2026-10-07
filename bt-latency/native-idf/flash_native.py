@@ -8,8 +8,10 @@ ap.add_argument('kind',choices=['ble','spp'])
 ap.add_argument('--port',default='/dev/ttyUSB0')
 ap.add_argument('--baud',default='921600')
 ap.add_argument('--execute',action='store_true')
+ap.add_argument('--build-dir',type=Path,help='Explicit matched build directory for a control variant')
+ap.add_argument('--log-dir',type=Path,help='Evidence directory; defaults to logs/native-idf')
 a=ap.parse_args()
-build=(root/a.kind/'build').resolve()
+build=(a.build_dir or root/a.kind/'build').resolve()
 args=json.loads((build/'flasher_args.json').read_text())
 files={int(offset,0):(build/path).resolve() for offset,path in args['flash_files'].items()}
 assert set(files)=={0x2000,0x10000,0x20000},files
@@ -31,7 +33,8 @@ for entry in table:
  assert 0x11000<=entry.offset and entry.offset+entry.size<=0x1ee000,(entry.name,entry.offset,entry.size)
  assert entry.name in ['nvs','factory'],entry.name
 print(json.dumps(records,indent=2),flush=True)
-log=root.parent/'logs/native-idf'
+log=a.log_dir or root.parent/'logs/native-idf'
+log.mkdir(parents=True,exist_ok=True)
 (log/f'{a.kind}-flash-manifest.json').write_text(json.dumps(records,indent=2))
 base=[sys.executable,'-m','esptool','--chip','esp32s31','--port',a.port,'--baud',a.baud,'--no-stub']
 argv=base+['write-flash','--flash-mode','dio','--flash-size','16MB','--flash-freq','80m']

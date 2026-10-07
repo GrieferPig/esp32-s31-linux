@@ -1,0 +1,2 @@
+patching file main/main.c
+patching file sdkconfig.defaults

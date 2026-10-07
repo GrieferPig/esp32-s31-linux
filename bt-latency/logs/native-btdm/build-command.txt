@@ -1,0 +1,3 @@
+. /home/grieferpig/esp-idf/export.sh
+cd /home/grieferpig/esp32-s31-linux/bt-latency/logs/native-btdm/project
+idf.py --preview build
