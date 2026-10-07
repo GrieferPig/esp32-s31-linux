@@ -1,0 +1,2 @@
+patching file platform/linux/hci_transport_linux.c
+patching file platform/posix/btstack_run_loop_posix.c

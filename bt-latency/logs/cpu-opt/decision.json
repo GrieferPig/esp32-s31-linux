@@ -1,0 +1,33 @@
+{
+  "decision": "reject and revert",
+  "reason": "CPU change tracks throughput variation; controlled BLE repeat has effectively unchanged CPU per KiB. No reliable useful CPU reduction demonstrated.",
+  "validated_runs": 16,
+  "groups": {
+    "ble-repeat/base": {
+      "n": 2,
+      "cpu_pct_mean": 68.03841634655842,
+      "host_KiBs_mean": 31.922357931293096,
+      "approx_CPU_ms_per_KiB_mean": 42.62500006430878
+    },
+    "ble-repeat/tx4": {
+      "n": 2,
+      "cpu_pct_mean": 67.90513362327943,
+      "host_KiBs_mean": 31.86187454249323,
+      "approx_CPU_ms_per_KiB_mean": 42.62463834161375
+    },
+    "spp-screen/base": {
+      "n": 2,
+      "cpu_pct_mean": 80.32760407305038,
+      "host_KiBs_mean": 214.3379702696879,
+      "approx_CPU_ms_per_KiB_mean": 7.495418460300007
+    },
+    "spp-screen/tx4": {
+      "n": 1,
+      "cpu_pct_mean": 79.58826820968918,
+      "host_KiBs_mean": 212.54996600312512,
+      "approx_CPU_ms_per_KiB_mean": 7.488899641463033
+    }
+  },
+  "production_performance_changes_retained": false,
+  "accepted_dist": "e168e8c0f293a4d4"
+}

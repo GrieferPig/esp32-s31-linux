@@ -1,0 +1,15 @@
+{
+  "argv": [
+    "python3",
+    "/home/grieferpig/esp32-s31-linux/bt-latency/fresh_fd_run.py",
+    "bt-latency/logs/cpu-opt/ble-repeat/tx4-2"
+  ],
+  "platform": "linux",
+  "kind": "ble",
+  "env": {
+    "S31_CPU_PROTOCOL": "ble",
+    "S31_BOARD_STATS": "0",
+    "S31_SPP_FRAME_SIZE": "990",
+    "S31_STREAM_STARTED_FILE": "bt-latency/logs/cpu-opt/ble-repeat/tx4-2/stream-start.json"
+  }
+}

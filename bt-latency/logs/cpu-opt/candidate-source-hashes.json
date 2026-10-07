@@ -1,0 +1,8 @@
+{
+  "esp32s31-radio-smode.c": "b38acd4fcbce724ef9fd8e0b7a6c9388abcd52546e7619b4401a6c4cedf5f315",
+  "hci_esp32s31.c": "f03b19ab7ad649322d4a45841ea4ea329056cca6b4cded9bf994cd55224c0512",
+  "esp32s31-radio.h": "d57abf58c2033bbf4e0ef053ba0cc470ae16d4052892cc39c776f45d5f2e5d49",
+  "hci_transport_linux.c": "bcd36fda57de59d4e8d9f35f475ead826955ed1432f3cc8df841ee552acadf2e",
+  "btstack_run_loop_posix.c": "b8377c488c7ab9d7499313028195a63d1aa84e734236e5838e6f4d48ad8c1a30",
+  "0038-linux-batched-tx-experiment.patch": "c58f808702c8cd9388e18b46a6757707a18f19b8d1348d1e45064306e4e09774"
+}

@@ -1,0 +1,1 @@
+echo 1 > /sys/module/esp32s31_radio/parameters/bt_worker_policy_cache; cat /sys/module/esp32s31_radio/parameters/bt_worker_policy_cache

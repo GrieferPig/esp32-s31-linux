@@ -1,0 +1,12 @@
+{
+  "accepted_dist": "e168e8c0f293a4d4",
+  "explicit_digest_matches": 6,
+  "wifi_scan_bss": 48,
+  "wifi_association": "not tested; no authorized AP",
+  "ble_ready": true,
+  "hci_drops": 0,
+  "uart_openers": [],
+  "kernel_worktree_clean": true,
+  "persist_flashed": false,
+  "retained_performance_changes": false
+}

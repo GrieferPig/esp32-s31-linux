@@ -1,0 +1,3 @@
+patching file drivers/bluetooth/hci_esp32s31.c
+patching file drivers/platform/esp32s31-radio-smode.c
+patching file include/linux/esp32s31-radio.h

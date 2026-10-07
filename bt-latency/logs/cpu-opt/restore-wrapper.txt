@@ -1,0 +1,3 @@
+Original six slots verified
+Restored Wi-Fi scan checked
+BLE-ready baseline restored

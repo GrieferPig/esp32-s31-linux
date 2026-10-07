@@ -1,0 +1,68 @@
+{
+  "platform": "linux",
+  "method": "wall minus NO_HZ idle/iowait residency",
+  "window_seconds": 30.003632188,
+  "snapshot_width_ms": [
+    1.56075,
+    2.16825
+  ],
+  "per_core_busy_pct": [
+    86.2349999022725,
+    49.10616186627145
+  ],
+  "total_capacity_busy_pct": 67.6872455333007,
+  "busy_core_equivalents": 1.353744910666014,
+  "busy_pct_measurement_bounds": [
+    67.66857172925923,
+    67.70591701661353
+  ],
+  "tick_accounting_coverage_pct": 82.83997032179589,
+  "cpu_tick_deltas": {
+    "cpu": [
+      162,
+      0,
+      2870,
+      1939,
+      0,
+      0,
+      0,
+      0
+    ],
+    "cpu0": [
+      2,
+      0,
+      2233,
+      413,
+      0,
+      0,
+      0,
+      0
+    ],
+    "cpu1": [
+      160,
+      0,
+      638,
+      1527,
+      0,
+      0,
+      0,
+      0
+    ]
+  },
+  "tasks": [],
+  "throughput": {
+    "bytes": 1299870,
+    "packets": 2626,
+    "first_seq": 0,
+    "last_seq": 2625,
+    "gaps": 0,
+    "duplicates": 0,
+    "bad_patterns": 0,
+    "duration": 40.000115327995445,
+    "KiBs": 31.735015923480702
+  },
+  "observer_bounds_since_first_packet_s": [
+    5.030890318004822,
+    35.38240360600321
+  ]
+}

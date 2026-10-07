@@ -1,0 +1,6 @@
+{
+  "dist": "285e9667e55eb727",
+  "built": true,
+  "flashed": false,
+  "reason": "Controlled repeat showed no convincing CPU benefit; batch-only follow-up was not deployed."
+}

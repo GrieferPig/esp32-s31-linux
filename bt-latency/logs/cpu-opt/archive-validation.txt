@@ -1,0 +1,3 @@
+All 346 raw gzip archives match recorded SHA256 and length.
+PASS: complete batch, record limits, truncated/zero lengths, EAGAIN, partial acceptance, ordered suffix retry
+PASS: transport EAGAIN/EINTR, accepted-prefix removal, ordered suffix, completion and POLLOUT accounting

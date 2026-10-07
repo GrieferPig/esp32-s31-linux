@@ -1,0 +1,2 @@
+PASS: complete batch, record limits, truncated/zero lengths, EAGAIN, partial acceptance, ordered suffix retry
+PASS: transport EAGAIN/EINTR, accepted-prefix removal, ordered suffix, completion and POLLOUT accounting

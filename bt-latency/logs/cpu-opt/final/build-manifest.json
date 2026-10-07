@@ -1,0 +1,115 @@
+{
+  "artifacts": {
+    "esp32s31_generic.dtb": "4466f703a78eedb33669a990728974f9b7f3b3a370157372901a90b0603f2522",
+    "radio.bin": "8974efa25b36b3125ffbd40d131d7f10fd4a87e3925e9788427e53dd8137cc37",
+    "radio.json": "271c3f35206aadf8a79034804e812ec1f2c53b05287231b6c2163fc4f4b681a1",
+    "rootfs.sqfs": "e60179fbc731a66cf66981b64f21a3cf5da627ba1598ff4cb5820adb34661064",
+    "s31_full_flash.bin": "b00f28e699a5d8d68ca0544989726e31d3c799d6a6ed24dbc9b686d944058774",
+    "spl_app.bin": "439a2b090202b891e7be5bea2393e781f06eac519dcbb8929ff9ace82dc4a987",
+    "u-boot.itb": "8998067cf8ccff9d17cef31671484b9da89e60b4fdaef781159c9c04ee43f1f4",
+    "xipImage": "176fdc599b74926150cb4aee76823cf83ebcb4912ddcd3576c974d21bbc3829a"
+  },
+  "build_provenance": {
+    "rootfs": {
+      "details": {
+        "mode": "native-buildroot",
+        "module_sha256": "7dc4d171ffbf6981ffd5d9384cbb19e0817170020ee037dc1d2d1789d3b79bdb",
+        "packaged_module_sha256": "8fa3a091858c360dd546100958761dfc5dd167dfdf89e30950b1262dad09d86c",
+        "rootfs_sha256": "e60179fbc731a66cf66981b64f21a3cf5da627ba1598ff4cb5820adb34661064"
+      },
+      "sha256": "135de46c3d375dc0e74bb71050ece4cb78b794bc467fb7242f38886ca680ade9"
+    }
+  },
+  "compiler": {
+    "installed_release": "esp32s31-linux-gcc-15.2.0-5",
+    "sha256": "09d1f8936214ca5683cc2cdd525cad4cc53f2a9d20ea6a0d481679d013a1fbde",
+    "version": "riscv32-esp-linux-musl-gcc (crosstool-NG esp-16.0.0_00000000.33-d799a78) 15.2.0"
+  },
+  "expected_dependencies": {
+    "BTSTACK_REF": "431d58d5613fd8fae38afe50282b25302de84bf7",
+    "ESP_ELF_RELEASE": "esp-15.2.0_20251204",
+    "ESP_IDF_REF": "a602e67b0bf9ee0806dc4e1df7afc9affedf5c33",
+    "TOOLCHAIN_RELEASE_TAG": "esp32s31-linux-gcc-15.2.0-5"
+  },
+  "generated_configs": {
+    "buildroot/.config": "43ffb3d56527adb26ee0cc655d2b37cfa0b488f19d8aee3c8fcdd61d5927469f",
+    "generated/radio-kernel-symbols.txt": "3eee6328ad8e0ce0af7fe0acf32f3972532734ea24f9d21ada265a58bc6cd770",
+    "idf-radio/sdkconfig": "bf9b1f8d597fd1a4a73049d3942b4196037e98fca58b0dacece194bbc10d42b5",
+    "linux/.config": "da456874d4b5bc95e58fca144e435314f7a4e666528027dd1dafdf233ba83b9b",
+    "reports/buildroot-inputs.json": "d67481743a5d52cb714310a48ae3992bb6d59e787ba164f7c96937ffe4b503e5",
+    "reports/buildroot.config": "43ffb3d56527adb26ee0cc655d2b37cfa0b488f19d8aee3c8fcdd61d5927469f",
+    "reports/linux-inputs.json": "71ee3602336a2226d1f3faedee80a630c748de02ad3c2b8f2e3d380a616462ad",
+    "reports/linux.config": "da456874d4b5bc95e58fca144e435314f7a4e666528027dd1dafdf233ba83b9b",
+    "reports/resolved-config.json": "f4d21afc0b066d27eae7db7f3f9283e844e48746f8ab28738878167e3c042417",
+    "reports/uboot-inputs.json": "06a76d211863f2880ce76913556924884132f83a491aeea63fb5fb6abaeb4dbb"
+  },
+  "idf": {
+    "commit": "08e0d30a74ad0bfd5a34933142b80f45619ee410",
+    "dirty": false,
+    "other_untracked_entries": 0,
+    "tracked_diff_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "untracked_source_files": {}
+  },
+  "radio_binding": {
+    "kernel_module_sha256": "7dc4d171ffbf6981ffd5d9384cbb19e0817170020ee037dc1d2d1789d3b79bdb",
+    "kernel_vmlinux_sha256": "85c30ea87b7db784915109996c6e21a50048865824b013c1f9ee5a005e4cd351",
+    "radio_imports_sha256": "45f452b560a277cd2b1ebbe822d46db2dbc8c5f723d70fabf650d29957d57d01",
+    "radio_payload_sha256": "4554242b9d33f93638bef2a798c2a4bbcb5f2c65ed09866e5a6ccb01a5868c0b"
+  },
+  "schema_version": 3,
+  "source_configs": {
+    "configs/build-versions.mk": "511daed037287caeceee6f84e31b4d4ca5b95606bd147139de8e5d3c4a731aa1",
+    "configs/esp32s31-layout.cfg": "fe8cdf2b3cb6959fcc4bb30711a7c527d4a1a2822d363b61b05b753592d7f04d",
+    "configs/kernel/board.config": "489623d434df31a4481885b4c6fccb0ab938c7ff95631aaaf5716f06a85c027b",
+    "configs/kernel/common.config": "7fdd8619e30bc50a50f73f71d0f49abe1e7a3bc35e07be24decf2fa6cae86f7f"
+  },
+  "sources": {
+    ".": {
+      "commit": "c3695ffc353aa6d55539c7027b7f5ad08c3ee930",
+      "dirty": true,
+      "other_untracked_entries": 0,
+      "tracked_diff_sha256": "7ff736d14d3519f59b8aaca90d6e1bf976db9c05fd95eff1b8bae2da6ff49d09",
+      "untracked_source_files": {
+        "BT_DEBUG_MISSION.md": "40de7c52c21e0d3b67b0362ae11052da77fdb5892530d29935ee5a1def2758f3",
+        "bt-latency/cpu_opt_matrix.py": "1bf7672b2d7903c9a4e3a1feea182d37a6b9f49eb576f84e671910faf8e6bcf2",
+        "bt-latency/test_tx_batch.py": "10894cd173fdbb109779df22d64e16df56c7cc2208f90fc120e01fa5ffe1c6ac",
+        "buildroot-external/package/btstack-s31/0038-linux-batched-tx.patch": "0fe1ca225969fd31ea4c245fb0805425569b16ee906c0e4dd7ad0a6367316266"
+      }
+    },
+    "buildroot": {
+      "commit": "cb857ba4c87a93e5265a9e4a3f32071abf39e14a",
+      "dirty": false,
+      "other_untracked_entries": 0,
+      "tracked_diff_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "untracked_source_files": {}
+    },
+    "docs": {
+      "commit": "45e088299d115abeb2d5663f0e06a90b16dd5ebe",
+      "dirty": false,
+      "other_untracked_entries": 0,
+      "tracked_diff_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "untracked_source_files": {}
+    },
+    "linux-esp32-s31": {
+      "commit": "7a76873da67f2b47e7fcca1ea1f05868858cb878",
+      "dirty": true,
+      "other_untracked_entries": 0,
+      "tracked_diff_sha256": "3ffe0457ba5e56369defed02adb6f47de2949f3c4a1c54ba4795df62746bff3e",
+      "untracked_source_files": {}
+    },
+    "opensbi-esp32-s31": {
+      "commit": "344cfcb22d9ecae84e6bb571b4e312edf5c776bf",
+      "dirty": false,
+      "other_untracked_entries": 0,
+      "tracked_diff_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "untracked_source_files": {}
+    },
+    "u-boot-esp32-s31": {
+      "commit": "5806e424058cec63094ea0e76b2f8f95298817fb",
+      "dirty": false,
+      "other_untracked_entries": 0,
+      "tracked_diff_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "untracked_source_files": {}
+    }
+  }
+}

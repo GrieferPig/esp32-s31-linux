@@ -1,0 +1,1 @@
+cat /sys/devices/platform/soc/soc:radio/radio_health

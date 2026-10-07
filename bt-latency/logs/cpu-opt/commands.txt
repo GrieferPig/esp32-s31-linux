@@ -1,0 +1,2 @@
+S31_CPU_PROTOCOL=spp python3 -u bt-latency/cpu_opt_matrix.py bt-latency/logs/cpu-opt/spp-screen base tx4 tx4drain coarse policy base
+S31_CPU_PROTOCOL=ble python3 -u bt-latency/cpu_opt_matrix.py bt-latency/logs/cpu-opt/ble-screen base tx4 tx4drain coarse all base
