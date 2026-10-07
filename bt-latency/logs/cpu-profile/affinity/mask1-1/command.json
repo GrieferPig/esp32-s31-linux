@@ -1,0 +1,13 @@
+{
+  "board_command": "taskset -p 1 $(pidof s31-btstack-a2dp); taskset -p $(pidof s31-btstack-a2dp)",
+  "argv": [
+    "python3",
+    "bt-latency/fresh_spp_run.py",
+    "bt-latency/logs/cpu-profile/affinity/mask1-1"
+  ],
+  "env": {
+    "S31_BOARD_STATS": "1",
+    "S31_SPP_FRAME_SIZE": "990"
+  },
+  "profiling": "enabled, same image"
+}
