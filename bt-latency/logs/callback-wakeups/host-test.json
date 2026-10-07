@@ -1,0 +1,340 @@
+{
+  "compile_argv": [
+    "gcc",
+    "-O2",
+    "-pthread",
+    "-I/tmp/s31-callback-test-_l7v5_tt",
+    "-I/home/grieferpig/esp32-s31-linux/out/buildroot/build/btstack-s31-431d58d5613fd8fae38afe50282b25302de84bf7/src",
+    "-I/home/grieferpig/esp32-s31-linux/out/buildroot/build/btstack-s31-431d58d5613fd8fae38afe50282b25302de84bf7/platform/posix",
+    "-DS31_RUNLOOP_SOURCE=\"/tmp/s31-0034-ay05cfq3/platform/posix/btstack_run_loop_posix.c\"",
+    "/home/grieferpig/esp32-s31-linux/bt-latency/test_callback_wakeups.c",
+    "/home/grieferpig/esp32-s31-linux/out/buildroot/build/btstack-s31-431d58d5613fd8fae38afe50282b25302de84bf7/src/btstack_run_loop.c",
+    "/home/grieferpig/esp32-s31-linux/out/buildroot/build/btstack-s31-431d58d5613fd8fae38afe50282b25302de84bf7/src/btstack_run_loop_base.c",
+    "/home/grieferpig/esp32-s31-linux/out/buildroot/build/btstack-s31-431d58d5613fd8fae38afe50282b25302de84bf7/src/btstack_linked_list.c",
+    "/home/grieferpig/esp32-s31-linux/out/buildroot/build/btstack-s31-431d58d5613fd8fae38afe50282b25302de84bf7/src/btstack_util.c",
+    "-o",
+    "/tmp/s31-callback-test-_l7v5_tt/check"
+  ],
+  "results": [
+    {
+      "mode": "0",
+      "case": "chain",
+      "iteration": 0,
+      "returncode": 0,
+      "stdout": "chain=512 cross=0 wake_writes=512\n",
+      "stderr": "S31 callback wakeups: legacy\n"
+    },
+    {
+      "mode": "0",
+      "case": "chain",
+      "iteration": 1,
+      "returncode": 0,
+      "stdout": "chain=512 cross=0 wake_writes=512\n",
+      "stderr": "S31 callback wakeups: legacy\n"
+    },
+    {
+      "mode": "0",
+      "case": "chain",
+      "iteration": 2,
+      "returncode": 0,
+      "stdout": "chain=512 cross=0 wake_writes=512\n",
+      "stderr": "S31 callback wakeups: legacy\n"
+    },
+    {
+      "mode": "0",
+      "case": "chain",
+      "iteration": 3,
+      "returncode": 0,
+      "stdout": "chain=512 cross=0 wake_writes=512\n",
+      "stderr": "S31 callback wakeups: legacy\n"
+    },
+    {
+      "mode": "0",
+      "case": "chain",
+      "iteration": 4,
+      "returncode": 0,
+      "stdout": "chain=512 cross=0 wake_writes=512\n",
+      "stderr": "S31 callback wakeups: legacy\n"
+    },
+    {
+      "mode": "0",
+      "case": "chain",
+      "iteration": 5,
+      "returncode": 0,
+      "stdout": "chain=512 cross=0 wake_writes=512\n",
+      "stderr": "S31 callback wakeups: legacy\n"
+    },
+    {
+      "mode": "0",
+      "case": "chain",
+      "iteration": 6,
+      "returncode": 0,
+      "stdout": "chain=512 cross=0 wake_writes=512\n",
+      "stderr": "S31 callback wakeups: legacy\n"
+    },
+    {
+      "mode": "0",
+      "case": "chain",
+      "iteration": 7,
+      "returncode": 0,
+      "stdout": "chain=512 cross=0 wake_writes=512\n",
+      "stderr": "S31 callback wakeups: legacy\n"
+    },
+    {
+      "mode": "0",
+      "case": "chain",
+      "iteration": 8,
+      "returncode": 0,
+      "stdout": "chain=512 cross=0 wake_writes=512\n",
+      "stderr": "S31 callback wakeups: legacy\n"
+    },
+    {
+      "mode": "0",
+      "case": "chain",
+      "iteration": 9,
+      "returncode": 0,
+      "stdout": "chain=512 cross=0 wake_writes=512\n",
+      "stderr": "S31 callback wakeups: legacy\n"
+    },
+    {
+      "mode": "0",
+      "case": "mixed",
+      "iteration": 0,
+      "returncode": 0,
+      "stdout": "chain=512 cross=2000 wake_writes=2512\n",
+      "stderr": "S31 callback wakeups: legacy\n"
+    },
+    {
+      "mode": "0",
+      "case": "mixed",
+      "iteration": 1,
+      "returncode": 0,
+      "stdout": "chain=512 cross=2000 wake_writes=2512\n",
+      "stderr": "S31 callback wakeups: legacy\n"
+    },
+    {
+      "mode": "0",
+      "case": "mixed",
+      "iteration": 2,
+      "returncode": 0,
+      "stdout": "chain=512 cross=2000 wake_writes=2512\n",
+      "stderr": "S31 callback wakeups: legacy\n"
+    },
+    {
+      "mode": "0",
+      "case": "mixed",
+      "iteration": 3,
+      "returncode": 0,
+      "stdout": "chain=512 cross=2000 wake_writes=2512\n",
+      "stderr": "S31 callback wakeups: legacy\n"
+    },
+    {
+      "mode": "0",
+      "case": "mixed",
+      "iteration": 4,
+      "returncode": 0,
+      "stdout": "chain=512 cross=2000 wake_writes=2512\n",
+      "stderr": "S31 callback wakeups: legacy\n"
+    },
+    {
+      "mode": "0",
+      "case": "mixed",
+      "iteration": 5,
+      "returncode": 0,
+      "stdout": "chain=512 cross=2000 wake_writes=2512\n",
+      "stderr": "S31 callback wakeups: legacy\n"
+    },
+    {
+      "mode": "0",
+      "case": "mixed",
+      "iteration": 6,
+      "returncode": 0,
+      "stdout": "chain=512 cross=2000 wake_writes=2512\n",
+      "stderr": "S31 callback wakeups: legacy\n"
+    },
+    {
+      "mode": "0",
+      "case": "mixed",
+      "iteration": 7,
+      "returncode": 0,
+      "stdout": "chain=512 cross=2000 wake_writes=2512\n",
+      "stderr": "S31 callback wakeups: legacy\n"
+    },
+    {
+      "mode": "0",
+      "case": "mixed",
+      "iteration": 8,
+      "returncode": 0,
+      "stdout": "chain=512 cross=2000 wake_writes=2512\n",
+      "stderr": "S31 callback wakeups: legacy\n"
+    },
+    {
+      "mode": "0",
+      "case": "mixed",
+      "iteration": 9,
+      "returncode": 0,
+      "stdout": "chain=512 cross=2000 wake_writes=2512\n",
+      "stderr": "S31 callback wakeups: legacy\n"
+    },
+    {
+      "mode": "1",
+      "case": "chain",
+      "iteration": 0,
+      "returncode": 0,
+      "stdout": "chain=512 cross=0 wake_writes=1\n",
+      "stderr": "S31 callback wakeups: coalesced\n"
+    },
+    {
+      "mode": "1",
+      "case": "chain",
+      "iteration": 1,
+      "returncode": 0,
+      "stdout": "chain=512 cross=0 wake_writes=1\n",
+      "stderr": "S31 callback wakeups: coalesced\n"
+    },
+    {
+      "mode": "1",
+      "case": "chain",
+      "iteration": 2,
+      "returncode": 0,
+      "stdout": "chain=512 cross=0 wake_writes=1\n",
+      "stderr": "S31 callback wakeups: coalesced\n"
+    },
+    {
+      "mode": "1",
+      "case": "chain",
+      "iteration": 3,
+      "returncode": 0,
+      "stdout": "chain=512 cross=0 wake_writes=1\n",
+      "stderr": "S31 callback wakeups: coalesced\n"
+    },
+    {
+      "mode": "1",
+      "case": "chain",
+      "iteration": 4,
+      "returncode": 0,
+      "stdout": "chain=512 cross=0 wake_writes=1\n",
+      "stderr": "S31 callback wakeups: coalesced\n"
+    },
+    {
+      "mode": "1",
+      "case": "chain",
+      "iteration": 5,
+      "returncode": 0,
+      "stdout": "chain=512 cross=0 wake_writes=1\n",
+      "stderr": "S31 callback wakeups: coalesced\n"
+    },
+    {
+      "mode": "1",
+      "case": "chain",
+      "iteration": 6,
+      "returncode": 0,
+      "stdout": "chain=512 cross=0 wake_writes=1\n",
+      "stderr": "S31 callback wakeups: coalesced\n"
+    },
+    {
+      "mode": "1",
+      "case": "chain",
+      "iteration": 7,
+      "returncode": 0,
+      "stdout": "chain=512 cross=0 wake_writes=1\n",
+      "stderr": "S31 callback wakeups: coalesced\n"
+    },
+    {
+      "mode": "1",
+      "case": "chain",
+      "iteration": 8,
+      "returncode": 0,
+      "stdout": "chain=512 cross=0 wake_writes=1\n",
+      "stderr": "S31 callback wakeups: coalesced\n"
+    },
+    {
+      "mode": "1",
+      "case": "chain",
+      "iteration": 9,
+      "returncode": 0,
+      "stdout": "chain=512 cross=0 wake_writes=1\n",
+      "stderr": "S31 callback wakeups: coalesced\n"
+    },
+    {
+      "mode": "1",
+      "case": "mixed",
+      "iteration": 0,
+      "returncode": 0,
+      "stdout": "chain=512 cross=2000 wake_writes=1998\n",
+      "stderr": "S31 callback wakeups: coalesced\n"
+    },
+    {
+      "mode": "1",
+      "case": "mixed",
+      "iteration": 1,
+      "returncode": 0,
+      "stdout": "chain=512 cross=2000 wake_writes=1997\n",
+      "stderr": "S31 callback wakeups: coalesced\n"
+    },
+    {
+      "mode": "1",
+      "case": "mixed",
+      "iteration": 2,
+      "returncode": 0,
+      "stdout": "chain=512 cross=2000 wake_writes=2000\n",
+      "stderr": "S31 callback wakeups: coalesced\n"
+    },
+    {
+      "mode": "1",
+      "case": "mixed",
+      "iteration": 3,
+      "returncode": 0,
+      "stdout": "chain=512 cross=2000 wake_writes=1992\n",
+      "stderr": "S31 callback wakeups: coalesced\n"
+    },
+    {
+      "mode": "1",
+      "case": "mixed",
+      "iteration": 4,
+      "returncode": 0,
+      "stdout": "chain=512 cross=2000 wake_writes=1986\n",
+      "stderr": "S31 callback wakeups: coalesced\n"
+    },
+    {
+      "mode": "1",
+      "case": "mixed",
+      "iteration": 5,
+      "returncode": 0,
+      "stdout": "chain=512 cross=2000 wake_writes=1990\n",
+      "stderr": "S31 callback wakeups: coalesced\n"
+    },
+    {
+      "mode": "1",
+      "case": "mixed",
+      "iteration": 6,
+      "returncode": 0,
+      "stdout": "chain=512 cross=2000 wake_writes=2000\n",
+      "stderr": "S31 callback wakeups: coalesced\n"
+    },
+    {
+      "mode": "1",
+      "case": "mixed",
+      "iteration": 7,
+      "returncode": 0,
+      "stdout": "chain=512 cross=2000 wake_writes=1999\n",
+      "stderr": "S31 callback wakeups: coalesced\n"
+    },
+    {
+      "mode": "1",
+      "case": "mixed",
+      "iteration": 8,
+      "returncode": 0,
+      "stdout": "chain=512 cross=2000 wake_writes=1985\n",
+      "stderr": "S31 callback wakeups: coalesced\n"
+    },
+    {
+      "mode": "1",
+      "case": "mixed",
+      "iteration": 9,
+      "returncode": 0,
+      "stdout": "chain=512 cross=2000 wake_writes=1992\n",
+      "stderr": "S31 callback wakeups: coalesced\n"
+    }
+  ]
+}
