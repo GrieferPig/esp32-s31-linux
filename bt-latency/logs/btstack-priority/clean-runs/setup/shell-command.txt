@@ -1,0 +1,1 @@
+stty -echo; exec /bin/sh +i

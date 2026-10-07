@@ -1,0 +1,1 @@
+renice -n -10 -p $(cat /tmp/opt.pid); chrt -p $(cat /tmp/opt.pid); cat /proc/$(cat /tmp/opt.pid)/stat

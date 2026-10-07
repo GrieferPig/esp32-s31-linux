@@ -1,0 +1,11 @@
+normal-0 exit 0 connected 3.649807s
+{"bytes": 7840800, "duration": 40.00018289699801, "KiBs": 191.4249059739838, "frames": 7920, "frame_size": 990, "partial": 0, "gap_events": 0, "duplicates": 0, "bad_pattern_frames": 0, "last_seq": 7919, "stop": "deadline"}
+
+{"cpu_busy_pct_aggregate": 86.35735666589915, "counter_delta": {"ticks": 4646, "worker_passes": 5084, "heap_used": 0, "heap_peak": 0, "hci_rx_dropped": 0, "hci_tx_dropped": 0}, "memory_before_kB": {"MemFree": 6872, "MemAvailable": 9212, "Cached": 3272}, "memory_after_kB": {"MemFree": 6868, "MemAvailable": 9216, "Cached": 3272}, "tasks": [{"pid": "188", "name": "s31-btstack-a2d", "user_ticks": 1339, "system_ticks": 1824, "total_ticks": 3163}, {"pid": "193", "name": "btdm", "user_ticks": 0, "system_ticks": 2392, "total_ticks": 2392}, {"pid": "35", "name": "kworker/u11:0+s31-radio", "user_ticks": 0, "system_ticks": 1925, "total_ticks": 1925}, {"pid": "78", "name": "sh", "user_ticks": 11, "system_ticks": 23, "total_ticks": 34}], "note": "CPU spans snapshots around receiver, including connection/discovery and snapshot overhead; throughput uses only40s receive window."}
+rr20-1 exit 1 Traceback (most recent call last):
+  File "/home/grieferpig/esp32-s31-linux/bt-latency/spp_checked_bench.py", line 8, in <module>
+    sock.settimeout(15);t=time.monotonic();sock.connect((addr,ch));print(f'connected {time.monotonic()-t:.6f}s',flush=True)
+                                           ~~~~~~~~~~~~^^^^^^^^^^^
+OSError: [Errno 112] Host is down
+
+{"cpu_busy_pct_aggregate": 9.217264081931237, "counter_delta": {"ticks": 712, "worker_passes": 193, "heap_used": 0, "heap_peak": 0, "hci_rx_dropped": 0, "hci_tx_dropped": 0}, "memory_before_kB": {"MemFree": 6980, "MemAvailable": 9328, "Cached": 3272}, "memory_after_kB": {"MemFree": 6904, "MemAvailable": 9264, "Cached": 3272}, "tasks": [{"pid": "78", "name": "sh", "user_ticks": 10, "system_ticks": 16, "total_ticks": 26}, {"pid": "35", "name": "kworker/u11:0+s31-radio", "user_ticks": 0, "system_ticks": 21, "total_ticks": 21}, {"pid": "12", "name": "rcu_sched", "user_ticks": 0, "system_ticks": 12, "total_ticks": 12}, {"pid": "193", "name": "btdm", "user_ticks": 0, "system_ticks": 3, "total_ticks": 3}], "note": "CPU spans snapshots around receiver, including connection/discovery and snapshot overhead; throughput uses only40s receive window."}

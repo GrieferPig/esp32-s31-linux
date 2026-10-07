@@ -1,0 +1,1 @@
+The native-btdm idf build began during rr20-2 and may overlap normal-3. These cases are exploratory and not accepted as an isolated priority comparison. Repeat normal/rr20 after build completion. Earlier normal-0/nice10-1 finished before the build.
