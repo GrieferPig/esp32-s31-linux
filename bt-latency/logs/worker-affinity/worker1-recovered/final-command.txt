@@ -1,0 +1,1 @@
+cat /proc/162/status; cat /proc/162/stat; cat /tmp/buffers.log

@@ -1,0 +1,109 @@
+diff --git a/arch/riscv/include/asm/esp32s31_ext.h b/arch/riscv/include/asm/esp32s31_ext.h
+index f19cc1f3faa2e..e339b56ef6cc1 100644
+--- a/arch/riscv/include/asm/esp32s31_ext.h
++++ b/arch/riscv/include/asm/esp32s31_ext.h
+@@ -8,7 +8,9 @@
+ 
+ struct task_struct;
+ struct pt_regs;
++struct workqueue_struct;
+ 
++struct workqueue_struct *esp32s31_alloc_radio_workqueue(int cpu);
+ bool esp32s31_current_uses_init_mm(void);
+ bool esp32s31_executable_address(unsigned long addr);
+ u64 esp32s31_task_runtime(struct task_struct *task);
+diff --git a/arch/riscv/kernel/esp32s31-ext.c b/arch/riscv/kernel/esp32s31-ext.c
+index 4555063e13f66..2817b28b40e84 100644
+--- a/arch/riscv/kernel/esp32s31-ext.c
++++ b/arch/riscv/kernel/esp32s31-ext.c
+@@ -2,6 +2,9 @@
+ /* ESP32-S31 HWLoop and PIE task context management through OpenSBI. */
+ 
+ #include <linux/bug.h>
++#include <linux/err.h>
++#include <linux/workqueue.h>
++#include <linux/sched/prio.h>
+ #include <linux/kallsyms.h>
+ #include <linux/kthread.h>
+ #include <linux/mm.h>
+@@ -65,6 +68,47 @@ int esp32s31_sched_setscheduler(struct task_struct *task, int policy,
+ }
+ EXPORT_SYMBOL_GPL(esp32s31_sched_setscheduler);
+ 
++/*
++ * Allocate the radio-owned ordered/high-priority queue with optional CPU
++ * placement before any work is queued. Do not change shared pool workers'
++ * affinity directly. Workqueue attribute helpers are built-in-only APIs.
++ */
++struct workqueue_struct *esp32s31_alloc_radio_workqueue(int cpu)
++{
++	struct workqueue_struct *wq;
++	struct workqueue_attrs *attrs;
++	int ret;
++
++	if (cpu < -1 || (cpu >= 0 &&
++	    (cpu >= nr_cpu_ids || !cpu_online(cpu))))
++		return ERR_PTR(-EINVAL);
++	wq = alloc_ordered_workqueue("s31-radio", WQ_HIGHPRI);
++	if (!wq)
++		return ERR_PTR(-ENOMEM);
++	if (cpu == -1)
++		return wq;
++
++	attrs = alloc_workqueue_attrs();
++	if (!attrs) {
++		ret = -ENOMEM;
++		goto fail;
++	}
++	/* Preserve alloc_ordered_workqueue(..., WQ_HIGHPRI) semantics. */
++	attrs->nice = MIN_NICE;
++	attrs->ordered = true;
++	attrs->affn_strict = true;
++	cpumask_clear(attrs->cpumask);
++	cpumask_set_cpu(cpu, attrs->cpumask);
++	ret = apply_workqueue_attrs(wq, attrs);
++	free_workqueue_attrs(attrs);
++	if (!ret)
++		return wq;
++fail:
++	destroy_workqueue(wq);
++	return ERR_PTR(ret);
++}
++EXPORT_SYMBOL_GPL(esp32s31_alloc_radio_workqueue);
++
+ static unsigned long s31_ext_pa(struct task_struct *task)
+ {
+ 	return __pa(&task->thread.esp32s31_ext);
+diff --git a/drivers/platform/esp32s31-radio-smode.c b/drivers/platform/esp32s31-radio-smode.c
+index 446b1dd53825a..66ca7b00ff109 100644
+--- a/drivers/platform/esp32s31-radio-smode.c
++++ b/drivers/platform/esp32s31-radio-smode.c
+@@ -66,6 +66,9 @@ static bool s31_radio_disabled;
+ static unsigned int s31_radio_bt_tick_ms = 40;
+ module_param_named(bt_tick_ms, s31_radio_bt_tick_ms, uint, 0600);
+ MODULE_PARM_DESC(bt_tick_ms, "Bluetooth-only timer batch, clamped to 1..40 ms (default 40)");
++static int s31_radio_bt_worker_cpu = -1;
++module_param_named(bt_worker_cpu, s31_radio_bt_worker_cpu, int, 0444);
++MODULE_PARM_DESC(bt_worker_cpu, "BT-only ordered radio worker CPU: -1=default, 0 or 1");
+ static unsigned int s31_radio_bt_tx_buffers;
+ module_param_named(bt_tx_buffers, s31_radio_bt_tx_buffers, uint, 0444);
+ MODULE_PARM_DESC(bt_tx_buffers, "BT-only Classic TX buffers at init: 0=SDK default, or 3..10");
+@@ -3258,11 +3261,15 @@ int s31_radio_runtime_init(bool enable_wifi, bool enable_bt)
+ 	pr_info("esp32s31-radio: initializing compatibility RTOS\n");
+ 	s31_rtos_init();
+ 	pr_info("esp32s31-radio: compatibility RTOS base initialized\n");
+-	s31_radio_wq = alloc_ordered_workqueue("s31-radio", WQ_HIGHPRI);
+-	if (!s31_radio_wq) {
+-		ret = -ENOMEM;
++	s31_radio_wq = esp32s31_alloc_radio_workqueue(
++		enable_bt && !enable_wifi ? s31_radio_bt_worker_cpu : -1);
++	if (IS_ERR(s31_radio_wq)) {
++		ret = PTR_ERR(s31_radio_wq);
++		s31_radio_wq = NULL;
+ 		goto free_rings;
+ 	}
++	pr_info("esp32s31-radio: ordered worker CPU=%d\n",
++		enable_bt && !enable_wifi ? s31_radio_bt_worker_cpu : -1);
+ 	INIT_DELAYED_WORK(&s31_radio_work, s31_radio_workfn);
+ 	hrtimer_setup(&s31_radio_hrtimer, s31_radio_hrtimer_fn, CLOCK_MONOTONIC,
+ 		      HRTIMER_MODE_REL);

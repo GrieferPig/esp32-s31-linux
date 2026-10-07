@@ -1,0 +1,15 @@
+{
+  "argv": [
+    "python3",
+    "/home/grieferpig/esp32-s31-linux/bt-latency/fresh_spp_run.py",
+    "bt-latency/logs/worker-affinity/runs/worker-1-0"
+  ],
+  "env": {
+    "S31_BOARD_STATS": "1",
+    "S31_SPP_FRAME_SIZE": "990"
+  },
+  "worker_cpu": -1,
+  "controller_tx_buffers": 10,
+  "rx_ring_slots": 32,
+  "tx_ring_slots": 16
+}

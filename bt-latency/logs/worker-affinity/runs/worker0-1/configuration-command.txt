@@ -1,0 +1,1 @@
+mkdir -p /tmp/cfg; printf "enabled=1\nindex=0\nle=1\n" > /tmp/cfg/bluetooth.conf
