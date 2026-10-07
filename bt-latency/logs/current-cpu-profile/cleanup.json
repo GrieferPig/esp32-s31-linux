@@ -1,0 +1,7 @@
+{
+  "uart_openers": [],
+  "ble_ready_restored": true,
+  "reflashed": false,
+  "persist_written": false,
+  "temporary_probe_removed_by_reset": true
+}

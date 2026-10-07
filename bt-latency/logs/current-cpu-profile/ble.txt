@@ -1,0 +1,14 @@
+rr20-0 exit 0 pair: BONDED in 0.0s
+connect: UP in 0.0s
+char ff12 objects: FOUND char0008 after 0s
+notify acquired: mtu=517
+STREAM bytes=1308780 pkts=2644 first=0 last=2643 gaps=0 dups=0 bad_patterns=0 dur=40.0s rate=32719 B/s (31.95 KiB/s)
+
+{"bytes": 272192, "gzip_bytes": 685, "sha256": "83acdcfda1e3bf1e3e7b857e78ee9a001096af8aeb206631dea61ba60a858ba8"}
+rr20-1 exit 0 pair: BONDED in 0.0s
+connect: UP in 0.0s
+char ff12 objects: FOUND char0008 after 0s
+notify acquired: mtu=517
+STREAM bytes=1296900 pkts=2620 first=0 last=2619 gaps=0 dups=0 bad_patterns=0 dur=40.0s rate=32422 B/s (31.66 KiB/s)
+
+{"bytes": 272192, "gzip_bytes": 701, "sha256": "be5332a9f821ff1372dda5a7033ff17ad50f08c182c099205e80c6101778f2ae"}

@@ -1,0 +1,2 @@
+S31_CPU_PROTOCOL=ble python3 -u bt-latency/current_profile_matrix.py bt-latency/logs/current-cpu-profile/ble rr20 rr20
+S31_CPU_PROTOCOL=spp python3 -u bt-latency/current_profile_matrix.py bt-latency/logs/current-cpu-profile/spp rr20 rr20

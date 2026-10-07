@@ -1,0 +1,1628 @@
+{
+  "step_bytes": 64,
+  "samples": 814,
+  "limitation": "Built-in kernel text only; excludes userspace, loadable modules, and low-address radio payload. Bins crossing symbol boundaries list every candidate; IRQ-off work can be charged at re-enable.",
+  "symbols": [
+    [
+      "tick_nohz_idle_exit",
+      85
+    ],
+    [
+      "do_trap_ecall_u",
+      83
+    ],
+    [
+      "[ambiguous 0xc0047480: __kthread_init_worker / to_kthread / kthread_should_stop / kthread_should_park]",
+      43
+    ],
+    [
+      "[ambiguous 0xc007d080: tick_nohz_idle_enter / tick_nohz_irq_exit]",
+      37
+    ],
+    [
+      "esp32s31_irq_poll",
+      34
+    ],
+    [
+      "do_select",
+      30
+    ],
+    [
+      "[ambiguous 0xc00474c0: kthread_should_park / kthread_data / init_completion]",
+      29
+    ],
+    [
+      "cpuidle_enter_state",
+      22
+    ],
+    [
+      "[ambiguous 0xc0070f00: timekeeping_cycles_to_ns / ktime_get_mono_fast_ns]",
+      19
+    ],
+    [
+      "timekeeping_cycles_to_ns",
+      13
+    ],
+    [
+      "[ambiguous 0xc00481c0: kthread_worker_fn / kthread_unuse_mm]",
+      12
+    ],
+    [
+      "[ambiguous 0xc0070d80: tk_normalize_xtime / tk_xtime / tk_clock_read / delta_to_ns_safe]",
+      12
+    ],
+    [
+      "[ambiguous 0xc0050a80: cpu_in_idle / cpu_startup_entry / init_rt_rq]",
+      10
+    ],
+    [
+      "__se_sys_pselect6",
+      10
+    ],
+    [
+      "mmiowb_set_pending",
+      10
+    ],
+    [
+      "[ambiguous 0xc01c79c0: esp32s31_local_irq_starting / esp32s31_irq_poll]",
+      10
+    ],
+    [
+      "[ambiguous 0xc02c7f80: riscv_sched_clock / esp32s31_riscv_timer_interrupt / s31_systimer_read_counter]",
+      10
+    ],
+    [
+      "__sched_setscheduler",
+      9
+    ],
+    [
+      "fsnotify_file.isra.0",
+      9
+    ],
+    [
+      "core_sys_select",
+      9
+    ],
+    [
+      "[ambiguous 0xc0070e80: dummy_clock_read / timekeeping_cycles_to_ns]",
+      8
+    ],
+    [
+      "pipe_poll",
+      8
+    ],
+    [
+      "[ambiguous 0xc0449080: __mutex_unlock_slowpath.isra.0 / mutex_unlock / ww_mutex_unlock]",
+      8
+    ],
+    [
+      "kthread_use_mm",
+      7
+    ],
+    [
+      "do_idle",
+      7
+    ],
+    [
+      "poll_select_finish",
+      7
+    ],
+    [
+      "[ambiguous 0xc00d5f00: __file_ref_put / __fget_files_rcu]",
+      7
+    ],
+    [
+      "[ambiguous 0xc002f240: esp32s31_executable_address / esp32s31_kthread_use_init_mm / esp32s31_kthread_unuse_init_mm]",
+      6
+    ],
+    [
+      "[ambiguous 0xc0048240: kthread_unuse_mm / kthread_use_mm]",
+      6
+    ],
+    [
+      "[ambiguous 0xc0069700: rcu_momentary_eqs / rcu_all_qs]",
+      6
+    ],
+    [
+      "rcu_all_qs",
+      6
+    ],
+    [
+      "vfs_write",
+      6
+    ],
+    [
+      "[ambiguous 0xc00c0540: __se_sys_read / __riscv_sys_read / ksys_write]",
+      6
+    ],
+    [
+      "poll_freewait",
+      6
+    ],
+    [
+      "[ambiguous 0xc00d6000: fget_task_next / fget / __fget_light]",
+      6
+    ],
+    [
+      "[ambiguous 0xc02c8000: s31_systimer_read_counter / s31_systimer_read / s31_systimer_ensure_mmio]",
+      6
+    ],
+    [
+      "mtree_load",
+      6
+    ],
+    [
+      "[ambiguous 0xc044b440: rt_mutex_cleanup_proxy_lock / rt_mutex_adjust_pi]",
+      6
+    ],
+    [
+      "mmiowb_spin_unlock",
+      5
+    ],
+    [
+      "kthread_unuse_mm",
+      5
+    ],
+    [
+      "[ambiguous 0xc0055440: mutex_is_locked / __mutex_trylock_common]",
+      5
+    ],
+    [
+      "ktime_get_mono_fast_ns",
+      5
+    ],
+    [
+      "ktime_get_ts64",
+      5
+    ],
+    [
+      "[ambiguous 0xc0076a40: clockid_to_kclock / get_pid]",
+      5
+    ],
+    [
+      "[ambiguous 0xc00ce900: busy_loop_current_time / set_fd_set / get_sigset_argpack.constprop.0]",
+      5
+    ],
+    [
+      "[ambiguous 0xc01c37c0: __ashldi3 / __ashrdi3 / __lshrdi3]",
+      5
+    ],
+    [
+      "[ambiguous 0xc04370c0: mas_may_activate / mas_pause / mas_start]",
+      5
+    ],
+    [
+      "[ambiguous 0xc0448f80: yield_to / yield / mutex_trylock]",
+      5
+    ],
+    [
+      "[ambiguous 0xc044b580: console_conditional_schedule / schedule_timeout]",
+      5
+    ],
+    [
+      "__se_sys_clock_gettime",
+      4
+    ],
+    [
+      "[ambiguous 0xc00becc0: vfs_llseek / class_fd_pos_constructor / fdput_pos]",
+      4
+    ],
+    [
+      "[ambiguous 0xc00c05c0: ksys_write / ___se_sys_write / __se_sys_write / __riscv_sys_write]",
+      4
+    ],
+    [
+      "[ambiguous 0xc00c6280: pipe_readable / pipe_writable / pipe_poll]",
+      4
+    ],
+    [
+      "[ambiguous 0xc01c3800: __lshrdi3 / __ucmpdi2 / esp32s31_cache_op]",
+      4
+    ],
+    [
+      "[ambiguous 0xc0436f40: mte_set_node_dead / ma_pivots / ma_slots / mas_descend]",
+      4
+    ],
+    [
+      "[ambiguous 0xc00482c0: kthread_use_mm / get_kthread_comm]",
+      3
+    ],
+    [
+      "[ambiguous 0xc0054580: available_idle_cpu / __sched_setscheduler]",
+      3
+    ],
+    [
+      "[ambiguous 0xc0055480: __mutex_trylock_common / __mutex_trylock / __set_task_blocked_on]",
+      3
+    ],
+    [
+      "[ambiguous 0xc005da40: generic_handle_domain_nmi / irq_get_next_irq / __irq_get_desc_lock]",
+      3
+    ],
+    [
+      "[ambiguous 0xc00bf040: default_llseek / fsnotify_modify / fsnotify_access / file_end_write.isra.0]",
+      3
+    ],
+    [
+      "[ambiguous 0xc00bf500: generic_file_llseek / rw_verify_area.part.0]",
+      3
+    ],
+    [
+      "[ambiguous 0xc00bf540: rw_verify_area.part.0 / rw_verify_area / rw_verify_area.constprop.0]",
+      3
+    ],
+    [
+      "vfs_read",
+      3
+    ],
+    [
+      "[ambiguous 0xc00c0340: kernel_write / vfs_write]",
+      3
+    ],
+    [
+      "[ambiguous 0xc00c6200: __se_sys_execveat / poll_wait]",
+      3
+    ],
+    [
+      "[ambiguous 0xc00c6300: pipe_poll / pipe_lock]",
+      3
+    ],
+    [
+      "__fget_files_rcu",
+      3
+    ],
+    [
+      "[ambiguous 0xc00d6040: __fget_light / fdget / do_dup2]",
+      3
+    ],
+    [
+      "[ambiguous 0xc00d6840: fdget_pos / __f_unlock_pos / set_close_on_exec]",
+      3
+    ],
+    [
+      "[ambiguous 0xc01b1300: check_zeroed_user / _copy_to_user]",
+      3
+    ],
+    [
+      "s31_systimer_read_counter",
+      3
+    ],
+    [
+      "[ambiguous 0xc0446bc0: irqentry_enter_from_user_mode / irqentry_exit_to_user_mode]",
+      3
+    ],
+    [
+      "[ambiguous 0xc04498c0: mutex_lock_killable / __mutex_lock_interruptible_slowpath / mutex_lock_interruptible]",
+      3
+    ],
+    [
+      "[ambiguous 0xc044b640: schedule_timeout_killable / schedule_timeout_uninterruptible / schedule_timeout_idle / schedule_hrtimeout_range_clock]",
+      3
+    ],
+    [
+      "schedule_hrtimeout_range_clock",
+      3
+    ],
+    [
+      "[ambiguous 0xc0040ac0: sigprocmask / set_user_sigmask]",
+      2
+    ],
+    [
+      "[ambiguous 0xc0050740: sched_idle_set_state / cpu_idle_poll_ctrl / arch_cpu_idle_enter / arch_cpu_idle_exit / do_idle]",
+      2
+    ],
+    [
+      "[ambiguous 0xc0054a40: sched_set_normal / _sched_setscheduler.isra.0]",
+      2
+    ],
+    [
+      "_sched_setscheduler.isra.0",
+      2
+    ],
+    [
+      "[ambiguous 0xc0054b40: do_sched_setscheduler / sched_setattr / sched_setscheduler_nocheck / sched_set_fifo]",
+      2
+    ],
+    [
+      "__irq_get_desc_lock",
+      2
+    ],
+    [
+      "signal_pending",
+      2
+    ],
+    [
+      "[ambiguous 0xc0071440: ktime_get_ts64 / ktime_get_seconds / ktime_get_real_seconds]",
+      2
+    ],
+    [
+      "[ambiguous 0xc0076900: posix_get_realtime_coarse / posix_get_monotonic_raw / posix_get_monotonic_ktime / posix_get_monotonic_timespec]",
+      2
+    ],
+    [
+      "[ambiguous 0xc0077880: __se_sys_clock_gettime / __riscv_sys_clock_gettime / do_clock_adjtime]",
+      2
+    ],
+    [
+      "[ambiguous 0xc007d040: tick_nohz_idle_stop_tick / tick_nohz_idle_retain_tick / tick_nohz_idle_enter]",
+      2
+    ],
+    [
+      "[ambiguous 0xc00bf100: file_end_write.isra.0 / file_start_write.isra.0]",
+      2
+    ],
+    [
+      "[ambiguous 0xc00cea00: pollwake / poll_select_finish]",
+      2
+    ],
+    [
+      "[ambiguous 0xc00cf500: poll_select_set_timeout / core_sys_select]",
+      2
+    ],
+    [
+      "[ambiguous 0xc01b1240: rcuref_put_slowpath / _copy_from_user]",
+      2
+    ],
+    [
+      "[ambiguous 0xc01c1a80: generic_atomic64_add / generic_atomic64_add_return]",
+      2
+    ],
+    [
+      "mas_start",
+      2
+    ],
+    [
+      "[ambiguous 0xc04378c0: mtree_load / mas_alloc_nodes]",
+      2
+    ],
+    [
+      "[ambiguous 0xc0054ac0: _sched_setscheduler.isra.0 / sched_setscheduler / do_sched_setscheduler]",
+      1
+    ],
+    [
+      "[ambiguous 0xc005d880: alloc_desc / irq_to_desc / free_desc]",
+      1
+    ],
+    [
+      "[ambiguous 0xc0070f80: ktime_get_mono_fast_ns / ktime_get_real_ts64]",
+      1
+    ],
+    [
+      "cpu_stopper_thread",
+      1
+    ],
+    [
+      "[ambiguous 0xc0089b40: __filemap_get_folio / filemap_fault]",
+      1
+    ],
+    [
+      "shmem_write_begin",
+      1
+    ],
+    [
+      "fdput",
+      1
+    ],
+    [
+      "file_end_write.isra.0",
+      1
+    ],
+    [
+      "vfs_writev",
+      1
+    ],
+    [
+      "[ambiguous 0xc00c04c0: vfs_write / ksys_read]",
+      1
+    ],
+    [
+      "ksys_read",
+      1
+    ],
+    [
+      "[ambiguous 0xc00c0e40: alloc_path_pseudo / init_file.isra.0]",
+      1
+    ],
+    [
+      "[ambiguous 0xc00c1340: __fput_deferred / fput]",
+      1
+    ],
+    [
+      "path_openat",
+      1
+    ],
+    [
+      "[ambiguous 0xc00ce880: __pollwait / zero_fd_set]",
+      1
+    ],
+    [
+      "get_sigset_argpack.constprop.0",
+      1
+    ],
+    [
+      "[ambiguous 0xc00ceb00: poll_select_finish / poll_freewait]",
+      1
+    ],
+    [
+      "[ambiguous 0xc00cf0c0: do_select / do_sys_poll]",
+      1
+    ],
+    [
+      "[ambiguous 0xc00cf780: __se_sys_pselect6 / __riscv_sys_pselect6 / ___se_sys_ppoll / __se_sys_ppoll]",
+      1
+    ],
+    [
+      "[ambiguous 0xc00d5f80: __fget_files_rcu / fget_raw / fget_task_next]",
+      1
+    ],
+    [
+      "[ambiguous 0xc00d6800: file_seek_cur_needs_f_lock / fdget_pos]",
+      1
+    ],
+    [
+      "[ambiguous 0xc01c1980: __nla_validate_parse / __nla_validate / __nla_parse / lock_addr]",
+      1
+    ],
+    [
+      "[ambiguous 0xc01c1a40: generic_atomic64_set / generic_atomic64_add]",
+      1
+    ],
+    [
+      "[ambiguous 0xc04444c0: minmax_running_min / xa_is_node / xa_is_sibling / xas_not_node]",
+      1
+    ],
+    [
+      "[ambiguous 0xc044b700: schedule_hrtimeout_range_clock / schedule_hrtimeout_range / schedule_hrtimeout / usleep_range_state]",
+      1
+    ]
+  ],
+  "bins": [
+    {
+      "pc": "0xc007d300",
+      "hits": 85,
+      "candidate_symbols": [
+        "tick_nohz_idle_exit"
+      ]
+    },
+    {
+      "pc": "0xc0446900",
+      "hits": 63,
+      "candidate_symbols": [
+        "do_trap_ecall_u"
+      ]
+    },
+    {
+      "pc": "0xc0047480",
+      "hits": 43,
+      "candidate_symbols": [
+        "__kthread_init_worker",
+        "to_kthread",
+        "kthread_should_stop",
+        "kthread_should_park"
+      ]
+    },
+    {
+      "pc": "0xc007d080",
+      "hits": 37,
+      "candidate_symbols": [
+        "tick_nohz_idle_enter",
+        "tick_nohz_irq_exit"
+      ]
+    },
+    {
+      "pc": "0xc01c7a40",
+      "hits": 33,
+      "candidate_symbols": [
+        "esp32s31_irq_poll"
+      ]
+    },
+    {
+      "pc": "0xc00474c0",
+      "hits": 29,
+      "candidate_symbols": [
+        "kthread_should_park",
+        "kthread_data",
+        "init_completion"
+      ]
+    },
+    {
+      "pc": "0xc04472c0",
+      "hits": 22,
+      "candidate_symbols": [
+        "cpuidle_enter_state"
+      ]
+    },
+    {
+      "pc": "0xc0070f00",
+      "hits": 19,
+      "candidate_symbols": [
+        "timekeeping_cycles_to_ns",
+        "ktime_get_mono_fast_ns"
+      ]
+    },
+    {
+      "pc": "0xc0070ec0",
+      "hits": 13,
+      "candidate_symbols": [
+        "timekeeping_cycles_to_ns"
+      ]
+    },
+    {
+      "pc": "0xc00481c0",
+      "hits": 12,
+      "candidate_symbols": [
+        "kthread_worker_fn",
+        "kthread_unuse_mm"
+      ]
+    },
+    {
+      "pc": "0xc0070d80",
+      "hits": 12,
+      "candidate_symbols": [
+        "tk_normalize_xtime",
+        "tk_xtime",
+        "tk_clock_read",
+        "delta_to_ns_safe"
+      ]
+    },
+    {
+      "pc": "0xc0050a80",
+      "hits": 10,
+      "candidate_symbols": [
+        "cpu_in_idle",
+        "cpu_startup_entry",
+        "init_rt_rq"
+      ]
+    },
+    {
+      "pc": "0xc01c44c0",
+      "hits": 10,
+      "candidate_symbols": [
+        "mmiowb_set_pending"
+      ]
+    },
+    {
+      "pc": "0xc01c79c0",
+      "hits": 10,
+      "candidate_symbols": [
+        "esp32s31_local_irq_starting",
+        "esp32s31_irq_poll"
+      ]
+    },
+    {
+      "pc": "0xc02c7f80",
+      "hits": 10,
+      "candidate_symbols": [
+        "riscv_sched_clock",
+        "esp32s31_riscv_timer_interrupt",
+        "s31_systimer_read_counter"
+      ]
+    },
+    {
+      "pc": "0xc0446940",
+      "hits": 10,
+      "candidate_symbols": [
+        "do_trap_ecall_u"
+      ]
+    },
+    {
+      "pc": "0xc00cee40",
+      "hits": 9,
+      "candidate_symbols": [
+        "do_select"
+      ]
+    },
+    {
+      "pc": "0xc0070e80",
+      "hits": 8,
+      "candidate_symbols": [
+        "dummy_clock_read",
+        "timekeeping_cycles_to_ns"
+      ]
+    },
+    {
+      "pc": "0xc00bd4c0",
+      "hits": 8,
+      "candidate_symbols": [
+        "fsnotify_file.isra.0"
+      ]
+    },
+    {
+      "pc": "0xc00c62c0",
+      "hits": 8,
+      "candidate_symbols": [
+        "pipe_poll"
+      ]
+    },
+    {
+      "pc": "0xc0446980",
+      "hits": 8,
+      "candidate_symbols": [
+        "do_trap_ecall_u"
+      ]
+    },
+    {
+      "pc": "0xc0449080",
+      "hits": 8,
+      "candidate_symbols": [
+        "__mutex_unlock_slowpath.isra.0",
+        "mutex_unlock",
+        "ww_mutex_unlock"
+      ]
+    },
+    {
+      "pc": "0xc0048280",
+      "hits": 7,
+      "candidate_symbols": [
+        "kthread_use_mm"
+      ]
+    },
+    {
+      "pc": "0xc00ceac0",
+      "hits": 7,
+      "candidate_symbols": [
+        "poll_select_finish"
+      ]
+    },
+    {
+      "pc": "0xc00d5f00",
+      "hits": 7,
+      "candidate_symbols": [
+        "__file_ref_put",
+        "__fget_files_rcu"
+      ]
+    },
+    {
+      "pc": "0xc002f240",
+      "hits": 6,
+      "candidate_symbols": [
+        "esp32s31_executable_address",
+        "esp32s31_kthread_use_init_mm",
+        "esp32s31_kthread_unuse_init_mm"
+      ]
+    },
+    {
+      "pc": "0xc0048240",
+      "hits": 6,
+      "candidate_symbols": [
+        "kthread_unuse_mm",
+        "kthread_use_mm"
+      ]
+    },
+    {
+      "pc": "0xc0069700",
+      "hits": 6,
+      "candidate_symbols": [
+        "rcu_momentary_eqs",
+        "rcu_all_qs"
+      ]
+    },
+    {
+      "pc": "0xc0069740",
+      "hits": 6,
+      "candidate_symbols": [
+        "rcu_all_qs"
+      ]
+    },
+    {
+      "pc": "0xc00c0540",
+      "hits": 6,
+      "candidate_symbols": [
+        "__se_sys_read",
+        "__riscv_sys_read",
+        "ksys_write"
+      ]
+    },
+    {
+      "pc": "0xc00ceb40",
+      "hits": 6,
+      "candidate_symbols": [
+        "poll_freewait"
+      ]
+    },
+    {
+      "pc": "0xc00cf000",
+      "hits": 6,
+      "candidate_symbols": [
+        "do_select"
+      ]
+    },
+    {
+      "pc": "0xc00d6000",
+      "hits": 6,
+      "candidate_symbols": [
+        "fget_task_next",
+        "fget",
+        "__fget_light"
+      ]
+    },
+    {
+      "pc": "0xc02c8000",
+      "hits": 6,
+      "candidate_symbols": [
+        "s31_systimer_read_counter",
+        "s31_systimer_read",
+        "s31_systimer_ensure_mmio"
+      ]
+    },
+    {
+      "pc": "0xc044b440",
+      "hits": 6,
+      "candidate_symbols": [
+        "rt_mutex_cleanup_proxy_lock",
+        "rt_mutex_adjust_pi"
+      ]
+    },
+    {
+      "pc": "0xc0048200",
+      "hits": 5,
+      "candidate_symbols": [
+        "kthread_unuse_mm"
+      ]
+    },
+    {
+      "pc": "0xc00507c0",
+      "hits": 5,
+      "candidate_symbols": [
+        "do_idle"
+      ]
+    },
+    {
+      "pc": "0xc0055440",
+      "hits": 5,
+      "candidate_symbols": [
+        "mutex_is_locked",
+        "__mutex_trylock_common"
+      ]
+    },
+    {
+      "pc": "0xc0070f40",
+      "hits": 5,
+      "candidate_symbols": [
+        "ktime_get_mono_fast_ns"
+      ]
+    },
+    {
+      "pc": "0xc0076a40",
+      "hits": 5,
+      "candidate_symbols": [
+        "clockid_to_kclock",
+        "get_pid"
+      ]
+    },
+    {
+      "pc": "0xc00c0380",
+      "hits": 5,
+      "candidate_symbols": [
+        "vfs_write"
+      ]
+    },
+    {
+      "pc": "0xc00ce900",
+      "hits": 5,
+      "candidate_symbols": [
+        "busy_loop_current_time",
+        "set_fd_set",
+        "get_sigset_argpack.constprop.0"
+      ]
+    },
+    {
+      "pc": "0xc00cf5c0",
+      "hits": 5,
+      "candidate_symbols": [
+        "core_sys_select"
+      ]
+    },
+    {
+      "pc": "0xc00cf700",
+      "hits": 5,
+      "candidate_symbols": [
+        "__se_sys_pselect6"
+      ]
+    },
+    {
+      "pc": "0xc00cf740",
+      "hits": 5,
+      "candidate_symbols": [
+        "__se_sys_pselect6"
+      ]
+    },
+    {
+      "pc": "0xc01c37c0",
+      "hits": 5,
+      "candidate_symbols": [
+        "__ashldi3",
+        "__ashrdi3",
+        "__lshrdi3"
+      ]
+    },
+    {
+      "pc": "0xc04370c0",
+      "hits": 5,
+      "candidate_symbols": [
+        "mas_may_activate",
+        "mas_pause",
+        "mas_start"
+      ]
+    },
+    {
+      "pc": "0xc0448f80",
+      "hits": 5,
+      "candidate_symbols": [
+        "yield_to",
+        "yield",
+        "mutex_trylock"
+      ]
+    },
+    {
+      "pc": "0xc044b580",
+      "hits": 5,
+      "candidate_symbols": [
+        "console_conditional_schedule",
+        "schedule_timeout"
+      ]
+    },
+    {
+      "pc": "0xc0071380",
+      "hits": 4,
+      "candidate_symbols": [
+        "ktime_get_ts64"
+      ]
+    },
+    {
+      "pc": "0xc0077840",
+      "hits": 4,
+      "candidate_symbols": [
+        "__se_sys_clock_gettime"
+      ]
+    },
+    {
+      "pc": "0xc00becc0",
+      "hits": 4,
+      "candidate_symbols": [
+        "vfs_llseek",
+        "class_fd_pos_constructor",
+        "fdput_pos"
+      ]
+    },
+    {
+      "pc": "0xc00c05c0",
+      "hits": 4,
+      "candidate_symbols": [
+        "ksys_write",
+        "___se_sys_write",
+        "__se_sys_write",
+        "__riscv_sys_write"
+      ]
+    },
+    {
+      "pc": "0xc00c6280",
+      "hits": 4,
+      "candidate_symbols": [
+        "pipe_readable",
+        "pipe_writable",
+        "pipe_poll"
+      ]
+    },
+    {
+      "pc": "0xc00cef00",
+      "hits": 4,
+      "candidate_symbols": [
+        "do_select"
+      ]
+    },
+    {
+      "pc": "0xc01c3800",
+      "hits": 4,
+      "candidate_symbols": [
+        "__lshrdi3",
+        "__ucmpdi2",
+        "esp32s31_cache_op"
+      ]
+    },
+    {
+      "pc": "0xc0436f40",
+      "hits": 4,
+      "candidate_symbols": [
+        "mte_set_node_dead",
+        "ma_pivots",
+        "ma_slots",
+        "mas_descend"
+      ]
+    },
+    {
+      "pc": "0xc0030b40",
+      "hits": 3,
+      "candidate_symbols": [
+        "mmiowb_spin_unlock"
+      ]
+    },
+    {
+      "pc": "0xc00482c0",
+      "hits": 3,
+      "candidate_symbols": [
+        "kthread_use_mm",
+        "get_kthread_comm"
+      ]
+    },
+    {
+      "pc": "0xc0054580",
+      "hits": 3,
+      "candidate_symbols": [
+        "available_idle_cpu",
+        "__sched_setscheduler"
+      ]
+    },
+    {
+      "pc": "0xc0054700",
+      "hits": 3,
+      "candidate_symbols": [
+        "__sched_setscheduler"
+      ]
+    },
+    {
+      "pc": "0xc0055480",
+      "hits": 3,
+      "candidate_symbols": [
+        "__mutex_trylock_common",
+        "__mutex_trylock",
+        "__set_task_blocked_on"
+      ]
+    },
+    {
+      "pc": "0xc005da40",
+      "hits": 3,
+      "candidate_symbols": [
+        "generic_handle_domain_nmi",
+        "irq_get_next_irq",
+        "__irq_get_desc_lock"
+      ]
+    },
+    {
+      "pc": "0xc00bf040",
+      "hits": 3,
+      "candidate_symbols": [
+        "default_llseek",
+        "fsnotify_modify",
+        "fsnotify_access",
+        "file_end_write.isra.0"
+      ]
+    },
+    {
+      "pc": "0xc00bf500",
+      "hits": 3,
+      "candidate_symbols": [
+        "generic_file_llseek",
+        "rw_verify_area.part.0"
+      ]
+    },
+    {
+      "pc": "0xc00bf540",
+      "hits": 3,
+      "candidate_symbols": [
+        "rw_verify_area.part.0",
+        "rw_verify_area",
+        "rw_verify_area.constprop.0"
+      ]
+    },
+    {
+      "pc": "0xc00c00c0",
+      "hits": 3,
+      "candidate_symbols": [
+        "vfs_read"
+      ]
+    },
+    {
+      "pc": "0xc00c0340",
+      "hits": 3,
+      "candidate_symbols": [
+        "kernel_write",
+        "vfs_write"
+      ]
+    },
+    {
+      "pc": "0xc00c6200",
+      "hits": 3,
+      "candidate_symbols": [
+        "__se_sys_execveat",
+        "poll_wait"
+      ]
+    },
+    {
+      "pc": "0xc00c6300",
+      "hits": 3,
+      "candidate_symbols": [
+        "pipe_poll",
+        "pipe_lock"
+      ]
+    },
+    {
+      "pc": "0xc00cef40",
+      "hits": 3,
+      "candidate_symbols": [
+        "do_select"
+      ]
+    },
+    {
+      "pc": "0xc00d5f40",
+      "hits": 3,
+      "candidate_symbols": [
+        "__fget_files_rcu"
+      ]
+    },
+    {
+      "pc": "0xc00d6040",
+      "hits": 3,
+      "candidate_symbols": [
+        "__fget_light",
+        "fdget",
+        "do_dup2"
+      ]
+    },
+    {
+      "pc": "0xc00d6840",
+      "hits": 3,
+      "candidate_symbols": [
+        "fdget_pos",
+        "__f_unlock_pos",
+        "set_close_on_exec"
+      ]
+    },
+    {
+      "pc": "0xc01b1300",
+      "hits": 3,
+      "candidate_symbols": [
+        "check_zeroed_user",
+        "_copy_to_user"
+      ]
+    },
+    {
+      "pc": "0xc02c7fc0",
+      "hits": 3,
+      "candidate_symbols": [
+        "s31_systimer_read_counter"
+      ]
+    },
+    {
+      "pc": "0xc0437840",
+      "hits": 3,
+      "candidate_symbols": [
+        "mtree_load"
+      ]
+    },
+    {
+      "pc": "0xc0437880",
+      "hits": 3,
+      "candidate_symbols": [
+        "mtree_load"
+      ]
+    },
+    {
+      "pc": "0xc0446bc0",
+      "hits": 3,
+      "candidate_symbols": [
+        "irqentry_enter_from_user_mode",
+        "irqentry_exit_to_user_mode"
+      ]
+    },
+    {
+      "pc": "0xc04498c0",
+      "hits": 3,
+      "candidate_symbols": [
+        "mutex_lock_killable",
+        "__mutex_lock_interruptible_slowpath",
+        "mutex_lock_interruptible"
+      ]
+    },
+    {
+      "pc": "0xc044b640",
+      "hits": 3,
+      "candidate_symbols": [
+        "schedule_timeout_killable",
+        "schedule_timeout_uninterruptible",
+        "schedule_timeout_idle",
+        "schedule_hrtimeout_range_clock"
+      ]
+    },
+    {
+      "pc": "0xc044b680",
+      "hits": 3,
+      "candidate_symbols": [
+        "schedule_hrtimeout_range_clock"
+      ]
+    },
+    {
+      "pc": "0xc0030b80",
+      "hits": 2,
+      "candidate_symbols": [
+        "mmiowb_spin_unlock"
+      ]
+    },
+    {
+      "pc": "0xc0040ac0",
+      "hits": 2,
+      "candidate_symbols": [
+        "sigprocmask",
+        "set_user_sigmask"
+      ]
+    },
+    {
+      "pc": "0xc0050740",
+      "hits": 2,
+      "candidate_symbols": [
+        "sched_idle_set_state",
+        "cpu_idle_poll_ctrl",
+        "arch_cpu_idle_enter",
+        "arch_cpu_idle_exit",
+        "do_idle"
+      ]
+    },
+    {
+      "pc": "0xc0050780",
+      "hits": 2,
+      "candidate_symbols": [
+        "do_idle"
+      ]
+    },
+    {
+      "pc": "0xc0054600",
+      "hits": 2,
+      "candidate_symbols": [
+        "__sched_setscheduler"
+      ]
+    },
+    {
+      "pc": "0xc0054640",
+      "hits": 2,
+      "candidate_symbols": [
+        "__sched_setscheduler"
+      ]
+    },
+    {
+      "pc": "0xc0054a40",
+      "hits": 2,
+      "candidate_symbols": [
+        "sched_set_normal",
+        "_sched_setscheduler.isra.0"
+      ]
+    },
+    {
+      "pc": "0xc0054a80",
+      "hits": 2,
+      "candidate_symbols": [
+        "_sched_setscheduler.isra.0"
+      ]
+    },
+    {
+      "pc": "0xc0054b40",
+      "hits": 2,
+      "candidate_symbols": [
+        "do_sched_setscheduler",
+        "sched_setattr",
+        "sched_setscheduler_nocheck",
+        "sched_set_fifo"
+      ]
+    },
+    {
+      "pc": "0xc005da80",
+      "hits": 2,
+      "candidate_symbols": [
+        "__irq_get_desc_lock"
+      ]
+    },
+    {
+      "pc": "0xc00664c0",
+      "hits": 2,
+      "candidate_symbols": [
+        "signal_pending"
+      ]
+    },
+    {
+      "pc": "0xc0071440",
+      "hits": 2,
+      "candidate_symbols": [
+        "ktime_get_ts64",
+        "ktime_get_seconds",
+        "ktime_get_real_seconds"
+      ]
+    },
+    {
+      "pc": "0xc0076900",
+      "hits": 2,
+      "candidate_symbols": [
+        "posix_get_realtime_coarse",
+        "posix_get_monotonic_raw",
+        "posix_get_monotonic_ktime",
+        "posix_get_monotonic_timespec"
+      ]
+    },
+    {
+      "pc": "0xc0077880",
+      "hits": 2,
+      "candidate_symbols": [
+        "__se_sys_clock_gettime",
+        "__riscv_sys_clock_gettime",
+        "do_clock_adjtime"
+      ]
+    },
+    {
+      "pc": "0xc007d040",
+      "hits": 2,
+      "candidate_symbols": [
+        "tick_nohz_idle_stop_tick",
+        "tick_nohz_idle_retain_tick",
+        "tick_nohz_idle_enter"
+      ]
+    },
+    {
+      "pc": "0xc00bf100",
+      "hits": 2,
+      "candidate_symbols": [
+        "file_end_write.isra.0",
+        "file_start_write.isra.0"
+      ]
+    },
+    {
+      "pc": "0xc00cea00",
+      "hits": 2,
+      "candidate_symbols": [
+        "pollwake",
+        "poll_select_finish"
+      ]
+    },
+    {
+      "pc": "0xc00cef80",
+      "hits": 2,
+      "candidate_symbols": [
+        "do_select"
+      ]
+    },
+    {
+      "pc": "0xc00cf040",
+      "hits": 2,
+      "candidate_symbols": [
+        "do_select"
+      ]
+    },
+    {
+      "pc": "0xc00cf500",
+      "hits": 2,
+      "candidate_symbols": [
+        "poll_select_set_timeout",
+        "core_sys_select"
+      ]
+    },
+    {
+      "pc": "0xc00cf540",
+      "hits": 2,
+      "candidate_symbols": [
+        "core_sys_select"
+      ]
+    },
+    {
+      "pc": "0xc01b1240",
+      "hits": 2,
+      "candidate_symbols": [
+        "rcuref_put_slowpath",
+        "_copy_from_user"
+      ]
+    },
+    {
+      "pc": "0xc01c1a80",
+      "hits": 2,
+      "candidate_symbols": [
+        "generic_atomic64_add",
+        "generic_atomic64_add_return"
+      ]
+    },
+    {
+      "pc": "0xc0437100",
+      "hits": 2,
+      "candidate_symbols": [
+        "mas_start"
+      ]
+    },
+    {
+      "pc": "0xc04378c0",
+      "hits": 2,
+      "candidate_symbols": [
+        "mtree_load",
+        "mas_alloc_nodes"
+      ]
+    },
+    {
+      "pc": "0xc04469c0",
+      "hits": 2,
+      "candidate_symbols": [
+        "do_trap_ecall_u"
+      ]
+    },
+    {
+      "pc": "0xc00545c0",
+      "hits": 1,
+      "candidate_symbols": [
+        "__sched_setscheduler"
+      ]
+    },
+    {
+      "pc": "0xc0054980",
+      "hits": 1,
+      "candidate_symbols": [
+        "__sched_setscheduler"
+      ]
+    },
+    {
+      "pc": "0xc0054ac0",
+      "hits": 1,
+      "candidate_symbols": [
+        "_sched_setscheduler.isra.0",
+        "sched_setscheduler",
+        "do_sched_setscheduler"
+      ]
+    },
+    {
+      "pc": "0xc005d880",
+      "hits": 1,
+      "candidate_symbols": [
+        "alloc_desc",
+        "irq_to_desc",
+        "free_desc"
+      ]
+    },
+    {
+      "pc": "0xc0070f80",
+      "hits": 1,
+      "candidate_symbols": [
+        "ktime_get_mono_fast_ns",
+        "ktime_get_real_ts64"
+      ]
+    },
+    {
+      "pc": "0xc0071400",
+      "hits": 1,
+      "candidate_symbols": [
+        "ktime_get_ts64"
+      ]
+    },
+    {
+      "pc": "0xc0082180",
+      "hits": 1,
+      "candidate_symbols": [
+        "cpu_stopper_thread"
+      ]
+    },
+    {
+      "pc": "0xc0089b40",
+      "hits": 1,
+      "candidate_symbols": [
+        "__filemap_get_folio",
+        "filemap_fault"
+      ]
+    },
+    {
+      "pc": "0xc00963c0",
+      "hits": 1,
+      "candidate_symbols": [
+        "shmem_write_begin"
+      ]
+    },
+    {
+      "pc": "0xc00bd200",
+      "hits": 1,
+      "candidate_symbols": [
+        "fdput"
+      ]
+    },
+    {
+      "pc": "0xc00bd540",
+      "hits": 1,
+      "candidate_symbols": [
+        "fsnotify_file.isra.0"
+      ]
+    },
+    {
+      "pc": "0xc00bf080",
+      "hits": 1,
+      "candidate_symbols": [
+        "file_end_write.isra.0"
+      ]
+    },
+    {
+      "pc": "0xc00bfb80",
+      "hits": 1,
+      "candidate_symbols": [
+        "vfs_writev"
+      ]
+    },
+    {
+      "pc": "0xc00c03c0",
+      "hits": 1,
+      "candidate_symbols": [
+        "vfs_write"
+      ]
+    },
+    {
+      "pc": "0xc00c04c0",
+      "hits": 1,
+      "candidate_symbols": [
+        "vfs_write",
+        "ksys_read"
+      ]
+    },
+    {
+      "pc": "0xc00c0500",
+      "hits": 1,
+      "candidate_symbols": [
+        "ksys_read"
+      ]
+    },
+    {
+      "pc": "0xc00c0e40",
+      "hits": 1,
+      "candidate_symbols": [
+        "alloc_path_pseudo",
+        "init_file.isra.0"
+      ]
+    },
+    {
+      "pc": "0xc00c1340",
+      "hits": 1,
+      "candidate_symbols": [
+        "__fput_deferred",
+        "fput"
+      ]
+    },
+    {
+      "pc": "0xc00cbd40",
+      "hits": 1,
+      "candidate_symbols": [
+        "path_openat"
+      ]
+    },
+    {
+      "pc": "0xc00ce880",
+      "hits": 1,
+      "candidate_symbols": [
+        "__pollwait",
+        "zero_fd_set"
+      ]
+    },
+    {
+      "pc": "0xc00ce980",
+      "hits": 1,
+      "candidate_symbols": [
+        "get_sigset_argpack.constprop.0"
+      ]
+    },
+    {
+      "pc": "0xc00ceb00",
+      "hits": 1,
+      "candidate_symbols": [
+        "poll_select_finish",
+        "poll_freewait"
+      ]
+    },
+    {
+      "pc": "0xc00ced80",
+      "hits": 1,
+      "candidate_symbols": [
+        "do_select"
+      ]
+    },
+    {
+      "pc": "0xc00cee00",
+      "hits": 1,
+      "candidate_symbols": [
+        "do_select"
+      ]
+    },
+    {
+      "pc": "0xc00cefc0",
+      "hits": 1,
+      "candidate_symbols": [
+        "do_select"
+      ]
+    },
+    {
+      "pc": "0xc00cf080",
+      "hits": 1,
+      "candidate_symbols": [
+        "do_select"
+      ]
+    },
+    {
+      "pc": "0xc00cf0c0",
+      "hits": 1,
+      "candidate_symbols": [
+        "do_select",
+        "do_sys_poll"
+      ]
+    },
+    {
+      "pc": "0xc00cf600",
+      "hits": 1,
+      "candidate_symbols": [
+        "core_sys_select"
+      ]
+    },
+    {
+      "pc": "0xc00cf640",
+      "hits": 1,
+      "candidate_symbols": [
+        "core_sys_select"
+      ]
+    },
+    {
+      "pc": "0xc00cf780",
+      "hits": 1,
+      "candidate_symbols": [
+        "__se_sys_pselect6",
+        "__riscv_sys_pselect6",
+        "___se_sys_ppoll",
+        "__se_sys_ppoll"
+      ]
+    },
+    {
+      "pc": "0xc00d5f80",
+      "hits": 1,
+      "candidate_symbols": [
+        "__fget_files_rcu",
+        "fget_raw",
+        "fget_task_next"
+      ]
+    },
+    {
+      "pc": "0xc00d6800",
+      "hits": 1,
+      "candidate_symbols": [
+        "file_seek_cur_needs_f_lock",
+        "fdget_pos"
+      ]
+    },
+    {
+      "pc": "0xc01c1980",
+      "hits": 1,
+      "candidate_symbols": [
+        "__nla_validate_parse",
+        "__nla_validate",
+        "__nla_parse",
+        "lock_addr"
+      ]
+    },
+    {
+      "pc": "0xc01c1a40",
+      "hits": 1,
+      "candidate_symbols": [
+        "generic_atomic64_set",
+        "generic_atomic64_add"
+      ]
+    },
+    {
+      "pc": "0xc01c7a00",
+      "hits": 1,
+      "candidate_symbols": [
+        "esp32s31_irq_poll"
+      ]
+    },
+    {
+      "pc": "0xc04444c0",
+      "hits": 1,
+      "candidate_symbols": [
+        "minmax_running_min",
+        "xa_is_node",
+        "xa_is_sibling",
+        "xas_not_node"
+      ]
+    },
+    {
+      "pc": "0xc044b700",
+      "hits": 1,
+      "candidate_symbols": [
+        "schedule_hrtimeout_range_clock",
+        "schedule_hrtimeout_range",
+        "schedule_hrtimeout",
+        "usleep_range_state"
+      ]
+    }
+  ]
+}

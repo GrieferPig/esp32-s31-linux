@@ -1,0 +1,1 @@
+cat /proc/profile > /tmp/s31-bench.profile; echo CPU_STAT; cat /proc/stat; echo MEMORY; cat /proc/meminfo; echo RADIO_HEALTH; cat /sys/devices/platform/soc/soc:radio/radio_health; echo PROCESS_STAT; cat /proc/[0-9]*/stat

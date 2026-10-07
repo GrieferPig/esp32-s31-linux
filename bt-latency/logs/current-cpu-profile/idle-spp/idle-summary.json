@@ -1,0 +1,53 @@
+{
+  "platform": "linux",
+  "method": "wall minus NO_HZ idle/iowait residency",
+  "window_seconds": 30.002430375,
+  "snapshot_width_ms": [
+    1.93675,
+    0.719
+  ],
+  "per_core_busy_pct": [
+    3.407825173563128,
+    0.14142312629230602
+  ],
+  "total_capacity_busy_pct": 1.7579588333600071,
+  "busy_core_equivalents": 0.03515917666720014,
+  "busy_pct_measurement_bounds": [
+    1.7369445006229278,
+    1.7789713060362922
+  ],
+  "tick_accounting_coverage_pct": 98.92531914591602,
+  "cpu_tick_deltas": {
+    "cpu": [
+      0,
+      0,
+      41,
+      5895,
+      0,
+      0,
+      0,
+      0
+    ],
+    "cpu0": [
+      0,
+      0,
+      40,
+      2898,
+      0,
+      0,
+      0,
+      0
+    ],
+    "cpu1": [
+      0,
+      0,
+      1,
+      2996,
+      0,
+      0,
+      0,
+      0
+    ]
+  },
+  "tasks": []
+}

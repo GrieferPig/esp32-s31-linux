@@ -1,0 +1,8 @@
+rr20-0 exit 0 connected 0.094666s
+{"bytes": 8765460, "duration": 40.000220057998376, "KiBs": 213.99931097474933, "frames": 8854, "frame_size": 990, "partial": 0, "gap_events": 0, "duplicates": 0, "bad_pattern_frames": 0, "last_seq": 8853, "stop": "deadline"}
+
+{"bytes": 272192, "gzip_bytes": 715, "sha256": "2b3148fb9349efb0741f64366a1bd655c93d264204fbadc181755729ca69b33a"}
+rr20-1 exit 0 connected 3.425907s
+{"bytes": 8688240, "duration": 40.00020934799977, "KiBs": 212.1141242333092, "frames": 8776, "frame_size": 990, "partial": 0, "gap_events": 0, "duplicates": 0, "bad_pattern_frames": 0, "last_seq": 8775, "stop": "deadline"}
+
+{"bytes": 272192, "gzip_bytes": 730, "sha256": "97bb94476139e0489361d57490d5032943ddf193a9a8df5a585ea8a71eca7cbe"}

@@ -1,0 +1,3 @@
+Temporary CPU probe uploaded and SHA256 verified
+1.7579588333600071 [{'pid': '35', 'name': 'kworker/u11:0-s31-radio', 'user_ticks': 0, 'system_ticks': 57, 'total_ticks': 57}, {'pid': '77', 'name': 'sh', 'user_ticks': 3, 'system_ticks': 8, 'total_ticks': 11}, {'pid': '216', 'name': 'btdm', 'user_ticks': 0, 'system_ticks': 3, 'total_ticks': 3}, {'pid': '12', 'name': 'rcu_sched', 'user_ticks': 0, 'system_ticks': 2, 'total_ticks': 2}]
+{"bytes": 272192, "gzip_bytes": 374, "sha256": "468dad9460ef6c54c0a3f64b283d175e6f982d6627b7cfc1dc4471bd298603cd"}

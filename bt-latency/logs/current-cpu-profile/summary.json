@@ -1,0 +1,562 @@
+[
+  {
+    "protocol": "ble",
+    "run": "rr20-0",
+    "host_KiBs": 31.952523236165487,
+    "radio_share_accounted_task_pct": 81.4753760560478,
+    "task_cpu_seconds": [
+      {
+        "pid": "215",
+        "name": "btdm",
+        "user_ticks": 0,
+        "system_ticks": 2270,
+        "total_ticks": 2270,
+        "cpu_seconds": 22.7
+      },
+      {
+        "pid": "35",
+        "name": "kworker/u11:0-s31-radio",
+        "user_ticks": 0,
+        "system_ticks": 1684,
+        "total_ticks": 1684,
+        "cpu_seconds": 16.84
+      },
+      {
+        "pid": "212",
+        "name": "s31-btstack-a2d",
+        "user_ticks": 344,
+        "system_ticks": 506,
+        "total_ticks": 850,
+        "cpu_seconds": 8.5
+      },
+      {
+        "pid": "15",
+        "name": "migration/0",
+        "user_ticks": 0,
+        "system_ticks": 28,
+        "total_ticks": 28,
+        "cpu_seconds": 0.28
+      },
+      {
+        "pid": "77",
+        "name": "sh",
+        "user_ticks": 5,
+        "system_ticks": 6,
+        "total_ticks": 11,
+        "cpu_seconds": 0.11
+      },
+      {
+        "pid": "8",
+        "name": "kworker/0:1-events",
+        "user_ticks": 0,
+        "system_ticks": 4,
+        "total_ticks": 4,
+        "cpu_seconds": 0.04
+      }
+    ],
+    "worker_passes": 12676,
+    "kernel_samples": 894,
+    "kernel_top": [
+      [
+        "do_trap_ecall_u",
+        133
+      ],
+      [
+        "[ambiguous 0xc0047480: __kthread_init_worker / to_kthread / kthread_should_stop / kthread_should_park]",
+        54
+      ],
+      [
+        "tick_nohz_idle_exit",
+        47
+      ],
+      [
+        "[ambiguous 0xc007d080: tick_nohz_idle_enter / tick_nohz_irq_exit]",
+        40
+      ],
+      [
+        "do_select",
+        32
+      ],
+      [
+        "cpuidle_enter_state",
+        31
+      ],
+      [
+        "[ambiguous 0xc00474c0: kthread_should_park / kthread_data / init_completion]",
+        29
+      ],
+      [
+        "[ambiguous 0xc0070e80: dummy_clock_read / timekeeping_cycles_to_ns]",
+        22
+      ],
+      [
+        "esp32s31_irq_poll",
+        22
+      ],
+      [
+        "[ambiguous 0xc0070f00: timekeeping_cycles_to_ns / ktime_get_mono_fast_ns]",
+        18
+      ],
+      [
+        "[ambiguous 0xc0069700: rcu_momentary_eqs / rcu_all_qs]",
+        15
+      ],
+      [
+        "mmiowb_set_pending",
+        15
+      ],
+      [
+        "rcu_all_qs",
+        14
+      ],
+      [
+        "timekeeping_cycles_to_ns",
+        13
+      ],
+      [
+        "core_sys_select",
+        11
+      ],
+      [
+        "[ambiguous 0xc0048240: kthread_unuse_mm / kthread_use_mm]",
+        10
+      ],
+      [
+        "__sched_setscheduler",
+        10
+      ],
+      [
+        "[ambiguous 0xc01c3800: __lshrdi3 / __ucmpdi2 / esp32s31_cache_op]",
+        10
+      ],
+      [
+        "mtree_load",
+        10
+      ],
+      [
+        "[ambiguous 0xc02c8000: s31_systimer_read_counter / s31_systimer_read / s31_systimer_ensure_mmio]",
+        9
+      ]
+    ]
+  },
+  {
+    "protocol": "ble",
+    "run": "rr20-1",
+    "host_KiBs": 31.66249275287165,
+    "radio_share_accounted_task_pct": 81.8577648766328,
+    "task_cpu_seconds": [
+      {
+        "pid": "215",
+        "name": "btdm",
+        "user_ticks": 0,
+        "system_ticks": 2273,
+        "total_ticks": 2273,
+        "cpu_seconds": 22.73
+      },
+      {
+        "pid": "35",
+        "name": "kworker/u11:0-s31-radio",
+        "user_ticks": 0,
+        "system_ticks": 1675,
+        "total_ticks": 1675,
+        "cpu_seconds": 16.75
+      },
+      {
+        "pid": "242",
+        "name": "s31-btstack-a2d",
+        "user_ticks": 287,
+        "system_ticks": 534,
+        "total_ticks": 821,
+        "cpu_seconds": 8.21
+      },
+      {
+        "pid": "15",
+        "name": "migration/0",
+        "user_ticks": 0,
+        "system_ticks": 30,
+        "total_ticks": 30,
+        "cpu_seconds": 0.3
+      },
+      {
+        "pid": "77",
+        "name": "sh",
+        "user_ticks": 4,
+        "system_ticks": 7,
+        "total_ticks": 11,
+        "cpu_seconds": 0.11
+      },
+      {
+        "pid": "8",
+        "name": "kworker/0:1-mm_percpu_wq",
+        "user_ticks": 0,
+        "system_ticks": 5,
+        "total_ticks": 5,
+        "cpu_seconds": 0.05
+      }
+    ],
+    "worker_passes": 12587,
+    "kernel_samples": 814,
+    "kernel_top": [
+      [
+        "tick_nohz_idle_exit",
+        85
+      ],
+      [
+        "do_trap_ecall_u",
+        83
+      ],
+      [
+        "[ambiguous 0xc0047480: __kthread_init_worker / to_kthread / kthread_should_stop / kthread_should_park]",
+        43
+      ],
+      [
+        "[ambiguous 0xc007d080: tick_nohz_idle_enter / tick_nohz_irq_exit]",
+        37
+      ],
+      [
+        "esp32s31_irq_poll",
+        34
+      ],
+      [
+        "do_select",
+        30
+      ],
+      [
+        "[ambiguous 0xc00474c0: kthread_should_park / kthread_data / init_completion]",
+        29
+      ],
+      [
+        "cpuidle_enter_state",
+        22
+      ],
+      [
+        "[ambiguous 0xc0070f00: timekeeping_cycles_to_ns / ktime_get_mono_fast_ns]",
+        19
+      ],
+      [
+        "timekeeping_cycles_to_ns",
+        13
+      ],
+      [
+        "[ambiguous 0xc00481c0: kthread_worker_fn / kthread_unuse_mm]",
+        12
+      ],
+      [
+        "[ambiguous 0xc0070d80: tk_normalize_xtime / tk_xtime / tk_clock_read / delta_to_ns_safe]",
+        12
+      ],
+      [
+        "[ambiguous 0xc0050a80: cpu_in_idle / cpu_startup_entry / init_rt_rq]",
+        10
+      ],
+      [
+        "__se_sys_pselect6",
+        10
+      ],
+      [
+        "mmiowb_set_pending",
+        10
+      ],
+      [
+        "[ambiguous 0xc01c79c0: esp32s31_local_irq_starting / esp32s31_irq_poll]",
+        10
+      ],
+      [
+        "[ambiguous 0xc02c7f80: riscv_sched_clock / esp32s31_riscv_timer_interrupt / s31_systimer_read_counter]",
+        10
+      ],
+      [
+        "__sched_setscheduler",
+        9
+      ],
+      [
+        "fsnotify_file.isra.0",
+        9
+      ],
+      [
+        "core_sys_select",
+        9
+      ]
+    ]
+  },
+  {
+    "protocol": "spp",
+    "run": "rr20-0",
+    "host_KiBs": 213.99931097474933,
+    "radio_share_accounted_task_pct": 62.398619499568596,
+    "task_cpu_seconds": [
+      {
+        "pid": "213",
+        "name": "s31-btstack-a2d",
+        "user_ticks": 689,
+        "system_ticks": 1462,
+        "total_ticks": 2151,
+        "cpu_seconds": 21.51
+      },
+      {
+        "pid": "216",
+        "name": "btdm",
+        "user_ticks": 0,
+        "system_ticks": 1943,
+        "total_ticks": 1943,
+        "cpu_seconds": 19.43
+      },
+      {
+        "pid": "35",
+        "name": "kworker/u11:0-s31-radio",
+        "user_ticks": 0,
+        "system_ticks": 1673,
+        "total_ticks": 1673,
+        "cpu_seconds": 16.73
+      },
+      {
+        "pid": "77",
+        "name": "sh",
+        "user_ticks": 2,
+        "system_ticks": 10,
+        "total_ticks": 12,
+        "cpu_seconds": 0.12
+      },
+      {
+        "pid": "15",
+        "name": "migration/0",
+        "user_ticks": 0,
+        "system_ticks": 5,
+        "total_ticks": 5,
+        "cpu_seconds": 0.05
+      },
+      {
+        "pid": "8",
+        "name": "kworker/0:1-mm_percpu_wq",
+        "user_ticks": 0,
+        "system_ticks": 3,
+        "total_ticks": 3,
+        "cpu_seconds": 0.03
+      }
+    ],
+    "worker_passes": 10493,
+    "kernel_samples": 1087,
+    "kernel_top": [
+      [
+        "do_trap_ecall_u",
+        234
+      ],
+      [
+        "do_select",
+        75
+      ],
+      [
+        "cpuidle_enter_state",
+        43
+      ],
+      [
+        "tick_nohz_idle_exit",
+        42
+      ],
+      [
+        "[ambiguous 0xc007d080: tick_nohz_idle_enter / tick_nohz_irq_exit]",
+        38
+      ],
+      [
+        "core_sys_select",
+        31
+      ],
+      [
+        "[ambiguous 0xc0069700: rcu_momentary_eqs / rcu_all_qs]",
+        24
+      ],
+      [
+        "rcu_all_qs",
+        23
+      ],
+      [
+        "[ambiguous 0xc0077880: __se_sys_clock_gettime / __riscv_sys_clock_gettime / do_clock_adjtime]",
+        18
+      ],
+      [
+        "[ambiguous 0xc0071340: ktime_get_raw / ktime_get_ts64]",
+        17
+      ],
+      [
+        "[ambiguous 0xc0076a40: clockid_to_kclock / get_pid]",
+        16
+      ],
+      [
+        "[ambiguous 0xc00d5f00: __file_ref_put / __fget_files_rcu]",
+        16
+      ],
+      [
+        "[ambiguous 0xc0055480: __mutex_trylock_common / __mutex_trylock / __set_task_blocked_on]",
+        15
+      ],
+      [
+        "esp32s31_irq_poll",
+        15
+      ],
+      [
+        "[ambiguous 0xc00bf540: rw_verify_area.part.0 / rw_verify_area / rw_verify_area.constprop.0]",
+        14
+      ],
+      [
+        "[ambiguous 0xc00c6280: pipe_readable / pipe_writable / pipe_poll]",
+        14
+      ],
+      [
+        "[ambiguous 0xc0449080: __mutex_unlock_slowpath.isra.0 / mutex_unlock / ww_mutex_unlock]",
+        14
+      ],
+      [
+        "do_idle",
+        13
+      ],
+      [
+        "[ambiguous 0xc0070d80: tk_normalize_xtime / tk_xtime / tk_clock_read / delta_to_ns_safe]",
+        13
+      ],
+      [
+        "ktime_get_ts64",
+        10
+      ]
+    ]
+  },
+  {
+    "protocol": "spp",
+    "run": "rr20-1",
+    "host_KiBs": 212.1141242333092,
+    "radio_share_accounted_task_pct": 62.09472076048209,
+    "task_cpu_seconds": [
+      {
+        "pid": "243",
+        "name": "s31-btstack-a2d",
+        "user_ticks": 904,
+        "system_ticks": 1300,
+        "total_ticks": 2204,
+        "cpu_seconds": 22.04
+      },
+      {
+        "pid": "216",
+        "name": "btdm",
+        "user_ticks": 0,
+        "system_ticks": 1902,
+        "total_ticks": 1902,
+        "cpu_seconds": 19.02
+      },
+      {
+        "pid": "35",
+        "name": "kworker/u11:0-s31-radio",
+        "user_ticks": 0,
+        "system_ticks": 1756,
+        "total_ticks": 1756,
+        "cpu_seconds": 17.56
+      },
+      {
+        "pid": "77",
+        "name": "sh",
+        "user_ticks": 1,
+        "system_ticks": 10,
+        "total_ticks": 11,
+        "cpu_seconds": 0.11
+      },
+      {
+        "pid": "15",
+        "name": "migration/0",
+        "user_ticks": 0,
+        "system_ticks": 4,
+        "total_ticks": 4,
+        "cpu_seconds": 0.04
+      },
+      {
+        "pid": "8",
+        "name": "kworker/0:1-mm_percpu_wq",
+        "user_ticks": 0,
+        "system_ticks": 4,
+        "total_ticks": 4,
+        "cpu_seconds": 0.04
+      }
+    ],
+    "worker_passes": 10909,
+    "kernel_samples": 1082,
+    "kernel_top": [
+      [
+        "do_trap_ecall_u",
+        236
+      ],
+      [
+        "do_select",
+        57
+      ],
+      [
+        "cpuidle_enter_state",
+        52
+      ],
+      [
+        "[ambiguous 0xc007d080: tick_nohz_idle_enter / tick_nohz_irq_exit]",
+        46
+      ],
+      [
+        "tick_nohz_idle_exit",
+        42
+      ],
+      [
+        "esp32s31_irq_poll",
+        24
+      ],
+      [
+        "core_sys_select",
+        20
+      ],
+      [
+        "do_idle",
+        18
+      ],
+      [
+        "[ambiguous 0xc0069700: rcu_momentary_eqs / rcu_all_qs]",
+        17
+      ],
+      [
+        "[ambiguous 0xc00bf540: rw_verify_area.part.0 / rw_verify_area / rw_verify_area.constprop.0]",
+        17
+      ],
+      [
+        "ktime_get_ts64",
+        16
+      ],
+      [
+        "[ambiguous 0xc0076a40: clockid_to_kclock / get_pid]",
+        15
+      ],
+      [
+        "[ambiguous 0xc0077880: __se_sys_clock_gettime / __riscv_sys_clock_gettime / do_clock_adjtime]",
+        15
+      ],
+      [
+        "__sched_setscheduler",
+        14
+      ],
+      [
+        "[ambiguous 0xc0047480: __kthread_init_worker / to_kthread / kthread_should_stop / kthread_should_park]",
+        13
+      ],
+      [
+        "[ambiguous 0xc0070d80: tk_normalize_xtime / tk_xtime / tk_clock_read / delta_to_ns_safe]",
+        13
+      ],
+      [
+        "signal_pending",
+        12
+      ],
+      [
+        "[ambiguous 0xc00becc0: vfs_llseek / class_fd_pos_constructor / fdput_pos]",
+        12
+      ],
+      [
+        "__fget_files_rcu",
+        12
+      ],
+      [
+        "[ambiguous 0xc0449080: __mutex_unlock_slowpath.isra.0 / mutex_unlock / ww_mutex_unlock]",
+        12
+      ]
+    ]
+  }
+]
