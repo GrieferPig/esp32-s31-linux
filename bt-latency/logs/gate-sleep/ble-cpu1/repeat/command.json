@@ -1,0 +1,13 @@
+{
+  "argv": [
+    "python3",
+    "bt-latency/fresh_fd_run.py",
+    "bt-latency/logs/gate-sleep/ble-cpu1/repeat"
+  ],
+  "env": {
+    "S31_BOARD_STATS": "1"
+  },
+  "firmware": "c252d979f699ebb8",
+  "bt_gate_sleep": 1,
+  "affinity": 2
+}

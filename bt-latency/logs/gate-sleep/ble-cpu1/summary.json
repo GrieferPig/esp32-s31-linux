@@ -1,0 +1,792 @@
+{
+  "first": {
+    "bytes": 1296405,
+    "packets": 2619,
+    "first_seq": 0,
+    "last_seq": 2618,
+    "gaps": 0,
+    "duplicates": 0,
+    "bad_patterns": 0,
+    "duration": 40.00021198399918,
+    "KiBs": 31.65034496114499,
+    "five_second_KiBs": [
+      31.6142578125,
+      31.8076171875,
+      32.0009765625,
+      31.4208984375,
+      31.517578125,
+      31.7109375,
+      31.7109375,
+      31.4208984375
+    ],
+    "board": {
+      "cpu_busy_pct_aggregate": 84.56541509679096,
+      "counter_delta": {
+        "ticks": 4315,
+        "worker_passes": 2450,
+        "heap_used": 0,
+        "heap_peak": 3904,
+        "hci_rx_dropped": 0,
+        "hci_tx_dropped": 0
+      },
+      "memory_before_kB": {
+        "MemFree": 6864,
+        "MemAvailable": 8984,
+        "Cached": 3308
+      },
+      "memory_after_kB": {
+        "MemFree": 6968,
+        "MemAvailable": 9088,
+        "Cached": 3308
+      },
+      "tasks": [
+        {
+          "pid": "193",
+          "name": "btdm",
+          "user_ticks": 0,
+          "system_ticks": 3573,
+          "total_ticks": 3573
+        },
+        {
+          "pid": "302",
+          "name": "s31-btstack-a2d",
+          "user_ticks": 693,
+          "system_ticks": 1449,
+          "total_ticks": 2142
+        },
+        {
+          "pid": "35",
+          "name": "kworker/u11:0-s31-radio",
+          "user_ticks": 0,
+          "system_ticks": 806,
+          "total_ticks": 806
+        },
+        {
+          "pid": "77",
+          "name": "sh",
+          "user_ticks": 27,
+          "system_ticks": 109,
+          "total_ticks": 136
+        },
+        {
+          "pid": "8",
+          "name": "kworker/0:1-mm_percpu_wq",
+          "user_ticks": 0,
+          "system_ticks": 21,
+          "total_ticks": 21
+        },
+        {
+          "pid": "12",
+          "name": "rcu_sched",
+          "user_ticks": 0,
+          "system_ticks": 11,
+          "total_ticks": 11
+        },
+        {
+          "pid": "28",
+          "name": "kcompactd0",
+          "user_ticks": 0,
+          "system_ticks": 5,
+          "total_ticks": 5
+        },
+        {
+          "pid": "15",
+          "name": "migration/0",
+          "user_ticks": 0,
+          "system_ticks": 4,
+          "total_ticks": 4
+        },
+        {
+          "pid": "283",
+          "name": "kworker/u9:1-events_unbound",
+          "user_ticks": 0,
+          "system_ticks": 2,
+          "total_ticks": 2
+        },
+        {
+          "pid": "34",
+          "name": "kworker/1:1-mm_percpu_wq",
+          "user_ticks": 0,
+          "system_ticks": 2,
+          "total_ticks": 2
+        },
+        {
+          "pid": "1",
+          "name": "init",
+          "user_ticks": 0,
+          "system_ticks": 0,
+          "total_ticks": 0
+        },
+        {
+          "pid": "10",
+          "name": "kworker/R-mm_percpu_wq",
+          "user_ticks": 0,
+          "system_ticks": 0,
+          "total_ticks": 0
+        },
+        {
+          "pid": "11",
+          "name": "ksoftirqd/0",
+          "user_ticks": 0,
+          "system_ticks": 0,
+          "total_ticks": 0
+        },
+        {
+          "pid": "123",
+          "name": "syslogd",
+          "user_ticks": 0,
+          "system_ticks": 0,
+          "total_ticks": 0
+        },
+        {
+          "pid": "127",
+          "name": "klogd",
+          "user_ticks": 0,
+          "system_ticks": 0,
+          "total_ticks": 0
+        },
+        {
+          "pid": "13",
+          "name": "rcu_exp_par_gp_kthread_worker/0",
+          "user_ticks": 0,
+          "system_ticks": 0,
+          "total_ticks": 0
+        },
+        {
+          "pid": "139",
+          "name": "kworker/u9:2-events_unbound",
+          "user_ticks": 0,
+          "system_ticks": 0,
+          "total_ticks": 0
+        },
+        {
+          "pid": "14",
+          "name": "rcu_exp_gp_kthread_worker",
+          "user_ticks": 0,
+          "system_ticks": 0,
+          "total_ticks": 0
+        },
+        {
+          "pid": "150",
+          "name": "kworker/u11:1",
+          "user_ticks": 0,
+          "system_ticks": 0,
+          "total_ticks": 0
+        },
+        {
+          "pid": "16",
+          "name": "cpuhp/0",
+          "user_ticks": 0,
+          "system_ticks": 0,
+          "total_ticks": 0
+        },
+        {
+          "pid": "17",
+          "name": "cpuhp/1",
+          "user_ticks": 0,
+          "system_ticks": 0,
+          "total_ticks": 0
+        },
+        {
+          "pid": "18",
+          "name": "migration/1",
+          "user_ticks": 0,
+          "system_ticks": 0,
+          "total_ticks": 0
+        },
+        {
+          "pid": "19",
+          "name": "ksoftirqd/1",
+          "user_ticks": 0,
+          "system_ticks": 0,
+          "total_ticks": 0
+        },
+        {
+          "pid": "2",
+          "name": "kthreadd",
+          "user_ticks": 0,
+          "system_ticks": 0,
+          "total_ticks": 0
+        },
+        {
+          "pid": "20",
+          "name": "kworker/1:0-mm_percpu_wq",
+          "user_ticks": 0,
+          "system_ticks": 0,
+          "total_ticks": 0
+        },
+        {
+          "pid": "21",
+          "name": "kworker/1:0H-kblockd",
+          "user_ticks": 0,
+          "system_ticks": 0,
+          "total_ticks": 0
+        },
+        {
+          "pid": "213",
+          "name": "crond",
+          "user_ticks": 0,
+          "system_ticks": 0,
+          "total_ticks": 0
+        },
+        {
+          "pid": "22",
+          "name": "kworker/u9:0-events_unbound",
+          "user_ticks": 0,
+          "system_ticks": 0,
+          "total_ticks": 0
+        },
+        {
+          "pid": "23",
+          "name": "kworker/u10:0-events_unbound",
+          "user_ticks": 0,
+          "system_ticks": 0,
+          "total_ticks": 0
+        },
+        {
+          "pid": "24",
+          "name": "kdevtmpfs",
+          "user_ticks": 0,
+          "system_ticks": 0,
+          "total_ticks": 0
+        },
+        {
+          "pid": "25",
+          "name": "kworker/R-inet_frag_wq",
+          "user_ticks": 0,
+          "system_ticks": 0,
+          "total_ticks": 0
+        },
+        {
+          "pid": "26",
+          "name": "oom_reaper",
+          "user_ticks": 0,
+          "system_ticks": 0,
+          "total_ticks": 0
+        },
+        {
+          "pid": "27",
+          "name": "kworker/R-writeback",
+          "user_ticks": 0,
+          "system_ticks": 0,
+          "total_ticks": 0
+        },
+        {
+          "pid": "29",
+          "name": "kworker/R-kblockd",
+          "user_ticks": 0,
+          "system_ticks": 0,
+          "total_ticks": 0
+        },
+        {
+          "pid": "3",
+          "name": "pool_workqueue_release",
+          "user_ticks": 0,
+          "system_ticks": 0,
+          "total_ticks": 0
+        },
+        {
+          "pid": "30",
+          "name": "watchdogd",
+          "user_ticks": 0,
+          "system_ticks": 0,
+          "total_ticks": 0
+        },
+        {
+          "pid": "31",
+          "name": "kworker/R-cfg80211",
+          "user_ticks": 0,
+          "system_ticks": 0,
+          "total_ticks": 0
+        },
+        {
+          "pid": "33",
+          "name": "kswapd0",
+          "user_ticks": 0,
+          "system_ticks": 0,
+          "total_ticks": 0
+        },
+        {
+          "pid": "36",
+          "name": "hwrng",
+          "user_ticks": 0,
+          "system_ticks": 0,
+          "total_ticks": 0
+        },
+        {
+          "pid": "37",
+          "name": "kworker/u10:1",
+          "user_ticks": 0,
+          "system_ticks": 0,
+          "total_ticks": 0
+        },
+        {
+          "pid": "39",
+          "name": "kworker/R-mld",
+          "user_ticks": 0,
+          "system_ticks": 0,
+          "total_ticks": 0
+        },
+        {
+          "pid": "4",
+          "name": "kworker/R-rcu_gp",
+          "user_ticks": 0,
+          "system_ticks": 0,
+          "total_ticks": 0
+        },
+        {
+          "pid": "40",
+          "name": "kworker/R-ipv6_addrconf",
+          "user_ticks": 0,
+          "system_ticks": 0,
+          "total_ticks": 0
+        },
+        {
+          "pid": "41",
+          "name": "kworker/u8:1-ipv6_addrconf",
+          "user_ticks": 0,
+          "system_ticks": 0,
+          "total_ticks": 0
+        },
+        {
+          "pid": "43",
+          "name": "kworker/0:1H",
+          "user_ticks": 0,
+          "system_ticks": 0,
+          "total_ticks": 0
+        },
+        {
+          "pid": "44",
+          "name": "kworker/1:1H",
+          "user_ticks": 0,
+          "system_ticks": 0,
+          "total_ticks": 0
+        },
+        {
+          "pid": "5",
+          "name": "kworker/R-sync_wq",
+          "user_ticks": 0,
+          "system_ticks": 0,
+          "total_ticks": 0
+        },
+        {
+          "pid": "6",
+          "name": "kworker/0:0-rcu_gp",
+          "user_ticks": 0,
+          "system_ticks": 0,
+          "total_ticks": 0
+        },
+        {
+          "pid": "7",
+          "name": "kworker/0:0H-kblockd",
+          "user_ticks": 0,
+          "system_ticks": 0,
+          "total_ticks": 0
+        },
+        {
+          "pid": "9",
+          "name": "kworker/u8:0-ipv6_addrconf",
+          "user_ticks": 0,
+          "system_ticks": 0,
+          "total_ticks": 0
+        }
+      ],
+      "note": "CPU spans snapshots around receiver, including connection/discovery and snapshot overhead; throughput uses only40s receive window."
+    }
+  },
+  "repeat": {
+    "bytes": 1297395,
+    "packets": 2621,
+    "first_seq": 0,
+    "last_seq": 2620,
+    "gaps": 0,
+    "duplicates": 0,
+    "bad_patterns": 0,
+    "duration": 40.00023697299912,
+    "KiBs": 31.6744949671858,
+    "five_second_KiBs": [
+      31.517578125,
+      31.8076171875,
+      31.7109375,
+      31.517578125,
+      31.8076171875,
+      31.8076171875,
+      31.6142578125,
+      31.6142578125
+    ],
+    "board": {
+      "cpu_busy_pct_aggregate": 84.19540229885058,
+      "counter_delta": {
+        "ticks": 4296,
+        "worker_passes": 2425,
+        "heap_used": 0,
+        "heap_peak": 0,
+        "hci_rx_dropped": 0,
+        "hci_tx_dropped": 0
+      },
+      "memory_before_kB": {
+        "MemFree": 6924,
+        "MemAvailable": 9044,
+        "Cached": 3308
+      },
+      "memory_after_kB": {
+        "MemFree": 6932,
+        "MemAvailable": 9052,
+        "Cached": 3308
+      },
+      "tasks": [
+        {
+          "pid": "193",
+          "name": "btdm",
+          "user_ticks": 0,
+          "system_ticks": 3545,
+          "total_ticks": 3545
+        },
+        {
+          "pid": "302",
+          "name": "s31-btstack-a2d",
+          "user_ticks": 675,
+          "system_ticks": 1426,
+          "total_ticks": 2101
+        },
+        {
+          "pid": "35",
+          "name": "kworker/u11:0-s31-radio",
+          "user_ticks": 0,
+          "system_ticks": 802,
+          "total_ticks": 802
+        },
+        {
+          "pid": "77",
+          "name": "sh",
+          "user_ticks": 26,
+          "system_ticks": 97,
+          "total_ticks": 123
+        },
+        {
+          "pid": "8",
+          "name": "kworker/0:1-events",
+          "user_ticks": 0,
+          "system_ticks": 23,
+          "total_ticks": 23
+        },
+        {
+          "pid": "12",
+          "name": "rcu_sched",
+          "user_ticks": 0,
+          "system_ticks": 14,
+          "total_ticks": 14
+        },
+        {
+          "pid": "15",
+          "name": "migration/0",
+          "user_ticks": 0,
+          "system_ticks": 3,
+          "total_ticks": 3
+        },
+        {
+          "pid": "34",
+          "name": "kworker/1:1-mm_percpu_wq",
+          "user_ticks": 0,
+          "system_ticks": 2,
+          "total_ticks": 2
+        },
+        {
+          "pid": "19",
+          "name": "ksoftirqd/1",
+          "user_ticks": 0,
+          "system_ticks": 1,
+          "total_ticks": 1
+        },
+        {
+          "pid": "213",
+          "name": "crond",
+          "user_ticks": 0,
+          "system_ticks": 1,
+          "total_ticks": 1
+        },
+        {
+          "pid": "28",
+          "name": "kcompactd0",
+          "user_ticks": 0,
+          "system_ticks": 1,
+          "total_ticks": 1
+        },
+        {
+          "pid": "283",
+          "name": "kworker/u9:1-events_unbound",
+          "user_ticks": 0,
+          "system_ticks": 1,
+          "total_ticks": 1
+        },
+        {
+          "pid": "1",
+          "name": "init",
+          "user_ticks": 0,
+          "system_ticks": 0,
+          "total_ticks": 0
+        },
+        {
+          "pid": "10",
+          "name": "kworker/R-mm_percpu_wq",
+          "user_ticks": 0,
+          "system_ticks": 0,
+          "total_ticks": 0
+        },
+        {
+          "pid": "11",
+          "name": "ksoftirqd/0",
+          "user_ticks": 0,
+          "system_ticks": 0,
+          "total_ticks": 0
+        },
+        {
+          "pid": "123",
+          "name": "syslogd",
+          "user_ticks": 0,
+          "system_ticks": 0,
+          "total_ticks": 0
+        },
+        {
+          "pid": "127",
+          "name": "klogd",
+          "user_ticks": 0,
+          "system_ticks": 0,
+          "total_ticks": 0
+        },
+        {
+          "pid": "13",
+          "name": "rcu_exp_par_gp_kthread_worker/0",
+          "user_ticks": 0,
+          "system_ticks": 0,
+          "total_ticks": 0
+        },
+        {
+          "pid": "139",
+          "name": "kworker/u9:2-events_unbound",
+          "user_ticks": 0,
+          "system_ticks": 0,
+          "total_ticks": 0
+        },
+        {
+          "pid": "14",
+          "name": "rcu_exp_gp_kthread_worker",
+          "user_ticks": 0,
+          "system_ticks": 0,
+          "total_ticks": 0
+        },
+        {
+          "pid": "150",
+          "name": "kworker/u11:1",
+          "user_ticks": 0,
+          "system_ticks": 0,
+          "total_ticks": 0
+        },
+        {
+          "pid": "16",
+          "name": "cpuhp/0",
+          "user_ticks": 0,
+          "system_ticks": 0,
+          "total_ticks": 0
+        },
+        {
+          "pid": "17",
+          "name": "cpuhp/1",
+          "user_ticks": 0,
+          "system_ticks": 0,
+          "total_ticks": 0
+        },
+        {
+          "pid": "18",
+          "name": "migration/1",
+          "user_ticks": 0,
+          "system_ticks": 0,
+          "total_ticks": 0
+        },
+        {
+          "pid": "2",
+          "name": "kthreadd",
+          "user_ticks": 0,
+          "system_ticks": 0,
+          "total_ticks": 0
+        },
+        {
+          "pid": "20",
+          "name": "kworker/1:0-mm_percpu_wq",
+          "user_ticks": 0,
+          "system_ticks": 0,
+          "total_ticks": 0
+        },
+        {
+          "pid": "21",
+          "name": "kworker/1:0H-kblockd",
+          "user_ticks": 0,
+          "system_ticks": 0,
+          "total_ticks": 0
+        },
+        {
+          "pid": "22",
+          "name": "kworker/u9:0-events_unbound",
+          "user_ticks": 0,
+          "system_ticks": 0,
+          "total_ticks": 0
+        },
+        {
+          "pid": "23",
+          "name": "kworker/u10:0-events_unbound",
+          "user_ticks": 0,
+          "system_ticks": 0,
+          "total_ticks": 0
+        },
+        {
+          "pid": "24",
+          "name": "kdevtmpfs",
+          "user_ticks": 0,
+          "system_ticks": 0,
+          "total_ticks": 0
+        },
+        {
+          "pid": "25",
+          "name": "kworker/R-inet_frag_wq",
+          "user_ticks": 0,
+          "system_ticks": 0,
+          "total_ticks": 0
+        },
+        {
+          "pid": "26",
+          "name": "oom_reaper",
+          "user_ticks": 0,
+          "system_ticks": 0,
+          "total_ticks": 0
+        },
+        {
+          "pid": "27",
+          "name": "kworker/R-writeback",
+          "user_ticks": 0,
+          "system_ticks": 0,
+          "total_ticks": 0
+        },
+        {
+          "pid": "29",
+          "name": "kworker/R-kblockd",
+          "user_ticks": 0,
+          "system_ticks": 0,
+          "total_ticks": 0
+        },
+        {
+          "pid": "3",
+          "name": "pool_workqueue_release",
+          "user_ticks": 0,
+          "system_ticks": 0,
+          "total_ticks": 0
+        },
+        {
+          "pid": "30",
+          "name": "watchdogd",
+          "user_ticks": 0,
+          "system_ticks": 0,
+          "total_ticks": 0
+        },
+        {
+          "pid": "31",
+          "name": "kworker/R-cfg80211",
+          "user_ticks": 0,
+          "system_ticks": 0,
+          "total_ticks": 0
+        },
+        {
+          "pid": "33",
+          "name": "kswapd0",
+          "user_ticks": 0,
+          "system_ticks": 0,
+          "total_ticks": 0
+        },
+        {
+          "pid": "36",
+          "name": "hwrng",
+          "user_ticks": 0,
+          "system_ticks": 0,
+          "total_ticks": 0
+        },
+        {
+          "pid": "37",
+          "name": "kworker/u10:1",
+          "user_ticks": 0,
+          "system_ticks": 0,
+          "total_ticks": 0
+        },
+        {
+          "pid": "39",
+          "name": "kworker/R-mld",
+          "user_ticks": 0,
+          "system_ticks": 0,
+          "total_ticks": 0
+        },
+        {
+          "pid": "4",
+          "name": "kworker/R-rcu_gp",
+          "user_ticks": 0,
+          "system_ticks": 0,
+          "total_ticks": 0
+        },
+        {
+          "pid": "40",
+          "name": "kworker/R-ipv6_addrconf",
+          "user_ticks": 0,
+          "system_ticks": 0,
+          "total_ticks": 0
+        },
+        {
+          "pid": "41",
+          "name": "kworker/u8:1-ipv6_addrconf",
+          "user_ticks": 0,
+          "system_ticks": 0,
+          "total_ticks": 0
+        },
+        {
+          "pid": "43",
+          "name": "kworker/0:1H",
+          "user_ticks": 0,
+          "system_ticks": 0,
+          "total_ticks": 0
+        },
+        {
+          "pid": "44",
+          "name": "kworker/1:1H",
+          "user_ticks": 0,
+          "system_ticks": 0,
+          "total_ticks": 0
+        },
+        {
+          "pid": "5",
+          "name": "kworker/R-sync_wq",
+          "user_ticks": 0,
+          "system_ticks": 0,
+          "total_ticks": 0
+        },
+        {
+          "pid": "6",
+          "name": "kworker/0:0-rcu_gp",
+          "user_ticks": 0,
+          "system_ticks": 0,
+          "total_ticks": 0
+        },
+        {
+          "pid": "7",
+          "name": "kworker/0:0H-kblockd",
+          "user_ticks": 0,
+          "system_ticks": 0,
+          "total_ticks": 0
+        },
+        {
+          "pid": "9",
+          "name": "kworker/u8:0-ipv6_addrconf",
+          "user_ticks": 0,
+          "system_ticks": 0,
+          "total_ticks": 0
+        }
+      ],
+      "note": "CPU spans snapshots around receiver, including connection/discovery and snapshot overhead; throughput uses only40s receive window."
+    }
+  }
+}
