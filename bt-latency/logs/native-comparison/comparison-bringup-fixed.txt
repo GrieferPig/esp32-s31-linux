@@ -1,0 +1,24 @@
+{ echo READY; mkdir -p /tmp/cfg; printf "enabled=1\nindex=0\nle=1\n" > /tmp/
+
+
+cfg/bluetooth.conf; export ESP32_CONFIG_DIR=/tmp/cfg S31_RADIO_VOLATILE_MODE=bt;
+
+
+ /usr/sbin/s31-overlay apply radio-bluetooth --volatile; timeout -s KILL 90 /usr
+
+
+/sbin/s31-modload /usr/lib/s31-radio/esp32s31-radio.ko.xz mode=bt direct_hci=1;
+
+
+ls -l /dev/s31-hci; }; s31_cmd_status=$?; printf '\n__S31_DONE_%s__:%s\n' 'ab82d
+
+
+59ffd3f8a89' "$s31_cmd_status"
+
+READY
+
+crw-------    1 root     root       10, 259 Jan  1 00:02 /dev/s31-hci
+
+
+
+__S31_DONE_ab82d59ffd3f8a89__:0

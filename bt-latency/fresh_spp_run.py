@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 import subprocess,time,select,os,sys
 from pathlib import Path
+from board_bench_stats import snapshot
 dest=Path(sys.argv[1]);dest.mkdir(exist_ok=True)
 addr=os.environ.get('S31_BT_ADDR','30:ED:A0:F3:D4:AE')
 p=subprocess.Popen(['bluetoothctl','--agent','NoInputNoOutput'],stdin=subprocess.PIPE,stdout=subprocess.PIPE,stderr=subprocess.STDOUT)
@@ -16,7 +17,9 @@ for cmd,wait in [('agent on',.5),('default-agent',.5),('remove '+addr,1),('power
 (dest/'fresh-pair.raw').write_bytes(buf)
 print('\n'.join(l for l in buf.decode(errors='replace').splitlines() if any(x in l.lower() for x in ['failed','successful','paired:','bonded:'])),flush=True)
 os.environ['S31_BENCH_RAW']=str(dest/'host-rx.bin')
+snapshot(dest,'before')
 with (dest/'run.txt').open('w') as f:
  result=subprocess.run(['python3','-u',str(Path(__file__).resolve().parent/'spp_checked_bench.py'),addr,'1','40'],stdout=f,stderr=subprocess.STDOUT,timeout=240)
+snapshot(dest,'after')
 run('quit',.1);p.wait(timeout=5)
 raise SystemExit(result.returncode)

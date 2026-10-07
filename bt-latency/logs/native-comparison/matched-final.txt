@@ -1,0 +1,97 @@
+{ tail -n 24 /tmp/comparison-ble15.log; cat /sys/devices/platform/soc/soc:ra
+
+
+dio/radio_health; cat /proc/stat; cat /proc/meminfo | head -n 8; }; s31_cmd_stat
+
+
+us=$?; printf '\n__S31_DONE_%s__:%s\n' '7709187e084b2494' "$s31_cmd_status"
+
+S31 Classic scan command 0x0c1c status=0
+
+S31 Classic scan command 0x0c1a status=0
+
+S31 Classic scan command 0x0c1e status=0
+
+S31 BLE DLE: pipeline busy, task path only
+
+S31 BLE link params @connect: update=0 dle=0 phy=-1
+
+S31 LE Just Works pairing auto-confirmed
+
+S31 BLE interval: status=0 interval=12 latency=0 timeout=200
+
+S31 BLE stream: ATT MTU 517
+
+S31 BLE DLE: pipeline busy, task path only
+
+S31 BLE link params @mtu: update=0 dle=0 phy=-1
+
+S31 BLE stream: notifications enabled
+
+S31 BLE stream: 0 notifies, 0 bytes, seq=0
+
+S31 BLE DLE: direct 0x2022 sent from pump
+
+S31 BLE stream: 0 notifies, 0 bytes, seq=0
+
+S31 BLE stream: 256 notifies, 126720 bytes, seq=256
+
+S31 BLE stream: 512 notifies, 253440 bytes, seq=512
+
+S31 BLE stream: 768 notifies, 380160 bytes, seq=768
+
+S31 BLE stream: 1024 notifies, 506880 bytes, seq=1024
+
+S31 BLE stream: 1280 notifies, 633600 bytes, seq=1280
+
+S31 BLE stream: 1536 notifies, 760320 bytes, seq=1536
+
+S31 BLE stream: 1792 notifies, 887040 bytes, seq=1792
+
+S31 BLE stream: 2048 notifies, 1013760 bytes, seq=2048
+
+S31 BLE stream: 2304 notifies, 1140480 bytes, seq=2304
+
+S31 BLE stream: notifications disabled
+
+abi=1 state=2 wifi_init=0 bt_init=0 bt_enable=0 ticks=44130 worker_passes=34739 commands=4 irqs=39882 heap_used=103648 heap_peak=110560 heap_total=300976 wifi_rx_dropped=0 wifi_tx_dropped=0 hci_rx_dropped=3 hci_tx_dropped=0 acl_rx_packets=186 acl_rx_bytes=2598 acl_tx_packets=6809 acl_tx_bytes=5533683 acl_packet_type_events=2 acl_packet_type=0xc30e coex_cmd_completes=0 coex_last_status=-61 coex_bt_status=0x00
+
+cpu  4018 0 19752 58992 11 0 96 0 0 0
+
+cpu0 1577 0 10813 29464 11 0 53 0 0 0
+
+cpu1 2440 0 8938 29527 0 0 43 0 0 0
+
+intr 71315 0 921 29726 0 0 0 0 0 0 0 0 769 0 1 0 17 0 0 0 0 0 0 39881 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0
+
+ctxt 71009
+
+btime 2
+
+processes 224
+
+procs_running 1
+
+procs_blocked 0
+
+softirq 61089 1 8934 0 0 0 0 13 39275 0 12866
+
+MemTotal:          15124 kB
+
+MemFree:            7688 kB
+
+MemAvailable:       9780 kB
+
+Buffers:               0 kB
+
+Cached:             3008 kB
+
+SwapCached:            0 kB
+
+Active:             1660 kB
+
+Inactive:           1580 kB
+
+
+
+__S31_DONE_7709187e084b2494__:0

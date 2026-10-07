@@ -1,0 +1,99 @@
+{ tail -n 14 /tmp/comparison-first.log; cat /sys/devices/platform/soc/soc:ra
+
+
+dio/radio_health; killall s31-btstack-a2dp; sleep 2; S31_HCI_DEVICE=/dev/s31-hci
+
+
+ S31_BTSTACK_PAIRABLE=0 S31_BTSTACK_COEX=0 S31_BTSTACK_BURST=24 S31_BTSTACK_SPP_
+
+
+BYTES=990 S31_BTSTACK_BLE_BYTES=495 S31_BTSTACK_INTERVAL=12 S31_BTSTACK_NAME="S3
+
+
+1 Radio" /usr/sbin/s31-btstack-a2dp -u 0 -l none >/tmp/comparison-ble15.log 2>&1
+
+
+ & sleep 8; tail -n 22 /tmp/comparison-ble15.log; }; s31_cmd_status=$?; printf '
+
+
+\n__S31_DONE_%s__:%s\n' '2cad4cdbf9d30741' "$s31_cmd_status"
+
+S31 SPP stream: 1024 frames, 1013760 tx bytes, 0 rx bytes, seq=1024
+
+S31 SPP stream: 1280 frames, 1267200 tx bytes, 0 rx bytes, seq=1280
+
+S31 SPP stream: 1536 frames, 1520640 tx bytes, 0 rx bytes, seq=1536
+
+S31 SPP stream: 1792 frames, 1774080 tx bytes, 0 rx bytes, seq=1792
+
+S31 SPP stream: 2048 frames, 2027520 tx bytes, 0 rx bytes, seq=2048
+
+S31 SPP stream: 2304 frames, 2280960 tx bytes, 0 rx bytes, seq=2304
+
+S31 SPP stream: 2560 frames, 2534400 tx bytes, 0 rx bytes, seq=2560
+
+S31 SPP stream: 2816 frames, 2787840 tx bytes, 0 rx bytes, seq=2816
+
+S31 SPP stream: 3072 frames, 3041280 tx bytes, 0 rx bytes, seq=3072
+
+S31 SPP stream: 3328 frames, 3294720 tx bytes, 0 rx bytes, seq=3328
+
+S31 SPP stream: 3584 frames, 3548160 tx bytes, 0 rx bytes, seq=3584
+
+S31 SPP stream: 3840 frames, 3801600 tx bytes, 0 rx bytes, seq=3840
+
+S31 SPP stream: 4096 frames, 4055040 tx bytes, 0 rx bytes, seq=4096
+
+S31 SPP stream: closed, 4204530 tx bytes, 0 rx bytes
+
+abi=1 state=2 wifi_init=0 bt_init=0 bt_enable=0 ticks=32838 worker_passes=21642 commands=3 irqs=13990 heap_used=101056 heap_peak=107936 heap_total=300976 wifi_rx_dropped=0 wifi_tx_dropped=0 hci_rx_dropped=0 hci_tx_dropped=0 acl_rx_packets=168 acl_rx_bytes=2308 acl_tx_packets=4274 acl_tx_bytes=4260732 acl_packet_type_events=2 acl_packet_type=0xc30e coex_cmd_completes=0 coex_last_status=-61 coex_bt_status=0x00
+
+Packet Log: disabled
+
+Bluetooth device: hci0
+
+BLE GAP/GATT: advertising as S31 Radio, service 0xff10
+
+S31 comparison knobs: SPP 990 bytes, BLE 495 bytes, interval 12..12 (1.25ms)
+
+S31 BLE stream burst: 24
+
+S31 BLE link knobs: DLE 251B, PHY 1M
+
+ESP-IDF A2DP coexistence status: disabled
+
+SBC decode: compiled out; max bitpool: 53
+
+Starting BTstack ...
+
+Local version information:
+
+- HCI Version    0x000e
+
+- HCI Revision   0x0000
+
+- LMP Version    0x000e
+
+- LMP Subversion 0x0000
+
+- Manufacturer 0x02e5
+
+S31 Classic scan command 0x0c1a status=0
+
+BTstack up and running on 30:ED:A0:F3:D4:AE.
+
+TLV path: /var/lib/btstack/btstack_30-ED-A0-F3-D4-AE.tlv
+
+S31 Classic pairability: disabled
+
+S31 Classic scan command 0x0c1c status=0
+
+S31 Classic scan command 0x0c1a status=0
+
+S31 Classic scan command 0x0c1e status=0
+
+
+
+__S31_DONE_2cad4cdbf9d30741__:0
+
+[1]-  T

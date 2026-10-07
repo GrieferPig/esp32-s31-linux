@@ -26,3 +26,23 @@ Output dist/c5959e35f54b83d8. Kernel, radio and DTB hashes match the old set;
 rootfs and rebuilt bootloader image hashes differ. All six slots are flashed,
 excluding persist; never use generated s31_full_flash.bin.
 Performance acceptance of the new knobs is pending real board tests.
+
+## Matched real-board results
+dist/c5959e35f54b83d8 flashed as a full six-slot set; all six explicit
+verify-flash digests matched. No persist writes.
+- SPP990: 4,200,570 bytes /40.000125553s =102.552657KiB/s,
+  4243frames, zero sequence/pattern errors. Radio counters afterward showed
+  zero HCI RX/TX drops.
+- BLE495, accepted interval12 (15ms), MTU517, 1M:
+  1,241,460 bytes /40s =30.31KiB/s,2508notifications,
+  zero sequence/pattern errors. Global HCI RX drops were3 afterward versus0
+  before the BLE restart; the exact phase of those drops is not localized.
+These do not meet the native31.8/214.4KiB/s targets. Payload matching alone
+does not fix Classic. Actual BLE interval acceptance is in matched-final.txt.
+
+The new console helper initially transmitted a literal backslash-r rather than
+CR, so its first command was not executed. That helper was stopped, the pending
+line cleared with Ctrl-U, and the corrected helper sent raw CR and observed
+a unique printf completion marker. comparison-bringup-fixed.txt proves recovery.
+The corrected helper also propagates command exit status. Optional board stats
+are collected before/after host reception, outside its40-second timed window.

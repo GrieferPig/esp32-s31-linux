@@ -1,0 +1,12 @@
+{
+  "env": {},
+  "argv": [
+    "python3",
+    "bt-latency/fresh_fd_run.py",
+    "bt-latency/logs/native-comparison/matched-ble-15ms"
+  ],
+  "board_env": {
+    "S31_BTSTACK_INTERVAL": "12",
+    "S31_BTSTACK_BLE_BYTES": "495"
+  }
+}

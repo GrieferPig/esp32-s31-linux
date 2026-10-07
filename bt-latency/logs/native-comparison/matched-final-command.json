@@ -1,0 +1,1 @@
+"tail -n 24 /tmp/comparison-ble15.log; cat /sys/devices/platform/soc/soc:radio/radio_health; cat /proc/stat; cat /proc/meminfo | head -n 8"
