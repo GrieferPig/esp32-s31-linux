@@ -1,0 +1,10 @@
+{
+  "s31-btstack-a2dp": {
+    "sha256": "370cc9f51e3fab38978580791a551b7a3c733dff7c20b406f57ec8a06ae4ab42",
+    "bytes": 222588
+  },
+  "s31-btstack-a2dp-o2": {
+    "sha256": "523045c7b57be6ce1fe342f33b3216c42d63b26daea06833168328fdad2b3ab3",
+    "bytes": 259452
+  }
+}

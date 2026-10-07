@@ -1,0 +1,1 @@
+sha256sum /usr/sbin/s31-btstack-a2dp /usr/sbin/s31-btstack-a2dp-o2

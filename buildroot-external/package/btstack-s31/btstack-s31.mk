@@ -43,9 +43,9 @@ define BTSTACK_S31_PREPARE_LOCAL_SOURCE
 endef
 BTSTACK_S31_POST_RSYNC_HOOKS += BTSTACK_S31_PREPARE_LOCAL_SOURCE
 
-define BTSTACK_S31_BUILD_CMDS
-	rm -rf $(@D)/s31-build
-	mkdir -p $(@D)/s31-build/objects
+define BTSTACK_S31_BUILD_VARIANT
+	rm -rf $(@D)/s31-build/$(1)
+	mkdir -p $(@D)/s31-build/$(1)/objects
 	set -e; \
 	for source in \
 		$(@D)/src/*.c \
@@ -58,23 +58,32 @@ define BTSTACK_S31_BUILD_CMDS
 		$(@D)/platform/posix/hci_dump_posix_fs.c \
 		$(@D)/platform/linux/hci_transport_linux.c \
 		$(@D)/port/linux/main.c; do \
-		object="$(@D)/s31-build/objects/$$(printf '%s' "$${source#$(@D)/}" | tr '/.' '__').o"; \
-		$(TARGET_CC) $(BTSTACK_S31_CFLAGS) -c "$$source" -o "$$object"; \
+		object="$(@D)/s31-build/$(1)/objects/$$(printf '%s' "$${source#$(@D)/}" | tr '/.' '__').o"; \
+		$(TARGET_CC) $(filter-out -O%,$(BTSTACK_S31_CFLAGS)) -$(1) -c "$$source" -o "$$object"; \
 	done
-	$(TARGET_AR) rcs $(@D)/s31-build/libbtstack-s31.a \
-		$(@D)/s31-build/objects/*.o
-	$(TARGET_CC) $(BTSTACK_S31_CFLAGS) -c \
+	$(TARGET_AR) rcs $(@D)/s31-build/$(1)/libbtstack-s31.a \
+		$(@D)/s31-build/$(1)/objects/*.o
+	$(TARGET_CC) $(filter-out -O%,$(BTSTACK_S31_CFLAGS)) -$(1) -c \
 		$(@D)/example/a2dp_sink_demo.c \
-		-o $(@D)/s31-build/a2dp_sink_demo.o
+		-o $(@D)/s31-build/$(1)/a2dp_sink_demo.o
 	$(TARGET_CC) $(TARGET_LDFLAGS) -Wl,--gc-sections \
-		-o $(@D)/s31-build/s31-btstack-a2dp \
-		$(@D)/s31-build/a2dp_sink_demo.o \
-		$(@D)/s31-build/libbtstack-s31.a -lpthread -lm
+		-o $(@D)/s31-build/$(1)/s31-btstack-a2dp \
+		$(@D)/s31-build/$(1)/a2dp_sink_demo.o \
+		$(@D)/s31-build/$(1)/libbtstack-s31.a -lpthread -lm
+endef
+
+define BTSTACK_S31_BUILD_CMDS
+	rm -rf $(@D)/s31-build
+	$(call BTSTACK_S31_BUILD_VARIANT,Os)
+	$(call BTSTACK_S31_BUILD_VARIANT,O2)
 endef
 
 define BTSTACK_S31_INSTALL_TARGET_CMDS
-	$(INSTALL) -D -m 0755 $(@D)/s31-build/s31-btstack-a2dp \
+	$(INSTALL) -D -m 0755 $(@D)/s31-build/Os/s31-btstack-a2dp \
 		$(TARGET_DIR)/usr/sbin/s31-btstack-a2dp
+	$(INSTALL) -D -m 0755 \
+		$(@D)/s31-build/O2/s31-btstack-a2dp \
+		$(TARGET_DIR)/usr/sbin/s31-btstack-a2dp-o2
 	$(INSTALL) -D -m 0755 \
 		$(BR2_EXTERNAL_ESP32_S31_PATH)/package/btstack-s31/S40btstack \
 		$(TARGET_DIR)/etc/init.d/S40btstack
