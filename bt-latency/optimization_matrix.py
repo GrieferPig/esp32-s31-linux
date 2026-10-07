@@ -1,10 +1,12 @@
 #!/usr/bin/env python3
 """Compare Os/O2 BTstack binaries on one image and one clean controller setup."""
-import os,sys,json,subprocess,time
+import os,sys,json,subprocess,time,re
 from pathlib import Path
 from analyze_board_stats import summarize
 root=Path(__file__).resolve().parent
 base=Path(sys.argv[1]);base.mkdir(parents=True,exist_ok=True)
+worker_cpu=int(os.environ.get('S31_RADIO_WORKER_CPU','-1'))
+if worker_cpu not in (-1,0,1):raise SystemExit('Invalid worker CPU')
 env=os.environ.copy();env.update(S31_BOARD_STATS='1',S31_SPP_FRAME_SIZE='990')
 def board(dest,phase,cmd,timeout=30):
     (dest/(phase+'-command.txt')).write_text(cmd+'\n')
@@ -26,8 +28,8 @@ x=subprocess.run(['python3',str(root/'board_console.py'),shell_cmd,'2'],capture_
 (setup/'shell.raw').write_bytes(x.stdout+x.stderr)
 board(setup,'configuration','mkdir -p /tmp/cfg; printf "enabled=1\\nindex=0\\nle=1\\n" > /tmp/cfg/bluetooth.conf')
 board(setup,'overlay','ESP32_CONFIG_DIR=/tmp/cfg S31_RADIO_VOLATILE_MODE=bt /usr/sbin/s31-overlay apply radio-bluetooth --volatile')
-out=board(setup,'bringup','timeout -s KILL 90 /usr/sbin/s31-modload /usr/lib/s31-radio/esp32s31-radio.ko.xz mode=bt direct_hci=1 bt_tx_buffers=10 bt_hci_rx_slots=32 bt_hci_tx_slots=16 bt_worker_cpu=-1; echo 1 > /sys/module/esp32s31_radio/parameters/bt_gate_sleep; echo 40 > /sys/module/esp32s31_radio/parameters/bt_tick_ms; echo 6 > /sys/kernel/profiling; dmesg | grep "HCI rings"; dmesg | grep "ordered worker CPU"',110)
-if b'HCI rings rx=32 tx=16' not in out or b'ordered worker CPU=-1' not in out:raise SystemExit('Configuration not confirmed')
+out=board(setup,'bringup',f'timeout -s KILL 90 /usr/sbin/s31-modload /usr/lib/s31-radio/esp32s31-radio.ko.xz mode=bt direct_hci=1 bt_tx_buffers=10 bt_hci_rx_slots=32 bt_hci_tx_slots=16 bt_worker_cpu={worker_cpu}; echo 1 > /sys/module/esp32s31_radio/parameters/bt_gate_sleep; echo 40 > /sys/module/esp32s31_radio/parameters/bt_tick_ms; echo 6 > /sys/kernel/profiling; dmesg | grep "HCI rings"; dmesg | grep "ordered worker CPU"',110)
+if b'HCI rings rx=32 tx=16' not in out or f'ordered worker CPU={worker_cpu}'.encode() not in out:raise SystemExit('Configuration not confirmed')
 board(setup,'binary-hashes','sha256sum /usr/sbin/s31-btstack-a2dp /usr/sbin/s31-btstack-a2dp-o2')
 for index,mode in enumerate(sys.argv[2:] or ['Os','O2','Os','O2']):
     if mode not in ('Os','O2'):raise SystemExit('Unknown optimization')
@@ -54,5 +56,9 @@ for index,mode in enumerate(sys.argv[2:] or ['Os','O2','Os','O2']):
         x=subprocess.run(argv,env=env,stdout=f,stderr=subprocess.STDOUT)
     print(dest.name,'exit',x.returncode,(dest/'run.txt').read_text(),flush=True)
     stats=summarize(dest);print(json.dumps({**stats,'tasks':stats['tasks'][:4]}),flush=True)
+    worker=next(v for v in stats['tasks'] if v['name'].startswith('kworker/u'))
+    out=board(dest,'worker-affinity',f"cat /proc/{worker['pid']}/status; cat /proc/{worker['pid']}/stat")
+    if worker_cpu>=0 and not re.search(rb'^Cpus_allowed_list:\s+'+str(worker_cpu).encode()+rb'\r?$',out,re.M):
+        raise SystemExit('Worker mask not confirmed')
     board(dest,'final-log','cat /tmp/opt.log')
     if x.returncode:raise SystemExit(x.returncode)
