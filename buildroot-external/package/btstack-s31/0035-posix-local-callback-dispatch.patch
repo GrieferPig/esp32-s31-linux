@@ -1,0 +1,101 @@
+From: ESP32-S31 Linux <s31-linux@example.invalid>
+Subject: [PATCH] posix: optionally drain main-thread callbacks without pipe writes
+
+Keep asynchronous transport completion ordering: callbacks run at the next
+loop boundary, never inline in send_packet. Foreign-thread enqueues retain
+pipe wakeups. The runtime experiment is disabled by default.
+
+--- a/platform/posix/btstack_run_loop_posix.c
++++ b/platform/posix/btstack_run_loop_posix.c
+@@ -74,6 +74,10 @@
+ /* Protected by callbacks_mutex, including the producer's wake decision. */
+ static bool s31_callbacks_processing;
+ static bool s31_callbacks_coalesce;
++static bool s31_callbacks_local;
++static bool s31_loop_thread_valid;
++static pthread_t s31_loop_thread;
++static void s31_process_callbacks(void);
+ 
+ // to trigger poll data sources from irq
+ static int                   btstack_run_loop_posix_poll_data_sources_fd;
+@@ -176,10 +180,19 @@
+     log_info("POSIX run loop using ettimeofday fallback.");
+ #endif
+ 
++    pthread_mutex_lock(&btstack_run_loop_posix_callbacks_mutex);
++    s31_loop_thread = pthread_self();
++    s31_loop_thread_valid = true;
++    pthread_mutex_unlock(&btstack_run_loop_posix_callbacks_mutex);
++
+     // clear exit flag
+     btstack_run_loop_posix_exit_requested = false;
+ 
+     while (btstack_run_loop_posix_exit_requested == false) {
++        if (s31_callbacks_local) {
++            s31_process_callbacks();
++            if (btstack_run_loop_posix_exit_requested) break;
++        }
+         // collect FDs
+         FD_ZERO(&descriptors_read);
+         FD_ZERO(&descriptors_write);
+@@ -256,6 +269,9 @@
+         now_ms = btstack_run_loop_posix_get_time_ms();
+         btstack_run_loop_base_process_timers(now_ms);
+     }
++    pthread_mutex_lock(&btstack_run_loop_posix_callbacks_mutex);
++    s31_loop_thread_valid = false;
++    pthread_mutex_unlock(&btstack_run_loop_posix_callbacks_mutex);
+ }
+ 
+ static void btstack_run_loop_posix_trigger_exit(void){
+@@ -295,14 +311,10 @@
+ 
+ // execute on main thread from same or different thread
+ 
+-static void btstack_run_loop_posix_process_callbacks_handler(btstack_data_source_t * ds, btstack_data_source_callback_type_t callback_type){
+-    UNUSED(callback_type);
++static void s31_process_callbacks(void){
+     pthread_mutex_lock(&btstack_run_loop_posix_callbacks_mutex);
+     s31_callbacks_processing = true;
+     pthread_mutex_unlock(&btstack_run_loop_posix_callbacks_mutex);
+-    uint8_t buffer[1];
+-    ssize_t bytes_read = read(ds->source.fd, buffer, 1);
+-    UNUSED(bytes_read);
+     // execute callbacks - protect list with mutex
+     while (1){
+         pthread_mutex_lock(&btstack_run_loop_posix_callbacks_mutex);
+@@ -316,11 +328,23 @@
+     }
+ }
+ 
++static void btstack_run_loop_posix_process_callbacks_handler(btstack_data_source_t * ds, btstack_data_source_callback_type_t callback_type){
++    UNUSED(callback_type);
++    uint8_t buffer[1];
++    ssize_t bytes_read = read(ds->source.fd, buffer, 1);
++    UNUSED(bytes_read);
++    s31_process_callbacks();
++}
++
+ static void btstack_run_loop_posix_execute_on_main_thread(btstack_context_callback_registration_t * callback_registration){
+     // protect list with mutex
+     pthread_mutex_lock(&btstack_run_loop_posix_callbacks_mutex);
+     bool wake = !s31_callbacks_coalesce ||
+         (!s31_callbacks_processing && btstack_run_loop_base_callbacks == NULL);
++    /* Same-thread work is drained before the next select. Foreign threads
++     * still wake the pipe, including an enqueue racing with select entry. */
++    if (s31_callbacks_local && s31_loop_thread_valid &&
++        pthread_equal(pthread_self(), s31_loop_thread)) wake = false;
+     btstack_run_loop_base_add_callback(callback_registration);
+     pthread_mutex_unlock(&btstack_run_loop_posix_callbacks_mutex);
+     /* An active consumer drains newly queued work before it goes idle.
+@@ -350,6 +374,10 @@
+     const char * coalesce = getenv("S31_BTSTACK_COALESCE_WAKEUPS");
+     s31_callbacks_coalesce = coalesce != NULL && coalesce[0] == '1' && coalesce[1] == 0;
+     s31_callbacks_processing = false;
++    const char * local = getenv("S31_BTSTACK_LOCAL_CALLBACKS");
++    s31_callbacks_local = local != NULL && local[0] == '1' && local[1] == 0;
++    s31_loop_thread_valid = false;
++    fprintf(stderr, "S31 local callbacks: %s\n", s31_callbacks_local ? "enabled" : "disabled");
+     fprintf(stderr, "S31 callback wakeups: %s\n", s31_callbacks_coalesce ? "coalesced" : "legacy");
+     
+ #ifdef _POSIX_MONOTONIC_CLOCK

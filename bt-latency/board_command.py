@@ -9,6 +9,11 @@ a=termios.tcgetattr(fd);a[4]=a[5]=termios.B115200;termios.tcsetattr(fd,termios.T
 token=secrets.token_hex(8)
 marker=('__S31_DONE_'+token+'__').encode()
 wire="{ "+cmd+"; }; s31_cmd_status=$?; printf '\\n__S31_DONE_%s__:%s\\n' '"+token+"' \"$s31_cmd_status\""
+# This image's BusyBox CONFIG_FEATURE_EDITING_MAX_LEN is1024. Refuse
+# oversized lines before sending anything; truncation can leave an open quote.
+if len(wire.encode()) >= 1024:
+ os.close(fd)
+ raise SystemExit('Console command exceeds the1024-byte BusyBox line limit; shorten it')
 os.write(fd,(wire+'\r').encode())
 out=bytearray();deadline=time.monotonic()+seconds;match=None
 while time.monotonic()<deadline:

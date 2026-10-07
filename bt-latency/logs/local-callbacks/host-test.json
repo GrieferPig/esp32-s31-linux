@@ -1,0 +1,740 @@
+{
+  "compile_argv": [
+    "gcc",
+    "-O2",
+    "-pthread",
+    "-I/tmp/s31-callback-test-80liaz69",
+    "-I/home/grieferpig/esp32-s31-linux/out/buildroot/build/btstack-s31-431d58d5613fd8fae38afe50282b25302de84bf7/src",
+    "-I/home/grieferpig/esp32-s31-linux/out/buildroot/build/btstack-s31-431d58d5613fd8fae38afe50282b25302de84bf7/platform/posix",
+    "-DS31_RUNLOOP_SOURCE=\"/home/grieferpig/esp32-s31-linux/bt-latency/logs/local-callbacks/candidate.c\"",
+    "/home/grieferpig/esp32-s31-linux/bt-latency/test_callback_wakeups.c",
+    "/home/grieferpig/esp32-s31-linux/out/buildroot/build/btstack-s31-431d58d5613fd8fae38afe50282b25302de84bf7/src/btstack_run_loop.c",
+    "/home/grieferpig/esp32-s31-linux/out/buildroot/build/btstack-s31-431d58d5613fd8fae38afe50282b25302de84bf7/src/btstack_run_loop_base.c",
+    "/home/grieferpig/esp32-s31-linux/out/buildroot/build/btstack-s31-431d58d5613fd8fae38afe50282b25302de84bf7/src/btstack_linked_list.c",
+    "/home/grieferpig/esp32-s31-linux/out/buildroot/build/btstack-s31-431d58d5613fd8fae38afe50282b25302de84bf7/src/btstack_util.c",
+    "-o",
+    "/tmp/s31-callback-test-80liaz69/check"
+  ],
+  "results": [
+    {
+      "local": "0",
+      "mode": "0",
+      "case": "chain",
+      "iteration": 0,
+      "returncode": 0,
+      "stdout": "chain=512 cross=0 wake_writes=512\n",
+      "stderr": "S31 local callbacks: disabled\nS31 callback wakeups: legacy\n"
+    },
+    {
+      "local": "0",
+      "mode": "0",
+      "case": "chain",
+      "iteration": 1,
+      "returncode": 0,
+      "stdout": "chain=512 cross=0 wake_writes=512\n",
+      "stderr": "S31 local callbacks: disabled\nS31 callback wakeups: legacy\n"
+    },
+    {
+      "local": "0",
+      "mode": "0",
+      "case": "chain",
+      "iteration": 2,
+      "returncode": 0,
+      "stdout": "chain=512 cross=0 wake_writes=512\n",
+      "stderr": "S31 local callbacks: disabled\nS31 callback wakeups: legacy\n"
+    },
+    {
+      "local": "0",
+      "mode": "0",
+      "case": "chain",
+      "iteration": 3,
+      "returncode": 0,
+      "stdout": "chain=512 cross=0 wake_writes=512\n",
+      "stderr": "S31 local callbacks: disabled\nS31 callback wakeups: legacy\n"
+    },
+    {
+      "local": "0",
+      "mode": "0",
+      "case": "chain",
+      "iteration": 4,
+      "returncode": 0,
+      "stdout": "chain=512 cross=0 wake_writes=512\n",
+      "stderr": "S31 local callbacks: disabled\nS31 callback wakeups: legacy\n"
+    },
+    {
+      "local": "0",
+      "mode": "0",
+      "case": "chain",
+      "iteration": 5,
+      "returncode": 0,
+      "stdout": "chain=512 cross=0 wake_writes=512\n",
+      "stderr": "S31 local callbacks: disabled\nS31 callback wakeups: legacy\n"
+    },
+    {
+      "local": "0",
+      "mode": "0",
+      "case": "chain",
+      "iteration": 6,
+      "returncode": 0,
+      "stdout": "chain=512 cross=0 wake_writes=512\n",
+      "stderr": "S31 local callbacks: disabled\nS31 callback wakeups: legacy\n"
+    },
+    {
+      "local": "0",
+      "mode": "0",
+      "case": "chain",
+      "iteration": 7,
+      "returncode": 0,
+      "stdout": "chain=512 cross=0 wake_writes=512\n",
+      "stderr": "S31 local callbacks: disabled\nS31 callback wakeups: legacy\n"
+    },
+    {
+      "local": "0",
+      "mode": "0",
+      "case": "chain",
+      "iteration": 8,
+      "returncode": 0,
+      "stdout": "chain=512 cross=0 wake_writes=512\n",
+      "stderr": "S31 local callbacks: disabled\nS31 callback wakeups: legacy\n"
+    },
+    {
+      "local": "0",
+      "mode": "0",
+      "case": "chain",
+      "iteration": 9,
+      "returncode": 0,
+      "stdout": "chain=512 cross=0 wake_writes=512\n",
+      "stderr": "S31 local callbacks: disabled\nS31 callback wakeups: legacy\n"
+    },
+    {
+      "local": "0",
+      "mode": "0",
+      "case": "mixed",
+      "iteration": 0,
+      "returncode": 0,
+      "stdout": "chain=512 cross=2000 wake_writes=2512\n",
+      "stderr": "S31 local callbacks: disabled\nS31 callback wakeups: legacy\n"
+    },
+    {
+      "local": "0",
+      "mode": "0",
+      "case": "mixed",
+      "iteration": 1,
+      "returncode": 0,
+      "stdout": "chain=512 cross=2000 wake_writes=2512\n",
+      "stderr": "S31 local callbacks: disabled\nS31 callback wakeups: legacy\n"
+    },
+    {
+      "local": "0",
+      "mode": "0",
+      "case": "mixed",
+      "iteration": 2,
+      "returncode": 0,
+      "stdout": "chain=512 cross=2000 wake_writes=2512\n",
+      "stderr": "S31 local callbacks: disabled\nS31 callback wakeups: legacy\n"
+    },
+    {
+      "local": "0",
+      "mode": "0",
+      "case": "mixed",
+      "iteration": 3,
+      "returncode": 0,
+      "stdout": "chain=512 cross=2000 wake_writes=2512\n",
+      "stderr": "S31 local callbacks: disabled\nS31 callback wakeups: legacy\n"
+    },
+    {
+      "local": "0",
+      "mode": "0",
+      "case": "mixed",
+      "iteration": 4,
+      "returncode": 0,
+      "stdout": "chain=512 cross=2000 wake_writes=2512\n",
+      "stderr": "S31 local callbacks: disabled\nS31 callback wakeups: legacy\n"
+    },
+    {
+      "local": "0",
+      "mode": "0",
+      "case": "mixed",
+      "iteration": 5,
+      "returncode": 0,
+      "stdout": "chain=512 cross=2000 wake_writes=2512\n",
+      "stderr": "S31 local callbacks: disabled\nS31 callback wakeups: legacy\n"
+    },
+    {
+      "local": "0",
+      "mode": "0",
+      "case": "mixed",
+      "iteration": 6,
+      "returncode": 0,
+      "stdout": "chain=512 cross=2000 wake_writes=2512\n",
+      "stderr": "S31 local callbacks: disabled\nS31 callback wakeups: legacy\n"
+    },
+    {
+      "local": "0",
+      "mode": "0",
+      "case": "mixed",
+      "iteration": 7,
+      "returncode": 0,
+      "stdout": "chain=512 cross=2000 wake_writes=2512\n",
+      "stderr": "S31 local callbacks: disabled\nS31 callback wakeups: legacy\n"
+    },
+    {
+      "local": "0",
+      "mode": "0",
+      "case": "mixed",
+      "iteration": 8,
+      "returncode": 0,
+      "stdout": "chain=512 cross=2000 wake_writes=2512\n",
+      "stderr": "S31 local callbacks: disabled\nS31 callback wakeups: legacy\n"
+    },
+    {
+      "local": "0",
+      "mode": "0",
+      "case": "mixed",
+      "iteration": 9,
+      "returncode": 0,
+      "stdout": "chain=512 cross=2000 wake_writes=2512\n",
+      "stderr": "S31 local callbacks: disabled\nS31 callback wakeups: legacy\n"
+    },
+    {
+      "local": "0",
+      "mode": "1",
+      "case": "chain",
+      "iteration": 0,
+      "returncode": 0,
+      "stdout": "chain=512 cross=0 wake_writes=1\n",
+      "stderr": "S31 local callbacks: disabled\nS31 callback wakeups: coalesced\n"
+    },
+    {
+      "local": "0",
+      "mode": "1",
+      "case": "chain",
+      "iteration": 1,
+      "returncode": 0,
+      "stdout": "chain=512 cross=0 wake_writes=1\n",
+      "stderr": "S31 local callbacks: disabled\nS31 callback wakeups: coalesced\n"
+    },
+    {
+      "local": "0",
+      "mode": "1",
+      "case": "chain",
+      "iteration": 2,
+      "returncode": 0,
+      "stdout": "chain=512 cross=0 wake_writes=1\n",
+      "stderr": "S31 local callbacks: disabled\nS31 callback wakeups: coalesced\n"
+    },
+    {
+      "local": "0",
+      "mode": "1",
+      "case": "chain",
+      "iteration": 3,
+      "returncode": 0,
+      "stdout": "chain=512 cross=0 wake_writes=1\n",
+      "stderr": "S31 local callbacks: disabled\nS31 callback wakeups: coalesced\n"
+    },
+    {
+      "local": "0",
+      "mode": "1",
+      "case": "chain",
+      "iteration": 4,
+      "returncode": 0,
+      "stdout": "chain=512 cross=0 wake_writes=1\n",
+      "stderr": "S31 local callbacks: disabled\nS31 callback wakeups: coalesced\n"
+    },
+    {
+      "local": "0",
+      "mode": "1",
+      "case": "chain",
+      "iteration": 5,
+      "returncode": 0,
+      "stdout": "chain=512 cross=0 wake_writes=1\n",
+      "stderr": "S31 local callbacks: disabled\nS31 callback wakeups: coalesced\n"
+    },
+    {
+      "local": "0",
+      "mode": "1",
+      "case": "chain",
+      "iteration": 6,
+      "returncode": 0,
+      "stdout": "chain=512 cross=0 wake_writes=1\n",
+      "stderr": "S31 local callbacks: disabled\nS31 callback wakeups: coalesced\n"
+    },
+    {
+      "local": "0",
+      "mode": "1",
+      "case": "chain",
+      "iteration": 7,
+      "returncode": 0,
+      "stdout": "chain=512 cross=0 wake_writes=1\n",
+      "stderr": "S31 local callbacks: disabled\nS31 callback wakeups: coalesced\n"
+    },
+    {
+      "local": "0",
+      "mode": "1",
+      "case": "chain",
+      "iteration": 8,
+      "returncode": 0,
+      "stdout": "chain=512 cross=0 wake_writes=1\n",
+      "stderr": "S31 local callbacks: disabled\nS31 callback wakeups: coalesced\n"
+    },
+    {
+      "local": "0",
+      "mode": "1",
+      "case": "chain",
+      "iteration": 9,
+      "returncode": 0,
+      "stdout": "chain=512 cross=0 wake_writes=1\n",
+      "stderr": "S31 local callbacks: disabled\nS31 callback wakeups: coalesced\n"
+    },
+    {
+      "local": "0",
+      "mode": "1",
+      "case": "mixed",
+      "iteration": 0,
+      "returncode": 0,
+      "stdout": "chain=512 cross=2000 wake_writes=2001\n",
+      "stderr": "S31 local callbacks: disabled\nS31 callback wakeups: coalesced\n"
+    },
+    {
+      "local": "0",
+      "mode": "1",
+      "case": "mixed",
+      "iteration": 1,
+      "returncode": 0,
+      "stdout": "chain=512 cross=2000 wake_writes=1993\n",
+      "stderr": "S31 local callbacks: disabled\nS31 callback wakeups: coalesced\n"
+    },
+    {
+      "local": "0",
+      "mode": "1",
+      "case": "mixed",
+      "iteration": 2,
+      "returncode": 0,
+      "stdout": "chain=512 cross=2000 wake_writes=1992\n",
+      "stderr": "S31 local callbacks: disabled\nS31 callback wakeups: coalesced\n"
+    },
+    {
+      "local": "0",
+      "mode": "1",
+      "case": "mixed",
+      "iteration": 3,
+      "returncode": 0,
+      "stdout": "chain=512 cross=2000 wake_writes=1999\n",
+      "stderr": "S31 local callbacks: disabled\nS31 callback wakeups: coalesced\n"
+    },
+    {
+      "local": "0",
+      "mode": "1",
+      "case": "mixed",
+      "iteration": 4,
+      "returncode": 0,
+      "stdout": "chain=512 cross=2000 wake_writes=1986\n",
+      "stderr": "S31 local callbacks: disabled\nS31 callback wakeups: coalesced\n"
+    },
+    {
+      "local": "0",
+      "mode": "1",
+      "case": "mixed",
+      "iteration": 5,
+      "returncode": 0,
+      "stdout": "chain=512 cross=2000 wake_writes=1996\n",
+      "stderr": "S31 local callbacks: disabled\nS31 callback wakeups: coalesced\n"
+    },
+    {
+      "local": "0",
+      "mode": "1",
+      "case": "mixed",
+      "iteration": 6,
+      "returncode": 0,
+      "stdout": "chain=512 cross=2000 wake_writes=1997\n",
+      "stderr": "S31 local callbacks: disabled\nS31 callback wakeups: coalesced\n"
+    },
+    {
+      "local": "0",
+      "mode": "1",
+      "case": "mixed",
+      "iteration": 7,
+      "returncode": 0,
+      "stdout": "chain=512 cross=2000 wake_writes=2000\n",
+      "stderr": "S31 local callbacks: disabled\nS31 callback wakeups: coalesced\n"
+    },
+    {
+      "local": "0",
+      "mode": "1",
+      "case": "mixed",
+      "iteration": 8,
+      "returncode": 0,
+      "stdout": "chain=512 cross=2000 wake_writes=2001\n",
+      "stderr": "S31 local callbacks: disabled\nS31 callback wakeups: coalesced\n"
+    },
+    {
+      "local": "0",
+      "mode": "1",
+      "case": "mixed",
+      "iteration": 9,
+      "returncode": 0,
+      "stdout": "chain=512 cross=2000 wake_writes=2001\n",
+      "stderr": "S31 local callbacks: disabled\nS31 callback wakeups: coalesced\n"
+    },
+    {
+      "local": "1",
+      "mode": "0",
+      "case": "chain",
+      "iteration": 0,
+      "returncode": 0,
+      "stdout": "chain=512 cross=0 wake_writes=1\n",
+      "stderr": "S31 local callbacks: enabled\nS31 callback wakeups: legacy\n"
+    },
+    {
+      "local": "1",
+      "mode": "0",
+      "case": "chain",
+      "iteration": 1,
+      "returncode": 0,
+      "stdout": "chain=512 cross=0 wake_writes=1\n",
+      "stderr": "S31 local callbacks: enabled\nS31 callback wakeups: legacy\n"
+    },
+    {
+      "local": "1",
+      "mode": "0",
+      "case": "chain",
+      "iteration": 2,
+      "returncode": 0,
+      "stdout": "chain=512 cross=0 wake_writes=1\n",
+      "stderr": "S31 local callbacks: enabled\nS31 callback wakeups: legacy\n"
+    },
+    {
+      "local": "1",
+      "mode": "0",
+      "case": "chain",
+      "iteration": 3,
+      "returncode": 0,
+      "stdout": "chain=512 cross=0 wake_writes=1\n",
+      "stderr": "S31 local callbacks: enabled\nS31 callback wakeups: legacy\n"
+    },
+    {
+      "local": "1",
+      "mode": "0",
+      "case": "chain",
+      "iteration": 4,
+      "returncode": 0,
+      "stdout": "chain=512 cross=0 wake_writes=1\n",
+      "stderr": "S31 local callbacks: enabled\nS31 callback wakeups: legacy\n"
+    },
+    {
+      "local": "1",
+      "mode": "0",
+      "case": "chain",
+      "iteration": 5,
+      "returncode": 0,
+      "stdout": "chain=512 cross=0 wake_writes=1\n",
+      "stderr": "S31 local callbacks: enabled\nS31 callback wakeups: legacy\n"
+    },
+    {
+      "local": "1",
+      "mode": "0",
+      "case": "chain",
+      "iteration": 6,
+      "returncode": 0,
+      "stdout": "chain=512 cross=0 wake_writes=1\n",
+      "stderr": "S31 local callbacks: enabled\nS31 callback wakeups: legacy\n"
+    },
+    {
+      "local": "1",
+      "mode": "0",
+      "case": "chain",
+      "iteration": 7,
+      "returncode": 0,
+      "stdout": "chain=512 cross=0 wake_writes=1\n",
+      "stderr": "S31 local callbacks: enabled\nS31 callback wakeups: legacy\n"
+    },
+    {
+      "local": "1",
+      "mode": "0",
+      "case": "chain",
+      "iteration": 8,
+      "returncode": 0,
+      "stdout": "chain=512 cross=0 wake_writes=1\n",
+      "stderr": "S31 local callbacks: enabled\nS31 callback wakeups: legacy\n"
+    },
+    {
+      "local": "1",
+      "mode": "0",
+      "case": "chain",
+      "iteration": 9,
+      "returncode": 0,
+      "stdout": "chain=512 cross=0 wake_writes=1\n",
+      "stderr": "S31 local callbacks: enabled\nS31 callback wakeups: legacy\n"
+    },
+    {
+      "local": "1",
+      "mode": "0",
+      "case": "mixed",
+      "iteration": 0,
+      "returncode": 0,
+      "stdout": "chain=512 cross=2000 wake_writes=2001\n",
+      "stderr": "S31 local callbacks: enabled\nS31 callback wakeups: legacy\n"
+    },
+    {
+      "local": "1",
+      "mode": "0",
+      "case": "mixed",
+      "iteration": 1,
+      "returncode": 0,
+      "stdout": "chain=512 cross=2000 wake_writes=2001\n",
+      "stderr": "S31 local callbacks: enabled\nS31 callback wakeups: legacy\n"
+    },
+    {
+      "local": "1",
+      "mode": "0",
+      "case": "mixed",
+      "iteration": 2,
+      "returncode": 0,
+      "stdout": "chain=512 cross=2000 wake_writes=2001\n",
+      "stderr": "S31 local callbacks: enabled\nS31 callback wakeups: legacy\n"
+    },
+    {
+      "local": "1",
+      "mode": "0",
+      "case": "mixed",
+      "iteration": 3,
+      "returncode": 0,
+      "stdout": "chain=512 cross=2000 wake_writes=2001\n",
+      "stderr": "S31 local callbacks: enabled\nS31 callback wakeups: legacy\n"
+    },
+    {
+      "local": "1",
+      "mode": "0",
+      "case": "mixed",
+      "iteration": 4,
+      "returncode": 0,
+      "stdout": "chain=512 cross=2000 wake_writes=2001\n",
+      "stderr": "S31 local callbacks: enabled\nS31 callback wakeups: legacy\n"
+    },
+    {
+      "local": "1",
+      "mode": "0",
+      "case": "mixed",
+      "iteration": 5,
+      "returncode": 0,
+      "stdout": "chain=512 cross=2000 wake_writes=2001\n",
+      "stderr": "S31 local callbacks: enabled\nS31 callback wakeups: legacy\n"
+    },
+    {
+      "local": "1",
+      "mode": "0",
+      "case": "mixed",
+      "iteration": 6,
+      "returncode": 0,
+      "stdout": "chain=512 cross=2000 wake_writes=2001\n",
+      "stderr": "S31 local callbacks: enabled\nS31 callback wakeups: legacy\n"
+    },
+    {
+      "local": "1",
+      "mode": "0",
+      "case": "mixed",
+      "iteration": 7,
+      "returncode": 0,
+      "stdout": "chain=512 cross=2000 wake_writes=2001\n",
+      "stderr": "S31 local callbacks: enabled\nS31 callback wakeups: legacy\n"
+    },
+    {
+      "local": "1",
+      "mode": "0",
+      "case": "mixed",
+      "iteration": 8,
+      "returncode": 0,
+      "stdout": "chain=512 cross=2000 wake_writes=2001\n",
+      "stderr": "S31 local callbacks: enabled\nS31 callback wakeups: legacy\n"
+    },
+    {
+      "local": "1",
+      "mode": "0",
+      "case": "mixed",
+      "iteration": 9,
+      "returncode": 0,
+      "stdout": "chain=512 cross=2000 wake_writes=2001\n",
+      "stderr": "S31 local callbacks: enabled\nS31 callback wakeups: legacy\n"
+    },
+    {
+      "local": "1",
+      "mode": "1",
+      "case": "chain",
+      "iteration": 0,
+      "returncode": 0,
+      "stdout": "chain=512 cross=0 wake_writes=1\n",
+      "stderr": "S31 local callbacks: enabled\nS31 callback wakeups: coalesced\n"
+    },
+    {
+      "local": "1",
+      "mode": "1",
+      "case": "chain",
+      "iteration": 1,
+      "returncode": 0,
+      "stdout": "chain=512 cross=0 wake_writes=1\n",
+      "stderr": "S31 local callbacks: enabled\nS31 callback wakeups: coalesced\n"
+    },
+    {
+      "local": "1",
+      "mode": "1",
+      "case": "chain",
+      "iteration": 2,
+      "returncode": 0,
+      "stdout": "chain=512 cross=0 wake_writes=1\n",
+      "stderr": "S31 local callbacks: enabled\nS31 callback wakeups: coalesced\n"
+    },
+    {
+      "local": "1",
+      "mode": "1",
+      "case": "chain",
+      "iteration": 3,
+      "returncode": 0,
+      "stdout": "chain=512 cross=0 wake_writes=1\n",
+      "stderr": "S31 local callbacks: enabled\nS31 callback wakeups: coalesced\n"
+    },
+    {
+      "local": "1",
+      "mode": "1",
+      "case": "chain",
+      "iteration": 4,
+      "returncode": 0,
+      "stdout": "chain=512 cross=0 wake_writes=1\n",
+      "stderr": "S31 local callbacks: enabled\nS31 callback wakeups: coalesced\n"
+    },
+    {
+      "local": "1",
+      "mode": "1",
+      "case": "chain",
+      "iteration": 5,
+      "returncode": 0,
+      "stdout": "chain=512 cross=0 wake_writes=1\n",
+      "stderr": "S31 local callbacks: enabled\nS31 callback wakeups: coalesced\n"
+    },
+    {
+      "local": "1",
+      "mode": "1",
+      "case": "chain",
+      "iteration": 6,
+      "returncode": 0,
+      "stdout": "chain=512 cross=0 wake_writes=1\n",
+      "stderr": "S31 local callbacks: enabled\nS31 callback wakeups: coalesced\n"
+    },
+    {
+      "local": "1",
+      "mode": "1",
+      "case": "chain",
+      "iteration": 7,
+      "returncode": 0,
+      "stdout": "chain=512 cross=0 wake_writes=1\n",
+      "stderr": "S31 local callbacks: enabled\nS31 callback wakeups: coalesced\n"
+    },
+    {
+      "local": "1",
+      "mode": "1",
+      "case": "chain",
+      "iteration": 8,
+      "returncode": 0,
+      "stdout": "chain=512 cross=0 wake_writes=1\n",
+      "stderr": "S31 local callbacks: enabled\nS31 callback wakeups: coalesced\n"
+    },
+    {
+      "local": "1",
+      "mode": "1",
+      "case": "chain",
+      "iteration": 9,
+      "returncode": 0,
+      "stdout": "chain=512 cross=0 wake_writes=1\n",
+      "stderr": "S31 local callbacks: enabled\nS31 callback wakeups: coalesced\n"
+    },
+    {
+      "local": "1",
+      "mode": "1",
+      "case": "mixed",
+      "iteration": 0,
+      "returncode": 0,
+      "stdout": "chain=512 cross=2000 wake_writes=2001\n",
+      "stderr": "S31 local callbacks: enabled\nS31 callback wakeups: coalesced\n"
+    },
+    {
+      "local": "1",
+      "mode": "1",
+      "case": "mixed",
+      "iteration": 1,
+      "returncode": 0,
+      "stdout": "chain=512 cross=2000 wake_writes=1997\n",
+      "stderr": "S31 local callbacks: enabled\nS31 callback wakeups: coalesced\n"
+    },
+    {
+      "local": "1",
+      "mode": "1",
+      "case": "mixed",
+      "iteration": 2,
+      "returncode": 0,
+      "stdout": "chain=512 cross=2000 wake_writes=1994\n",
+      "stderr": "S31 local callbacks: enabled\nS31 callback wakeups: coalesced\n"
+    },
+    {
+      "local": "1",
+      "mode": "1",
+      "case": "mixed",
+      "iteration": 3,
+      "returncode": 0,
+      "stdout": "chain=512 cross=2000 wake_writes=1986\n",
+      "stderr": "S31 local callbacks: enabled\nS31 callback wakeups: coalesced\n"
+    },
+    {
+      "local": "1",
+      "mode": "1",
+      "case": "mixed",
+      "iteration": 4,
+      "returncode": 0,
+      "stdout": "chain=512 cross=2000 wake_writes=1993\n",
+      "stderr": "S31 local callbacks: enabled\nS31 callback wakeups: coalesced\n"
+    },
+    {
+      "local": "1",
+      "mode": "1",
+      "case": "mixed",
+      "iteration": 5,
+      "returncode": 0,
+      "stdout": "chain=512 cross=2000 wake_writes=1988\n",
+      "stderr": "S31 local callbacks: enabled\nS31 callback wakeups: coalesced\n"
+    },
+    {
+      "local": "1",
+      "mode": "1",
+      "case": "mixed",
+      "iteration": 6,
+      "returncode": 0,
+      "stdout": "chain=512 cross=2000 wake_writes=1992\n",
+      "stderr": "S31 local callbacks: enabled\nS31 callback wakeups: coalesced\n"
+    },
+    {
+      "local": "1",
+      "mode": "1",
+      "case": "mixed",
+      "iteration": 7,
+      "returncode": 0,
+      "stdout": "chain=512 cross=2000 wake_writes=1991\n",
+      "stderr": "S31 local callbacks: enabled\nS31 callback wakeups: coalesced\n"
+    },
+    {
+      "local": "1",
+      "mode": "1",
+      "case": "mixed",
+      "iteration": 8,
+      "returncode": 0,
+      "stdout": "chain=512 cross=2000 wake_writes=2001\n",
+      "stderr": "S31 local callbacks: enabled\nS31 callback wakeups: coalesced\n"
+    },
+    {
+      "local": "1",
+      "mode": "1",
+      "case": "mixed",
+      "iteration": 9,
+      "returncode": 0,
+      "stdout": "chain=512 cross=2000 wake_writes=1997\n",
+      "stderr": "S31 local callbacks: enabled\nS31 callback wakeups: coalesced\n"
+    }
+  ]
+}
