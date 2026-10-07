@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
 import os, termios, tty, select, time, sys
+from console_io import write_paced
 
 cmd = sys.argv[1] if len(sys.argv) > 1 else 'echo ALIVE'
 wait = float(sys.argv[2]) if len(sys.argv) > 2 else 12.0
@@ -30,7 +31,7 @@ def rd(t):
     return out
 
 rd(.2)
-os.write(fd, (cmd + '\r').encode())
+write_paced(fd, (cmd + '\r').encode())
 out = rd(wait)
 print(out.decode(errors='replace'))
 os.close(fd)

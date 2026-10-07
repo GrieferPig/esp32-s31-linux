@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 """Run one Linux console command in raw mode; finish on a unique output marker."""
 import os,sys,tty,termios,select,time,secrets,re
+from console_io import write_paced
 cmd=sys.argv[1];seconds=float(sys.argv[2]) if len(sys.argv)>2 else 30
 fd=os.open('/dev/ttyUSB0',os.O_RDWR|os.O_NOCTTY|os.O_NONBLOCK)
 tty.setraw(fd)
@@ -17,7 +18,7 @@ wire="{ "+cmd+"; }; s31_cmd_status=$?; printf '\\n__S31_DONE_%s__:%s\\n' '"+toke
 if len(wire.encode()) >= 1024:
  os.close(fd)
  raise SystemExit('Console command exceeds the1024-byte BusyBox line limit; shorten it')
-os.write(fd,(wire+'\r').encode())
+write_paced(fd,(wire+'\r').encode())
 out=bytearray();deadline=time.monotonic()+seconds;match=None
 while time.monotonic()<deadline:
  if select.select([fd],[],[],min(.5,max(0,deadline-time.monotonic())))[0]:

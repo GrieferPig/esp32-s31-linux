@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
 import os,termios,tty,select,time,sys,base64,re,json
+from console_io import write_paced
 from pathlib import Path
 source,dest,skip,count=sys.argv[1:]
 skip,count=int(skip),int(count)
@@ -11,7 +12,7 @@ a=termios.tcgetattr(fd);a[4]=a[5]=termios.B115200
 a[2]=(a[2] | termios.CLOCAL | termios.CREAD) & ~termios.HUPCL
 termios.tcsetattr(fd,termios.TCSANOW,a)
 cmd=f'dd if={source} bs=1K skip={skip} count={count} 2>/dev/null | base64; echo MISSION_DONE'
-os.write(fd,(cmd+'\r').encode())
+write_paced(fd,(cmd+'\r').encode())
 raw=b'';deadline=time.monotonic()+58
 while time.monotonic()<deadline:
  if select.select([fd],[],[],.2)[0]:

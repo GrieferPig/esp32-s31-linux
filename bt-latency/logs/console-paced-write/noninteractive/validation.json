@@ -1,0 +1,6 @@
+{
+  "commands": 8,
+  "payload_bytes_each": 600,
+  "errors": 0,
+  "note": "Prompt prefix accepted when matching returned PAYLOAD; all full payloads checked."
+}
