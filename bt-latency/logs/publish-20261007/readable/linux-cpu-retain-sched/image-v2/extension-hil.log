@@ -1,0 +1,13 @@
+{"bytes": 423, "gzip_bytes": 227, "sha256": "d5704add28176008a4b4a5cdee9d020d59288491e65c5dff7d005dbf1b08a2f1"}
+Traceback (most recent call last):
+  File "/home/grieferpig/esp32-s31-linux/bt-latency/logs/linux-cpu-retain-sched/image-v2/extension_hil.py", line 34, in <module>
+    assert 'CPU0 HWLoop disabled before first use, first-use activation PASS' in text,text
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AssertionError: exec reset: 100 syscalls, zero extension suspend/restore PASS
+Assertion failed: s31_hwloop_setupi()==5 (/home/grieferpig/esp32-s31-linux/bt-latency/logs/linux-cpu-retain-sched/lazy_signal_test.c: main: 48)
+Aborted
+fresh exec: 100 syscalls, zero extension suspend/restore PASS
+Assertion failed: out[i]==a[i]+b[i] (/home/grieferpig/esp32-s31-linux/bt-latency/logs/linux-cpu-retain-sched/lazy_signal_test.c: main: 59)
+Aborted
+
+EXIT:1

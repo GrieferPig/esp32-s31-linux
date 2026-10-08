@@ -1,0 +1,11 @@
+patching file arch/riscv/include/asm/esp32s31_ext.h
+patching file arch/riscv/include/asm/processor.h
+patching file arch/riscv/kernel/esp32s31-ext.c
+patching file arch/riscv/kernel/signal.c
+patching file arch/riscv/kernel/smpboot.c
+patching file arch/riscv/kernel/suspend.c
+patching file arch/riscv/kernel/traps.c
+patching file drivers/bluetooth/hci_esp32s31.c
+patching file drivers/platform/esp32s31-radio-rtos.c
+patching file drivers/platform/esp32s31-radio-smode.c
+patching file include/linux/esp32s31-radio.h

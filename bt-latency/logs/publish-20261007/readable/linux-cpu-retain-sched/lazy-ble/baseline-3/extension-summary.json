@@ -1,0 +1,26 @@
+{
+  "extension_window_seconds": 30.00927625,
+  "timebase_hz": 320000000,
+  "delta": {
+    "suspend": 11772,
+    "restore": 11772,
+    "first_use": 0,
+    "skipped": 0,
+    "bt_syscall_suspend": 11282,
+    "bt_syscall_restore": 11282,
+    "bt_syscall_suspend_ticks": 83112191,
+    "bt_syscall_restore_ticks": 121674644,
+    "timer_pair_ticks": 458693
+  },
+  "bt_syscall_extension_seconds": 0.6399588593750001,
+  "total_capacity_pct": 1.0662683998835194,
+  "timer_pair_ticks_per_suspend": 40.6570643502925,
+  "timer_pair_us": 0.12705332609466408,
+  "timer_corrected_estimate_seconds": 0.6370920281250001,
+  "timer_corrected_estimate_capacity_pct": 1.0614918247570202,
+  "suspend_boundary_us": 23.021237092270876,
+  "restore_boundary_us": 33.702646915440525,
+  "syscall_suspend_rate_s": 375.9504196639864,
+  "syscall_restore_rate_s": 375.9504196639864,
+  "scope": "BTstack syscall extension suspend/restore functions, including timer read and counter instrumentation; excludes IRQ transitions and other users"
+}

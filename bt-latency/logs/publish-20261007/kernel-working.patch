@@ -1,0 +1,668 @@
+diff --git a/arch/riscv/include/asm/esp32s31_ext.h b/arch/riscv/include/asm/esp32s31_ext.h
+index e339b56ef6cc1..3abc2f04a1f5a 100644
+--- a/arch/riscv/include/asm/esp32s31_ext.h
++++ b/arch/riscv/include/asm/esp32s31_ext.h
+@@ -28,19 +28,23 @@ struct esp32s31_ext_state {
+ } __aligned(16);
+ 
+ #ifdef CONFIG_ESP32S31_COPROC_CONTEXT
++void esp32s31_ext_cpu_init(void);
+ void esp32s31_ext_switch(struct task_struct *prev, struct task_struct *next);
+ void esp32s31_ext_enter_kernel(struct pt_regs *regs);
+ void esp32s31_ext_exit_user(struct pt_regs *regs);
++bool esp32s31_ext_first_use(struct pt_regs *regs);
+ void esp32s31_ext_save(struct task_struct *task);
+ void esp32s31_ext_restore(struct task_struct *task);
+ void esp32s31_ext_reset(struct task_struct *task);
+ void esp32s31_ext_kernel_begin(void);
+ void esp32s31_ext_kernel_end(void);
+ #else
++static inline void esp32s31_ext_cpu_init(void) { }
+ static inline void esp32s31_ext_switch(struct task_struct *prev,
+ 				       struct task_struct *next) { }
+ static inline void esp32s31_ext_enter_kernel(struct pt_regs *regs) { }
+ static inline void esp32s31_ext_exit_user(struct pt_regs *regs) { }
++static inline bool esp32s31_ext_first_use(struct pt_regs *regs) { return false; }
+ static inline void esp32s31_ext_save(struct task_struct *task) { }
+ static inline void esp32s31_ext_restore(struct task_struct *task) { }
+ static inline void esp32s31_ext_reset(struct task_struct *task) { }
+diff --git a/arch/riscv/include/asm/processor.h b/arch/riscv/include/asm/processor.h
+index 39e2ab235130f..764f5f942fad0 100644
+--- a/arch/riscv/include/asm/processor.h
++++ b/arch/riscv/include/asm/processor.h
+@@ -112,6 +112,7 @@ struct thread_struct {
+ #ifdef CONFIG_SOC_ESP32S31
+ 	struct esp32s31_ext_state esp32s31_ext;
+ 	bool esp32s31_ext_active;
++	bool esp32s31_ext_used;
+ #endif
+ 	unsigned long bad_cause;
+ 	unsigned long envcfg;
+diff --git a/arch/riscv/kernel/esp32s31-ext.c b/arch/riscv/kernel/esp32s31-ext.c
+index 2817b28b40e84..f2fc27447971b 100644
+--- a/arch/riscv/kernel/esp32s31-ext.c
++++ b/arch/riscv/kernel/esp32s31-ext.c
+@@ -12,12 +12,81 @@
+ #include <linux/sched.h>
+ #include <linux/sched/cputime.h>
+ #include <linux/string.h>
++#include <linux/percpu.h>
++#include <linux/cpu.h>
++#include <linux/uaccess.h>
++#include <asm/ptrace.h>
++#include <asm/timex.h>
+ 
+ #include <asm/esp32s31_ext.h>
+ #include <asm/page.h>
+ #include <asm/processor.h>
+ #include <asm/sbi.h>
+ 
++/* Runtime controls permit same-image A/B without changing Linux scheduling. */
++static bool s31_ext_lazy_user = true;
++module_param_named(lazy_user, s31_ext_lazy_user, bool, 0600);
++MODULE_PARM_DESC(lazy_user, "Enable user HWLoop/PIE only after its first instruction");
++static bool s31_ext_diagnostics;
++module_param_named(diagnostics, s31_ext_diagnostics, bool, 0600);
++struct s31_ext_counts {
++	u32 suspend, restore, first_use, skipped;
++	u32 bt_syscall_suspend, bt_syscall_restore;
++	u64 bt_syscall_suspend_ticks, bt_syscall_restore_ticks;
++	u64 timer_pair_ticks;
++};
++static DEFINE_PER_CPU(struct s31_ext_counts, s31_ext_counts);
++#define S31_EXT_COUNT(member) do { \
++	if (READ_ONCE(s31_ext_diagnostics)) \
++		this_cpu_inc(s31_ext_counts.member); \
++} while (0)
++
++/* Trap entry and final user return run with local interrupts disabled.
++ * Freeze diagnostics before reading totals: RV32 u64 reads are not atomic.
++ * TIME ticks use the DT timebase (320 MHz), rather than CPU sample counts.
++ */
++static bool s31_ext_time_bt_syscall(struct pt_regs *regs)
++{
++	return READ_ONCE(s31_ext_diagnostics) &&
++	       regs->cause == EXC_SYSCALL &&
++	       !strncmp(current->comm, "s31-btstack", 11);
++}
++
++static int s31_ext_stats_get(char *buf, const struct kernel_param *kp)
++{
++	struct s31_ext_counts total = {};
++	int cpu;
++
++	for_each_possible_cpu(cpu) {
++		struct s31_ext_counts *p = per_cpu_ptr(&s31_ext_counts, cpu);
++
++#define S31_EXT_SUM(member) total.member += READ_ONCE(p->member)
++		S31_EXT_SUM(suspend);
++		S31_EXT_SUM(restore);
++		S31_EXT_SUM(first_use);
++		S31_EXT_SUM(skipped);
++		S31_EXT_SUM(bt_syscall_suspend);
++		S31_EXT_SUM(bt_syscall_restore);
++		S31_EXT_SUM(bt_syscall_suspend_ticks);
++		S31_EXT_SUM(bt_syscall_restore_ticks);
++		S31_EXT_SUM(timer_pair_ticks);
++#undef S31_EXT_SUM
++	}
++	return scnprintf(buf, PAGE_SIZE,
++		"suspend=%u restore=%u first_use=%u skipped=%u "
++		"bt_syscall_suspend=%u bt_syscall_restore=%u "
++		"bt_syscall_suspend_ticks=%llu bt_syscall_restore_ticks=%llu "
++		"timer_pair_ticks=%llu\n",
++		total.suspend, total.restore, total.first_use, total.skipped,
++		total.bt_syscall_suspend, total.bt_syscall_restore,
++		total.bt_syscall_suspend_ticks, total.bt_syscall_restore_ticks,
++		total.timer_pair_ticks);
++}
++static const struct kernel_param_ops s31_ext_stats_ops = {
++	.get = s31_ext_stats_get,
++};
++module_param_cb(stats, &s31_ext_stats_ops, NULL, 0400);
++
+ #define S31_SBI_EXT_COPROC	0x09000002
+ #define S31_SBI_COPROC_SWITCH	0
+ #define S31_SBI_COPROC_SAVE	1
+@@ -120,6 +189,24 @@ static void s31_ext_check(struct sbiret ret)
+ 		  ret.error);
+ }
+ 
++/* Firmware starts PIE enabled, including on non-retentive warmboot.
++ * Discard that firmware-owned state once per CPU bring-up/resume. Keep the
++ * suspended task's saved context untouched so user state can be restored.
++ */
++static DEFINE_PER_CPU_SHARED_ALIGNED(struct esp32s31_ext_state, s31_ext_boot_state);
++
++void esp32s31_ext_cpu_init(void)
++{
++	unsigned long flags;
++	struct sbiret ret;
++
++	local_irq_save(flags);
++	ret = sbi_ecall(S31_SBI_EXT_COPROC, S31_SBI_COPROC_SUSPEND,
++			__pa(this_cpu_ptr(&s31_ext_boot_state)), 0, 0, 0, 0, 0);
++	s31_ext_check(ret);
++	local_irq_restore(flags);
++}
++
+ static void esp32s31_ext_suspend_hw(struct task_struct *task, bool deactivate)
+ {
+ 	struct sbiret ret;
+@@ -128,9 +215,14 @@ static void esp32s31_ext_suspend_hw(struct task_struct *task, bool deactivate)
+ 	if (!task->thread.esp32s31_ext_active)
+ 		return;
+ 
++	S31_EXT_COUNT(suspend);
+ 	ret = sbi_ecall(S31_SBI_EXT_COPROC, S31_SBI_COPROC_SUSPEND,
+ 			s31_ext_pa(task), 0, 0, 0, 0, 0);
+ 	s31_ext_check(ret);
++	/* Preserve dirty state when switching the runtime control to lazy. */
++	if (!ret.error && ((task->thread.esp32s31_ext.hwloop_state & 3) == 3 ||
++			  (task->thread.esp32s31_ext.pie_state & 3) == 3))
++		task->thread.esp32s31_ext_used = true;
+ 	if (deactivate)
+ 		task->thread.esp32s31_ext_active = false;
+ }
+@@ -139,6 +231,7 @@ static void esp32s31_ext_restore_hw(struct task_struct *task)
+ {
+ 	struct sbiret ret;
+ 
++	S31_EXT_COUNT(restore);
+ 	ret = sbi_ecall(S31_SBI_EXT_COPROC, S31_SBI_COPROC_RESTORE,
+ 			s31_ext_pa(task), 0, 0, 0, 0, 0);
+ 	s31_ext_check(ret);
+@@ -201,18 +294,70 @@ void esp32s31_ext_reset(struct task_struct *task)
+ 	memset(&task->thread.esp32s31_ext, 0,
+ 	       sizeof(task->thread.esp32s31_ext));
+ 	task->thread.esp32s31_ext_active = false;
++	task->thread.esp32s31_ext_used = false;
+ }
+ 
+ void esp32s31_ext_enter_kernel(struct pt_regs *regs)
+ {
+-	(void)regs;
++	bool measure;
++	u64 start;
++
++	if (!current->thread.esp32s31_ext_active)
++		return;
++	measure = s31_ext_time_bt_syscall(regs);
++	start = measure ? get_cycles64() : 0;
+ 	esp32s31_ext_suspend_hw(current, true);
++	if (measure) {
++		struct s31_ext_counts *p = this_cpu_ptr(&s31_ext_counts);
++		u64 end = get_cycles64();
++		u64 calibration_start = get_cycles64();
++		u64 calibration_end = get_cycles64();
++
++		p->bt_syscall_suspend++;
++		p->bt_syscall_suspend_ticks += end - start;
++		p->timer_pair_ticks += calibration_end - calibration_start;
++	}
++}
++
++bool esp32s31_ext_first_use(struct pt_regs *regs)
++{
++	u16 insn;
++
++	if (!READ_ONCE(s31_ext_lazy_user) || !user_mode(regs) ||
++	    current->thread.esp32s31_ext_used)
++		return false;
++	/* Instructions may start on a two-byte boundary after RVC. */
++	if (get_user(insn, (u16 __user *)regs->epc))
++		return false;
++	/* Match the vendor families in the existing hart0 migration check.
++	 * Retry once without advancing PC; ordinary SIGILL is unchanged.
++	 */
++	if ((insn & 0x7fU) != 0x2bU && (insn & 0x1bU) != 0x1bU)
++		return false;
++	current->thread.esp32s31_ext_used = true;
++	S31_EXT_COUNT(first_use);
++	return true;
+ }
+ 
+ void esp32s31_ext_exit_user(struct pt_regs *regs)
+ {
+-	(void)regs;
++	bool measure;
++	u64 start;
++
++	if (READ_ONCE(s31_ext_lazy_user) && !current->thread.esp32s31_ext_used) {
++		S31_EXT_COUNT(skipped);
++		return;
++	}
++	measure = s31_ext_time_bt_syscall(regs);
++	start = measure ? get_cycles64() : 0;
+ 	esp32s31_ext_restore(current);
++	if (measure) {
++		struct s31_ext_counts *p = this_cpu_ptr(&s31_ext_counts);
++		u64 end = get_cycles64();
++
++		p->bt_syscall_restore++;
++		p->bt_syscall_restore_ticks += end - start;
++	}
+ }
+ 
+ void esp32s31_ext_kernel_begin(void)
+diff --git a/arch/riscv/kernel/signal.c b/arch/riscv/kernel/signal.c
+index 90950e672a8a2..d0bcaf7775ed6 100644
+--- a/arch/riscv/kernel/signal.c
++++ b/arch/riscv/kernel/signal.c
+@@ -62,6 +62,15 @@ static long restore_esp32s31_ext_state(void __user *sc_ext)
+ 	if (unlikely(err))
+ 		return err;
+ 	current->thread.esp32s31_ext_active = false;
++	/* A handler may use extensions while the interrupted program does not.
++	 * Restore live/dirty user state, but leave an empty frame disabled.
++	 * Nonzero loop counts are honored even in a user-edited clean frame.
++	 */
++	current->thread.esp32s31_ext_used =
++		(current->thread.esp32s31_ext.hwloop_state & 3) == 3 ||
++		(current->thread.esp32s31_ext.pie_state & 3) == 3 ||
++		current->thread.esp32s31_ext.hwloop[2] ||
++		current->thread.esp32s31_ext.hwloop[5];
+ 	return 0;
+ }
+ #endif
+diff --git a/arch/riscv/kernel/smpboot.c b/arch/riscv/kernel/smpboot.c
+index a096592b55012..9f3652372f68d 100644
+--- a/arch/riscv/kernel/smpboot.c
++++ b/arch/riscv/kernel/smpboot.c
+@@ -37,6 +37,7 @@
+ #include <asm/smp.h>
+ #include <uapi/asm/hwcap.h>
+ #include <asm/vector.h>
++#include <asm/esp32s31_ext.h>
+ 
+ #include "head.h"
+ 
+@@ -53,6 +54,7 @@ void __init smp_prepare_cpus(unsigned int max_cpus)
+ 	store_cpu_topology(curr_cpuid);
+ 	numa_store_cpu_info(curr_cpuid);
+ 	numa_add_cpu(curr_cpuid);
++	esp32s31_ext_cpu_init();
+ 
+ 	/* This covers non-smp usecase mandated by "nosmp" option */
+ 	if (max_cpus == 0)
+@@ -233,6 +235,7 @@ asmlinkage __visible void smp_callin(void)
+ 	riscv_ipi_enable();
+ 
+ 	numa_add_cpu(curr_cpuid);
++	esp32s31_ext_cpu_init();
+ 
+ 	pr_debug("CPU%u: Booted secondary hartid %lu\n", curr_cpuid,
+ 		cpuid_to_hartid_map(curr_cpuid));
+diff --git a/arch/riscv/kernel/suspend.c b/arch/riscv/kernel/suspend.c
+index 5456a51e1fda3..44f93567a75a4 100644
+--- a/arch/riscv/kernel/suspend.c
++++ b/arch/riscv/kernel/suspend.c
+@@ -17,6 +17,7 @@
+ #include <asm/pgtable.h>
+ #include <asm/sbi.h>
+ #include <asm/suspend.h>
++#include <asm/esp32s31_ext.h>
+ 
+ void suspend_save_csrs(struct suspend_context *context)
+ {
+@@ -137,6 +138,7 @@ int cpu_suspend(unsigned long arg,
+ 
+ 	/* Restore additional CSRs */
+ 	suspend_restore_csrs(&context);
++	esp32s31_ext_cpu_init();
+ 
+ 	return rc;
+ }
+diff --git a/arch/riscv/kernel/traps.c b/arch/riscv/kernel/traps.c
+index e3c11d2e5f25d..37e1e82bc0a0c 100644
+--- a/arch/riscv/kernel/traps.c
++++ b/arch/riscv/kernel/traps.c
+@@ -173,13 +173,13 @@ DO_ERROR_INFO(do_trap_insn_fault,
+ 
+ static bool esp32s31_hart0_pie_insn(struct pt_regs *regs)
+ {
+-	u32 insn;
++	u16 insn;
+ 
+ 	if (!IS_ENABLED(CONFIG_ESP32S31_RADIO_SMODE))
+ 		return false;
+ 	if (raw_smp_processor_id() != 0 || !user_mode(regs))
+ 		return false;
+-	if (get_user(insn, (u32 __user *)regs->epc))
++	if (get_user(insn, (u16 __user *)regs->epc))
+ 		return false;
+ 
+ 	/* ESP32-S31 PIE and HWLoop are only implemented on hart 1.
+@@ -233,6 +233,13 @@ asmlinkage __visible __trap_section void do_trap_insn_illegal(struct pt_regs *re
+ 		local_irq_enable();
+ 
+ 		handled = riscv_v_first_use_handler(regs);
++		/* Enable an unused task before treating an OFF HWLoop trap as
++		 * an unsupported hart0 instruction. HWLoop works on hart0.
++		 * A genuine unsupported PIE retries once, then follows the
++		 * existing CPU1 migration path.
++		 */
++		if (!handled)
++			handled = esp32s31_ext_first_use(regs);
+ 
+ 		if (!handled && esp32s31_hart0_pie_insn(regs)) {
+ 			cpumask_t pie_cpus;
+diff --git a/drivers/bluetooth/hci_esp32s31.c b/drivers/bluetooth/hci_esp32s31.c
+index a0981c595fd2d..6a6434e787e3d 100644
+--- a/drivers/bluetooth/hci_esp32s31.c
++++ b/drivers/bluetooth/hci_esp32s31.c
+@@ -5,6 +5,7 @@
+ #include <linux/esp32s31-radio.h>
+ #include <linux/fs.h>
+ #include <linux/init.h>
++#include <linux/ioctl.h>
+ #include <linux/miscdevice.h>
+ #include <linux/module.h>
+ #include <linux/mutex.h>
+@@ -31,7 +32,7 @@ struct s31_hci {
+ 	bool radio_registered;
+ 	bool suspended;
+ 	bool reset_pending;
+-	u8 direct_write_buf[ESP32S31_RADIO_HCI_FRAME_MAX];
++	u8 direct_write_buf[1 + 8 * (2 + ESP32S31_RADIO_HCI_FRAME_MAX)];
+ };
+ 
+ static struct s31_hci s31_hci;
+@@ -336,10 +337,12 @@ static ssize_t s31_hci_direct_write(struct file *file,
+ 		ret = -EFAULT;
+ 		goto out;
+ 	}
+-	ret = esp32s31_radio_hci_send(radio->direct_write_buf[0],
+-					 radio->direct_write_buf + 1, count - 1);
+-	if (!ret)
+-		ret = count;
++	/* Direct writers use the 0xff batch envelope unconditionally. */
++	if (radio->direct_write_buf[0] != 0xff) {
++		ret = -EINVAL;
++		goto out;
++	}
++	ret = esp32s31_radio_hci_send_batch(radio->direct_write_buf, count);
+ out:
+ 	mutex_unlock(&radio->direct_write_lock);
+ 	return ret;
+@@ -360,6 +363,21 @@ static __poll_t s31_hci_direct_poll(struct file *file, poll_table *wait)
+ 	return mask;
+ }
+ 
++/* Batch capability for ACL write coalescing: maximum H4 records per
++ * 0xff-prefixed envelope. Legacy kernels lack this command (ENOTTY). */
++static long s31_hci_direct_ioctl(struct file *file, unsigned int cmd,
++				 unsigned long arg)
++{
++	u32 caps = 8;
++
++	if (cmd == _IOR('S', 0x31, u32)) {
++		if (put_user(caps, (u32 __user *)arg))
++			return -EFAULT;
++		return 0;
++	}
++	return -ENOTTY;
++}
++
+ static const struct file_operations s31_hci_direct_fops = {
+ 	.owner = THIS_MODULE,
+ 	.open = s31_hci_direct_open,
+@@ -367,6 +385,7 @@ static const struct file_operations s31_hci_direct_fops = {
+ 	.read = s31_hci_direct_read,
+ 	.write = s31_hci_direct_write,
+ 	.poll = s31_hci_direct_poll,
++	.unlocked_ioctl = s31_hci_direct_ioctl,
+ 	.llseek = noop_llseek,
+ };
+ 
+diff --git a/drivers/platform/esp32s31-radio-rtos.c b/drivers/platform/esp32s31-radio-rtos.c
+index 2cba900f54923..6e89e3517eabd 100644
+--- a/drivers/platform/esp32s31-radio-rtos.c
++++ b/drivers/platform/esp32s31-radio-rtos.c
+@@ -187,6 +187,19 @@ static bool s31_bt_gate_sleep;
+ module_param_named(bt_gate_sleep, s31_bt_gate_sleep, bool, 0600);
+ MODULE_PARM_DESC(bt_gate_sleep, "BT-only gate contention sleeps instead of optimistic spinning (default off)");
+ 
++static bool s31_bt_fast_wake;
++module_param_named(bt_fast_wake, s31_bt_fast_wake, bool, 0600);
++MODULE_PARM_DESC(bt_fast_wake, "BT-only skip wakes of empty waitqueues with publication barrier");
++
++static bool s31_waitqueue_needs_wake(wait_queue_head_t *wq)
++{
++	/* The full barrier pairs with waiter publication. A waiter not yet
++	 * listed must observe the changed condition before sleeping.
++	 */
++	return !READ_ONCE(s31_bt_fast_wake) || !s31_radio_is_bt_only() ||
++	       wq_has_sleeper(wq);
++}
++
+ static void s31_blob_lock(void)
+ {
+ 	/* Keep the mutex itself as the ownership domain inspected by native ISR
+@@ -203,11 +216,12 @@ static void s31_blob_lock(void)
+ static void s31_blob_unlock(void)
+ {
+ 	mutex_unlock(&s31_blob_mutex);
+-	/* Always take the waitqueue lock: this pairs publication with waiter
+-	 * preparation, and also permits changing the knob while waiters exist.
++	/* Wake all listed gate waiters. The optional empty-queue check supplies
++	 * the publication barrier without taking the waitqueue lock.
+ 	 * Legacy mutex waiters are still woken by mutex_unlock itself.
+ 	 */
+-	wake_up_all(&s31_blob_sleep_waitq);
++	if (s31_waitqueue_needs_wake(&s31_blob_sleep_waitq))
++		wake_up_all(&s31_blob_sleep_waitq);
+ }
+ static struct s31_linux_task *s31_task_list;
+ static DEFINE_SPINLOCK(s31_task_list_lock);
+@@ -1130,7 +1144,8 @@ void s31_linux_sync_wake(void *opaque)
+ 	/* A Wi-Fi RX interrupt usually makes exactly one queue consumable.  A
+ 	 * global waitqueue woke every compatibility task for every frame and
+ 	 * turned non-aggregated receive into a scheduler-bound 100 Hz path. */
+-	wake_up_all(&sync->waitq);
++	if (s31_waitqueue_needs_wake(&sync->waitq))
++		wake_up_all(&sync->waitq);
+ }
+ 
+ u32 s31_linux_critical_enter(void)
+diff --git a/drivers/platform/esp32s31-radio-smode.c b/drivers/platform/esp32s31-radio-smode.c
+index 66ca7b00ff109..86749dd4e60d7 100644
+--- a/drivers/platform/esp32s31-radio-smode.c
++++ b/drivers/platform/esp32s31-radio-smode.c
+@@ -687,6 +687,20 @@ struct s31_idf_irq_registration {
+ #define S31_RADIO_IRQ_SLOTS	7
+ static struct s31_idf_irq_registration s31_idf_irqs[S31_RADIO_IRQ_SLOTS];
+ static atomic_t s31_radio_pending_isrs = ATOMIC_INIT(0);
++static atomic_t s31_radio_immediate_pending = ATOMIC_INIT(0);
++static bool s31_bt_queue_coalesce;
++module_param_named(bt_queue_coalesce, s31_bt_queue_coalesce, bool, 0600);
++MODULE_PARM_DESC(bt_queue_coalesce, "BT-only coalesce immediate worker notifications");
++static bool s31_bt_blob_skip;
++module_param_named(bt_blob_skip, s31_bt_blob_skip, bool, 0600);
++MODULE_PARM_DESC(bt_blob_skip, "BT-only skip blob gate on event-only passes");
++static unsigned long s31_blob_skipped_passes;
++module_param_named(bt_blob_skipped, s31_blob_skipped_passes, ulong, 0400);
++static bool s31_bt_pass_skip_completions;
++module_param_named(bt_pass_skip_completions, s31_bt_pass_skip_completions, bool, 0600);
++MODULE_PARM_DESC(bt_pass_skip_completions, "BT-only skip worker pass for Number-of-Completed-Packets events");
++static unsigned long s31_pass_skipped_completions;
++module_param_named(bt_pass_skipped_completions, s31_pass_skipped_completions, ulong, 0400);
+ 
+ enum s31_radio_command_type {
+ 	S31_RADIO_COMMAND_HEALTH,
+@@ -1490,8 +1504,19 @@ static void s31_radio_queue(void)
+ 	 * parked permanently after terminal first-pass init failure. */
+ 	if (READ_ONCE(s31_radio_init_dead) || !READ_ONCE(s31_radio_wq))
+ 		return;
+-	hrtimer_try_to_cancel(&s31_radio_hrtimer);
+-	queue_delayed_work(s31_radio_wq, &s31_radio_work, 0);
++	if (READ_ONCE(s31_bt_queue_coalesce) && s31_radio_is_bt_only()) {
++		/* The first producer owns queueing; the worker consumes this
++		 * token before examining pending event state.
++		 */
++		if (atomic_xchg(&s31_radio_immediate_pending, 1))
++			return;
++		hrtimer_try_to_cancel(&s31_radio_hrtimer);
++		/* Promote an already delayed pass as well. */
++		mod_delayed_work(s31_radio_wq, &s31_radio_work, 0);
++	} else {
++		hrtimer_try_to_cancel(&s31_radio_hrtimer);
++		queue_delayed_work(s31_radio_wq, &s31_radio_work, 0);
++	}
+ }
+ 
+ static void s31_radio_wake(void)
+@@ -1579,8 +1604,19 @@ int s31_radio_vhci_receive(u8 *frame, u16 length)
+ 	/* Command, pairing and link-state events stay latency sensitive.  A2DP media
+ 	 * arrives as ACL data and is intentionally coalesced until the next bridge
+ 	 * pass when the controller is in the BT-only low-overhead mode. */
+-	if (frame[0] == HCI_EVENT_PKT)
+-		s31_radio_wake();
++	if (frame[0] == HCI_EVENT_PKT) {
++		/* Number-of-Completed-Packets events only retire controller
++		 * credits the host already tracks on read: the reader is woken
++		 * above, and no blob work is pending for them.  Skipping the
++		 * worker pass here removes the dominant per-packet wakeup at
++		 * bulk rates; ticks, TX and other events still queue passes. */
++		if (READ_ONCE(s31_bt_pass_skip_completions) &&
++		    s31_radio_is_bt_only() && length >= 3 && frame[1] == 0x13 &&
++		    !s31_radio_hci_tx_pending())
++			s31_pass_skipped_completions++;
++		else
++			s31_radio_wake();
++	}
+ 	return 0;
+ }
+ 
+@@ -2149,7 +2185,13 @@ void esp32s31_radio_hci_unregister(const struct esp32s31_radio_hci_ops *ops,
+ }
+ EXPORT_SYMBOL_GPL(esp32s31_radio_hci_unregister);
+ 
+-int esp32s31_radio_hci_send(u8 packet_type, const u8 *data, size_t length)
++static unsigned long s31_tx_batch_calls, s31_tx_batch_frames, s31_tx_batch_partial;
++module_param_named(bt_tx_batch_calls, s31_tx_batch_calls, ulong, 0400);
++module_param_named(bt_tx_batch_frames, s31_tx_batch_frames, ulong, 0400);
++module_param_named(bt_tx_batch_partial, s31_tx_batch_partial, ulong, 0400);
++
++static int s31_hci_send(u8 packet_type, const u8 *data, size_t length,
++			bool wake)
+ {
+ 	unsigned long flags;
+ 	unsigned int next;
+@@ -2181,11 +2223,58 @@ int esp32s31_radio_hci_send(u8 packet_type, const u8 *data, size_t length)
+ 		WRITE_ONCE(s31_coex_pending_op, data[4]);
+ 		WRITE_ONCE(s31_coex_pending_status, data[5]);
+ 	}
+-	s31_radio_wake();
++	if (wake)
++		s31_radio_wake();
+ 	return 0;
+ }
++int esp32s31_radio_hci_send(u8 packet_type, const u8 *data, size_t length)
++{
++	return s31_hci_send(packet_type, data, length, true);
++}
+ EXPORT_SYMBOL_GPL(esp32s31_radio_hci_send);
+ 
++/* Validate the complete batch before any side effect. Return a byte count
++ * ending at an accepted record boundary; caller retains the unsent suffix.
++ * Individual ring operations retain their original IRQ-off duration. */
++int esp32s31_radio_hci_send_batch(const u8 *data, size_t length)
++{
++	size_t pos = 1, accepted = 1;
++	unsigned int frames = 0;
++	int ret = -EINVAL;
++
++	if (length < 5 || data[0] != 0xff)
++		return -EINVAL;
++	while (pos < length) {
++		unsigned int n;
++		if (length - pos < 2 || ++frames > 8)
++			return -EINVAL;
++		n = data[pos] | (data[pos + 1] << 8);
++		pos += 2;
++		if (n < 2 || n > S31_HCI_FRAME_SIZE || n > length - pos)
++			return -EINVAL;
++		pos += n;
++	}
++	s31_tx_batch_calls++;
++	pos = 1;
++	while (pos < length) {
++		unsigned int n = data[pos] | (data[pos + 1] << 8);
++		ret = s31_hci_send(data[pos + 2], data + pos + 3, n - 1, false);
++		if (ret)
++			break;
++		pos += 2 + n;
++		accepted = pos;
++		s31_tx_batch_frames++;
++	}
++	if (accepted > 1) {
++		if (accepted < length)
++			s31_tx_batch_partial++;
++		s31_radio_wake();
++		return accepted;
++	}
++	return ret;
++}
++EXPORT_SYMBOL_GPL(esp32s31_radio_hci_send_batch);
++
+ bool esp32s31_radio_hci_tx_has_space(void)
+ {
+ 	unsigned int head = smp_load_acquire(&s31_hci_tx_head);
+@@ -2712,6 +2801,27 @@ static int s31_radio_run_linux_pass(u32 *timer_wait_us, bool rt_wake_armed,
+ 
+ 	s31_radio_process_commands();
+ 
++	/*
++	 * BT-only event passes usually carry only RX frames, which are
++	 * already delivered above.  Acquiring the blob gate (SBI extension
++	 * save/restore, RTOS tick scan, TX drains, compat-task herd) for
++	 * such passes costs milliseconds per frame at bulk rates.  Skip the
++	 * gate when no blob work is pending: no RTOS tick due, no IDF IRQ
++	 * callbacks, no HCI/Wi-Fi TX, no queued commands, and no esp_timer
++	 * due within 3 ms.  Ticks, combo cadence, init, and the workfn tail
++	 * (immediate requeue while work is pending, hrtimer otherwise) are
++	 * untouched, so delayed timers and leftover RX budgets still run.
++	 */
++	if (READ_ONCE(s31_bt_blob_skip) && s31_radio_is_bt_only() &&
++	    !tick_events && !s31_radio_irq_work_pending() &&
++	    !s31_radio_hci_tx_pending() && !s31_radio_wifi_tx_pending() &&
++	    !s31_radio_command_work_pending() &&
++	    s31_linux_timer_next_due_us() > 3000) {
++		s31_blob_skipped_passes++;
++		*timer_wait_us = 10000;
++		return 0;
++	}
++
+ 	if (s31_radio_worker_stack)
+ 		s31_linux_call_on_stack(s31_radio_worker_stack,
+ 					S31_RADIO_WORKER_STACK_SIZE,
+@@ -2908,6 +3018,7 @@ static void s31_radio_workfn(struct work_struct *work)
+ 	int tick_events = 0;
+ 	int ret;
+ 
++	atomic_xchg(&s31_radio_immediate_pending, 0);
+ 	WRITE_ONCE(s31_radio_runner, current);
+ 	/* Pool workers are kthreads without an mm, like the old dedicated
+ 	 * thread: borrow init_mm for the pass so the low identity mappings
+@@ -3088,6 +3199,7 @@ int s31_radio_runtime_init(bool enable_wifi, bool enable_bt)
+ 	s31_native_passes = 0;
+ 	atomic_set(&s31_native_generation, 0);
+ 	atomic_set(&s31_radio_worker_passes, 0);
++	atomic_set(&s31_radio_immediate_pending, 0);
+ 	WRITE_ONCE(s31_wifi_init_result, enable_wifi ? -EINPROGRESS : 0);
+ 	WRITE_ONCE(s31_bt_init_result, enable_bt ? -EINPROGRESS : 0);
+ 
+diff --git a/include/linux/esp32s31-radio.h b/include/linux/esp32s31-radio.h
+index 0154a849c6437..3a7faa8e6b0e3 100644
+--- a/include/linux/esp32s31-radio.h
++++ b/include/linux/esp32s31-radio.h
+@@ -112,6 +112,8 @@ int esp32s31_radio_hci_register(const struct esp32s31_radio_hci_ops *ops,
+ void esp32s31_radio_hci_unregister(const struct esp32s31_radio_hci_ops *ops,
+ 				   void *context);
+ int esp32s31_radio_hci_send(u8 packet_type, const u8 *data, size_t length);
++/* 0xff followed by up to eight LE16-length-prefixed H4 frames. */
++int esp32s31_radio_hci_send_batch(const u8 *data, size_t length);
+ bool esp32s31_radio_hci_tx_has_space(void);
+ bool esp32s31_radio_hci_rx_pending(void);
+ int esp32s31_radio_hci_dequeue(u8 *frame, size_t capacity);

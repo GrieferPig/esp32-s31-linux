@@ -1,0 +1,14 @@
+from pathlib import Path
+import os,subprocess,json
+r=Path('/home/grieferpig/esp32-s31-linux');d=Path(__file__).resolve().parent
+for kind in ('spp','ble'):
+ env=os.environ.copy();env['S31_CPU_PROTOCOL']=kind
+ argv=['python3','-u',str(d/'matrix.py'),str(d/('paths-'+kind)),'lazy','all','all','lazy']
+ (d/('paths-'+kind+'-command.json')).write_text(json.dumps({'argv':argv,'S31_CPU_PROTOCOL':kind,'conditions':['lazy','all','all','lazy']},indent=2))
+ with (d/('paths-'+kind+'.log')).open('wb') as f:
+  x=subprocess.run(argv,cwd=r,env=env,stdout=f,stderr=subprocess.STDOUT)
+ assert x.returncode==0,kind
+ for run in sorted((d/('paths-'+kind)).glob('*-[0-9]')):
+  x=subprocess.run(['python3',str(d/'analyze_ext.py'),str(run)],capture_output=True)
+  (run/'extension-analysis.log').write_bytes(x.stdout+x.stderr);assert x.returncode==0
+ print(kind,'four checked real runs completed',flush=True)

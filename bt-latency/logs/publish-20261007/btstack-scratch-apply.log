@@ -1,0 +1,155 @@
+0001-linux-allow-no-packet-log-and-persist-tlv.patch
+patching file port/linux/main.c
+Hunk #1 succeeded at 78 (offset 8 lines).
+Hunk #2 succeeded at 258 (offset 7 lines).
+
+0002-a2dp-add-low-overhead-transport-mode.patch
+patching file example/a2dp_sink_demo.c
+
+0003-linux-drain-hci-socket-batches.patch
+patching file platform/linux/hci_transport_linux.c
+Hunk #1 succeeded at 47 (offset 4 lines).
+Hunk #2 succeeded at 114 (offset 5 lines).
+
+0004-linux-use-s31-direct-hci-device.patch
+patching file platform/linux/hci_transport_linux.c
+Hunk #1 succeeded at 47 (offset 4 lines).
+Hunk #3 succeeded at 202 (offset -2 lines).
+
+0004a-linux-drop-bluez-headers.patch
+patching file platform/linux/hci_transport_linux.c
+Hunk #1 succeeded at 55 (offset 4 lines).
+
+0005-a2dp-compile-out-unused-pcm-path.patch
+patching file example/a2dp_sink_demo.c
+Hunk #1 succeeded at 128 (offset 3 lines).
+Hunk #2 succeeded at 141 (offset 2 lines).
+Hunk #3 succeeded at 389 (offset 3 lines).
+Hunk #4 succeeded at 415 (offset -3 lines).
+Hunk #6 succeeded at 605 (offset 4 lines).
+
+0006-linux-line-buffer-service-log.patch
+patching file port/linux/main.c
+
+0007-hci-trust-integrated-classic-profile.patch
+patching file src/hci.c
+
+0008-linux-read-s31-direct-hci-batches.patch
+patching file platform/linux/hci_transport_linux.c
+Hunk #1 succeeded at 71 (offset 2 lines).
+Hunk #2 succeeded at 83 (offset 2 lines).
+
+0009-a2dp-mirror-idf-coexist-status.patch
+patching file example/a2dp_sink_demo.c
+Hunk #1 succeeded at 148 (offset -1 lines).
+Hunk #2 succeeded at 415 (offset -10 lines).
+Hunk #4 succeeded at 864 (offset 6 lines).
+Hunk #5 succeeded at 1323 (offset -2 lines).
+Hunk #6 succeeded at 1339 (offset -1 lines).
+Hunk #7 succeeded at 1346 (offset -2 lines).
+
+0010-a2dp-match-idf-classic-scan-duty.patch
+patching file example/a2dp_sink_demo.c
+Hunk #1 succeeded at 846 (offset -6 lines).
+
+0011-a2dp-report-classic-scan-command-status.patch
+patching file example/a2dp_sink_demo.c
+Hunk #1 succeeded at 855 (offset -2 lines).
+
+0012-a2dp-allow-pairability-diagnostic-toggle.patch
+patching file example/a2dp_sink_demo.c
+Hunk #1 succeeded at 852 (offset 1 line).
+
+0013-a2dp-add-minimal-ble-gatt.patch
+patching file example/a2dp_sink_demo.c
+Hunk #1 succeeded at 312 (offset 49 lines).
+Hunk #2 succeeded at 359 (offset 48 lines).
+
+0014-a2dp-request-edr-packet-types.patch
+patching file example/a2dp_sink_demo.c
+
+0015-hci-use-acl-only-host-flow-control.patch
+patching file src/hci.c
+Hunk #1 succeeded at 2157 (offset 1 line).
+
+0016-linux-retry-direct-hci-on-backpressure.patch
+patching file platform/linux/hci_transport_linux.c
+Hunk #1 succeeded at 78 (offset 1 line).
+Hunk #2 succeeded at 160 (offset -4 lines).
+Hunk #3 succeeded at 194 (offset 3 lines).
+
+0017-hci-batch-host-completed-acl-credits.patch
+patching file src/hci.c
+Hunk #1 succeeded at 1255 (offset 1 line).
+Hunk #2 succeeded at 6478 (offset 8 lines).
+patching file src/hci.h
+
+0018-a2dp-report-media-sequence-loss.patch
+patching file example/a2dp_sink_demo.c
+Hunk #2 succeeded at 666 (offset 1 line).
+Hunk #3 succeeded at 712 (offset -1 lines).
+Hunk #4 succeeded at 1455 (offset -1 lines).
+
+0019-a2dp-pump-coexist-status-on-media.patch
+patching file example/a2dp_sink_demo.c
+Hunk #1 succeeded at 178 (offset 1 line).
+Hunk #2 succeeded at 715 (offset -1 lines).
+
+0020-hci-reinitialize-after-controller-hardware-error.patch
+patching file src/hci.c
+
+0021-linux-configure-device-name-and-reset-pairings-once.patch
+patching file example/a2dp_sink_demo.c
+patching file port/linux/main.c
+patching file src/hci.c
+
+0022-a2dp-bond-and-confirm-just-works-pairing.patch
+patching file example/a2dp_sink_demo.c
+
+0023-a2dp-ble-notify-stream.patch
+patching file example/a2dp_sink_demo.c
+
+0024-a2dp-short-le-interval-for-stream.patch
+patching file example/a2dp_sink_demo.c
+
+0025-a2dp-short-le-interval-at-connect.patch
+patching file example/a2dp_sink_demo.c
+
+0026-a2dp-dle-and-phy-requests.patch
+patching file example/a2dp_sink_demo.c
+
+0027-a2dp-retry-link-params-at-mtu.patch
+patching file example/a2dp_sink_demo.c
+
+0028-a2dp-spp-bulk-stream.patch
+patching file example/a2dp_sink_demo.c
+
+0029-a2dp-moderate-le-interval.patch
+patching file example/a2dp_sink_demo.c
+
+0030-a2dp-direct-dle-send.patch
+patching file example/a2dp_sink_demo.c
+
+0031-a2dp-dle-from-stream-pump.patch
+patching file example/a2dp_sink_demo.c
+
+0032-a2dp-direct-phy-and-burst-knob.patch
+patching file example/a2dp_sink_demo.c
+
+0033-a2dp-native-comparison-knobs.patch
+patching file example/a2dp_sink_demo.c
+
+0034-posix-coalesce-callback-wakeups.patch
+patching file platform/posix/btstack_run_loop_posix.c
+
+0035-posix-local-callback-dispatch.patch
+patching file platform/posix/btstack_run_loop_posix.c
+
+0036-a2dp-report-controller-acl-buffers.patch
+patching file example/a2dp_sink_demo.c
+
+0037-a2dp-advertising-control.patch
+patching file example/a2dp_sink_demo.c
+
+0038-linux-coalesce-tx-acl-writes.patch
+patching file platform/linux/hci_transport_linux.c

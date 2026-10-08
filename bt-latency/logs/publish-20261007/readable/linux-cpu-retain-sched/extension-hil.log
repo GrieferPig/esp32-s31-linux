@@ -1,0 +1,5 @@
+{"bytes": 924, "gzip_bytes": 353, "sha256": "6d3187bdff3f95bac2d42b5b42e0c5b09483805460479df281cfb88a025a73ba"}
+lazy 0 context PASS
+{"bytes": 924, "gzip_bytes": 353, "sha256": "6d3187bdff3f95bac2d42b5b42e0c5b09483805460479df281cfb88a025a73ba"}
+lazy 1 context PASS
+Eager/lazy real instruction + fork/yield/signal results identical
