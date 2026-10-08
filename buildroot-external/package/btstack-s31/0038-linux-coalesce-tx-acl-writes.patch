@@ -1,0 +1,193 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: ESP32-S31 Linux <s31-linux@example.invalid>
+Date: Wed, 7 Oct 2026 17:00:00 -0700
+Subject: [PATCH] linux: coalesce TX writes into validated kernel batches
+
+Accumulate outbound H4 records (up to eight) and flush on a full batch, a
+non-ACL packet (commands never wait behind bulk ACL), or a 15 ms tail
+timer. Partial appends complete immediately so the pump keeps flowing; a
+synchronously flushed record completes only on kernel accept, preserving
+exact send/completion pairing and FIFO order, including EAGAIN suffix
+retry via POLLOUT. RX and oversized-record paths are unchanged. Enabled
+by default (override with S31_BTSTACK_TX_BATCH=0..8); the driver ships
+the batch envelope unconditionally.
+---
+--- a/platform/linux/hci_transport_linux.c
++++ b/platform/linux/hci_transport_linux.c
+@@ -83,6 +83,21 @@
+ static int hci_can_send;
+ static btstack_context_callback_registration_t hci_packet_sent_registration;
+ 
++/* S31 TX write coalescing: accumulate H4 records (up to eight), flush on a
++ * full batch, a non-ACL packet (commands never wait behind bulk ACL), or a
++ * 15 ms tail timer. Completions are emitted only for kernel-accepted
++ * records, preserving legacy send/completion pairing and FIFO order. */
++#define S31_TX_BATCH_MAX 8
++#define S31_TX_BATCH_RECORD_MAX (2 + HCI_OUTGOING_PACKET_BUFFER_SIZE + 1)
++static uint8_t s31_tx_batch[1 + S31_TX_BATCH_MAX * S31_TX_BATCH_RECORD_MAX];
++static unsigned s31_tx_batch_limit;
++static unsigned s31_tx_batch_frames;
++static unsigned s31_tx_batch_size;
++static unsigned s31_tx_batch_retry;
++static unsigned s31_tx_batch_fill_owed;
++static btstack_timer_source_t s31_tx_batch_timer;
++static int s31_tx_batch_timer_armed;
++
+ static const hci_transport_config_linux_t * hci_transport_config_linux;
+ 
+ static void hci_transport_linux_emit_packet_sent(void * context) {
+@@ -101,9 +116,85 @@
+     btstack_run_loop_execute_on_main_thread(&hci_packet_sent_registration);
+ }
+ 
++static unsigned s31_tx_batch_flush(void);
++
++static void s31_tx_batch_complete(unsigned count) {
++    while (count--) {
++        hci_transport_linux_schedule_packet_sent();
++    }
++}
++
++static void s31_tx_batch_timeout(btstack_timer_source_t * timer) {
++    UNUSED(timer);
++    s31_tx_batch_timer_armed = 0;
++    s31_tx_batch_flush();
++}
++
++static void s31_tx_batch_arm_tail(void) {
++    if (s31_tx_batch_timer_armed) return;
++    btstack_run_loop_set_timer(&s31_tx_batch_timer, 15);
++    btstack_run_loop_set_timer_handler(&s31_tx_batch_timer, &s31_tx_batch_timeout);
++    btstack_run_loop_add_timer(&s31_tx_batch_timer);
++    s31_tx_batch_timer_armed = 1;
++}
++
++static void s31_tx_batch_disarm_tail(void) {
++    if (!s31_tx_batch_timer_armed) return;
++    btstack_run_loop_remove_timer(&s31_tx_batch_timer);
++    s31_tx_batch_timer_armed = 0;
++}
++
++static unsigned s31_tx_batch_flush(void) {
++    ssize_t n;
++    unsigned pos, done = 0;
++
++    if (!s31_tx_batch_limit || s31_tx_batch_frames == 0) return 0;
++    s31_tx_batch_disarm_tail();
++    n = write(hci_socket, s31_tx_batch, s31_tx_batch_size);
++    if (n < 0) {
++        if (errno == EAGAIN || errno == EWOULDBLOCK) {
++            s31_tx_batch_retry = 1;
++            btstack_run_loop_enable_data_source_callbacks(&hci_transport_linux_data_source,
++                                                           DATA_SOURCE_CALLBACK_WRITE);
++            return 0;
++        }
++        perror("S31 batch write");
++        return 0;
++    }
++    btstack_assert(n > 1 && (unsigned) n <= s31_tx_batch_size);
++    pos = 1;
++    while (pos < (unsigned) n) {
++        pos += 2 + s31_tx_batch[pos] + ((unsigned) s31_tx_batch[pos + 1] << 8);
++        done++;
++    }
++    btstack_assert(pos == (unsigned) n && done <= s31_tx_batch_frames);
++    if ((unsigned) n < s31_tx_batch_size) {
++        memmove(s31_tx_batch + 1, s31_tx_batch + n, s31_tx_batch_size - n);
++        s31_tx_batch_size -= (unsigned) n - 1;
++        s31_tx_batch_frames -= done;
++        s31_tx_batch_retry = 1;
++        btstack_run_loop_enable_data_source_callbacks(&hci_transport_linux_data_source,
++                                                       DATA_SOURCE_CALLBACK_WRITE);
++        return done;
++    }
++    s31_tx_batch_frames = 0;
++    s31_tx_batch_size = 1;
++    s31_tx_batch_retry = 0;
++    if (s31_tx_batch_fill_owed) {
++        s31_tx_batch_fill_owed = 0;
++        s31_tx_batch_complete(1);
++    }
++    return done;
++}
++
+ static void hci_transport_linux_process_write(btstack_data_source_t * ds) {
+     ssize_t bytes_written;
+ 
++    if (s31_tx_batch_limit && (s31_tx_batch_frames || s31_tx_batch_retry)) {
++        btstack_run_loop_disable_data_source_callbacks(ds, DATA_SOURCE_CALLBACK_WRITE);
++        s31_tx_batch_flush();
++        return;
++    }
+     btstack_assert(hci_pending_write != NULL);
+     bytes_written = write(hci_socket, hci_pending_write, hci_pending_write_size);
+     if (bytes_written < 0 && (errno == EAGAIN || errno == EWOULDBLOCK)) return;
+@@ -197,10 +288,27 @@
+     hci_pending_write = NULL;
+     hci_pending_write_size = 0;
+     hci_can_send = 1;
++    s31_tx_batch_limit = 0;
++    s31_tx_batch_frames = 0;
++    s31_tx_batch_size = 1;
++    s31_tx_batch_retry = 0;
++    s31_tx_batch_fill_owed = 0;
++    s31_tx_batch_timer_armed = 0;
++    {
++        /* The driver ships with the batch envelope; no capability probe. */
++        const char * batch = getenv("S31_BTSTACK_TX_BATCH");
++        unsigned limit = batch ? (unsigned) atoi(batch) : S31_TX_BATCH_MAX;
++        if (limit > S31_TX_BATCH_MAX)
++            limit = 0;
++        s31_tx_batch_limit = limit;
++        s31_tx_batch[0] = 0xff;
++        fprintf(stderr, "S31 TX batch: %u\n", s31_tx_batch_limit);
++    }
+     return 0;
+ }
+ 
+ static int hci_transport_linux_close(void){
++    s31_tx_batch_disarm_tail();
+     btstack_run_loop_remove_data_source(&hci_transport_linux_data_source);
+     if (hci_socket >= 0) {
+         close(hci_socket);
+@@ -215,6 +323,8 @@
+ 
+ static int hci_transport_linux_can_send_packet_now(uint8_t packet_type) {
+     UNUSED(packet_type);
++    if (s31_tx_batch_limit)
++        return s31_tx_batch_frames < s31_tx_batch_limit && !s31_tx_batch_retry;
+     return hci_can_send;
+ }
+ 
+@@ -224,6 +334,31 @@
+     uint32_t  buffer_size = size + 1;
+     buffer[0] = packet_type;
+ 
++    if (s31_tx_batch_limit && buffer_size <= 1029 &&
++        s31_tx_batch_frames < s31_tx_batch_limit && !s31_tx_batch_retry) {
++        int immediate = (packet_type != HCI_ACL_DATA_PACKET) ||
++                        s31_tx_batch_frames + 1 == s31_tx_batch_limit;
++        btstack_assert(s31_tx_batch_size + 2 + buffer_size <= sizeof(s31_tx_batch));
++        s31_tx_batch[s31_tx_batch_size++] = buffer_size & 0xff;
++        s31_tx_batch[s31_tx_batch_size++] = buffer_size >> 8;
++        memcpy(s31_tx_batch + s31_tx_batch_size, buffer, buffer_size);
++        s31_tx_batch_size += buffer_size;
++        s31_tx_batch_frames++;
++        /* Commands flush ahead of themselves so control latency never waits
++         * behind bulk ACL; a full batch always flushes synchronously.
++         * Partial appends complete immediately so the pump keeps flowing;
++         * a synchronously flushed record completes only on kernel accept. */
++        if (immediate) {
++            s31_tx_batch_fill_owed = 1;
++            s31_tx_batch_flush();
++        } else {
++            s31_tx_batch_arm_tail();
++            s31_tx_batch_complete(1);
++        }
++        return 0;
++    }
++    if (s31_tx_batch_limit)
++        s31_tx_batch_flush();
+     btstack_assert(hci_can_send != 0);
+     hci_can_send = 0;
+     if (write(hci_socket, buffer, buffer_size) < 0) {
