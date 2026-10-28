@@ -40,6 +40,9 @@ rm -f \
 	"${target_dir}/usr/sbin/wifi-scan" \
 	"${target_dir}/usr/sbin/ble-scan" \
 	"${target_dir}/usr/sbin/test.out" \
+	"${target_dir}/usr/sbin/s31-btstack-hfp-hf" \
+	"${target_dir}/usr/bin/s31-accel" \
+	"${target_dir}/usr/bin/s31-lpctl" \
 	"${target_dir}/usr/bin/s31-audio-analyze" \
 	"${target_dir}/usr/bin/s31-audio-loopback" \
 	"${target_dir}/usr/bin/s31-audio-mic-test" \

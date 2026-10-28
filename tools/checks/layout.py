@@ -19,7 +19,7 @@ def flash_layout(root=ROOT):
     sizes["SPL"] = values["SIZE_SPL"]
     expected = {"SPL": 48 * 1024, "UBOOT_ITB": 320 * 1024,
                 "DTB": 64 * 1024, "RADIO": 1792 * 1024,
-                "KERNEL": 6208 * 1024, "ROOTFS": 6080 * 1024,
+                "KERNEL": 6464 * 1024, "ROOTFS": 5824 * 1024,
                 "PERSIST": 1864 * 1024}
     if sizes != expected or values["SLOT_SPL"] != 0x2000:
         raise ValueError("compact flash partition capacities differ from contract")
@@ -53,7 +53,7 @@ def check(root=ROOT):
                ("S31_RADIO_HEAP_BASE", "S31_RADIO_HEAP_END"),
                ("S31_RADIO_EXC_BASE", "S31_RADIO_EXC_END")]
     spans = [(shared[a], shared[b]) for a, b in regions]
-    for name in ("AXI_DESC", "AHB_DESC", "USB_LOCAL", "UART_DMA"):
+    for name in ("AXI_DESC", "AHB_DESC", "DMA2D_DESC", "USB_LOCAL", "UART_DMA"):
         spans.append((shared["S31_" + name + "_BASE"], shared["S31_" + name + "_BASE"] + shared["S31_" + name + "_SIZE"]))
     spans.append((shared["S31_RADIO_HEAP2_BASE"], shared["S31_RADIO_HEAP2_END"]))
     if any(a >= b for a, b in spans) or any(a[1] > b[0] for a, b in zip(spans, spans[1:])):
@@ -62,7 +62,7 @@ def check(root=ROOT):
         raise ValueError("UART DMA/high radio heap boundary differs")
     dtsdir = root / "linux-esp32-s31/arch/riscv/boot/dts/espressif"
     dts = (dtsdir / "esp32s31.dtsi").read_text()
-    for name in ("PSRAM", "AXI_DESC", "AHB_DESC", "USB_LOCAL"):
+    for name in ("PSRAM", "AXI_DESC", "AHB_DESC", "DMA2D_DESC", "USB_LOCAL"):
         pattern = r"<0x0*%x\s+0x0*%x>" % (shared["S31_" + name + "_BASE"], shared["S31_" + name + "_SIZE"])
         if not re.search(pattern, dts, re.I):
             raise ValueError(name + " missing or different in DTS reg")

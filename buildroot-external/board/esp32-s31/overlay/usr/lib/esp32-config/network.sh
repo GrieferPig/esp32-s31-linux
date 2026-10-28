@@ -295,7 +295,7 @@ wifi_saved_hex()
 
 wifi_save_hex_profile()
 {
-	local hex="$1" password="$2" security="${3:-psk}" raw_ssid key temporary policy backup carriage password_bytes
+	local hex="$1" password="$2" security="${3:-psk}" key temporary policy backup carriage password_bytes
 	carriage="$(printf '\r')"
 	require_root
 	ensure_config || return 1
@@ -311,17 +311,8 @@ wifi_save_hex_profile()
 				key="$password"
 			else
 				[ "$password_bytes" -ge 8 ] && [ "$password_bytes" -le 63 ] || { warn 'The password must contain 8 to 63 bytes.'; return 1; }
-				# wpa_passphrase takes an argv SSID, which cannot contain NUL.
-				# The explicit hexadecimal CLI accepts a precomputed key for it.
-				printf '%s' "$hex" | sed 's/../& /g' | grep -qw 00 && {
-					warn 'This SSID contains a zero byte; use configure-hex with a 64-digit precomputed key.'; return 1;
-				}
-				have wpa_passphrase || { warn 'wpa_passphrase is unavailable.'; return 1; }
-				raw_ssid="$(wifi_hex_bytes "$hex"; printf '.')"
-				raw_ssid="${raw_ssid%.}"
-				# Retain only the derived key. Never write the commented plaintext
-				# password or the tool's quoted SSID into a file.
-				key="$(printf '%s\n' "$password" | wpa_passphrase "$raw_ssid" | sed -n 's/^[[:space:]]*psk=\([0-9a-fA-F]\{64\}\)$/\1/p')"
+				have s31-wifi-psk || { warn 'WPA key derivation is unavailable.'; return 1; }
+				key="$(printf '%s\n' "$password" | s31-wifi-psk "$hex")" || return 1
 				[ "${#key}" -eq 64 ] || { warn 'The network key could not be generated.'; return 1; }
 			fi
 			;;

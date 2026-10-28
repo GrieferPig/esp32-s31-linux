@@ -14,8 +14,6 @@
 /* Negotiate LE data length with the peer; honor the returned link capability. */
 #define ENABLE_LE_DATA_LENGTH_EXTENSION
 #define ENABLE_LOG_ERROR
-#define S31_HCI_ACL_ONLY_FLOW_CONTROL
-#define S31_HCI_HOST_COMPLETED_BATCH 4
 
 #define HCI_ACL_PAYLOAD_SIZE (1691 + 4)
 #define HCI_HOST_ACL_PACKET_LEN 1691

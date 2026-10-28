@@ -39,8 +39,8 @@ trap 'rm -rf "$temporary"' EXIT HUP INT TERM
 
 mkdir -p "${staging}/downstream"
 cp "${source_dir}/LICENSE" "${staging}/BTSTACK_LICENSE"
-cp "${package_dir}/0001-linux-allow-no-packet-log-and-persist-tlv.patch" \
-	"${package_dir}/0002-a2dp-add-low-overhead-transport-mode.patch" \
+cp "${project_dir}/rootfs/s31_btstack.c" \
+	"${project_dir}/rootfs/s31_btstack_transport.c" \
 	"${package_dir}/Config.in" \
 	"${package_dir}/btstack-s31.mk" \
 	"${package_dir}/s31_btstack_config.h" \
@@ -50,8 +50,8 @@ printf '%s\n' \
 	'BTstack source: https://github.com/bluekitchen/btstack' \
 	"Pinned commit: ${version}" \
 	'' \
-	'This bundle contains the upstream license and the downstream build and patch' \
-	'inputs used by the ESP32-S31 image. BTstack permits personal/non-commercial' \
+'This bundle contains the upstream license and the board application and build' \
+'inputs used with unmodified BTstack. BTstack permits personal/non-commercial' \
 	'use under the included license; commercial use requires a separate license.' \
 	>"${staging}/SOURCE.txt"
 

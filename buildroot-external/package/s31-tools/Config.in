@@ -1,6 +1,8 @@
 config BR2_PACKAGE_S31_TOOLS
 	bool "ESP32-S31 runtime tools"
 	default y
+	select BR2_PACKAGE_OPENSSL
 	help
 	  Installs the device-tree overlay manager, radio module loader,
-	  GPIO utility and persistent configuration archive helper.
+	  GPIO utility, WPA key derivation and persistent configuration archive helper.
+	  Installs accelerator interface headers for native applications.

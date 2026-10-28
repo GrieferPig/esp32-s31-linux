@@ -42,7 +42,9 @@
 #define S31_AXI_DESC_BASE              0x2F072380U
 #define S31_AXI_DESC_SIZE              0x00003000U
 #define S31_AHB_DESC_BASE              0x2F075380U
-#define S31_AHB_DESC_SIZE              0x00001000U
+#define S31_AHB_DESC_SIZE              0x00000F00U
+#define S31_DMA2D_DESC_BASE            0x2F076280U
+#define S31_DMA2D_DESC_SIZE            0x00000100U
 #define S31_USB_LOCAL_BASE             0x2F076380U
 #define S31_USB_LOCAL_SIZE             0x00000040U
 #define S31_UART_DMA_BASE              0x2F076400U
@@ -70,8 +72,12 @@
 #error "AXI and AHB descriptor regions must be contiguous"
 #endif
 
-#if S31_AHB_DESC_BASE + S31_AHB_DESC_SIZE != S31_USB_LOCAL_BASE
-#error "AHB descriptors must end at USB local SRAM"
+#if S31_AHB_DESC_BASE + S31_AHB_DESC_SIZE != S31_DMA2D_DESC_BASE
+#error "AHB and DMA2D descriptors must be contiguous"
+#endif
+
+#if S31_DMA2D_DESC_BASE + S31_DMA2D_DESC_SIZE != S31_USB_LOCAL_BASE
+#error "DMA2D descriptors must end at USB local SRAM"
 #endif
 
 #if S31_UART_DMA_BASE + S31_UART_DMA_SIZE != S31_HP_SHARED_END

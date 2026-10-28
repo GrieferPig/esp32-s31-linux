@@ -13,6 +13,15 @@ find_lp_remoteproc()
 	return 1
 }
 
+lp_ready()
+{
+	for driver_path in /sys/bus/platform/drivers/esp32s31-lp/*; do
+		[ -r "$driver_path/ready" ] || continue
+		[ "$(cat "$driver_path/ready")" = 1 ] && return 0
+	done
+	return 1
+}
+
 start_lp()
 {
 	path=$(find_lp_remoteproc) || {
@@ -22,7 +31,7 @@ start_lp()
 	[ "$(cat "$path/state")" = running ] || echo start > "$path/state"
 	for _ in 1 2 3 4 5 6 7 8 9 10; do
 		[ "$(cat "$path/state")" = running ] &&
-			[ "$(s31-lpctl status 2>/dev/null | sed -n 's/^ready=//p' | head -n 1)" = 1 ] &&
+			lp_ready &&
 			return 0
 		usleep 100000
 	done

@@ -1,2 +1,1 @@
-*.patch -whitespace
 rootfs/s31_crypto/pkcs11/*.h whitespace=-blank-at-eol,-blank-at-eof
