@@ -25,23 +25,6 @@ ping)
 	echo 1 > "$sysfs/ping"
 	cat "$sysfs/ping"
 	;;
-sleep-test)
-	[ "$#" -eq 2 ] || { echo "usage: s31-lpctl sleep-test <10..5000 ms>" >&2; exit 2; }
-	[ -n "$sysfs" ] || { echo "LP driver is not bound" >&2; exit 1; }
-	printf '%s\n' "$2" > "$sysfs/sleep_test"
-	cat "$sysfs/sleep_test"
-	;;
-gpio-test)
-	[ "$#" -ge 3 ] && [ "$#" -le 5 ] || {
-		echo "usage: s31-lpctl gpio-test <0..7> <low|high> [none|up|down] [10..5000 ms]" >&2
-		exit 2
-	}
-	[ -n "$sysfs" ] || { echo "LP driver is not bound" >&2; exit 1; }
-	case "$3" in low) level=0;; high) level=1;; *) echo "invalid level" >&2; exit 2;; esac
-	case "${4:-none}" in none) pull=0;; up) pull=1;; down) pull=2;; *) echo "invalid pull" >&2; exit 2;; esac
-	printf '%s %s %s %s\n' "$2" "$level" "$pull" "${5:-1000}" > "$sysfs/gpio_test"
-	cat "$sysfs/gpio_test"
-	;;
 send)
 	[ "$#" -eq 2 ] || { echo "usage: s31-lpctl send <u32>" >&2; exit 2; }
 	[ -n "$sysfs" ] || { echo "LP driver is not bound" >&2; exit 1; }
@@ -53,7 +36,7 @@ recv)
 	echo
 	;;
 *)
-	echo "usage: s31-lpctl {status|ping|sleep-test <ms>|gpio-test <pin> <low|high> [none|up|down] [ms]|send <u32>|recv}" >&2
+	echo "usage: s31-lpctl {status|ping|send <u32>|recv}" >&2
 	exit 2
 	;;
 esac

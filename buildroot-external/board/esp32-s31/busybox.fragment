@@ -17,3 +17,6 @@ CONFIG_FEATURE_VOLUMEID_FAT=y
 CONFIG_FEATURE_VOLUMEID_LINUXSWAP=y
 CONFIG_SETSID=y
 CONFIG_TIMEOUT=y
+# Use util-linux hwclock for RV32 time64 support without a BusyBox patch.
+# CONFIG_HWCLOCK is not set
+CONFIG_RTCWAKE=y
