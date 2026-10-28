@@ -1,0 +1,17 @@
+# SPDX-License-Identifier: Apache-2.0
+# ESP32-S31 provider configuration for native OpenSSL applications.
+openssl_conf = s31_openssl_init
+
+[s31_openssl_init]
+providers = s31_provider_section
+
+[s31_provider_section]
+default = s31_default_provider
+s31 = s31_native_provider
+
+[s31_default_provider]
+activate = 1
+
+[s31_native_provider]
+activate = 1
+module = /usr/lib/ossl-modules/s31.so

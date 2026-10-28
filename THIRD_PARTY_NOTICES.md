@@ -12,3 +12,11 @@ This project contains code derived from Espressif Systems' ESP32-S31 ports:
 The Espressif-derived code has been modified for dual-hart SMP, hart 0 device-interrupt affinity, direct S-mode timer delivery, XIP OpenSBI, and the local radio architecture. File-level notices identify the portions derived from the BSP and OpenSBI ports.
 
 ESP32 and Espressif are trademarks of Espressif Systems. This project is not an official Espressif product.
+
+## OASIS PKCS #11 interface definitions
+
+`rootfs/s31_crypto/pkcs11/pkcs11.h`, `pkcs11t.h` and `pkcs11f.h` are unmodified
+OASIS PKCS #11 v2.40 Errata 01 interface headers, Copyright OASIS Open 2016.
+Their original OASIS IPR Policy notices remain in each file. They come from
+[OASIS commit 9ef73f9f44ed8a240b05484427a0851ab36be251](https://github.com/oasis-tcs/pkcs11/tree/9ef73f9f44ed8a240b05484427a0851ab36be251/published/2-40-errata-1).
+The accompanying implementation is covered by its own Apache-2.0 file notices.

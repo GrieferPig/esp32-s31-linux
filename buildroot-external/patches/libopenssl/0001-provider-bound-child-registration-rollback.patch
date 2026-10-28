@@ -1,0 +1,20 @@
+Subject: [PATCH] provider: bound rollback after child callback insertion failure
+
+If all provider creation callbacks succeed but pushing the child callback
+registration fails, i equals the provider count. Starting rollback there
+passes a NULL provider to remove_cb, which can dereference it when obtaining
+its name. Start at the last visited provider instead. Keep including the
+current provider when its creation callback fails partway through the loop.
+An empty provider list must not invoke a removal callback.
+
+--- a/crypto/provider_core.c
++++ b/crypto/provider_core.c
+@@ -2186,6 +2186,8 @@ static int ossl_provider_register_child_cb(const OSSL_CORE_HANDLE *handle,
+     }
+     if (i != max || ret <= 0) {
+         /* Failed during creation. Remove everything we just added */
++        if (i == max)
++            --i;
+         for (; i >= 0; i--) {
+             prov = sk_OSSL_PROVIDER_value(store->providers, i);
+             remove_cb((OSSL_CORE_HANDLE *)prov, cbdata);

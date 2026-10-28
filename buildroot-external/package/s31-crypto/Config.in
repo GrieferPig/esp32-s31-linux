@@ -1,0 +1,11 @@
+config BR2_PACKAGE_S31_CRYPTO
+	bool "ESP32-S31 native crypto application backends"
+	depends on !BR2_STATIC_LIBS
+	select BR2_PACKAGE_OPENSSL
+	select BR2_PACKAGE_LIBOPENSSL
+	select BR2_PACKAGE_LIBOPENSSL_BIN
+	select BR2_PACKAGE_LIBOPENSSL_ENABLE_MODULE
+	help
+	  OpenSSL provider using the native ESP32-S31 Crypto API drivers for
+	  AES/SHA/HMAC, RSA and P-256/P-384 ECDH, plus native PKCS#11 key handles.
+	  Requires the matching Linux ESP32-S31 crypto driver and UAPI.

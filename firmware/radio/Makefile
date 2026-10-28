@@ -77,6 +77,11 @@ LINUX_WRAP_APIS := r_orca_lmp_tbl_register r_os_memblock_put r_os_memblock_put_f
 	coex_register_start_cb  \
 	  \
 
+CRYPTO_WRAP_APIS := $(addprefix esp_crypto_,$(addsuffix _lock_acquire,sha_aes dma mpi ecc ecdsa hmac ds key_manager)) \
+	$(addprefix esp_crypto_,$(addsuffix _lock_release,sha_aes dma mpi ecc ecdsa hmac ds key_manager)) \
+	$(addprefix esp_crypto_,$(addsuffix _enable_periph_clk,aes sha mpi ecc ecdsa hmac ds key_mgr)) \
+	esp_crypto_common_clk_enable
+LINUX_WRAP_APIS += $(CRYPTO_WRAP_APIS)
 LINUX_WRAP_FLAGS := $(addprefix -Wl$(comma)--wrap=,$(LINUX_WRAP_APIS))
 
 .PHONY: all clean idf-check linux-radio linux-kbuild
@@ -158,8 +163,9 @@ linux_radio.exposed.o: linux_radio.raw.o $(RADIO_MAKEFILE)
 # Preserve the Wi-Fi owner's IPC endpoints. Native Linux owners remain
 # independently scheduled; this does not add a global execution gate.
 # SoftMAC publishes coexistence state through the existing scheduler APIs.
-linux_radio.resolved.o: linux_radio.exposed.o
+linux_radio.resolved.o: linux_radio.exposed.o $(PROJECT_DIR)/tools/build/radio_crypto_adapters.py
 	$(ESP_TOOLS)/bin/riscv32-esp-elf-ld -r --no-relax $< -o $@
+	python3 $(PROJECT_DIR)/tools/build/radio_crypto_adapters.py --audit $@ --objdump $(ESP_TOOLS)/bin/riscv32-esp-elf-objdump
 
 linux-radio-undefined.txt: linux_radio.resolved.o
 	$(ESP_TOOLS)/bin/riscv32-esp-elf-nm -u $< | sort -u > $@
@@ -180,7 +186,8 @@ linux_radio.kbuild.o: linux_radio.localized.o $(RADIO_SRC)/linux_module_sections
 
 S31RTOS_LINUX_OBJS := s31_rtos/s31_rtos_core.linux.o \
 		s31_rtos/s31_rtos_queue.o s31_rtos/s31_rtos_event.o \
-		s31_linux_locks.o s31_linux_timer.o s31_memcpy.o
+		s31_linux_locks.o s31_linux_timer.o s31_memcpy.o s31_linux_crypto.o \
+		s31_sdk_ecc.o s31_sdk_mpi.o s31_sdk_ecdsa.o s31_sdk_hmac.o s31_sdk_tinycrypt.o
 # The main rule appears above this simply-expanded list; add the prerequisites
 # here so a clean/forced build cannot reach the linker before they exist.
 linux_radio.raw.o: $(S31RTOS_LINUX_OBJS)
@@ -239,6 +246,23 @@ s31_linux_locks.o: $(RADIO_SRC)/s31_linux_locks.c $(RADIO_SRC)/s31_rtos/s31_rtos
 
 s31_linux_timer.o: $(RADIO_SRC)/s31_linux_timer.c $(RADIO_SRC)/s31_rtos/s31_rtos.h
 	$(ESP_CC) $(ESP_CFLAGS) -MMD -MP -DS31_LINUX_SMODE -I $(RADIO_SRC)/s31_rtos -c $< -o $@
+
+s31_linux_crypto.o: $(RADIO_SRC)/s31_linux_crypto.c $(RADIO_SRC)/s31_sdk_crypto.h $(PROJECT_DIR)/shared/s31_crypto.h
+	$(ESP_CC) $(ESP_CFLAGS) -MMD -MP -c $< -o $@
+
+# Keep checked SDK adapters outside the vendor checkout. Source hashes in the
+# generator reject an SDK update until its error paths have been audited.
+S31_SDK_CRYPTO_SOURCES := $(IDF_PATH)/components/mbedtls/port/ecc/esp_ecc.c \
+	$(IDF_PATH)/components/mbedtls/port/bignum/esp_bignum.c \
+	$(IDF_PATH)/components/mbedtls/port/psa_driver/esp_ecdsa/psa_crypto_driver_esp_ecdsa.c \
+	$(IDF_PATH)/components/esp_security/src/esp_hmac.c \
+	$(IDF_PATH)/components/bt/common/tinycrypt/port/esp_tinycrypt_port.c \
+	$(IDF_PATH)/components/esp_hal_security/hmac_hal.c \
+	$(IDF_PATH)/components/esp_hal_security/ecdsa_hal.c
+s31_sdk_ecc.c s31_sdk_mpi.c s31_sdk_ecdsa.c s31_sdk_hmac.c s31_sdk_tinycrypt.c s31_sdk_ecc.rsp s31_sdk_mpi.rsp s31_sdk_ecdsa.rsp s31_sdk_hmac.rsp s31_sdk_tinycrypt.rsp &: $(PROJECT_DIR)/tools/build/radio_crypto_adapters.py $(S31_SDK_CRYPTO_SOURCES) $(RADIO_BUILD_ABS)/compile_commands.json
+	python3 $(PROJECT_DIR)/tools/build/radio_crypto_adapters.py --idf $(IDF_PATH) --build $(RADIO_BUILD_ABS) --output .
+s31_sdk_%.o: s31_sdk_%.c s31_sdk_%.rsp $(RADIO_SRC)/s31_sdk_crypto.h $(PROJECT_DIR)/shared/s31_crypto.h
+	$(ESP_CC) $(ESP_CFLAGS) -MMD -MP -I $(RADIO_SRC) @s31_sdk_$*.rsp -c $< -o $@
 
 s31_memcpy.o: $(RADIO_SRC)/s31_memcpy.c
 	$(ESP_CC) $(ESP_CFLAGS) -MMD -MP -c $< -o $@

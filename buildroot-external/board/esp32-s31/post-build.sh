@@ -174,7 +174,6 @@ rm -f \
 	"${target_dir}"/usr/lib/libpanel.so* \
 	"${target_dir}"/usr/lib/libisobusfs.so* \
 	"${target_dir}"/usr/lib/libpcre2-posix.so* \
-	"${target_dir}"/lib/libatomic.so* \
 	"${target_dir}"/usr/lib/alsa-lib/libasound_module_ctl_bluealsa.so \
 	"${target_dir}"/usr/lib/alsa-lib/libasound_module_pcm_bluealsa.so \
 	"${target_dir}/etc/alsa/conf.d/20-bluealsa.conf"

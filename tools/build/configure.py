@@ -172,7 +172,8 @@ def package_inputs(a):
     if not same(a.stamp, obj):
         if (a.output / '.config').exists() and any(p.is_dir() for p in (a.output / 'build').glob(a.package + '-*')):
             make = ['make', '-C', a.source, f'O={a.output}', f'BR2_EXTERNAL={a.external}', 'BR2_WGET=false', 'BR2_CURL=false', 'BR2_GIT=false', 'BR2_SVN=false', 'BR2_HG=false', f'BR2_DL_DIR={a.downloads}', f'BR2_JLEVEL={a.jobs}']
-            if a.package == 'btstack-s31':
+            # Source patches require a fresh extraction rather than a rebuild.
+            if a.package in ('btstack-s31', 'libopenssl'):
                 run(make + [a.package + '-dirclean'])
                 run(make + [a.package])
             else:

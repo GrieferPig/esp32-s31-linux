@@ -64,3 +64,5 @@ s31_radio_wifi_control_complete
 s31_radio_wifi_receive_aux
 s31_radio_wifi_ap_station
 s31_linux_wall_time_seconds
+
+s31_linux_crypto_operation
