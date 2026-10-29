@@ -1,16 +1,16 @@
 [submodule "linux-esp32-s31"]
-	path = linux-esp32-s31
+	path = external/linux
 	url = https://github.com/GrieferPig/linux-esp32-s31.git
 	branch = v6.18-esp32-s31
 [submodule "opensbi-esp32-s31"]
-	path = opensbi-esp32-s31
+	path = external/opensbi
 	url = https://github.com/GrieferPig/opensbi-esp32-s31
 	branch = v1.9-esp32-s31
 [submodule "buildroot"]
-	path = buildroot
+	path = external/buildroot
 	url = https://github.com/buildroot/buildroot.git
 [submodule "u-boot-esp32-s31"]
-	path = u-boot-esp32-s31
+	path = external/u-boot
 	url = https://github.com/GrieferPig/u-boot-esp32-s31.git
 	branch = v2024.07-esp32s31
 [submodule "docs"]

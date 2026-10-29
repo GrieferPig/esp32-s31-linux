@@ -16,13 +16,13 @@ def main():
     p.add_argument("--cross-compile", default=os.environ.get("CROSS_COMPILE", "riscv64-linux-gnu-"))
     p.add_argument("--output", type=Path)
     a = p.parse_args()
-    bindings = ROOT / "linux-esp32-s31/Documentation/devicetree/bindings"
+    bindings = ROOT / "external/linux/Documentation/devicetree/bindings"
     schemas = sorted(bindings.rglob("*esp32s31*.yaml")) + [bindings / name for name in ("serial/esp,esp32-uart.yaml", "mmc/synopsys-dw-mshc.yaml", "spi/spi-controller.yaml", "spi/rohm,dh2228fv.yaml", "usb/dwc2.yaml", "riscv/cpus.yaml", "riscv/extensions.yaml", "firmware/opensbi,config.yaml")]
     subprocess.run(["dt-doc-validate", *map(str, schemas)], check=True)
     with tempfile.TemporaryDirectory(prefix="s31-dt-") as tmp:
         out = a.output or Path(tmp)
         out.mkdir(parents=True, exist_ok=True)
-        base = ["make", "-C", str(ROOT / "linux-esp32-s31"), "O=" + str(out.resolve()), "ARCH=riscv", "CROSS_COMPILE=" + a.cross_compile]
+        base = ["make", "-C", str(ROOT / "external/linux"), "O=" + str(out.resolve()), "ARCH=riscv", "CROSS_COMPILE=" + a.cross_compile]
         subprocess.run(base + ["esp32s31_defconfig"], check=True)
         result = subprocess.run(base + ["dtbs", "dt_binding_schemas"], text=True, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
         print(result.stdout, end="")

@@ -105,8 +105,8 @@ def input_identity(args):
     root = Path(__file__).resolve().parents[2]
     files = {'kernel_vmlinux': args.kernel, 'kernel_module': args.module,
              'radio_payload': args.payload, 'radio_imports': args.imports,
-             'builder': Path(__file__), 'toolchain_identity': root / 'tools/build/toolchain_identity.py', 'layout': root / 'configs/esp32s31-layout.cfg',
-             'wifi_sram_symbols': root / 'firmware/radio/wifi_sram_symbols.txt'}
+             'builder': Path(__file__), 'toolchain_identity': root / 'tools/build/toolchain_identity.py', 'layout': root / 'configs/board/esp32s31-layout.cfg',
+             'wifi_sram_symbols': root / 'src/radio/wifi_sram_symbols.txt'}
     for tool in ('gcc', 'ld', 'objcopy'):
         executable = shutil.which(args.prefix + tool)
         if executable is None:
@@ -140,7 +140,7 @@ def build(args):
     linked = {line.strip() for line in args.imports.read_text().splitlines()
               if line.strip() and not line.startswith('#')}
     # Fixed production placement; missing targets fail rather than fall back to flash.
-    manifest = Path(__file__).resolve().parents[2] / 'firmware/radio/wifi_sram_symbols.txt'
+    manifest = Path(__file__).resolve().parents[2] / 'src/radio/wifi_sram_symbols.txt'
     payload = Elf(args.payload)
     requested = sorted(set(line.split('#', 1)[0].strip()
                            for line in manifest.read_text().splitlines()) - {''})

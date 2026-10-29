@@ -16,7 +16,7 @@ from tools.checks.layout import flash_layout
 
 ROOT = Path(__file__).resolve().parents[2]
 SCHEMA_VERSION = 3
-SOURCE_CONFIGS = ("configs/build-versions.mk", "configs/esp32s31-layout.cfg",
+SOURCE_CONFIGS = ("configs/versions.mk", "configs/board/esp32s31-layout.cfg",
                   "configs/kernel/common.config", "configs/kernel/board.config")
 
 def digest(path):
@@ -136,9 +136,9 @@ def verify_radio_package(staging, output_root):
         raise ValueError("staged package module is not valid XZ") from error
     if hashlib.sha256(module).hexdigest() != data["radio_binding"]["kernel_module_sha256"]:
         raise ValueError("staged package module differs from paired kernel module")
-    copies = {"config/sdkconfig.defaults": ROOT / "firmware/radio/idf_deps/sdkconfig.defaults",
-              "config/sdkconfig.radio.defaults": ROOT / "firmware/radio/idf_deps/sdkconfig.radio.defaults",
-              "RADIO_BUNDLE_LICENSES.md": ROOT / "firmware/radio/RADIO_BUNDLE_LICENSES.md"}
+    copies = {"config/sdkconfig.defaults": ROOT / "src/radio/idf_deps/sdkconfig.defaults",
+              "config/sdkconfig.radio.defaults": ROOT / "src/radio/idf_deps/sdkconfig.radio.defaults",
+              "RADIO_BUNDLE_LICENSES.md": ROOT / "src/radio/RADIO_BUNDLE_LICENSES.md"}
     for overlay in ("radio-wifi", "radio-bluetooth", "radio-combo"):
         name = "esp32s31-overlay-" + overlay + ".dtbo"
         copies["overlays/" + name] = output_root / "linux/arch/riscv/boot/dts/espressif" / name
@@ -269,7 +269,7 @@ def main():
         if a.compiler is None or a.idf is None:
             p.error("creating a manifest requires --compiler and --idf")
         output = a.output or root / "images/build-manifest.json"
-        repos = [".", "linux-esp32-s31", "opensbi-esp32-s31", "u-boot-esp32-s31", "buildroot", "docs"]
+        repos = [".", "external/linux", "external/opensbi", "external/u-boot", "external/buildroot", "docs"]
         configs = [*SOURCE_CONFIGS, *(str(x) for x in a.config)]
         resolved_path = root / "reports/resolved-config.json"
         resolved = json.loads(resolved_path.read_text())

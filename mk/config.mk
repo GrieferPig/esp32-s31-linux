@@ -1,4 +1,4 @@
-include $(ROOT)/configs/build-versions.mk
+include $(ROOT)/configs/versions.mk
 -include $(ROOT)/local.mk
 # Reject retired selection variables rather than silently selecting a build.
 ifneq ($(origin PROFILE),undefined)
@@ -38,11 +38,11 @@ CC := $(CROSS_COMPILE)gcc
 S31_SAFE_ISA := rv32imabc_zicsr_zifencei_zaamo_zalrsc_zba_zbb_zbc_zbs
 S31_KERNEL_ISA := rv32imafbc_zicsr_zifencei_zaamo_zalrsc_zba_zbb_zbc_zbs
 S31_KERNEL_FLAGS := -mabi=ilp32f -mtune=esp-base
-OPENSBI_DIR := $(ROOT)/opensbi-esp32-s31
-LINUX_DIR := $(ROOT)/linux-esp32-s31
-UBOOT_DIR := $(ROOT)/u-boot-esp32-s31
-RADIO_IDF_DEPS_DIR := $(ROOT)/firmware/radio/idf_deps
-BUILDROOT_DIR := $(ROOT)/buildroot
+OPENSBI_DIR := $(ROOT)/external/opensbi
+LINUX_DIR := $(ROOT)/external/linux
+UBOOT_DIR := $(ROOT)/external/u-boot
+RADIO_IDF_DEPS_DIR := $(ROOT)/src/radio/idf_deps
+BUILDROOT_DIR := $(ROOT)/external/buildroot
 BUILDROOT_EXTERNAL := $(ROOT)/buildroot-external
 OPENSBI_OUT := $(BUILD_DIR)/opensbi
 LINUX_OUT := $(BUILD_DIR)/linux
@@ -53,7 +53,7 @@ LP_OUT := $(BUILD_DIR)/lp
 RADIO_IDF_BUILD := $(BUILD_DIR)/idf-radio
 BUILDROOT_DL_DIR ?= $(CACHE_DIR)/downloads/buildroot
 BTSTACK_SOURCE_DIR ?= $(CACHE_DIR)/sources/btstack
-S31_LAYOUT_CFG := $(ROOT)/configs/esp32s31-layout.cfg
+S31_LAYOUT_CFG := $(ROOT)/configs/board/esp32s31-layout.cfg
 XIP_IMAGE := $(IMAGES_DIR)/xipImage
 UBOOT_ITB := $(IMAGES_DIR)/u-boot.itb
 UBOOT_SPL_DTB := $(IMAGES_DIR)/u-boot-spl-dtb.bin

@@ -17,6 +17,22 @@ Module tested: ESP32-S31-WROOM-3 E1H16R16V (ESP32-S31 Coreboard/Korvo).
 
 Flash the precompiled image in [Releases](https://github.com/GrieferPig/esp32-s31-linux/releases). For more info, visit the [get started guide](https://grieferpig.github.io/esp32-s31-linux-docs/en/get-started/).
 
+## Repository layout
+
+- `src/radio/` contains the Linux radio payload and its SDK build closure;
+  `src/lp/` contains the LP firmware.
+- `src/userspace/` groups Bluetooth, crypto, configuration, GPIO, module-loader
+  and SIMD implementations. `include/s31/` holds the shared memory layout.
+- `configs/` groups board, kernel, U-Boot and toolchain build inputs;
+  `configs/versions.mk` pins dependencies.
+- `buildroot-external/` contains package recipes, service integration and the
+  static root filesystem overlay.
+- `external/` contains the Linux, OpenSBI, U-Boot and Buildroot submodules.
+  The documentation submodule remains at `docs/`.
+- `mk/` and `tools/` orchestrate builds, checks, device operations and releases.
+- Generated files live under ignored `out/` and `cache/` directories. `make clean`
+  removes build outputs while retaining downloaded sources and toolchains.
+
 ## Documentation
 
 [Over here](https://grieferpig.github.io/esp32-s31-linux-docs/en/get-started/)

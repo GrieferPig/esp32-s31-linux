@@ -2,13 +2,13 @@
 # ESP32-S31 native crypto application backends
 ################################################################################
 S31_CRYPTO_VERSION = 1.0
-S31_CRYPTO_SITE = $(BR2_EXTERNAL_ESP32_S31_PATH)/../rootfs/s31_crypto
+S31_CRYPTO_SITE = $(BR2_EXTERNAL_ESP32_S31_PATH)/../src/userspace/crypto
 S31_CRYPTO_SITE_METHOD = local
 S31_CRYPTO_LICENSE = Apache-2.0 (implementation), OASIS IPR Policy (interface headers)
 S31_CRYPTO_LICENSE_FILES = LICENSE.Apache-2.0 pkcs11/pkcs11.h pkcs11/pkcs11t.h pkcs11/pkcs11f.h
 S31_CRYPTO_DEPENDENCIES = openssl
 S31_CRYPTO_INSTALL_STAGING = YES
-S31_CRYPTO_UAPI = $(BR2_EXTERNAL_ESP32_S31_PATH)/../linux-esp32-s31/include/uapi/linux/esp32s31-crypto.h
+S31_CRYPTO_UAPI = $(BR2_EXTERNAL_ESP32_S31_PATH)/../external/linux/include/uapi/linux/esp32s31-crypto.h
 
 define S31_CRYPTO_BUILD_CMDS
 	$(INSTALL) -D -m 0644 $(S31_CRYPTO_UAPI) $(@D)/include/linux/esp32s31-crypto.h

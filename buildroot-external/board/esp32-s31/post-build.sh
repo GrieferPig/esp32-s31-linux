@@ -243,11 +243,11 @@ script_dir="$(CDPATH= cd -- "$(dirname -- "$0")" && pwd)"
 project_dir="$(CDPATH= cd -- "${script_dir}/../../.." && pwd)"
 : "${S31_KERNEL_CONFIG:?Set S31_KERNEL_CONFIG to the build kernel configuration}"
 : "${HOST_DIR:?Buildroot must provide HOST_DIR for timezone assets}"
-python3 "${project_dir}/tools/build_esp32_config_assets.py" \
+python3 "${project_dir}/tools/build/config_assets.py" \
 	--target-dir "$target_dir" \
 	--kernel-config "$S31_KERNEL_CONFIG" \
 	--timezone-source "${HOST_DIR}/share/zoneinfo/posix" \
-	--timezones-list "${project_dir}/configs/esp32-config-timezones.list"
+	--timezones-list "${project_dir}/configs/board/timezones.list"
 : "${S31_DTBO_DIR:?Set S31_DTBO_DIR to the build kernel DT overlay directory}"
 dtbo_dir="${S31_DTBO_DIR}"
 install_dir="${target_dir}/usr/lib/s31-overlays"

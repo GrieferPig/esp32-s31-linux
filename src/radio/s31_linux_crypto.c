@@ -3,7 +3,7 @@
 #include <stdbool.h>
 #include <stdint.h>
 
-#include "../../shared/s31_crypto.h"
+#include <linux/soc/espressif/esp32s31-crypto.h>
 
 extern long s31_linux_crypto_operation(unsigned int operation, unsigned int domain);
 

@@ -2,7 +2,7 @@
 
 This project builds the Linux-managed LP-core payload with ESP-IDF's native
 `ulp_embed_binary()` flow. The LP application uses the native hardware mailbox
-runtime and the shared protocol in `../../shared/s31_lp_protocol.h`.
+runtime and the protocol in `external/linux/include/linux/soc/espressif/esp32s31-lp-protocol.h`.
 
 Build and stage the ELF and raw binary into the root filesystem overlay:
 

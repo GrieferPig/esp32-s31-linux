@@ -9,7 +9,7 @@ ROOT = Path(__file__).resolve().parents[2]
 
 def versions():
     values = {}
-    for line in (ROOT / "configs/build-versions.mk").read_text().splitlines():
+    for line in (ROOT / "configs/versions.mk").read_text().splitlines():
         if line and not line.startswith("#"):
             key, value = line.replace(":=", "=").replace("?=", "=").split("=", 1)
             values[key.strip()] = value.strip()

@@ -18,8 +18,8 @@ s31_rom.bin
 .agents
 .vscode
 toolchain
-firmware/radio/idf_deps/managed_components/
-firmware/radio/idf_deps/build-radio/
+src/radio/idf_deps/managed_components/
+src/radio/idf_deps/build-radio/
 logs/
 docs/esp-idf-docs/
 __pycache__/

@@ -5,7 +5,7 @@
 #include <string.h>
 #include <time.h>
 #include "esp_eap_client.h"
-#include "../../linux-esp32-s31/include/linux/esp32s31-radio-control.h"
+#include <linux/esp32s31-radio-control.h>
 #include "esp_bt.h"
 #include "esp_event.h"
 #include "freertos/event_groups.h"

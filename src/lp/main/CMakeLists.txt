@@ -1,5 +1,5 @@
 idf_component_register(SRCS "host_stub.c"
-                       INCLUDE_DIRS "../../../shared"
+                       INCLUDE_DIRS "../../../external/linux/include"
                        REQUIRES ulp)
 
 set(ulp_app_name s31_lp_main)

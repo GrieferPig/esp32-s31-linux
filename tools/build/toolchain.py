@@ -138,8 +138,8 @@ def main() -> int:
 
     repo_root = Path(__file__).resolve().parents[2]
     ctng_dir = args.ct_ng_dir.resolve()
-    config_source = repo_root / "configs" / f"{TARGET}.config"
-    kernel_dir = repo_root / "linux-esp32-s31"
+    config_source = repo_root / "configs" / "toolchain" / f"{TARGET}.config"
+    kernel_dir = repo_root / "external/linux"
     wrappers_dir = ctng_dir / "esp-toolchain-bin-wrappers" / "gnu-riscv-binutils"
     gcc_patch_dir = ctng_dir / "packages" / "gcc" / GCC_PATCH_VERSION
     musl_patch_dir = ctng_dir / "packages" / "musl" / MUSL_VERSION

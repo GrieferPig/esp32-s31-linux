@@ -4,7 +4,7 @@
 RADIO_MAKEFILE := $(abspath $(lastword $(MAKEFILE_LIST)))
 RADIO_SRC := $(patsubst %/,%,$(dir $(RADIO_MAKEFILE)))
 PROJECT_DIR := $(abspath $(RADIO_SRC)/../..)
-include $(PROJECT_DIR)/configs/build-versions.mk
+include $(PROJECT_DIR)/configs/versions.mk
 
 O ?= $(PROJECT_DIR)/out/radio
 RADIO_OUT := $(abspath $(O))
@@ -215,6 +215,7 @@ $(error S31_WIFI_ONLY is removed; every build includes Wi-Fi and Bluetooth)
 endif
 RADIO_STACK_DEFS := -DS31_LINUX_SMODE
 ESP_CFLAGS  := -Os -mabi=ilp32f -march=$(RADIO_ISA) \
+		-I$(PROJECT_DIR)/external/linux/include \
 		-mtune=esp-base -ffunction-sections -fdata-sections \
 		-fno-stack-protector -fno-builtin -ffreestanding -std=gnu11 -Wall \
 	-specs=picolibc.specs \
@@ -230,7 +231,7 @@ ESP_CFLAGS  := -Os -mabi=ilp32f -march=$(RADIO_ISA) \
 # be rebuilt whenever the IDF configuration changes.  Without this dependency,
 # btdm_lp.c could be rebuilt with controller sleep enabled while this object
 # retained sleep_en=0, leaving the closed controller's sleep environment NULL.
-radio_stack.linux.o: $(addprefix $(RADIO_SRC)/,radio_stack.c s31_wifi_rom_runtime.inc s31_softmac.inc s31_softmac_coex_pm.inc s31_softmac_tx_agg.inc s31_softmac_tx_reports.inc s31_rtos/s31_rtos.h) $(PROJECT_DIR)/linux-esp32-s31/include/linux/esp32s31-radio-control.h $(RADIO_MAKEFILE) $(RADIO_SDKCONFIG)
+radio_stack.linux.o: $(addprefix $(RADIO_SRC)/,radio_stack.c s31_wifi_rom_runtime.inc s31_softmac.inc s31_softmac_coex_pm.inc s31_softmac_tx_agg.inc s31_softmac_tx_reports.inc s31_rtos/s31_rtos.h) $(PROJECT_DIR)/external/linux/include/linux/esp32s31-radio-control.h $(RADIO_MAKEFILE) $(RADIO_SDKCONFIG)
 	$(ESP_CC) $(ESP_CFLAGS) -MMD -MP $(RADIO_STACK_DEFS) \
 		-I $(RADIO_SRC)/s31_rtos -c $< -o $@
 
@@ -247,7 +248,7 @@ s31_linux_locks.o: $(RADIO_SRC)/s31_linux_locks.c $(RADIO_SRC)/s31_rtos/s31_rtos
 s31_linux_timer.o: $(RADIO_SRC)/s31_linux_timer.c $(RADIO_SRC)/s31_rtos/s31_rtos.h
 	$(ESP_CC) $(ESP_CFLAGS) -MMD -MP -DS31_LINUX_SMODE -I $(RADIO_SRC)/s31_rtos -c $< -o $@
 
-s31_linux_crypto.o: $(RADIO_SRC)/s31_linux_crypto.c $(RADIO_SRC)/s31_sdk_crypto.h $(PROJECT_DIR)/shared/s31_crypto.h
+s31_linux_crypto.o: $(RADIO_SRC)/s31_linux_crypto.c $(RADIO_SRC)/s31_sdk_crypto.h $(PROJECT_DIR)/external/linux/include/linux/soc/espressif/esp32s31-crypto.h
 	$(ESP_CC) $(ESP_CFLAGS) -MMD -MP -c $< -o $@
 
 # Keep checked SDK adapters outside the vendor checkout. Source hashes in the
@@ -261,7 +262,7 @@ S31_SDK_CRYPTO_SOURCES := $(IDF_PATH)/components/mbedtls/port/ecc/esp_ecc.c \
 	$(IDF_PATH)/components/esp_hal_security/ecdsa_hal.c
 s31_sdk_ecc.c s31_sdk_mpi.c s31_sdk_ecdsa.c s31_sdk_hmac.c s31_sdk_tinycrypt.c s31_sdk_ecc.rsp s31_sdk_mpi.rsp s31_sdk_ecdsa.rsp s31_sdk_hmac.rsp s31_sdk_tinycrypt.rsp &: $(PROJECT_DIR)/tools/build/radio_crypto_adapters.py $(S31_SDK_CRYPTO_SOURCES) $(RADIO_BUILD_ABS)/compile_commands.json
 	python3 $(PROJECT_DIR)/tools/build/radio_crypto_adapters.py --idf $(IDF_PATH) --build $(RADIO_BUILD_ABS) --output .
-s31_sdk_%.o: s31_sdk_%.c s31_sdk_%.rsp $(RADIO_SRC)/s31_sdk_crypto.h $(PROJECT_DIR)/shared/s31_crypto.h
+s31_sdk_%.o: s31_sdk_%.c s31_sdk_%.rsp $(RADIO_SRC)/s31_sdk_crypto.h $(PROJECT_DIR)/external/linux/include/linux/soc/espressif/esp32s31-crypto.h
 	$(ESP_CC) $(ESP_CFLAGS) -MMD -MP -I $(RADIO_SRC) @s31_sdk_$*.rsp -c $< -o $@
 
 s31_memcpy.o: $(RADIO_SRC)/s31_memcpy.c
@@ -276,7 +277,7 @@ FORCE:
 	python3 $(PROJECT_DIR)/tools/build/input_stamp.py --output $@ \
 		--compiler "$(ESP_CC)" --repo "$(IDF_PATH)" \
 		--file "$(RADIO_SDKCONFIG)" --file $(RADIO_SRC)/idf_includes.rsp \
-		--file $(RADIO_SRC)/boot_flags.txt --file $(RADIO_SRC)/boot_linkpath.txt --file $(PROJECT_DIR)/configs/build-versions.mk \
+		--file $(RADIO_SRC)/boot_flags.txt --file $(RADIO_SRC)/boot_linkpath.txt --file $(PROJECT_DIR)/configs/versions.mk \
 		--value="$(ESP_CFLAGS) $(RADIO_STACK_DEFS)" \
 		--value="$(HEAP_WRAP_FLAGS) $(LINUX_WRAP_FLAGS)" \
 		--value="$(LINUX_NOFREERTOS_LINK) $(PICOLIBC_LIB) $(PICOLIBC_GCC)"

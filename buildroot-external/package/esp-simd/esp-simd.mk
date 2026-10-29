@@ -5,7 +5,7 @@
 ################################################################################
 
 ESP_SIMD_VERSION = 1.0
-ESP_SIMD_SITE = $(BR2_EXTERNAL_ESP32_S31_PATH)/../rootfs
+ESP_SIMD_SITE = $(BR2_EXTERNAL_ESP32_S31_PATH)/../src/userspace/simd
 ESP_SIMD_SITE_METHOD = local
 ESP_SIMD_LICENSE = GPL-2.0-only
 ESP_SIMD_INSTALL_STAGING = YES

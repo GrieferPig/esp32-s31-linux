@@ -49,14 +49,14 @@ cp "${images}/radio.bin" "${images}/radio.json" "$staging/firmware/"
 for overlay in radio-wifi radio-bluetooth radio-combo; do
 	cp "${kernel_out}/arch/riscv/boot/dts/espressif/esp32s31-overlay-${overlay}.dtbo" "$staging/overlays/"
 done
-cp "${project_dir}/firmware/radio/idf_deps/sdkconfig.defaults" "$staging/config/"
-cp "${project_dir}/firmware/radio/idf_deps/sdkconfig.radio.defaults" "$staging/config/"
-cp "${project_dir}/firmware/radio/RADIO_BUNDLE_LICENSES.md" "$staging/"
+cp "${project_dir}/src/radio/idf_deps/sdkconfig.defaults" "$staging/config/"
+cp "${project_dir}/src/radio/idf_deps/sdkconfig.radio.defaults" "$staging/config/"
+cp "${project_dir}/src/radio/RADIO_BUNDLE_LICENSES.md" "$staging/"
 cp "${images}/build-manifest.json" "$staging/"
 printf 'distribution-mode=%s\nradio-storage=flash-xip\n' "$mode" >"$staging/MANIFEST"
 printf 'kernel-release=%s\n' "$(cat "${kernel_out}/include/config/kernel.release")" >>"$staging/MANIFEST"
 printf 'radio-module-sha256=%s\n' "$(sha256sum "$staging/module/esp32s31-radio.ko.xz" | awk '{print $1}')" >>"$staging/MANIFEST"
-printf 'external-firmware-sha256=%s\n' "$(sha256sum "$staging/firmware/radio.bin" | awk '{print $1}')" >>"$staging/MANIFEST"
+printf 'external-firmware-sha256=%s\n' "$(sha256sum "$staging/src/radio.bin" | awk '{print $1}')" >>"$staging/MANIFEST"
 if [ "$mode" = release ]; then
 	cp "$grant" "$staging/REDISTRIBUTION_GRANT"
 	cp "$source_archive" "$staging/CORRESPONDING_SOURCE"

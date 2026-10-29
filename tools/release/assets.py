@@ -15,7 +15,7 @@ SLOT_FILES = ("SPL_APP_BIN", "UBOOT_ITB", "BASE_DTB", "RADIO_IMAGE", "KERNEL_IMA
 
 
 def assets():
-    values = dict(line.split("=", 1) for line in (ROOT / "configs/esp32s31-layout.cfg").read_text().splitlines()
+    values = dict(line.split("=", 1) for line in (ROOT / "configs/board/esp32s31-layout.cfg").read_text().splitlines()
                   if line and not line.startswith("#") and "=" in line)
     names = [values[key] for key in SLOT_FILES] + [values["OUT_IMAGE"], "radio.json", "build-manifest.json"]
     if any(Path(name).name != name for name in names):

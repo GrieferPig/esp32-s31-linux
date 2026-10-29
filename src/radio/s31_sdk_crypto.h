@@ -3,7 +3,7 @@
 #define S31_SDK_CRYPTO_H
 #include <stdbool.h>
 #include <stdint.h>
-#include "../../shared/s31_crypto.h"
+#include <linux/soc/espressif/esp32s31-crypto.h>
 
 #define S31_SDK_CRYPTO_FAILURE (-1)
 

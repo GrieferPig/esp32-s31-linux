@@ -5,7 +5,7 @@ SHELL := /bin/bash
 LP_MAKEFILE := $(abspath $(lastword $(MAKEFILE_LIST)))
 LP_SRC := $(patsubst %/,%,$(dir $(LP_MAKEFILE)))
 PROJECT_DIR := $(abspath $(LP_SRC)/../..)
-include $(PROJECT_DIR)/configs/build-versions.mk
+include $(PROJECT_DIR)/configs/versions.mk
 ifneq ($(origin PROFILE),undefined)
 $(error PROFILE is removed; use the full board build)
 endif
@@ -35,7 +35,7 @@ $(BUILD_DIR):
 $(BUILD_DIR)/.s31-config-inputs: FORCE | $(BUILD_DIR)
 	python3 "$(PROJECT_DIR)/tools/build/input_stamp.py" --output "$@" \
 		--repo "$(IDF_PATH)" --file "$(LP_SRC)/sdkconfig.defaults" \
-		--file "$(PROJECT_DIR)/configs/build-versions.mk" \
+		--file "$(PROJECT_DIR)/configs/versions.mk" \
 		--value="$(IDF_PATH) $(BUILD_DIR)"
 
 $(BUILD_DIR)/.s31-toolchain-inputs: FORCE | $(BUILD_DIR)

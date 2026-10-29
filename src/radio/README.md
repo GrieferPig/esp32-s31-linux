@@ -23,7 +23,7 @@ notifications remain independent. The mandatory batch capability rejects the
 retired per-frame interface; there is no selectable compatibility path.
 
 The firmware uses the ESP-IDF revision and compiler pinned in
-`configs/build-versions.mk`. `make radio-package` packages the matched image,
+`configs/versions.mk`. `make radio-package` packages the matched image,
 module, overlays, configuration and licenses. Redistribution requirements
 are described in `RADIO_BUNDLE_LICENSES.md`.
 

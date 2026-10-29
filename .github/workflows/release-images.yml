@@ -195,4 +195,4 @@ jobs:
           gh release create "$RELEASE_TAG" dist/current/s31_full_flash.bin \
             --target "$GITHUB_SHA" \
             --title "$RELEASE_TITLE" \
-            --notes-file "$GITHUB_WORKSPACE/configs/release-notes.md"
+            --notes-file "$GITHUB_WORKSPACE/tools/release/notes.md"

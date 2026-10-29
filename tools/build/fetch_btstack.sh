@@ -3,7 +3,7 @@
 set -eu
 
 project_dir=$(CDPATH= cd -- "$(dirname -- "$0")/../.." && pwd)
-version=$(sed -n 's/^BTSTACK_REF[[:space:]]*[:?]*=[[:space:]]*//p' "${project_dir}/configs/build-versions.mk")
+version=$(sed -n 's/^BTSTACK_REF[[:space:]]*[:?]*=[[:space:]]*//p' "${project_dir}/configs/versions.mk")
 [ -n "$version" ] || { echo 'Missing BTSTACK_REF dependency lock' >&2; exit 1; }
 build_dir=$(realpath -m "${S31_CACHE_ROOT:-${project_dir}/cache}/sources")
 output_dir=${1:-${build_dir}/btstack}

@@ -8,7 +8,7 @@ ROOT = Path(__file__).resolve().parents[2]
 SLOTS = ("SPL", "UBOOT_ITB", "DTB", "RADIO", "PERSIST", "KERNEL", "ROOTFS")
 
 def flash_layout(root=ROOT):
-    text = (root / "configs/esp32s31-layout.cfg").read_text()
+    text = (root / "configs/board/esp32s31-layout.cfg").read_text()
     values = {k: int(v, 0) for k, v in re.findall(r"^(SLOT_\w+|SIZE_\w+|FLASH_SIZE)=(0x[0-9a-fA-F]+|[0-9]+)$", text, re.M)}
     if {key for key in values if key.startswith("SLOT_")} != {"SLOT_" + key for key in SLOTS}:
         raise ValueError("flash layout must contain exactly the seven compact slots")
@@ -40,8 +40,8 @@ def defines(text):
 
 def check(root=ROOT):
     slots, sizes = flash_layout(root)
-    shared = defines((root / "shared/s31_memory_layout.h").read_text())
-    radio = defines((root / "linux-esp32-s31/drivers/platform/esp32s31-radio-smode.c").read_text())
+    shared = defines((root / "include/s31/memory_layout.h").read_text())
+    radio = defines((root / "external/linux/drivers/platform/esp32s31-radio-smode.c").read_text())
     for key in ("HEAP_BASE", "HEAP_END", "HEAP_LOW_BASE", "HEAP_LOW_END", "HEAP2_BASE", "HEAP2_END"):
         name = "S31_RADIO_" + key
         if radio[name] != shared[name]:
@@ -60,7 +60,7 @@ def check(root=ROOT):
         raise ValueError("SRAM reservations overlap or are empty")
     if spans[-2][1] != shared["S31_HP_SHARED_END"] or spans[-1][0] != shared["S31_HP_SHARED_END"]:
         raise ValueError("UART DMA/high radio heap boundary differs")
-    dtsdir = root / "linux-esp32-s31/arch/riscv/boot/dts/espressif"
+    dtsdir = root / "external/linux/arch/riscv/boot/dts/espressif"
     dts = (dtsdir / "esp32s31.dtsi").read_text()
     for name in ("PSRAM", "AXI_DESC", "AHB_DESC", "DMA2D_DESC", "USB_LOCAL"):
         pattern = r"<0x0*%x\s+0x0*%x>" % (shared["S31_" + name + "_BASE"], shared["S31_" + name + "_SIZE"])
@@ -78,7 +78,7 @@ def check(root=ROOT):
             raise ValueError(f"DTS partition {label}: {actual} != slot map {expected}")
     if "hil-scratch" in dts or not re.search(r"reg = <0x40000000 0x01000000>", dts):
         raise ValueError("DTS must expose the full identity-mapped flash without HIL scratch")
-    linker = (root / "linux-esp32-s31/arch/riscv/kernel/vmlinux-xip.lds.S").read_text()
+    linker = (root / "external/linux/arch/riscv/kernel/vmlinux-xip.lds.S").read_text()
     start = int(re.search(r"\.s31_radio.data\s+(0x[0-9a-fA-F]+)", linker)[1], 0)
     if start != shared["S31_RADIO_HEAP_BASE"]:
         raise ValueError("kernel radio link address differs from shared contract")
@@ -86,7 +86,7 @@ def check(root=ROOT):
     start = int(re.search(r"FW_RW_START\s*\?=\s*(0x[0-9a-fA-F]+)", makefile)[1], 0)
     if start != shared["S31_OPENSBI_RW_BASE"]:
         raise ValueError("OpenSBI writable base differs from shared contract")
-    xip = defines((root / "linux-esp32-s31/drivers/platform/esp32s31-radio-xip.h").read_text())
+    xip = defines((root / "external/linux/drivers/platform/esp32s31-radio-xip.h").read_text())
     if xip["S31_XIP_PHYS"] != 0x40000000 + slots["SLOT_RADIO"]:
         raise ValueError("radio XIP physical mapping differs from flash slot")
     if xip["S31_XIP_SLOT_SIZE"] != sizes["RADIO"]:

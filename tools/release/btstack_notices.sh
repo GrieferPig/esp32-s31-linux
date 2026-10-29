@@ -3,7 +3,7 @@
 set -eu
 
 project_dir=$(CDPATH= cd -- "$(dirname -- "$0")/../.." && pwd)
-version=$(sed -n 's/^BTSTACK_REF[[:space:]]*[:?]*=[[:space:]]*//p' "${project_dir}/configs/build-versions.mk")
+version=$(sed -n 's/^BTSTACK_REF[[:space:]]*[:?]*=[[:space:]]*//p' "${project_dir}/configs/versions.mk")
 [ -n "$version" ] || { echo 'Missing BTSTACK_REF dependency lock' >&2; exit 1; }
 build_dir=$(realpath -m "${S31_OUTPUT_ROOT:-${project_dir}/out}")
 source_dir=${1:-${project_dir}/cache/sources/btstack}
@@ -39,8 +39,8 @@ trap 'rm -rf "$temporary"' EXIT HUP INT TERM
 
 mkdir -p "${staging}/downstream"
 cp "${source_dir}/LICENSE" "${staging}/BTSTACK_LICENSE"
-cp "${project_dir}/rootfs/s31_btstack.c" \
-	"${project_dir}/rootfs/s31_btstack_transport.c" \
+cp "${project_dir}/src/userspace/bluetooth/s31_btstack.c" \
+	"${project_dir}/src/userspace/bluetooth/s31_btstack_transport.c" \
 	"${package_dir}/Config.in" \
 	"${package_dir}/btstack-s31.mk" \
 	"${package_dir}/s31_btstack_config.h" \

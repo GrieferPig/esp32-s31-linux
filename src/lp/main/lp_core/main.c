@@ -10,7 +10,7 @@
 #include "hal/clk_tree_ll.h"
 #include "hal/rtc_timer_ll.h"
 
-#include "../../../../shared/s31_lp_protocol.h"
+#include <linux/soc/espressif/esp32s31-lp-protocol.h>
 
 #define S31_RTC_MASK ((1ULL << 48) - 1)
 #define S31_RTC_HALF (1ULL << 47)
