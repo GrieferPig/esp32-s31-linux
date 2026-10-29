@@ -39,7 +39,7 @@ def revision(path):
     patch = git("diff", "HEAD", "--binary")
     untracked = git("ls-files", "--others", "--exclude-standard", "-z").split(b"\0")
     # Do not walk/hash unrelated output trees as if they were build inputs.
-    source_roots = {"buildroot-external", "configs", "firmware", "rootfs", "shared", "tools", "mk", ".github", "arch", "drivers", "include", "kernel", "lib", "mm", "net", "sound", "platform", "package", "board", "support", "Documentation"}
+    source_roots = {"buildroot-external", "configs", "src", "tools", "mk", ".github", "arch", "drivers", "include", "kernel", "lib", "mm", "net", "sound", "platform", "package", "board", "support", "Documentation"}
     source_names = {"Makefile", "Kconfig", "Config.in", "sdkconfig.defaults", "sdkconfig.radio.defaults", "CMakeLists.txt"}
     source_suffixes = {".c", ".h", ".S", ".py", ".sh", ".mk", ".md", ".yml", ".yaml", ".json", ".txt", ".cfg", ".rsp", ".lds", ".dtso", ".dts", ".dtsi"}
     files = {}
