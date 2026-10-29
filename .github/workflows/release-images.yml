@@ -33,7 +33,7 @@ jobs:
           sudo apt-get update
           sudo apt-get install -y \
             bison bc build-essential ccache cpio device-tree-compiler flex gperf libffi-dev \
-            libssl-dev ninja-build python3-pkg-resources python3-pyelftools python3-dev swig rsync unzip xz-utils squashfs-tools
+            libssl-dev libusb-1.0-0 ninja-build python3-pkg-resources python3-pyelftools python3-dev swig rsync unzip xz-utils squashfs-tools
 
       - name: Read pinned dependency versions
         run: |
