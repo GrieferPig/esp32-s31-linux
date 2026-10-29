@@ -4,6 +4,7 @@ import argparse
 import os
 from pathlib import Path
 import shutil
+import shlex
 
 
 def main():
@@ -21,13 +22,17 @@ def main():
     interpreter = os.path.abspath(interpreter)
     shim = args.shim.resolve()
     shim.mkdir(parents=True, exist_ok=True)
+    # An extra symlink to a venv interpreter changes the executable location
+    # used for pyvenv.cfg discovery. Execute its real invocation path instead.
+    wrapper = '#!/bin/sh\nexec ' + shlex.quote(interpreter) + ' "$@"\n'
     for name in ('python', 'python3'):
         link = shim / name
-        if link.is_symlink() and os.readlink(link) == interpreter:
+        if not link.is_symlink() and link.is_file() and link.read_text() == wrapper:
             continue
         temporary = shim / f'.{name}-{os.getpid()}'
         try:
-            temporary.symlink_to(interpreter)
+            temporary.write_text(wrapper)
+            temporary.chmod(0o755)
             temporary.replace(link)
         finally:
             temporary.unlink(missing_ok=True)
