@@ -217,7 +217,7 @@ wifi_apply()
 		# address if association finishes after the interactive wait expires.
 		ESP32_CONFIG_DIR="$CONF_DIR" ESP32_CONFIG_RUN_DIR="$RUN_DIR" \
 			udhcpc -b -i "$interface" -p "$(dhcp_pidfile "$interface")" \
-			-s "${ESP32_CONFIG_DHCP_SCRIPT:-/usr/share/udhcpc/default.script}" -t 5 -T 2 \
+			-s "${ESP32_CONFIG_DHCP_SCRIPT:-/usr/share/udhcpc/default.script}" -t 5 -T 2 -x hostname:"$(hostname)"\
 			>"${RUN_DIR}/udhcpc.${interface}.log" 2>&1 &
 	fi
 	wifi_state associating 'Connecting to the wireless network...'
