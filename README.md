@@ -42,9 +42,10 @@ It writes the ROM-loadable `spl-p4-80.bin` and `uboot-p4.bin` to
 `out-p4/images/`. To package an existing P4 Linux Image (including its
 initramfs) and matching DTB, use
 `make p4-fit TARGET=esp32p4 P4_LINUX_IMAGE=... P4_LINUX_DTB=...`.
-The FIT reserves 6 MiB for the Linux Image in memory, including BSS. Set
-`CONFIG_INITRAMFS_COMPRESSION_XZ=y` when embedding the P4 Buildroot rootfs.
-Neither target flashes a device.
+The FIT accepts a Linux Image of up to 7 MiB in flash and an in-memory
+extent of up to 14 MiB including BSS. Use `make p4-linux TARGET=esp32p4`
+to build the P4 kernel, Waveshare DTB and XZ-compressed Buildroot
+initramfs. The build targets generate files in `out-p4/images/`.
 The native P4 SPL selects 512 KiB of shared L2 with 128-byte lines. The SPL
 and U-Boot proper fit in low SRAM; the runtime heap, stack and working DTB
 use trained PSRAM. On ESP32-P4 rev1.3 the 80 MHz PSRAM configuration boots

@@ -10,7 +10,7 @@ endif
 # Serialize the single output tree across independent invocations. Native builds share JOBS.
 # Preparation and read-only help/check commands never acquire a device or build.
 PREPARE_GOALS := download fetch fetch-rootfs toolchain-fetch toolchain-source btstack-source
-LOCK_GOALS := resolved-config check check-fast check-docs check-dt check-artifacts $(PREPARE_GOALS) flash-image radio-fs initramfs bootloader radio-module buildroot-menuconfig btstack-notices flash-existing-all flash-all flash-existing-radio flash-existing-rootfs flash-radio flash-rootfs flash-linux flash-dtb flash-bootloader flash-opensbi flash-persist erase fetch fetch-rootfs all fullclean build-flash build image linux linux-incremental opensbi uboot p4-fit p4-rootfs p4-rootfs-config rootfs radio-image radio-linux-payload radio-linux-payload-incremental radio-idf-deps lp-firmware persist radio-package build-manifest clean buildroot-clean buildroot-reconfigure
+LOCK_GOALS := resolved-config check check-fast check-docs check-dt check-artifacts $(PREPARE_GOALS) flash-image radio-fs initramfs bootloader radio-module buildroot-menuconfig btstack-notices flash-existing-all flash-all flash-existing-radio flash-existing-rootfs flash-radio flash-rootfs flash-linux flash-dtb flash-bootloader flash-opensbi flash-persist erase fetch fetch-rootfs all fullclean build-flash build image linux linux-incremental opensbi uboot p4-fit p4-linux p4-rootfs p4-rootfs-config rootfs radio-image radio-linux-payload radio-linux-payload-incremental radio-idf-deps lp-firmware persist radio-package build-manifest clean buildroot-clean buildroot-reconfigure
 ifneq ($(filter $(LOCK_GOALS),$(MAKECMDGOALS)),)
 ifeq ($(S31_BUILD_LOCKED),)
 .PHONY: $(MAKECMDGOALS)

@@ -16,6 +16,7 @@ P4_PROPER_OUT := $(UBOOT_OUT)/proper
 help:
 	@printf '%s\n' 'ESP32-P4 rev1.3: make uboot TARGET=esp32p4 [P4_CROSS_COMPILE=...] [ESPTOOL=...]' \
 		'Package with an existing P4 kernel: make p4-fit TARGET=esp32p4 P4_LINUX_IMAGE=... P4_LINUX_DTB=...' \
+		'Build Linux and the P4 Buildroot initramfs: make p4-linux TARGET=esp32p4' \
 		'Build a P4 NOMMU initramfs: make p4-rootfs TARGET=esp32p4'
 bootloader: uboot
 p4-uboot-compiler-check:
@@ -55,7 +56,7 @@ p4-fit: p4-fit-inputs uboot
 		"$(P4_LINUX_IMAGE)" "$(P4_LINUX_DTB)" "$(IMAGES_DIR)/fit-$(P4_PSRAM_MHZ)"
 
 # Board-specific Buildroot output. Keep the S31 rootfs rules independent.
-P4_COREMARK_CC ?=
+P4_COREMARK_CC ?= $(P4_CROSS_COMPILE)gcc
 P4_BUILDROOT_MAKE = $(MAKE) -C "$(BUILDROOT_DIR)" O="$(BUILDROOT_OUT)" \
 	BR2_EXTERNAL="$(BUILDROOT_EXTERNAL)" BR2_DL_DIR="$(BUILDROOT_DL_DIR)" BR2_JLEVEL="$(JOBS)"
 
@@ -69,3 +70,52 @@ p4-rootfs: p4-rootfs-config
 	$(P4_BUILDROOT_MAKE) COREMARK_COMPUTE_CC="$(P4_COREMARK_CC)"
 	@mkdir -p "$(IMAGES_DIR)"
 	cp "$(BUILDROOT_OUT)/images/rootfs.cpio" "$(IMAGES_DIR)/rootfs-p4.cpio"
+
+# ESP-Hosted-NG host SDK-free SDIO transport. The C6 firmware is separate.
+P4_HOSTED_REV := 1df17f74d62eede4127785ae9414e03e48e62ebd
+P4_HOSTED_SHA256 := 0f6f0c8f240f2abd318c14faaa76d6eeec6c8e50226b7a5625e085970b888db0
+P4_HOSTED_ARCHIVE ?= $(CACHE_DIR)/downloads/esp-hosted-$(P4_HOSTED_REV).tar.gz
+P4_HOSTED_SOURCE := $(BUILD_DIR)/esp-hosted-ng-$(P4_HOSTED_REV)
+P4_HOSTED_PATCH := $(BUILDROOT_EXTERNAL)/board/esp32-p4/esp-hosted/0001-sdio-irq-handler-host-is-already-claimed.patch
+P4_HOSTED_OVERLAY := $(STAGING_DIR)/esp-hosted
+P4_BASE_INITRAMFS := $(IMAGES_DIR)/rootfs-p4.cpio
+P4_HOSTED_INITRAMFS := $(IMAGES_DIR)/rootfs-p4-hosted.cpio
+P4_BOARD_DTB := esp32p4-waveshare-touch-display-2.dtb
+P4_LINUX_IMAGE ?= $(IMAGES_DIR)/Image-p4
+P4_LINUX_DTB ?= $(IMAGES_DIR)/$(P4_BOARD_DTB)
+P4_LINUX_MAKE = $(MAKE) -C "$(LINUX_DIR)" O="$(LINUX_OUT)" ARCH=riscv CROSS_COMPILE="$(P4_CROSS_COMPILE)" -j$(JOBS)
+P4_LINUX_CONFIG = "$(LINUX_DIR)/scripts/config" --file "$(LINUX_OUT)/.config"
+
+$(P4_HOSTED_ARCHIVE):
+	@mkdir -p "$(@D)"
+	curl --fail --location --output "$@.part" "https://github.com/espressif/esp-hosted/archive/$(P4_HOSTED_REV).tar.gz"
+	printf '%s  %s\n' "$(P4_HOSTED_SHA256)" "$@.part" | sha256sum --check -
+	mv "$@.part" "$@"
+
+$(P4_HOSTED_SOURCE)/.prepared: $(P4_HOSTED_ARCHIVE) $(P4_HOSTED_PATCH)
+	printf '%s  %s\n' "$(P4_HOSTED_SHA256)" "$(P4_HOSTED_ARCHIVE)" | sha256sum --check -
+	mkdir -p "$(P4_HOSTED_SOURCE)"
+	tar -xf "$(P4_HOSTED_ARCHIVE)" -C "$(P4_HOSTED_SOURCE)" --strip-components=3 \
+		"esp-hosted-$(P4_HOSTED_REV)/esp_hosted_ng/host"
+	patch -d "$(P4_HOSTED_SOURCE)" -p1 < "$(P4_HOSTED_PATCH)"
+	touch "$@"
+
+.PHONY: linux p4-linux
+linux: p4-linux
+p4-linux: p4-uboot-compiler-check p4-rootfs $(P4_HOSTED_SOURCE)/.prepared | $(LINUX_OUT) $(IMAGES_DIR)
+	$(P4_LINUX_MAKE) esp32p4_reconstructed_defconfig
+	"$(LINUX_DIR)/scripts/kconfig/merge_config.sh" -m -r -O "$(LINUX_OUT)" "$(LINUX_OUT)/.config" \
+		"$(LINUX_DIR)/arch/riscv/configs/esp32p4_native_peripherals.config"
+	$(P4_LINUX_CONFIG) -e INITRAMFS_COMPRESSION_XZ --set-str INITRAMFS_SOURCE "$(P4_BASE_INITRAMFS)"
+	$(P4_LINUX_MAKE) olddefconfig
+	$(P4_LINUX_MAKE) Image modules espressif/$(P4_BOARD_DTB)
+	$(P4_LINUX_MAKE) M="$(P4_HOSTED_SOURCE)" target=sdio modules
+	mkdir -p "$(P4_HOSTED_OVERLAY)/lib/modules"
+	"$(P4_CROSS_COMPILE)strip" --strip-debug -o "$(P4_HOSTED_OVERLAY)/lib/modules/esp32_sdio.ko" "$(P4_HOSTED_SOURCE)/esp32_sdio.ko"
+	cd "$(P4_HOSTED_OVERLAY)" && find . -print0 | LC_ALL=C sort -z | cpio --null --quiet --reproducible -o --format=newc --owner=0:0 > "$(IMAGES_DIR)/p4-hosted-overlay.cpio"
+	cat "$(P4_BASE_INITRAMFS)" "$(IMAGES_DIR)/p4-hosted-overlay.cpio" > "$(P4_HOSTED_INITRAMFS)"
+	$(P4_LINUX_CONFIG) --set-str INITRAMFS_SOURCE "$(P4_HOSTED_INITRAMFS)"
+	$(P4_LINUX_MAKE) olddefconfig
+	$(P4_LINUX_MAKE) Image
+	cp "$(LINUX_OUT)/arch/riscv/boot/Image" "$(P4_LINUX_IMAGE)"
+	cp "$(LINUX_OUT)/arch/riscv/boot/dts/espressif/$(P4_BOARD_DTB)" "$(P4_LINUX_DTB)"

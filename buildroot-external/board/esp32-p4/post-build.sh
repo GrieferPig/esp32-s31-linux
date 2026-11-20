@@ -12,6 +12,9 @@ chmod 0755 "${target_dir}/usr/sbin/p4-soak"
 # ESP-Hosted module is loaded by S35esp-hosted before an operator uses iw.
 rm -f "${target_dir}/etc/init.d/S40network"
 
+# This initramfs has no persistent seed file and BusyBox omits seedrng.
+rm -f "${target_dir}/etc/init.d/S01seedrng"
+
 # Buildroot's stock udhcpc hook starts another BusyBox process solely to
 # allocate a temporary resolv.conf.  On NOMMU that duplicate image needs a
 # large contiguous allocation and can fail once wpa_supplicant is resident.

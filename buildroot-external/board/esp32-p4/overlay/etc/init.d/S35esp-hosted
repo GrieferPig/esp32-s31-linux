@@ -3,24 +3,17 @@
 case "$1" in
 	start)
 		module=/lib/modules/esp32_sdio.ko
-		if [ ! -r "$module" ]; then
-			echo "esp-hosted-ng: module not present"
-			exit 0
-		fi
-		# The loader releases the on-board C6 only shortly before Linux starts.
-		# SDIO card enumeration can precede the Hosted boot-up event; loading the
-		# transport immediately races its initial interface command and can leave
-		# the module resident without wlan0.  Give the C6 firmware a bounded
-		# settle window before the one-shot module probe.
-		sleep 4
-		echo "esp-hosted-ng: loading SDIO transport at 20 MHz"
-		# The IDF loader resets C6 on GPIO54 before Linux takes ownership.
-		# No resetpin is passed until the P4 GPIO controller is implemented.
-		insmod "$module" clockspeed=20
+		[ -r "$module" ] || exit 0
+		# The MMC power sequence owns CHIP_PU. The driver registers on the
+		# SDIO bus, which binds it when the C6 function is available.
+		exec insmod "$module"
 		;;
 	stop)
-		rmmod esp32_sdio 2>/dev/null || true
+		[ -d /sys/module/esp32_sdio ] || exit 0
+		exec rmmod esp32_sdio
+		;;
+	*)
+		echo "Usage: $0 {start|stop}" >&2
+		exit 1
 		;;
 esac
-
-exit 0
