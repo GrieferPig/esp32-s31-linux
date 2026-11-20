@@ -1,4 +1,8 @@
 .NOTPARALLEL:
+include $(ROOT)/mk/esptool.mk
+ifeq ($(TARGET),esp32p4)
+include $(ROOT)/mk/boot-p4.mk
+else ifeq ($(TARGET),esp32s31)
 include $(ROOT)/mk/toolchains.mk
 include $(ROOT)/mk/boot.mk
 include $(ROOT)/mk/radio.mk
@@ -29,3 +33,6 @@ $(BUILD_DIR) $(IMAGES_DIR) $(GENERATED_DIR) $(STAGING_DIR) $(REPORTS_DIR) $(OPEN
 .PHONY: resolved-config
 resolved-config: | $(REPORTS_DIR)
 	python3 -c 'import json,pathlib; p=pathlib.Path("$(REPORTS_DIR)/resolved-config.json"); p.write_text(json.dumps(dict(debug="$(DEBUG)",kernel_fragments="$(KERNEL_FRAGMENTS)".split(),kernel_isa="$(S31_KERNEL_ISA)",kernel_flags="$(S31_KERNEL_FLAGS)",kernel_object_flags="$(S31_SIZE_OBJECT_FLAGS)".split(),optimization="-Os",userspace_abi="ilp32",radio_abi="ilp32f",toolchain="$(TOOLCHAIN_PREFIX)",idf="$(dir $(IDF_EXPORT))",jobs="$(JOBS)",source_date_epoch="$(SOURCE_DATE_EPOCH)",output_root="$(BUILD_DIR)",rootfs_baseline="$(ROOTFS_BASELINE)"),indent=2)+"\n")'
+else
+$(error Unsupported TARGET "$(TARGET)"; expected esp32s31 or esp32p4)
+endif

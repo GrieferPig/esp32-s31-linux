@@ -21,6 +21,32 @@ Flash the precompiled image in [Releases](https://github.com/GrieferPig/esp32-s3
 
 [Over here](https://grieferpig.github.io/esp32-s31-linux-docs/en/get-started/)
 
+### Building only U-Boot
+
+With the normal host build tools, the RISC-V toolchain and the U-Boot/OpenSBI
+submodules prepared, `make uboot` does not require an ESP-IDF installation or
+an activated ESP-IDF environment. Install standalone
+[esptool](https://docs.espressif.com/projects/esptool/en/latest/esp32s31/installation.html)
+with ESP32-S31 support on `PATH`, or use
+`make uboot ESPTOOL=/absolute/path/to/esptool`.
+This does not remove ESP-IDF requirements from full S31 image builds, which
+also build the radio and LP firmware.
+
+The ESP32-P4 rev1.3 bootloader target uses the same standalone wrapper:
+
+```sh
+make uboot TARGET=esp32p4 P4_CROSS_COMPILE=/path/to/bin/riscv32-esp-elf-
+```
+
+It writes the ROM-loadable `spl-p4-80.bin` and `uboot-p4.bin` to
+`out-p4/images/`. To package an existing P4 Linux Image (including its
+initramfs) and matching DTB, use
+`make p4-fit TARGET=esp32p4 P4_LINUX_IMAGE=... P4_LINUX_DTB=...`.
+Neither target flashes a device.
+`P4_PSRAM_MHZ=200` selects the experimental high-speed PSRAM build.
+The ROM flash mode and clock default to DIO/40 MHz and are independent of the
+PSRAM profile (`P4_FLASH_MODE` and `P4_FLASH_FREQ`).
+
 ## Porting progress
 
 For a detailed overview of the porting progress, refer to [the support matrix](https://grieferpig.github.io/esp32-s31-linux-docs/en/resources/support-matrix.html).

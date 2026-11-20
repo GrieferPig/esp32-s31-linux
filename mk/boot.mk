@@ -37,10 +37,10 @@ opensbi: toolchain | $(OPENSBI_OUT)
 		--elf $(OPENSBI_OUT)/platform/generic/firmware/fw_dynamic.elf \
 		--raw $(OPENSBI_FW_DYNAMIC_BIN)
 
-uboot: idf-check opensbi | $(UBOOT_OUT) $(IMAGES_DIR)
+uboot: uboot-esptool-check opensbi | $(UBOOT_OUT) $(IMAGES_DIR)
 	@echo "--- U-Boot SPL + proper ---"
 	# Binman uses an env shebang, so PYTHON3 alone does not select its interpreter.
-	# A Python-only shim preserves the remaining host-tool and ESP-IDF PATH.
+	# A Python-only shim preserves the remaining host tools on PATH.
 	python3 $(ROOT)/tools/build/configure.py native --kind uboot --source "$(UBOOT_DIR)" --output "$(UBOOT_OUT)" --defconfig espressif_esp32s31_defconfig --fragment "$(ROOT)/configs/uboot.config" --compiler "$(CC)" --cross "$(CROSS_COMPILE)"
 	PYTHONPATH="$(UBOOT_PYTHONPATH)$${PYTHONPATH:+:$$PYTHONPATH}" python3 $(ROOT)/tools/build/host_python.py \
 		--python "$(HOST_PYTHON)" --shim "$(UBOOT_OUT)/.host-python" -- \
@@ -53,14 +53,9 @@ uboot: idf-check opensbi | $(UBOOT_OUT) $(IMAGES_DIR)
 		--elf $(OPENSBI_OUT)/platform/generic/firmware/fw_dynamic.elf \
 		--raw $(OPENSBI_FW_DYNAMIC_BIN) --fit $(UBOOT_ITB)
 	cp -v $(UBOOT_OUT)/spl/u-boot-spl-dtb.bin $(UBOOT_SPL_DTB)
-	@work=$$(mktemp -d "$(BUILD_DIR)/spl-wrap.XXXXXX"); \
+	@set -eu; work=$$(mktemp -d "$(IMAGES_DIR)/spl-check.XXXXXX"); \
 	trap 'rm -rf "$$work"' EXIT; \
-	$(CROSS_COMPILE)objcopy -I binary -O elf32-littleriscv -B riscv \
-		$(UBOOT_SPL_DTB) "$$work/spl1.elf"; \
-	$(CROSS_COMPILE)objcopy --change-section-address .data=0x2F040000 \
-		--rename-section .data=.text,alloc,load,readonly,code,contents \
-		--set-start 0x2F040000 "$$work/spl1.elf" "$$work/spl_wrapped.elf"; \
-	bash -c "source $(IDF_EXPORT) >/dev/null && esptool --chip esp32s31 elf2image \
-		--flash-mode dio --flash-freq 80m --flash-size 16MB \
-		--output $(SPL_APP_BIN) $$work/spl_wrapped.elf"
-	python3 $(ROOT)/tools/checks/layout.py --image-slot SPL "$(SPL_APP_BIN)"
+	sh "$(ROOT)/tools/build/wrap_esp_spl.sh" "$(ESPTOOL)" "$(CROSS_COMPILE)objcopy" \
+		esp32s31 0x2f040000 dio 80m "$(UBOOT_SPL_DTB)" "$$work/spl_app.bin"; \
+	python3 $(ROOT)/tools/checks/layout.py --image-slot SPL "$$work/spl_app.bin"; \
+	mv "$$work/spl_app.bin" "$(SPL_APP_BIN)"

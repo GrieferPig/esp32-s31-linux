@@ -14,7 +14,8 @@ KERNEL_FRAGMENTS := $(ROOT)/configs/kernel/common.config $(ROOT)/configs/kernel/
 ifeq ($(DEBUG),1)
 KERNEL_FRAGMENTS += $(ROOT)/configs/kernel/debug.config
 endif
-OUT_ROOT ?= $(ROOT)/out
+TARGET ?= esp32s31
+OUT_ROOT ?= $(ROOT)/$(if $(filter esp32p4,$(TARGET)),out-p4,out)
 BUILD_DIR := $(abspath $(OUT_ROOT))
 CACHE_DIR ?= $(ROOT)/cache
 IMAGES_DIR := $(BUILD_DIR)/images
@@ -72,6 +73,7 @@ LINUX_CMDLINE ?= earlycon=esp32s31uart,mmio,0x2038a000,115200 console=ttyS0,1152
 
 HOST_PYTHON ?= $(shell command -v python3)
 UBOOT_PYTHONPATH ?=
+ESPTOOL ?= esptool
 
 # Stable timestamps prevent unconditional native version-object rebuilds.
 SOURCE_DATE_EPOCH ?= $(shell git -C $(ROOT) log -1 --format=%ct)
