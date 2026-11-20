@@ -7,12 +7,13 @@
   },
   "linux": {
     "repository": "GrieferPig/linux-esp32-s31",
-    "commit": "a6b021769b858b19f1aa5316d28f5acf7eb49fda",
+    "commit": "41f01f687faae881f7812170279519dd041b99d1",
     "config_fragment": "esp32p4_native_peripherals.config",
     "default_dtb": "espressif/esp32p4-hardware.dtb",
     "opt_in_dtbs": [
       "espressif/esp32p4-waveshare-native-peripherals.dtb",
-      "espressif/esp32p4-waveshare-native-peripherals-spi.dtb"
+      "espressif/esp32p4-waveshare-native-peripherals-spi.dtb",
+      "espressif/esp32p4-waveshare-touch-display-2.dtb"
     ],
     "initramfs_sha256": "36292013b7ce70f890726422b9f823860be32fcc211a725e04fdb3b47b8aabe4"
   },
@@ -22,7 +23,7 @@
     "variants": {
       "native-512": "d85d284be5dc6f680a439264650bd8366ac65ce2",
       "cache-spread": "7ea92fd657ad6531a11baf86432f879dfc287a37",
-      "cached-only": "c123bd0ddaaf5b6532c065f63014e487843b4cd1",
+      "cached-only": "6b52aff57e836da72d9e56cb7b902722a07d3ad7",
       "cached-only-upstream": "63524e325713a969bedf88cc37734286828de86e",
       "wb-drain-diagnostic": "022864e92581d5174c026fc53bf57157a617e300"
     }
