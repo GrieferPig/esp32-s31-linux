@@ -2,6 +2,7 @@
 P4_CROSS_COMPILE ?= riscv32-esp-elf-
 P4_FLASH_MODE ?= dio
 P4_FLASH_FREQ ?= 40m
+P4_LINUX_COMPRESSION ?= auto
 P4_PSRAM_MHZ ?= 80
 ifeq ($(P4_PSRAM_MHZ),200)
 P4_SPL_FRAGMENT := --fragment "$(ROOT)/configs/uboot-p4-psram200.config"
@@ -15,7 +16,7 @@ P4_PROPER_OUT := $(UBOOT_OUT)/proper
 .PHONY: help uboot bootloader p4-fit p4-fit-inputs p4-uboot-compiler-check
 help:
 	@printf '%s\n' 'ESP32-P4 rev1.3: make uboot TARGET=esp32p4 [P4_CROSS_COMPILE=...] [ESPTOOL=...]' \
-		'Package with an existing P4 kernel: make p4-fit TARGET=esp32p4 P4_LINUX_IMAGE=... P4_LINUX_DTB=...' \
+		'Package with an existing P4 kernel: make p4-fit TARGET=esp32p4 P4_LINUX_IMAGE=... P4_LINUX_DTB=... [P4_LINUX_COMPRESSION=auto|none|gzip]' \
 		'Build Linux and the P4 Buildroot initramfs: make p4-linux TARGET=esp32p4' \
 		'Build a P4 NOMMU initramfs: make p4-rootfs TARGET=esp32p4'
 bootloader: uboot
@@ -52,6 +53,7 @@ p4-fit-inputs:
 
 p4-fit: p4-fit-inputs uboot
 	python3 "$(UBOOT_DIR)/board/espressif/esp32p4/tools/pack-fit.py" --mkimage "$(P4_PROPER_OUT)/tools/mkimage" \
+		--linux-compression "$(P4_LINUX_COMPRESSION)" \
 		"$(IMAGES_DIR)/spl-p4-$(P4_PSRAM_MHZ).bin" "$(IMAGES_DIR)/uboot-p4.bin" \
 		"$(P4_LINUX_IMAGE)" "$(P4_LINUX_DTB)" "$(IMAGES_DIR)/fit-$(P4_PSRAM_MHZ)"
 
