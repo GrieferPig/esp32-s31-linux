@@ -22,7 +22,7 @@
     "variants": {
       "native-512": "d85d284be5dc6f680a439264650bd8366ac65ce2",
       "cache-spread": "7ea92fd657ad6531a11baf86432f879dfc287a37",
-      "cached-only": "300401a4f244a3773459f97482ef0786b927ec57",
+      "cached-only": "c123bd0ddaaf5b6532c065f63014e487843b4cd1",
       "cached-only-upstream": "63524e325713a969bedf88cc37734286828de86e",
       "wb-drain-diagnostic": "022864e92581d5174c026fc53bf57157a617e300"
     }
