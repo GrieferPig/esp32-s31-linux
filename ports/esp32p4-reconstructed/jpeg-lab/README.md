@@ -26,6 +26,9 @@ ppa=/sys/bus/platform/drivers/esp32p4-ppa
 dma=/sys/bus/platform/drivers/esp-dma2d
 ppa_dev=50087000.pixel-processor
 dma_dev=50088000.dma-controller
+jpeg=/sys/bus/platform/drivers/esp32p4-jpeg
+jpeg_dev=50086000.jpeg
+had_jpeg=0
 
 restore() {
     if ! test -L "$dma/$dma_dev"; then
@@ -34,8 +37,15 @@ restore() {
     if ! test -L "$ppa/$ppa_dev"; then
         echo "$ppa_dev" >"$ppa/bind"
     fi
+    if test "$had_jpeg" = 1 && ! test -L "$jpeg/$jpeg_dev"; then
+        echo "$jpeg_dev" >"$jpeg/bind"
+    fi
 }
 trap restore EXIT
+if test -L "$jpeg/$jpeg_dev"; then
+    had_jpeg=1
+    echo "$jpeg_dev" >"$jpeg/unbind"
+fi
 echo "$ppa_dev" >"$ppa/unbind"
 echo "$dma_dev" >"$dma/unbind"
 for pair in 0 1; do
@@ -56,3 +66,32 @@ ESP-IDF’s `jpeg_ll_dht_dc0_write_codeword()` and
 `jpeg_ll_dht_ac0_write_codeword()`. The per-length count failed the board test. Chapter 6 defines 2D-DMA descriptor
 mode. Keep `DSCR_PORT_EN` clear for JPEG so the DMA engines read the linked
 descriptors.
+
+## V4L2 decoder test
+
+The default kernel registers `esp32p4-jpeg` as a single-planar V4L2
+memory-to-memory device. Select JPEG on the OUTPUT queue and GREY on
+CAPTURE. Request matching dimensions before allocating MMAP buffers.
+This implementation expects a baseline grayscale stream with included
+Huffman and quantization tables and width and height aligned to eight.
+
+Build the userspace test with the Buildroot NOMMU compiler after building
+the default image.
+
+```sh
+test_dir="$PWD/ports/esp32p4-reconstructed/jpeg-lab/v4l2"
+out_dir="$PWD/out-p4/reports/jpeg-v4l2"
+mkdir -p "$out_dir"
+python3 "$test_dir/frames.py" >"$out_dir/frames.h"
+out-p4/buildroot/host/bin/riscv32-linux-gcc -Os -Wall -Wextra \
+    -D_FILE_OFFSET_BITS=64 -fPIC -static -fno-unwind-tables \
+    -fno-asynchronous-unwind-tables '-Wl,-elf2flt=-r -s16384' \
+    -I "$out_dir" "$test_dir/test.c" -o "$out_dir/p4-jpeg-v4l2-test"
+```
+
+Copy the test binary to the board. Find the node under
+`/sys/class/video4linux` whose `name` is `esp32p4-jpeg`. Run
+`/run/p4-jpeg-v4l2-test /dev/videoN` with that node. Leave both JPEG and PPA
+bound. Expected output includes four exact grayscale comparisons up to
+1024×1024, and one expected error buffer followed by a valid frame on the
+same queue. The optional `stress` argument repeats the valid transfers.
