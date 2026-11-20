@@ -7,7 +7,7 @@
   },
   "linux": {
     "repository": "GrieferPig/linux-esp32-s31",
-    "commit": "62bc3bfb88e61940170757e126dbe2f7cf32a12e",
+    "commit": "01c959ccd476c8a8fca99d83dda540397a2a7c37",
     "config_fragment": "esp32p4_native_peripherals.config",
     "default_dtb": "espressif/esp32p4-hardware.dtb",
     "opt_in_dtbs": [
@@ -15,7 +15,7 @@
       "espressif/esp32p4-waveshare-native-peripherals-spi.dtb",
       "espressif/esp32p4-waveshare-touch-display-2.dtb"
     ],
-    "initramfs_sha256": "5ae7b25a08f73fa49ae0159c62a2223d5a265904d201a404fdb5206b9dcd328b"
+    "initramfs_sha256": "985477b9df3d9008530f72123136a14151598a721579573caded4c8a53cd87f2"
   },
   "uboot": {
     "repository": "GrieferPig/u-boot-esp32-s31",
