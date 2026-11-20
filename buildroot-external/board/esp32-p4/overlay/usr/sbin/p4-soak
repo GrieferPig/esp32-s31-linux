@@ -1,0 +1,59 @@
+#!/bin/sh
+
+# Repeatable on-target stress runner for ESP32-P4 NOMMU userspace.  Keep this
+# deliberately Hush-basic: a single shell image avoids fragmented-allocation
+# failures while CoreMark itself continuously runs its two pthread contexts.
+
+duration="${1:-3600}"
+status=/tmp/p4-soak.status
+log=/tmp/p4-soak.log
+start=$(cut -d. -f1 /proc/uptime)
+end=$((start + duration))
+last_mtd_rw=$start
+cpu=0
+flash=0
+mtd_rw=0
+sys=0
+
+fail()
+{
+	printf 'FAIL cpu=%s flash=%s mtd_rw=%s sys=%s\n' \
+		"$cpu" "$flash" "$mtd_rw" "$sys" >"$status"
+	exit 1
+}
+
+printf 'RUNNING start=%s duration=%s\n' "$start" "$duration" >"$status"
+printf 'p4-soak: start duration=%s s\n' "$duration" >"$log"
+
+while :; do
+	now=$(cut -d. -f1 /proc/uptime) || fail
+	[ "$now" -lt "$end" ] || break
+
+	# This Buildroot CoreMark is compiled with MULTITHREAD=2 and USE_PTHREAD=1.
+	/usr/bin/coremark 0x0 0x0 0x66 0 7 2 >/tmp/p4-soak-coremark.out 2>&1 || fail
+	cpu=$((cpu + 1))
+
+	dd if=/dev/mtd0 of=/dev/null bs=64k count=16 2>/tmp/p4-soak-mtd.err || fail
+	dd if=/dev/zero bs=64k count=16 2>/dev/null | sha256sum >/tmp/p4-soak-sha.out || fail
+	flash=$((flash + 1))
+
+	# This alters only the spare partition and verifies restoration.  Limit
+	# erase/program cycles to one every 20 seconds.
+	if [ $((now - last_mtd_rw)) -ge 20 ]; then
+		/usr/sbin/esp-periph-test mtd-rw >/tmp/p4-soak-mtd-rw.out 2>&1 || fail
+		last_mtd_rw=$now
+		mtd_rw=$((mtd_rw + 1))
+	fi
+
+	cat /proc/interrupts /proc/buddyinfo /proc/meminfo >/tmp/p4-soak-sys.out || fail
+	[ -d /sys/bus/usb/devices ] && ls /sys/bus/usb/devices >/tmp/p4-soak-usb.out 2>/dev/null
+	dmesg | tail -n 80 >/tmp/p4-soak-dmesg.out || fail
+	sys=$((sys + 1))
+
+	printf 'RUNNING cpu=%s flash=%s mtd_rw=%s sys=%s\n' \
+		"$cpu" "$flash" "$mtd_rw" "$sys" >"$status"
+done
+
+printf 'PASS cpu=%s flash=%s mtd_rw=%s sys=%s\n' \
+	"$cpu" "$flash" "$mtd_rw" "$sys" >"$status"
+exit 0

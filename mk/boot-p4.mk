@@ -15,7 +15,8 @@ P4_PROPER_OUT := $(UBOOT_OUT)/proper
 .PHONY: help uboot bootloader p4-fit p4-fit-inputs p4-uboot-compiler-check
 help:
 	@printf '%s\n' 'ESP32-P4 rev1.3: make uboot TARGET=esp32p4 [P4_CROSS_COMPILE=...] [ESPTOOL=...]' \
-		'Package with an existing P4 kernel: make p4-fit TARGET=esp32p4 P4_LINUX_IMAGE=... P4_LINUX_DTB=...'
+		'Package with an existing P4 kernel: make p4-fit TARGET=esp32p4 P4_LINUX_IMAGE=... P4_LINUX_DTB=...' \
+		'Build a P4 NOMMU initramfs: make p4-rootfs TARGET=esp32p4'
 bootloader: uboot
 p4-uboot-compiler-check:
 	@command -v "$(P4_CROSS_COMPILE)gcc" >/dev/null || { echo "ERROR: missing $(P4_CROSS_COMPILE)gcc; set P4_CROSS_COMPILE" >&2; exit 1; }
@@ -52,3 +53,19 @@ p4-fit: p4-fit-inputs uboot
 	python3 "$(UBOOT_DIR)/board/espressif/esp32p4/tools/pack-fit.py" --mkimage "$(P4_PROPER_OUT)/tools/mkimage" \
 		"$(IMAGES_DIR)/spl-p4-$(P4_PSRAM_MHZ).bin" "$(IMAGES_DIR)/uboot-p4.bin" \
 		"$(P4_LINUX_IMAGE)" "$(P4_LINUX_DTB)" "$(IMAGES_DIR)/fit-$(P4_PSRAM_MHZ)"
+
+# Board-specific Buildroot output. Keep the S31 rootfs rules independent.
+P4_COREMARK_CC ?=
+P4_BUILDROOT_MAKE = $(MAKE) -C "$(BUILDROOT_DIR)" O="$(BUILDROOT_OUT)" \
+	BR2_EXTERNAL="$(BUILDROOT_EXTERNAL)" BR2_DL_DIR="$(BUILDROOT_DL_DIR)" BR2_JLEVEL="$(JOBS)"
+
+.PHONY: rootfs p4-rootfs p4-rootfs-config
+rootfs: p4-rootfs
+
+p4-rootfs-config:
+	$(P4_BUILDROOT_MAKE) esp32p4_rootfs_defconfig
+
+p4-rootfs: p4-rootfs-config
+	$(P4_BUILDROOT_MAKE) COREMARK_COMPUTE_CC="$(P4_COREMARK_CC)"
+	@mkdir -p "$(IMAGES_DIR)"
+	cp "$(BUILDROOT_OUT)/images/rootfs.cpio" "$(IMAGES_DIR)/rootfs-p4.cpio"

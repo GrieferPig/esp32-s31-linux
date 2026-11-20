@@ -1,0 +1,197 @@
+CONFIG_INSMOD=y
+# Required for esp-hosted-ng's clockspeed, resetpin and ota_file module
+# parameters.  Without it BusyBox silently loads the module with defaults.
+CONFIG_FEATURE_CMDLINE_MODULE_OPTIONS=y
+CONFIG_LSMOD=y
+CONFIG_RMMOD=y
+
+# ESP32-P4 NOMMU processes need one physically contiguous allocation for the
+# whole FLAT image, including BSS and the configured stack.  Keep that runtime
+# footprint below the 512 KiB buddy order so networking applets can still start
+# after the SDIO/WLAN stack has fragmented memory.  These heavyweight applets
+# are not needed by the bring-up rootfs; nc/ip and hexdump cover the removed
+# network and hex utilities, while sha256sum remains available for integrity
+# checks.
+# CONFIG_ZCAT is not set
+# CONFIG_BZCAT is not set
+# CONFIG_LZCAT is not set
+# CONFIG_XZCAT is not set
+# CONFIG_FEATURE_BZIP2_DECOMPRESS is not set
+# CONFIG_FEATURE_GZIP_DECOMPRESS is not set
+# CONFIG_UNLZOP is not set
+# CONFIG_LZOPCAT is not set
+# CONFIG_BC is not set
+# CONFIG_FEATURE_DC_BIG is not set
+# CONFIG_FEATURE_BC_INTERACTIVE is not set
+# CONFIG_FEATURE_BC_LONG_OPTIONS is not set
+# CONFIG_MKE2FS is not set
+# CONFIG_MKDOSFS is not set
+# CONFIG_HEXEDIT is not set
+# CONFIG_SETPRIV is not set
+# CONFIG_FEATURE_SETPRIV_DUMP is not set
+# CONFIG_FEATURE_SETPRIV_CAPABILITIES is not set
+# CONFIG_FEATURE_SETPRIV_CAPABILITY_NAMES is not set
+# CONFIG_SETSERIAL is not set
+# CONFIG_SVC is not set
+# CONFIG_SVOK is not set
+# CONFIG_SSL_SERVER is not set
+# CONFIG_TLS is not set
+# CONFIG_TELNET is not set
+# CONFIG_XXD is not set
+# CONFIG_TSORT is not set
+# CONFIG_SHA3SUM is not set
+# CONFIG_SHA384SUM is not set
+# CONFIG_SHA512SUM is not set
+# CONFIG_WGET is not set
+# CONFIG_NETSTAT is not set
+
+# A login shell, wpa_supplicant and an interactive test shell can coexist on
+# NOMMU only if each BusyBox FLAT image stays well below the 512 KiB buddy
+# allocation.  Retain the small bring-up command set, but remove utilities and
+# interactive-shell features which are not used by the P4 rootfs or tests.
+# CONFIG_FEATURE_EDITING is not set
+# CONFIG_FEATURE_EDITING_VI is not set
+# CONFIG_FEATURE_EDITING_SAVEHISTORY is not set
+# CONFIG_FEATURE_EDITING_SAVE_ON_EXIT is not set
+# CONFIG_FEATURE_REVERSE_SEARCH is not set
+# CONFIG_FEATURE_TAB_COMPLETION is not set
+# CONFIG_FEATURE_EDITING_FANCY_PROMPT is not set
+# CONFIG_FEATURE_EDITING_WINCH is not set
+# CONFIG_FEATURE_CATN is not set
+# CONFIG_FEATURE_CATV is not set
+# CONFIG_CKSUM is not set
+# CONFIG_CRC32 is not set
+# CONFIG_FEATURE_CUT_REGEX is not set
+# CONFIG_DATE is not set
+# CONFIG_FEATURE_DATE_ISOFMT is not set
+# CONFIG_FEATURE_DATE_COMPAT is not set
+# CONFIG_DF is not set
+# CONFIG_DOS2UNIX is not set
+# CONFIG_UNIX2DOS is not set
+# CONFIG_DU is not set
+# CONFIG_EXPR is not set
+# CONFIG_EXPR_MATH_SUPPORT_64 is not set
+# CONFIG_FACTOR is not set
+# CONFIG_FOLD is not set
+# CONFIG_HOSTID is not set
+# CONFIG_INSTALL is not set
+# CONFIG_FEATURE_INSTALL_LONG_OPTIONS is not set
+# CONFIG_FEATURE_LS_FILETYPES is not set
+# CONFIG_FEATURE_LS_FOLLOWLINKS is not set
+# CONFIG_FEATURE_LS_RECURSIVE is not set
+# CONFIG_FEATURE_LS_WIDTH is not set
+# CONFIG_FEATURE_LS_SORTFILES is not set
+# CONFIG_FEATURE_LS_TIMESTAMPS is not set
+# CONFIG_FEATURE_LS_USERNAME is not set
+# CONFIG_FEATURE_LS_COLOR is not set
+# CONFIG_FEATURE_LS_COLOR_IS_DEFAULT is not set
+# CONFIG_MD5SUM is not set
+# CONFIG_SHA1SUM is not set
+# CONFIG_FEATURE_MD5_SHA1_SUM_CHECK is not set
+# CONFIG_MKFIFO is not set
+# CONFIG_NICE is not set
+# CONFIG_NL is not set
+# CONFIG_NOHUP is not set
+# CONFIG_NPROC is not set
+# CONFIG_OD is not set
+# CONFIG_PASTE is not set
+# CONFIG_PRINTENV is not set
+# CONFIG_REALPATH is not set
+# CONFIG_SEQ is not set
+# CONFIG_SHRED is not set
+# CONFIG_FEATURE_FANCY_SLEEP is not set
+# CONFIG_FEATURE_SORT_BIG is not set
+# CONFIG_STTY is not set
+# CONFIG_FEATURE_FANCY_TAIL is not set
+# CONFIG_TEE is not set
+# CONFIG_FEATURE_TEE_USE_BLOCK_IO is not set
+# CONFIG_FEATURE_TEST_64 is not set
+# CONFIG_FEATURE_TOUCH_SUSV3 is not set
+# CONFIG_FEATURE_TR_CLASSES is not set
+# CONFIG_FEATURE_TR_EQUIV is not set
+# CONFIG_TRUNCATE is not set
+# CONFIG_UUDECODE is not set
+# CONFIG_BASE32 is not set
+# CONFIG_UUENCODE is not set
+# CONFIG_W is not set
+# CONFIG_WHO is not set
+# CONFIG_WHOAMI is not set
+# CONFIG_RUN_PARTS is not set
+# CONFIG_FEATURE_RUN_PARTS_LONG_OPTIONS is not set
+# CONFIG_FEATURE_RUN_PARTS_FANCY is not set
+# CONFIG_START_STOP_DAEMON is not set
+# CONFIG_FEATURE_START_STOP_DAEMON_LONG_OPTIONS is not set
+# CONFIG_FEATURE_START_STOP_DAEMON_FANCY is not set
+# CONFIG_EGREP is not set
+# CONFIG_FGREP is not set
+# CONFIG_FEATURE_GREP_CONTEXT is not set
+# CONFIG_FEATURE_XARGS_SUPPORT_QUOTES is not set
+# CONFIG_FEATURE_XARGS_SUPPORT_TERMOPT is not set
+# CONFIG_FEATURE_XARGS_SUPPORT_ZERO_TERM is not set
+# CONFIG_FEATURE_XARGS_SUPPORT_REPL_STR is not set
+# CONFIG_FEATURE_XARGS_SUPPORT_PARALLEL is not set
+# CONFIG_FEATURE_XARGS_SUPPORT_ARGS_FILE is not set
+# CONFIG_ADDUSER is not set
+# CONFIG_PASSWD is not set
+# CONFIG_FEATURE_PASSWD_WEAK_CHECK is not set
+# CONFIG_FALLOCATE is not set
+# CONFIG_FREERAMDISK is not set
+# CONFIG_FSFREEZE is not set
+# CONFIG_GETOPT is not set
+# CONFIG_FEATURE_GETOPT_LONG is not set
+# CONFIG_LSBLK is not set
+# CONFIG_MESG is not set
+# CONFIG_FEATURE_MESG_ENABLE_ONLY_GROUP is not set
+# CONFIG_MORE is not set
+# CONFIG_FEATURE_MOUNT_CIFS is not set
+# CONFIG_FEATURE_MOUNT_LOOP is not set
+# CONFIG_FEATURE_MOUNT_LOOP_CREATE is not set
+# CONFIG_UUIDGEN is not set
+# CONFIG_ASCII is not set
+# CONFIG_GETFATTR is not set
+# CONFIG_I2CTRANSFER is not set
+# CONFIG_LSSCSI is not set
+# CONFIG_MIM is not set
+# CONFIG_PARTPROBE is not set
+# CONFIG_SEEDRNG is not set
+# CONFIG_SETFATTR is not set
+# CONFIG_TREE is not set
+# CONFIG_TS is not set
+# CONFIG_FEATURE_HWIB is not set
+# CONFIG_DNSDOMAINNAME is not set
+# CONFIG_IFCONFIG is not set
+# CONFIG_FEATURE_IFCONFIG_STATUS is not set
+# CONFIG_FEATURE_IFCONFIG_HW is not set
+# CONFIG_FEATURE_IFCONFIG_BROADCAST_PLUS is not set
+# CONFIG_IFUP is not set
+# CONFIG_IFDOWN is not set
+# CONFIG_FEATURE_IFUPDOWN_IP is not set
+# CONFIG_FEATURE_IFUPDOWN_IPV4 is not set
+# CONFIG_FEATURE_IFUPDOWN_EXTERNAL_DHCP is not set
+# CONFIG_FEATURE_IP_LINK_CAN is not set
+# CONFIG_NC_SERVER is not set
+# CONFIG_KILLALL5 is not set
+# CONFIG_FEATURE_PS_WIDE is not set
+# CONFIG_FEATURE_PS_LONG is not set
+# CONFIG_VMSTAT is not set
+# CONFIG_HUSH_BASH_COMPAT is not set
+# CONFIG_HUSH_BRACE_EXPANSION is not set
+# CONFIG_HUSH_LINENO_VAR is not set
+# CONFIG_HUSH_SAVEHISTORY is not set
+# CONFIG_HUSH_ALIAS is not set
+# CONFIG_HUSH_FUNCTION_KEYWORD is not set
+# CONFIG_HUSH_LOCAL is not set
+# CONFIG_HUSH_RANDOM_SUPPORT is not set
+# CONFIG_HUSH_MODE_X is not set
+# CONFIG_HUSH_HELP is not set
+# CONFIG_HUSH_READONLY is not set
+# CONFIG_HUSH_KILL is not set
+# CONFIG_HUSH_TRAP is not set
+# CONFIG_HUSH_TYPE is not set
+# CONFIG_HUSH_TIMES is not set
+# CONFIG_HUSH_ULIMIT is not set
+# CONFIG_HUSH_UMASK is not set
+# CONFIG_HUSH_GETOPTS is not set
+# CONFIG_FEATURE_SH_MATH_64 is not set
+# CONFIG_FEATURE_SH_MATH_BASE is not set
+# CONFIG_FEATURE_SH_EMBEDDED_SCRIPTS is not set

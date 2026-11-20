@@ -1,0 +1,6 @@
+config BR2_PACKAGE_ESP_PERIPH_TEST
+	bool "esp-periph-test"
+	help
+	  Build a non-destructive userspace test for Espressif eFuse
+	  NVMEM, hardware RNG, and timer-group watchdog drivers. It does
+	  not print raw eFuse data and uses watchdog magic-close.

@@ -5,3 +5,9 @@ source "$BR2_EXTERNAL_ESP32_S31_PATH/package/s31-tools/Config.in"
 source "$BR2_EXTERNAL_ESP32_S31_PATH/package/btstack-s31/Config.in"
 
 endmenu
+
+menu "ESP32-P4 packages"
+
+source "$BR2_EXTERNAL_ESP32_S31_PATH/package/esp-periph-test/Config.in"
+
+endmenu
