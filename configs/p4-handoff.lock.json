@@ -7,7 +7,7 @@
   },
   "linux": {
     "repository": "GrieferPig/linux-esp32-s31",
-    "commit": "41f01f687faae881f7812170279519dd041b99d1",
+    "commit": "76455c0e2548c608b091a77e9da533617e4a5b60",
     "config_fragment": "esp32p4_native_peripherals.config",
     "default_dtb": "espressif/esp32p4-hardware.dtb",
     "opt_in_dtbs": [
@@ -23,7 +23,7 @@
     "variants": {
       "native-512": "d85d284be5dc6f680a439264650bd8366ac65ce2",
       "cache-spread": "7ea92fd657ad6531a11baf86432f879dfc287a37",
-      "cached-only": "6b52aff57e836da72d9e56cb7b902722a07d3ad7",
+      "cached-only": "cf22a34d371d5f069f67a590d664c2b68f155d7f",
       "cached-only-upstream": "63524e325713a969bedf88cc37734286828de86e",
       "wb-drain-diagnostic": "022864e92581d5174c026fc53bf57157a617e300"
     }
