@@ -43,6 +43,9 @@ It writes the ROM-loadable `spl-p4-80.bin` and `uboot-p4.bin` to
 initramfs) and matching DTB, use
 `make p4-fit TARGET=esp32p4 P4_LINUX_IMAGE=... P4_LINUX_DTB=...`.
 Neither target flashes a device.
+The native P4 SPL selects 512 KiB of shared L2 with 128-byte lines. The SPL
+and U-Boot proper fit in low SRAM; the runtime heap, stack and working DTB
+use trained PSRAM. The P4 target is qualified in esp-emulator, not on hardware.
 `P4_PSRAM_MHZ=200` selects the experimental high-speed PSRAM build.
 The ROM flash mode and clock default to DIO/40 MHz and are independent of the
 PSRAM profile (`P4_FLASH_MODE` and `P4_FLASH_FREQ`).
