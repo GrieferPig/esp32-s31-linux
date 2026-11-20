@@ -80,6 +80,7 @@ P4_HOSTED_PATCH := $(BUILDROOT_EXTERNAL)/board/esp32-p4/esp-hosted/0001-sdio-irq
 P4_HOSTED_OVERLAY := $(STAGING_DIR)/esp-hosted
 P4_BASE_INITRAMFS := $(IMAGES_DIR)/rootfs-p4.cpio
 P4_HOSTED_INITRAMFS := $(IMAGES_DIR)/rootfs-p4-hosted.cpio
+P4_PULSE_MODULES := rc-core.ko ir-esp32p4-rmt.ko
 P4_BOARD_DTB := esp32p4-waveshare-touch-display-2.dtb
 P4_LINUX_IMAGE ?= $(IMAGES_DIR)/Image-p4
 P4_LINUX_DTB ?= $(IMAGES_DIR)/$(P4_BOARD_DTB)
@@ -112,6 +113,10 @@ p4-linux: p4-uboot-compiler-check p4-rootfs $(P4_HOSTED_SOURCE)/.prepared | $(LI
 	$(P4_LINUX_MAKE) M="$(P4_HOSTED_SOURCE)" target=sdio modules
 	mkdir -p "$(P4_HOSTED_OVERLAY)/lib/modules"
 	"$(P4_CROSS_COMPILE)strip" --strip-debug -o "$(P4_HOSTED_OVERLAY)/lib/modules/esp32_sdio.ko" "$(P4_HOSTED_SOURCE)/esp32_sdio.ko"
+	@set -eu; for m in $(P4_PULSE_MODULES); do \
+		"$(P4_CROSS_COMPILE)strip" --strip-debug -o "$(P4_HOSTED_OVERLAY)/lib/modules/$$m" \
+			"$(LINUX_OUT)/drivers/media/rc/$$m"; \
+	done
 	cd "$(P4_HOSTED_OVERLAY)" && find . -print0 | LC_ALL=C sort -z | cpio --null --quiet --reproducible -o --format=newc --owner=0:0 > "$(IMAGES_DIR)/p4-hosted-overlay.cpio"
 	cat "$(P4_BASE_INITRAMFS)" "$(IMAGES_DIR)/p4-hosted-overlay.cpio" > "$(P4_HOSTED_INITRAMFS)"
 	$(P4_LINUX_CONFIG) --set-str INITRAMFS_SOURCE "$(P4_HOSTED_INITRAMFS)"
