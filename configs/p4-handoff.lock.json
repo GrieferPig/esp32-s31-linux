@@ -7,7 +7,7 @@
   },
   "linux": {
     "repository": "GrieferPig/linux-esp32-s31",
-    "commit": "f5c4033ad1361543089ab774d009b11d08d2432c",
+    "commit": "970f2265fe7d7bd7afe6fd41d6736c4fd97f974c",
     "config_fragment": "esp32p4_native_peripherals.config",
     "default_dtb": "espressif/esp32p4-hardware.dtb",
     "opt_in_dtbs": [
