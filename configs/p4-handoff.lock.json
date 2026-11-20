@@ -1,0 +1,39 @@
+{
+  "target": "esp32p4",
+  "board": "ESP32-P4 rev1.3",
+  "top_level": {
+    "repository": "GrieferPig/esp32-s31-linux",
+    "handoff_base": "b3db46555fdf7986d7f3768091908a80ce09dc31"
+  },
+  "linux": {
+    "repository": "GrieferPig/linux-esp32-s31",
+    "commit": "a6b021769b858b19f1aa5316d28f5acf7eb49fda",
+    "config_fragment": "esp32p4_native_peripherals.config",
+    "default_dtb": "espressif/esp32p4-hardware.dtb",
+    "opt_in_dtbs": [
+      "espressif/esp32p4-waveshare-native-peripherals.dtb",
+      "espressif/esp32p4-waveshare-native-peripherals-spi.dtb"
+    ],
+    "initramfs_sha256": "36292013b7ce70f890726422b9f823860be32fcc211a725e04fdb3b47b8aabe4"
+  },
+  "uboot": {
+    "repository": "GrieferPig/u-boot-esp32-s31",
+    "default": "native-512",
+    "variants": {
+      "native-512": "d85d284be5dc6f680a439264650bd8366ac65ce2",
+      "cache-spread": "7ea92fd657ad6531a11baf86432f879dfc287a37",
+      "cached-only": "63524e325713a969bedf88cc37734286828de86e"
+    }
+  },
+  "toolchain_source": {
+    "repository": "GrieferPig/crosstool-NG-s31",
+    "commit": "b8161f7218c3b90594db621e763a2100790db8ea",
+    "role": "Independent SDK source"
+  },
+  "boot_build": {
+    "compiler": "Espressif GCC 16.1.0_20260609",
+    "make_target": "p4-fit",
+    "spi_nor": "DIO/40 MHz",
+    "psram_mhz": 80
+  }
+}
