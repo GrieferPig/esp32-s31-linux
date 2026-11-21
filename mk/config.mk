@@ -63,6 +63,7 @@ ROOTFS_IMG := $(IMAGES_DIR)/rootfs.sqfs
 RADIO_IMAGE := $(IMAGES_DIR)/radio.bin
 PERSIST_IMG := $(IMAGES_DIR)/persist.jffs2
 FDT_DTB := $(IMAGES_DIR)/esp32s31_generic.dtb
+S31_NATIVE_DTB := esp32s31_generic.dtb
 IDF_ROOT ?= $(HOME)/.espressif
 IDF_EXPORT ?= $(firstword $(wildcard $(IDF_PATH)/export.sh) $(wildcard $(IDF_ROOT)/master/esp-idf/export.sh))
 DEFCONFIG ?= esp32s31_defconfig
@@ -70,6 +71,20 @@ LINUX_TARGET ?= xipImage
 # Background device IRQs belong on CPU1. Radio installation pins its owned
 # mappings to CPU0 and prevents balancing before exposing their actions.
 LINUX_CMDLINE ?= earlycon=esp32s31uart,mmio,0x2038a000,115200 console=ttyS0,115200n8 rootfstype=squashfs ro init=/init irqaffinity=1 esp32s31_idle=wfi
+
+# The shield claims GPIOs also used by optional S31 peripherals.
+S31_I80_LCD ?= 0
+S31_I80_15MHZ ?= 0
+ifeq ($(TARGET):$(S31_I80_LCD),esp32s31:1)
+KERNEL_FRAGMENTS += $(ROOT)/configs/kernel/s31-i80-ili9341.config
+ROOTFS_FRAGMENTS += $(ROOT)/configs/rootfs/s31-i80-doom.config
+LINUX_CMDLINE := console=tty0 $(LINUX_CMDLINE)
+S31_NATIVE_DTB := esp32s31-i80-ili9341.dtb
+ifeq ($(S31_I80_15MHZ),1)
+KERNEL_FRAGMENTS += $(ROOT)/configs/kernel/s31-i80-15mhz.config
+S31_NATIVE_DTB := esp32s31-i80-15mhz.dtb
+endif
+endif
 
 HOST_PYTHON ?= $(shell command -v python3)
 UBOOT_PYTHONPATH ?=

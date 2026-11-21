@@ -12,7 +12,7 @@ linux: check-layout toolchain radio-linux-payload | $(LINUX_OUT) $(IMAGES_DIR) $
 		LOCALVERSION= KCFLAGS="-march=$(S31_KERNEL_ISA) $(S31_KERNEL_FLAGS)" \
 		$(S31_SIZE_OBJECT_FLAGS) -j$(JOBS) $(LINUX_TARGET) modules dtbs
 	cmp -s $(LINUX_OUT)/arch/riscv/boot/$(LINUX_TARGET) $(XIP_IMAGE) || cp $(LINUX_OUT)/arch/riscv/boot/$(LINUX_TARGET) $(XIP_IMAGE)
-	cmp -s $(LINUX_OUT)/arch/riscv/boot/dts/espressif/esp32s31_generic.dtb $(FDT_DTB) || cp $(LINUX_OUT)/arch/riscv/boot/dts/espressif/esp32s31_generic.dtb $(FDT_DTB)
+	cmp -s $(LINUX_OUT)/arch/riscv/boot/dts/espressif/$(S31_NATIVE_DTB) $(FDT_DTB) || cp $(LINUX_OUT)/arch/riscv/boot/dts/espressif/$(S31_NATIVE_DTB) $(FDT_DTB)
 	cmp -s $(LINUX_OUT)/.config $(REPORTS_DIR)/linux.config || cp $(LINUX_OUT)/.config $(REPORTS_DIR)/linux.config
 	python3 $(ROOT)/tools/checks/layout.py --image-slot KERNEL "$(XIP_IMAGE)"
 # Iteration target: identical recipe and outputs, but the vendor payload is
@@ -26,6 +26,6 @@ linux-incremental: check-layout toolchain radio-linux-payload-incremental | $(LI
 		LOCALVERSION= KCFLAGS="-march=$(S31_KERNEL_ISA) $(S31_KERNEL_FLAGS)" \
 		$(S31_SIZE_OBJECT_FLAGS) -j$(JOBS) $(LINUX_TARGET) modules dtbs
 	cmp -s $(LINUX_OUT)/arch/riscv/boot/$(LINUX_TARGET) $(XIP_IMAGE) || cp $(LINUX_OUT)/arch/riscv/boot/$(LINUX_TARGET) $(XIP_IMAGE)
-	cmp -s $(LINUX_OUT)/arch/riscv/boot/dts/espressif/esp32s31_generic.dtb $(FDT_DTB) || cp $(LINUX_OUT)/arch/riscv/boot/dts/espressif/esp32s31_generic.dtb $(FDT_DTB)
+	cmp -s $(LINUX_OUT)/arch/riscv/boot/dts/espressif/$(S31_NATIVE_DTB) $(FDT_DTB) || cp $(LINUX_OUT)/arch/riscv/boot/dts/espressif/$(S31_NATIVE_DTB) $(FDT_DTB)
 	cmp -s $(LINUX_OUT)/.config $(REPORTS_DIR)/linux.config || cp $(LINUX_OUT)/.config $(REPORTS_DIR)/linux.config
 	python3 $(ROOT)/tools/checks/layout.py --image-slot KERNEL "$(XIP_IMAGE)"

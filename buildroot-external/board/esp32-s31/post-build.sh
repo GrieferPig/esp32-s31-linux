@@ -240,6 +240,13 @@ chmod 0600 "${target_dir}/etc/wpa_supplicant.conf"
 script_dir="$(CDPATH= cd -- "$(dirname -- "$0")" && pwd)"
 project_dir="$(CDPATH= cd -- "${script_dir}/../../.." && pwd)"
 : "${S31_KERNEL_CONFIG:?Set S31_KERNEL_CONFIG to the build kernel configuration}"
+if grep -qx 'CONFIG_FB_ESP32S31_I80=y' "${S31_KERNEL_CONFIG}"; then
+	lcd_getty='tty1::respawn:/sbin/getty 38400 tty1 linux'
+	if ! grep -qxF "${lcd_getty}" "${target_dir}/etc/inittab"; then
+		printf '%s\n' "${lcd_getty}" >> "${target_dir}/etc/inittab"
+	fi
+fi
+
 : "${HOST_DIR:?Buildroot must provide HOST_DIR for timezone assets}"
 python3 "${project_dir}/tools/build_esp32_config_assets.py" \
 	--target-dir "$target_dir" \
@@ -259,10 +266,22 @@ for dtbo in "${dtbo_dir}"/esp32s31-overlay-*.dtbo; do
 	cp "${dtbo}" "${install_dir}/"
 done
 
-# Only the XIP radio module is installed in rootfs.
+if [ -n "${S31_I80_MODULES_DIR:-}" ]; then
+	mkdir -p "${target_dir}/lib/modules"
+	cp -a "${S31_I80_MODULES_DIR}/lib/modules/." "${target_dir}/lib/modules/"
+fi
+
+# Package the XIP radio module through its own loader path.
 find "${target_dir}/lib/modules" -type f \
 	\( -name 'esp32s31-radio*.ko' -o -name 'esp32s31-wifi.ko' -o \
 	   -name 'esp32s31-btdm.ko' \) -delete 2>/dev/null || true
+if [ -n "${S31_I80_MODULES_DIR:-}" ]; then
+	for module_dir in "${S31_I80_MODULES_DIR}"/lib/modules/*; do
+		[ -d "${module_dir}" ] || exit 1
+		rm -f "${target_dir}/lib/modules/${module_dir##*/}/build"
+		"${HOST_DIR}/sbin/depmod" -b "${target_dir}" "${module_dir##*/}"
+	done
+fi
 [ -f "${S31_RADIO_MODULE:-}" ] || { echo 'Missing XIP radio module' >&2; exit 1; }
 mkdir -p "${target_dir}/usr/lib/s31-radio"
 cp "${S31_RADIO_MODULE}" "${target_dir}/usr/lib/s31-radio/esp32s31-radio.ko"
