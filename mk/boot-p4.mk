@@ -5,7 +5,7 @@ P4_FLASH_FREQ ?= 40m
 # The 80 MHz profile can starve the Waveshare DSI scanout FIFO.
 P4_PSRAM_MHZ ?= 200
 ifeq ($(P4_PSRAM_MHZ),200)
-P4_SPL_FRAGMENT := --fragment "$(ROOT)/configs/uboot-p4-psram200.config"
+P4_SPL_FRAGMENT := --fragment "$(UBOOT_DIR)/board/espressif/esp32p4/psram200.config"
 else ifneq ($(P4_PSRAM_MHZ),80)
 $(error P4_PSRAM_MHZ must be 80 or 200)
 endif
