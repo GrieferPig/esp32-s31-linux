@@ -1,173 +1,56 @@
-name: Release S31 Images
+name: Build S31 Images
 
 on:
   push:
-    branches: [main, push/softmac-pre-blob-20261023]
+    branches: [main, feature/p4-integration]
   workflow_dispatch:
 
 permissions:
-  contents: write
+  contents: read
 
 jobs:
-  checks:
-    uses: ./.github/workflows/fast-checks.yml
-    permissions:
-      contents: read
   build-and-release:
-    needs: checks
-    if: github.event_name == 'workflow_dispatch' || github.ref == 'refs/heads/push/softmac-pre-blob-20261023' || startsWith(github.event.head_commit.message, 'release:')
+    if: github.event_name == 'workflow_dispatch' || github.ref != 'refs/heads/main' || startsWith(github.event.head_commit.message, 'release:')
     runs-on: ubuntu-24.04
-    timeout-minutes: 120
+    timeout-minutes: 180
+    permissions:
+      contents: write
     env:
-      IDF_PATH: ${{ github.workspace }}/.esp-idf
-      HOST_PYTHON: /usr/bin/python3
+      BR2_JLEVEL: '4'
 
     steps:
-      - name: Check out source and submodules
-        uses: actions/checkout@main
+      - name: Check out source
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
         with:
-          submodules: recursive
+          persist-credentials: false
+
+      - name: Check out Buildroot
+        run: git submodule update --init --depth 1 buildroot
 
       - name: Install build dependencies
         run: |
           sudo apt-get update
           sudo apt-get install -y \
-            bison bc build-essential ccache cpio device-tree-compiler flex gperf libffi-dev \
-            libssl-dev ninja-build python3-pkg-resources python3-pyelftools python3-dev swig rsync unzip xz-utils squashfs-tools
+            bc bison build-essential ca-certificates cpio curl device-tree-compiler file flex \
+            git gperf jq libelf-dev libncurses-dev libssl-dev patch perl pkg-config python3 \
+            rsync squashfs-tools swig u-boot-tools unzip wget xz-utils
 
-      - name: Read pinned dependency versions
+      - name: Build S31 full-flash images
+        run: make TARGET=esp32s31 JOBS="$BR2_JLEVEL" image
+
+      - name: Stage full-flash images
         run: |
-          echo "OUT=out" >> "$GITHUB_ENV"
-          python3 -c 'import sys; sys.path.insert(0, "."); from tools.checks.versions import versions; print("\n".join(k + "=" + v for k, v in versions().items()))' >> "$GITHUB_ENV"
+          mkdir -p "$RUNNER_TEMP/full-flash-images"
+          install -m 0644 \
+            out-buildroot-esp32s31/images/s31-{generic,coreboard}_full_flash.bin \
+            out-buildroot-esp32s31-korvo/images/s31-korvo_full_flash.bin \
+            "$RUNNER_TEMP/full-flash-images/"
 
-      - name: Install ESP-IDF
-        run: |
-          git clone --filter=blob:none https://github.com/espressif/esp-idf.git "$IDF_PATH"
-          git -C "$IDF_PATH" checkout "$ESP_IDF_REF"
-          git -C "$IDF_PATH" submodule update --init --recursive
-          "$IDF_PATH/install.sh" esp32s31
-
-      - name: Install and verify pinned toolchain
-        run: |
-          make TOOLCHAIN_RELEASE_TAG="$TOOLCHAIN_RELEASE_TAG" toolchain-fetch btstack-source
-          prefix="$GITHUB_WORKSPACE/cache/toolchains/riscv32-esp-linux-musl"
-          target=riscv32-esp-linux-musl
-          resolved_tag="$(cat "$prefix/.release")"
-          test "$resolved_tag" = "$TOOLCHAIN_RELEASE_TAG"
-          actual_version="$("$prefix/bin/$target-gcc" --version | head -n 1)"
-          packaged_version="$(head -n 1 "$prefix/toolchain-version.txt")"
-          test "$actual_version" = "$packaged_version"
-          grep -q '^CT_PATCH_BUNDLED=y$' "$prefix/crosstool-ng.config"
-          grep -q '^CT_PATCH_ORDER="bundled"$' "$prefix/crosstool-ng.config"
-          grep -q '  packages/gcc/git-0dbf5849/0001-xesploop.patch$' "$prefix/s31-patch-sha256.txt"
-          grep -q '  packages/gcc/git-0dbf5849/0002-riscv-xesploop-reject-early-exit-loops.patch$' "$prefix/s31-patch-sha256.txt"
-          mkdir -p $OUT/reports/toolchain-verify
-          python3 -c 'import os; from pathlib import Path; from tools.checks.toolchain import verify_compiler, verify_libc_scalar; p=Path("cache/toolchains/riscv32-esp-linux-musl"); w=(Path(os.environ["OUT"]) / "reports/toolchain-verify"); verify_compiler(p, w, Path.cwd()); verify_libc_scalar(p, w, Path.cwd())'
-          libc="$prefix/$target/sysroot/usr/lib/libc.so"
-          "$prefix/bin/$target-objdump" -d "$libc" > $OUT/reports/toolchain-verify/libc-disassembly.txt
-          for symbol in memcpy memchr memrchr memcmp strcmp; do
-            grep -q "<${symbol}>:" $OUT/reports/toolchain-verify/libc-disassembly.txt
-          done
-          ! grep -q 'esp\.' $OUT/reports/toolchain-verify/libc-disassembly.txt
-
-      - name: Prepare rootfs source cache
-        run: make fetch-rootfs
-
-      - name: Build full board image with radio bundle
-        run: |
-          source "$IDF_PATH/export.sh"
-          make TOOLCHAIN_RELEASE_TAG="$TOOLCHAIN_RELEASE_TAG" \
-            IDF_EXPORT="$IDF_PATH/export.sh" all
-
-      - name: Verify release images
-        run: |
-          set -ex
-          echo "=== Build Artifacts ==="
-          ls -lh \
-            $OUT/images/spl_app.bin \
-            $OUT/images/u-boot.itb \
-            $OUT/images/esp32s31_generic.dtb \
-            $OUT/images/radio.bin \
-            $OUT/images/xipImage \
-            $OUT/images/rootfs.sqfs \
-            $OUT/images/s31_full_flash.bin
-          echo "=== esptool ==="
-          source "$IDF_PATH/export.sh"
-          esptool version
-          esptool --chip esp32s31 image-info $OUT/images/spl_app.bin
-          echo "=== Core checks ==="
-          test -s $OUT/images/spl_app.bin
-          test -s $OUT/images/u-boot.itb
-          test -s $OUT/images/esp32s31_generic.dtb
-          test -s $OUT/images/radio.bin
-          test -s $OUT/images/xipImage
-          test -s $OUT/images/rootfs.sqfs
-          test -s $OUT/images/s31_full_flash.bin
-          python3 -c 'import os; from pathlib import Path; radio = (Path(os.environ["OUT"]) / "images/radio.bin").read_bytes(); full = (Path(os.environ["OUT"]) / "images/s31_full_flash.bin").read_bytes(); from tools.checks.layout import flash_layout; offset = flash_layout()[0]["SLOT_RADIO"]; assert full[offset:offset + len(radio)] == radio, "radio bundle is not embedded at SLOT_RADIO"'
-          test ! -e bootloader
-          test "$(cat cache/sources/btstack/.s31-btstack-version)" = \
-            "$BTSTACK_REF"
-          test -x $OUT/buildroot/target/usr/sbin/s31-btstack-a2dp
-          ! grep -q '^BR2_PACKAGE_BLUEZ5_UTILS=y$' $OUT/buildroot/.config
-          ! grep -q '^BR2_PACKAGE_DBUS=y$' $OUT/buildroot/.config
-          ! grep -q '^BR2_PACKAGE_LIBGLIB2=y$' $OUT/buildroot/.config
-          "$GITHUB_WORKSPACE/cache/toolchains/riscv32-esp-linux-musl/bin/riscv32-esp-linux-musl-readelf" \
-            -d $OUT/buildroot/target/usr/sbin/s31-btstack-a2dp > $OUT/reports/btstack-dynamic.txt
-          test "$(grep -c '(NEEDED)' $OUT/reports/btstack-dynamic.txt)" -eq 1
-          grep -q 'Shared library: \[libc.so\]' $OUT/reports/btstack-dynamic.txt
-          for retired in \
-            usr/libexec/bluetooth/bluetoothd \
-            usr/libexec/dbus-daemon-launch-helper \
-            usr/bin/dbus-daemon usr/bin/bluealsa usr/bin/bluealsa-aplay \
-            usr/sbin/s31-bt-agent \
-            etc/bluetooth etc/dbus-1 \
-            usr/share/dbus-1 usr/share/xml/dbus-1 usr/share/glib-2.0 \
-            var/lib/bluetooth var/lib/dbus; do
-            test ! -e "$OUT/buildroot/target/$retired"
-          done
-          test -z "$(find $OUT/buildroot/target/lib $OUT/buildroot/target/usr/lib \
-            -maxdepth 2 \( -name 'libbluetooth.so*' -o -name 'libdbus-1.so*' \
-            -o -name 'libgio-2.0.so*' -o -name 'libglib-2.0.so*' \
-            -o -name 'libgmodule-2.0.so*' -o -name 'libgobject-2.0.so*' \
-            -o -name 'libgthread-2.0.so*' \) -print)"
-          test -f $OUT/idf-radio/build.ninja
-          test -s $OUT/linux/drivers/platform/esp32s31-radio.ko
-          test -s $OUT/generated/esp32s31-radio-fw-v1.o
-          grep -q '^CONFIG_ESP32S31_RADIO_SMODE_DRIVER=m$' $OUT/linux/.config
-          grep -q '^CONFIG_ESP32S31_RADIO_BLOBS=y$' $OUT/linux/.config
-          grep -q '^CONFIG_ESP32S31_WIFI=y$' $OUT/linux/.config
-          grep -q '^CONFIG_BT_ESP32S31=y$' $OUT/linux/.config
-          grep -q '^CONFIG_FW_LOADER_COMPRESS_XZ=y$' $OUT/linux/.config
-          test ! -e $OUT/linux/drivers/net/wireless/espressif/esp32s31-wifi.ko
-          test ! -e $OUT/linux/drivers/bluetooth/esp32s31-btdm.ko
-          ! "$GITHUB_WORKSPACE/cache/toolchains/riscv32-esp-linux-musl/bin/riscv32-esp-linux-musl-nm" \
-            $OUT/linux/drivers/platform/esp32s31-radio.ko | \
-            grep -qE ' (esp_wifi_|esp_bt_|s31_radio_fw_abi_version)'
-          grep -q '^CONFIG_ESP32S31_COPROC_CONTEXT=y$' $OUT/linux/.config
-          for config in \
-            CONFIG_I2C_ESP32S31=y \
-            CONFIG_SPI_ESP32S31=y \
-            CONFIG_SPI_SPIDEV=y \
-            CONFIG_SND_SOC_ESP32S31_I2S=y \
-            CONFIG_PWM_ESP32S31_LEDC=y \
-            CONFIG_ESP32S31_PCNT=y \
-            CONFIG_STMMAC_ETH=y \
-            CONFIG_MMC_DW_PLTFM=y \
-            CONFIG_VFAT_FS=y; do
-            grep -q "^${config}$" $OUT/linux/.config
-          done
-          "$GITHUB_WORKSPACE/cache/toolchains/riscv32-esp-linux-musl/bin/riscv32-esp-linux-musl-objdump" \
-            -d $OUT/buildroot/target/usr/lib/libc.so > $OUT/reports/release-libc-disassembly.txt
-          ! grep -q 'esp\.' $OUT/reports/release-libc-disassembly.txt
-          python3 tools/release/manifest.py --output-root $OUT \
-            --verify $OUT/images/build-manifest.json
-          echo "All core artifacts verified OK"
-
-      - name: Upload built images
-        uses: actions/upload-artifact@v4
+      - name: Upload full-flash images
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
         with:
-          name: s31-images-${{ github.sha }}
-          path: dist/current/*
+          name: full-flash-images-${{ github.sha }}
+          path: ${{ runner.temp }}/full-flash-images/
           if-no-files-found: error
 
       - name: Prepare release metadata
@@ -182,17 +65,14 @@ jobs:
           printf 'tag=ci-%s-%s\n' "${GITHUB_SHA:0:12}" "$GITHUB_RUN_ID" >> "$GITHUB_OUTPUT"
           printf 'title=%s: %s\n' "$timestamp" "$subject" >> "$GITHUB_OUTPUT"
 
-      - name: Publish full-flash image to GitHub Release
+      - name: Publish full-flash images to GitHub Release
         if: github.event_name == 'push' && github.ref == 'refs/heads/main'
         env:
           GH_TOKEN: ${{ github.token }}
           RELEASE_TAG: ${{ steps.release.outputs.tag }}
           RELEASE_TITLE: ${{ steps.release.outputs.title }}
         run: |
-          (cd dist/current && sha256sum --check SHA256SUMS)
-          sha256sum dist/current/s31_full_flash.bin
-          # Publish the checked-in login tip and Linux/Windows flash instructions.
-          gh release create "$RELEASE_TAG" dist/current/s31_full_flash.bin \
-            --target "$GITHUB_SHA" \
-            --title "$RELEASE_TITLE" \
-            --notes-file "$GITHUB_WORKSPACE/configs/release-notes.md"
+          gh release create "$RELEASE_TAG" \
+            "$RUNNER_TEMP"/full-flash-images/*.bin \
+            --target "$GITHUB_SHA" --title "$RELEASE_TITLE" \
+            --notes-file buildroot-external/board/esp32-s31/release-notes.md

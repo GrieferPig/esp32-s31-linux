@@ -1,0 +1,7 @@
+config BR2_LINUX_KERNEL_EXT_S31_FIRMWARE
+	bool "S31 radio firmware interface"
+	depends on BR2_riscv && BR2_RISCV_32
+	select BR2_PACKAGE_S31_FIRMWARE
+	help
+	  Build the current S31 kernel/module with verified producer imports.
+	  Final radio.bin is linked after the kernel in the board post-image.

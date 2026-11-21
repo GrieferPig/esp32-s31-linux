@@ -1,0 +1,2 @@
+# Enable at boot; servers are configured in /etc/ntp.conf.
+ENABLED=0

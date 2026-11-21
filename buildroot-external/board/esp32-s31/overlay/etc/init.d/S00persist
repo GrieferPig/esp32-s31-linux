@@ -1,0 +1,133 @@
+#!/bin/sh
+set -eu
+
+store=/persist
+factory=/usr/lib/s31-persist
+legacy="$store/upper"
+
+absent()
+{
+	[ ! -e "$1" ] && [ ! -L "$1" ]
+}
+
+install_path()
+{
+	local source="$1" destination="$2" defaults="${3:-}" staging
+	absent "$source" && return 0
+	absent "$destination" || return 0
+	mkdir -p "${destination%/*}"
+	staging=$(mktemp -d "${destination%/*}/.s31-migrate.XXXXXX")
+	if [ -d "$source" ] && [ ! -L "$source" ] &&
+	   [ -n "$defaults" ] && [ -d "$defaults" ]; then
+		cp -a "$defaults" "$staging/item" || { rm -rf "$staging"; return 1; }
+		cp -a "$source/." "$staging/item/" || { rm -rf "$staging"; return 1; }
+	else
+		cp -a "$source" "$staging/item" || { rm -rf "$staging"; return 1; }
+	fi
+	if mv "$staging/item" "$destination"; then
+		rmdir "$staging"
+	else
+		rm -rf "$staging"
+		return 1
+	fi
+}
+
+migrate()
+{
+	local action path source destination zone seed
+
+	while read -r action path; do
+		case "$action" in link|copy) ;; *) continue ;; esac
+		source="$legacy$path"
+		destination="$store$path"
+		if absent "$source"; then source="$factory/defaults$path"; fi
+		if [ "$path" = /etc/localtime ] && [ -L "$source" ] && absent "$destination"; then
+			zone=$(readlink "$source")
+			zone="${zone#../usr/share/zoneinfo/}"
+			zone="${zone#/usr/share/zoneinfo/}"
+			mkdir -p "$store/etc"
+			case "$zone" in
+			''|/*|*..*) zone=Etc/UTC ;;
+			esac
+			[ -f "/usr/share/zoneinfo/$zone" ] || zone=Etc/UTC
+			ln -s "/usr/share/zoneinfo/$zone" "$destination"
+		else
+			install_path "$source" "$destination" "$factory/defaults$path"
+		fi
+	done < "$factory/paths"
+
+	mkdir -p "$store/etc/esp32-conf"
+	chmod 0700 "$store/etc/esp32-conf"
+	install_path "$legacy/etc/esp32-conf/overlays.conf" "$store/etc/esp32-conf/overlays.conf"
+	if [ -f "$store/etc/wpa_supplicant.conf" ]; then
+		chmod 0600 "$store/etc/wpa_supplicant.conf"
+	fi
+	if [ -f "$store/etc/network/interfaces.d/wlan0" ]; then
+		sed -i 's@^\([[:space:]]*wpa-conf[[:space:]]\+\)/etc/wpa_supplicant\.conf\([[:space:]]*\)$@\1/persist/etc/wpa_supplicant.conf\2@' \
+			"$store/etc/network/interfaces.d/wlan0"
+	fi
+	if absent "$store/etc/fstab.extra"; then
+		if [ -f "$legacy/etc/fstab" ]; then
+			awk 'NF >= 3 && $1 !~ /^#/ &&
+				$2 !~ /^\/(dev(\/pts|\/shm)?|proc|sys|run|tmp|var\/log|persist)$/ &&
+				$1 != "/dev/zram0"' "$legacy/etc/fstab" > "$store/etc/fstab.extra.tmp"
+		else
+			: > "$store/etc/fstab.extra.tmp"
+		fi
+		mv "$store/etc/fstab.extra.tmp" "$store/etc/fstab.extra"
+	fi
+
+	# DHCP's symlink into /run is transient. A manually replaced file is static.
+	if [ -f "$legacy/etc/resolv.conf" ] && [ ! -L "$legacy/etc/resolv.conf" ]; then
+		install_path "$legacy/etc/resolv.conf" "$store/etc/resolv.static"
+	fi
+
+	mkdir -p "$store/state/seedrng"
+	chmod 0700 "$store/state/seedrng"
+	for seed in seed.credit seed.no-credit; do
+		source="$legacy/var/lib/seedrng/$seed"
+		destination="$store/state/seedrng/$seed"
+		# Transfer the existing seed once on this board, without crediting two copies.
+		if [ -f "$source" ] && absent "$destination"; then
+			mv "$source" "$destination"
+		fi
+	done
+
+	sync
+	: > "$store/.s31-layout-v1"
+	sync
+	echo 'S31 persist: migrated configured files and seed'
+}
+
+start()
+{
+	if ! mountpoint -q "$store"; then
+		echo 'S31 persist: JFFS2 partition is not mounted' >&2
+		return 1
+	fi
+	[ -f "$store/.s31-layout-v1" ] || migrate
+	if [ -s "$store/etc/fstab.extra" ]; then
+		mount -a -T "$store/etc/fstab.extra"
+	fi
+	if [ -r "$store/etc/hostname" ]; then
+		hostname -F "$store/etc/hostname"
+	fi
+	if [ -r "$store/etc/resolv.static" ]; then
+		cp "$store/etc/resolv.static" /run/resolv.conf
+	fi
+	if [ -b /dev/zram0 ]; then
+		if [ "$(cat /sys/block/zram0/disksize)" = 0 ]; then
+			echo 8M > /sys/block/zram0/disksize
+			mkswap /dev/zram0 >/dev/null
+		fi
+		swapon /dev/zram0
+	fi
+	s31-overlay restore
+	echo 'S31 persist: configuration ready'
+}
+
+case "${1:-}" in
+	start) start ;;
+	stop) ;;
+	*) echo "Usage: $0 {start|stop}" >&2; exit 2 ;;
+esac

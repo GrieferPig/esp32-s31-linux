@@ -1,0 +1,24 @@
+# Keep the boot fstab, default hostname and DHCP-owned resolv.conf in the image.
+copy /etc/hostname
+link /etc/network/interfaces.d
+link /etc/wpa_supplicant.conf
+link /etc/default/s31-usb
+link /etc/default/ntpd
+link /etc/default/userapp
+link /etc/ntp.conf
+link /etc/modprobe.d/esp32s31-radio.conf
+link /etc/localtime
+link /etc/timezone
+link /etc/passwd
+link /etc/shadow
+link /etc/group
+link /etc/gshadow
+link /etc/cron/crontabs
+link /etc/hostapd.conf
+link /etc/linuxptp.cfg
+link /etc/default/ptp4l
+link /etc/default/phc2sys
+link /etc/default/crond
+link /usr/local/bin/startup-program
+link /root
+link /home

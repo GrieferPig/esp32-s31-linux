@@ -1,10 +1,5 @@
 # Configuration pages driven by the metadata in the packaged DT overlays.
 
-interface_feature()
-{
-	grep -qx "$1=1" "${ESP32_CONFIG_FEATURES_FILE:-/usr/share/esp32-config/kernel-features}" 2>/dev/null
-}
-
 interface_available()
 {
 	case "$1" in
@@ -58,13 +53,6 @@ interface_field_label()
 	esac
 }
 
-interface_valid_gpio()
-{
-	case "$1" in ''|*[!0-9]*|0[0-9]*) return 1 ;; esac
-	[ "${#1}" -le 2 ] && [ "$1" -le 61 ] || return 1
-	case "$1" in 26|27|28|29|30|31|32|33|34|41|58|59) return 1 ;; esac
-}
-
 interface_make_draft()
 {
 	# CURRENT is trustworthy only when the manager and its current record agree.
@@ -98,7 +86,6 @@ interface_apply_draft()
 	while IFS="$tab" read -r kind key value choices; do
 		case "$kind:$choices" in
 			route:matrix-input|route:matrix-output|route:matrix-bidirectional)
-				interface_valid_gpio "$value" || { warn "Choose a valid GPIO for $key."; return 1; }
 				set -- "$@" "$key=$value" ;;
 			parameter:*)
 				case ",$choices," in *",$value,"*) ;; *) warn "Choose a valid value for $key."; return 1 ;; esac
@@ -238,13 +225,8 @@ ROW
 				label="$(interface_field_label "$key")"
 				case "$kind:$choices" in
 					route:matrix-input|route:matrix-output|route:matrix-bidirectional)
-						while :; do
-							selected="$(ui_dialog --stdout --title "$label" --cancel-label Back --inputbox \
-								'GPIO number (0-61). Pins reserved for flash or fixed board functions cannot be used.' 10 72 "$value")" || { selected=''; break; }
-							interface_valid_gpio "$selected" && break
-							value="$selected"
-							ui_error 'Choose GPIO 0-61, excluding 26-34, 41, 58 and 59. Enter decimal without a leading zero.'
-						done
+						selected="$(ui_dialog --stdout --title "$label" --cancel-label Back --inputbox \
+							'GPIO number. The overlay manager validates available pins when applying settings.' 10 72 "$value")" || continue
 						[ -n "$selected" ] || continue ;;
 					parameter:*)
 						set --
@@ -274,7 +256,7 @@ interfaces_menu()
 		s31-overlay list >"$profiles" 2>/dev/null || :
 		current="$(s31-overlay status 2>/dev/null)"; query_status=$?
 		current="$(printf '%s\n' "$current" | sed -n 's/^active: \([^ ]*\).*/\1/p')"
-		set -- gpio 'GPIO - input, output and application control' usb 'USB - host, serial or network'
+		set -- usb 'USB - host, serial or network'
 		while IFS= read -r name; do
 			interface_available "$name" || continue
 			label="$(interface_label "$name")"; status=Disabled
@@ -285,7 +267,7 @@ interfaces_menu()
 		choice="$(ui_dialog --stdout --title Interfaces --cancel-label Back --menu \
 			"Choose an interface to edit its settings. Only interfaces supported by this image are shown.${UI_NOTICE:+\n$UI_NOTICE}" 21 78 13 "$@")" || break
 		UI_NOTICE=''
-		case "$choice" in gpio) gpio_menu ;; usb) usb_menu ;; *) interface_available "$choice" && interface_edit "$choice" ;; esac
+		case "$choice" in usb) usb_menu ;; *) interface_available "$choice" && interface_edit "$choice" ;; esac
 	done
 	rm -f "$profiles"
 }

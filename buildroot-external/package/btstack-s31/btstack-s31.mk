@@ -4,114 +4,34 @@
 #
 ################################################################################
 
-BTSTACK_S31_VERSION = $(BTSTACK_REF)
-S31_BTSTACK_SOURCE ?= $(BR2_EXTERNAL_ESP32_S31_PATH)/../cache/sources/btstack
-BTSTACK_S31_SITE = $(abspath $(S31_BTSTACK_SOURCE))
-BTSTACK_S31_SITE_METHOD = local
+BTSTACK_S31_VERSION = 431d58d5613fd8fae38afe50282b25302de84bf7
+BTSTACK_S31_SITE = $(call github,bluekitchen,btstack,$(BTSTACK_S31_VERSION))
 BTSTACK_S31_LICENSE = BTstack License (non-commercial)
 BTSTACK_S31_LICENSE_FILES = LICENSE
+BTSTACK_S31_DEPENDENCIES = bluez5_utils-headers host-python3
+BTSTACK_S31_SUBDIR = port/linux
+BTSTACK_S31_SUPPORTS_IN_SOURCE_BUILD = NO
+BTSTACK_S31_EXAMPLES = a2dp_sink_demo gatt_counter hfp_hf_demo
+BTSTACK_S31_BUILD_OPTS = --target $(BTSTACK_S31_EXAMPLES)
+# The upstream Linux port uses standard HCI headers; no BlueZ daemon is needed.
+# musl warns about upstream sys/errno.h; keep the warning without a source patch.
+BTSTACK_S31_CONF_OPTS = \
+	-DCMAKE_C_FLAGS="$(TARGET_CFLAGS) -Wno-error=cpp -ffunction-sections -fdata-sections" \
+	-DCMAKE_EXE_LINKER_FLAGS="$(TARGET_LDFLAGS) -Wl,--gc-sections" \
+	-DPython3_EXECUTABLE=$(HOST_DIR)/bin/python3 \
+	-DCMAKE_DISABLE_FIND_PACKAGE_ALSA=TRUE \
+	-DCMAKE_DISABLE_FIND_PACKAGE_PkgConfig=TRUE
 
-BTSTACK_S31_OPTIMIZATION = -Os
-
-BTSTACK_S31_INCLUDES = \
-	-I$(@D)/port/linux \
-	-I$(@D)/src \
-	-I$(@D)/3rd-party/bluedroid/decoder/include \
-	-I$(@D)/3rd-party/bluedroid/encoder/include \
-	-I$(@D)/3rd-party/lc3-google/include \
-	-I$(@D)/3rd-party/md5 \
-	-I$(@D)/3rd-party/yxml \
-	-I$(@D)/platform/embedded \
-	-I$(@D)/platform/posix \
-	-I$(@D)/platform/linux
-
-BTSTACK_S31_CFLAGS = $(filter-out -O%,$(TARGET_CFLAGS)) \
-	$(filter-out -O%,$(call qstrip,$(BR2_TARGET_OPTIMIZATION))) \
-	-DS31_A2DP_SBC_MAX_BITPOOL=53 \
-	-DS31_A2DP_SBC_CAPABILITIES_0=0x21 \
-	-DS31_BTSTACK_TRANSPORT_ONLY=1 \
-	-DS31_BTSTACK_FORCE_CLASSIC=1 \
-	-ffunction-sections -fdata-sections $(BTSTACK_S31_OPTIMIZATION) \
-	$(BTSTACK_S31_INCLUDES)
-
-define BTSTACK_S31_PREPARE_LOCAL_SOURCE
-	$(APPLY_PATCHES) $(@D) \
-		$(BR2_EXTERNAL_ESP32_S31_PATH)/package/btstack-s31 '*.patch'
-	$(INSTALL) -D -m 0644 \
-		$(BR2_EXTERNAL_ESP32_S31_PATH)/package/btstack-s31/s31_btstack_config.h \
+define BTSTACK_S31_CONFIGURE_HEADER
+	$(INSTALL) -m 0644 $(BR2_EXTERNAL_ESP32_S31_PATH)/package/btstack-s31/s31_btstack_config.h \
 		$(@D)/port/linux/btstack_config.h
 endef
-BTSTACK_S31_POST_RSYNC_HOOKS += BTSTACK_S31_PREPARE_LOCAL_SOURCE
-
-define BTSTACK_S31_BUILD_LIBRARY
-	rm -rf $(@D)/s31-build/$(1)
-	mkdir -p $(@D)/s31-build/$(1)/objects
-	set -e; \
-	for source in \
-		$(@D)/src/*.c \
-		$(@D)/src/ble/*.c \
-		$(@D)/src/classic/*.c \
-		$(@D)/platform/posix/btstack_run_loop_posix.c \
-		$(@D)/platform/posix/btstack_signal.c \
-		$(@D)/platform/posix/btstack_stdin_posix.c \
-		$(@D)/platform/posix/btstack_tlv_posix.c \
-		$(@D)/platform/posix/hci_dump_posix_fs.c \
-		$(@D)/platform/linux/hci_transport_linux.c \
-		$(@D)/port/linux/main.c; do \
-		object="$(@D)/s31-build/$(1)/objects/$$(printf '%s' "$${source#$(@D)/}" | tr '/.' '__').o"; \
-		$(TARGET_CC) $(filter-out -O%,$(BTSTACK_S31_CFLAGS)) -$(2) $(3) -c "$$source" -o "$$object"; \
-	done
-	$(TARGET_AR) rcs $(@D)/s31-build/$(1)/libbtstack-s31.a \
-		$(@D)/s31-build/$(1)/objects/*.o
-endef
-
-define BTSTACK_S31_BUILD_VARIANT
-	$(call BTSTACK_S31_BUILD_LIBRARY,$(1),$(1),)
-	$(TARGET_CC) $(filter-out -O%,$(BTSTACK_S31_CFLAGS)) -$(1) -c \
-		$(@D)/example/a2dp_sink_demo.c \
-		-o $(@D)/s31-build/$(1)/a2dp_sink_demo.o
-	$(TARGET_CC) $(TARGET_LDFLAGS) -Wl,--gc-sections \
-		-o $(@D)/s31-build/$(1)/s31-btstack-a2dp \
-		$(@D)/s31-build/$(1)/a2dp_sink_demo.o \
-		$(@D)/s31-build/$(1)/libbtstack-s31.a -lpthread -lm
-endef
-
-# Separate library configuration keeps the existing A2DP/BLE host unchanged.
-# The HFP example accepts incoming service/audio links without console stdin.
-define BTSTACK_S31_BUILD_HFP
-	$(call BTSTACK_S31_BUILD_LIBRARY,Os-hfp,Os,-DENABLE_SCO_OVER_HCI)
-	cp $(@D)/example/sco_demo_util.c $(@D)/s31-build/Os-hfp/sco_demo_util.c
-	$(APPLY_PATCHES) $(@D)/s31-build/Os-hfp \
-		$(BR2_EXTERNAL_ESP32_S31_PATH)/package/btstack-s31/hfp '*.patch'
-	$(TARGET_CC) $(filter-out -O%,$(BTSTACK_S31_CFLAGS)) -Os -DENABLE_SCO_OVER_HCI -c \
-		$(@D)/example/hfp_hf_demo.c -o $(@D)/s31-build/Os-hfp/hfp_hf_demo.o
-	$(TARGET_CC) $(filter-out -O%,$(BTSTACK_S31_CFLAGS)) -Os -DENABLE_SCO_OVER_HCI -I$(@D)/example -c \
-		$(@D)/s31-build/Os-hfp/sco_demo_util.c -o $(@D)/s31-build/Os-hfp/sco_demo_util.o
-	$(TARGET_CC) $(TARGET_LDFLAGS) -Wl,--gc-sections \
-		-o $(@D)/s31-build/Os-hfp/s31-btstack-hfp-hf \
-		$(@D)/s31-build/Os-hfp/hfp_hf_demo.o \
-		$(@D)/s31-build/Os-hfp/sco_demo_util.o \
-		$(@D)/s31-build/Os-hfp/libbtstack-s31.a -lpthread -lm
-endef
-
-define BTSTACK_S31_BUILD_CMDS
-	rm -rf $(@D)/s31-build
-	$(call BTSTACK_S31_BUILD_VARIANT,Os)
-	$(BTSTACK_S31_BUILD_HFP)
-endef
+BTSTACK_S31_PRE_CONFIGURE_HOOKS += BTSTACK_S31_CONFIGURE_HEADER
 
 define BTSTACK_S31_INSTALL_TARGET_CMDS
-	$(INSTALL) -D -m 0755 $(@D)/s31-build/Os/s31-btstack-a2dp \
-		$(TARGET_DIR)/usr/sbin/s31-btstack-a2dp
-	$(INSTALL) -D -m 0755 \
-		$(BR2_EXTERNAL_ESP32_S31_PATH)/package/btstack-s31/S40btstack \
-		$(TARGET_DIR)/etc/init.d/S40btstack
+	for app in $(BTSTACK_S31_EXAMPLES); do \
+		$(INSTALL) -D -m 0755 $(BTSTACK_S31_BUILDDIR)/$$app $(TARGET_DIR)/usr/bin/$$app; \
+	done
 endef
 
-define BTSTACK_S31_INSTALL_HFP
-	$(INSTALL) -D -m 0755 $(@D)/s31-build/Os-hfp/s31-btstack-hfp-hf \
-		$(TARGET_DIR)/usr/sbin/s31-btstack-hfp-hf
-endef
-BTSTACK_S31_POST_INSTALL_TARGET_HOOKS += BTSTACK_S31_INSTALL_HFP
-
-$(eval $(generic-package))
+$(eval $(cmake-package))

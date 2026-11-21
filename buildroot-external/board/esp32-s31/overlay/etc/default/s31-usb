@@ -1,0 +1,2 @@
+MODE=host
+SERIAL=esp32-s31

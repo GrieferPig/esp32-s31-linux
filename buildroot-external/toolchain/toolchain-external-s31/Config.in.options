@@ -1,0 +1,9 @@
+if BR2_TOOLCHAIN_EXTERNAL_S31
+
+config BR2_TOOLCHAIN_EXTERNAL_PREFIX
+	default "riscv32-esp-linux-musl"
+
+config BR2_PACKAGE_PROVIDES_TOOLCHAIN_EXTERNAL
+	default "toolchain-external-s31"
+
+endif
