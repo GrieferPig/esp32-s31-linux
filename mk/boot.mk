@@ -41,7 +41,7 @@ uboot: uboot-esptool-check opensbi | $(UBOOT_OUT) $(IMAGES_DIR)
 	@echo "--- U-Boot SPL + proper ---"
 	# Binman uses an env shebang, so PYTHON3 alone does not select its interpreter.
 	# A Python-only shim preserves the remaining host tools on PATH.
-	python3 $(ROOT)/tools/build/configure.py native --kind uboot --source "$(UBOOT_DIR)" --output "$(UBOOT_OUT)" --defconfig espressif_esp32s31_defconfig --fragment "$(ROOT)/configs/uboot.config" --compiler "$(CC)" --cross "$(CROSS_COMPILE)"
+	python3 $(ROOT)/tools/build/configure.py native --kind uboot --source "$(UBOOT_DIR)" --output "$(UBOOT_OUT)" --defconfig espressif_esp32s31_defconfig --compiler "$(CC)" --cross "$(CROSS_COMPILE)"
 	PYTHONPATH="$(UBOOT_PYTHONPATH)$${PYTHONPATH:+:$$PYTHONPATH}" python3 $(ROOT)/tools/build/host_python.py \
 		--python "$(HOST_PYTHON)" --shim "$(UBOOT_OUT)/.host-python" -- \
 		$(MAKE) -C $(UBOOT_DIR) O=$(UBOOT_OUT) ARCH=riscv \
