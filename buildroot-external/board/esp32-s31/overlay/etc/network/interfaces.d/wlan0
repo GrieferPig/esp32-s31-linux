@@ -1,0 +1,4 @@
+auto wlan0
+iface wlan0 inet dhcp
+  hostname $(hostname)
+  wpa-conf /etc/wpa_supplicant.conf

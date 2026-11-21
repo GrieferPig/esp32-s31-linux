@@ -1,0 +1,130 @@
+diff --git a/package/wpa_supplicant/0003-os-unix-support-no-mmu-foreground-mode.patch b/package/wpa_supplicant/0003-os-unix-support-no-mmu-foreground-mode.patch
+new file mode 100644
+index 0000000000..4abc0169b0
+--- /dev/null
++++ b/package/wpa_supplicant/0003-os-unix-support-no-mmu-foreground-mode.patch
+@@ -0,0 +1,89 @@
++From 76eaa1ce9458e6abe84e17dfaa2319e51532337c Mon Sep 17 00:00:00 2001
++From: Codex <codex@local>
++Date: Sun, 24 Aug 2026 23:45:00 +0800
++Subject: [PATCH] os_unix: support no-MMU foreground mode
++
++No-MMU targets cannot implement fork().  wpa_supplicant itself does not
++need it when it is kept in the foreground; only daemonization and the
++optional external command helper do.  Make those two operations fail
++cleanly when CONFIG_NO_FORK is selected.
++
++Signed-off-by: Codex <codex@local>
++---
++ src/utils/os_unix.c | 9 +++++++--
++ 1 file changed, 7 insertions(+), 2 deletions(-)
++
++diff --git a/src/utils/os_unix.c b/src/utils/os_unix.c
++index 95ba9ec..70f0fcc 100644
++--- a/src/utils/os_unix.c
+++++ b/src/utils/os_unix.c
++@@ -226,7 +226,8 @@ static int os_daemon(int nochdir, int noclose)
++ 
++ int os_daemonize(const char *pid_file)
++ {
++-#if defined(__uClinux__) || defined(__sun__)
+++#if defined(CONFIG_NO_FORK) || defined(__uClinux__) || defined(__sun__)
+++	(void) pid_file;
++ 	return -1;
++ #else /* defined(__uClinux__) || defined(__sun__) */
++ 	if (os_daemon(0, 0)) {
++@@ -821,52 +822,57 @@ char * os_strdup(const char *s)
++ int os_exec(const char *program, const char *arg, int wait_completion)
++ {
+++#ifdef CONFIG_NO_FORK
+++	(void) program; (void) arg; (void) wait_completion;
+++	return -1;
+++#else
++ 	pid_t pid;
++ 	int pid_status;
++ 
++ 	pid = fork();
++ 	if (pid < 0) {
++ 		perror("fork");
++ 		return -1;
++ 	}
++ 
++ 	if (pid == 0) {
++ 		/* run the external command in the child process */
++ 		const int MAX_ARG = 30;
++ 		char *_program, *_arg, *pos;
++ 		char *argv[MAX_ARG + 1];
++ 		int i;
++ 
++ 		_program = os_strdup(program);
++ 		_arg = os_strdup(arg);
++ 
++ 		argv[0] = _program;
++ 
++ 		i = 1;
++ 		pos = _arg;
++ 		while (i < MAX_ARG && pos && *pos) {
++ 			while (*pos == ' ')
++ 				pos++;
++ 			if (*pos == '\0')
++ 				break;
++ 			argv[i++] = pos;
++ 			pos = os_strchr(pos, ' ');
++ 			if (pos)
++ 				*pos++ = '\0';
++ 		}
++ 		argv[i] = NULL;
++ 
++ 		execv(program, argv);
++ 		perror("execv");
++ 		os_free(_program);
++ 		os_free(_arg);
++ 		exit(0);
++ 		return -1;
++ 	}
++ 
++ 	if (wait_completion) {
++ 		/* wait for the child process to complete in the parent */
++ 		waitpid(pid, &pid_status, 0);
++ 	}
++ 
++ 	return 0;
+++#endif
++ }
++-- 
++2.43.0
+diff --git a/package/wpa_supplicant/Config.in b/package/wpa_supplicant/Config.in
+index fd15e95be1..7632c3c7aa 100644
+--- a/package/wpa_supplicant/Config.in
++++ b/package/wpa_supplicant/Config.in
+@@ -1,11 +1,14 @@
+ menuconfig BR2_PACKAGE_WPA_SUPPLICANT
+ 	bool "wpa_supplicant"
+-	depends on BR2_USE_MMU # fork()
+ 	select BR2_PACKAGE_LIBOPENSSL_ENABLE_DES if BR2_PACKAGE_LIBOPENSSL
+ 	select BR2_PACKAGE_LIBOPENSSL_ENABLE_MD4 if BR2_PACKAGE_LIBOPENSSL
+ 	help
+ 	  WPA supplicant for secure wireless networks
+ 
++	  On no-MMU systems, run wpa_supplicant in the foreground (without
++	  -B) and let the init system or shell manage the process.  The -B
++	  daemon mode requires fork() and is not available there.
++
+ 	  http://w1.fi/wpa_supplicant/
+ 
+ if BR2_PACKAGE_WPA_SUPPLICANT
+diff --git a/package/wpa_supplicant/wpa_supplicant.mk b/package/wpa_supplicant/wpa_supplicant.mk
+index fe4bc34d55..1e3190903b 100644
+--- a/package/wpa_supplicant/wpa_supplicant.mk
++++ b/package/wpa_supplicant/wpa_supplicant.mk
+@@ -15,6 +15,10 @@ WPA_SUPPLICANT_DBUS_SERVICE = fi.w1.wpa_supplicant1
+ WPA_SUPPLICANT_CFLAGS = $(TARGET_CFLAGS) -I$(STAGING_DIR)/usr/include/libnl3/
+ WPA_SUPPLICANT_SELINUX_MODULES = networkmanager
+ 
++ifeq ($(BR2_USE_MMU),)
++WPA_SUPPLICANT_CFLAGS += -DCONFIG_NO_FORK
++endif
++
+ # install the wpa_client library
+ WPA_SUPPLICANT_INSTALL_STAGING = YES
+ 

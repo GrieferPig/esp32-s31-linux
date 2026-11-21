@@ -1,0 +1,4 @@
+config BR2_PACKAGE_P4_FIRMWARE
+	bool "ESP32-P4 released boot firmware"
+	help
+	  Install the released SPL and U-Boot used by the P4 FIT image.

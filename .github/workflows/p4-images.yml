@@ -2,16 +2,13 @@ name: Build P4 Image
 
 on:
   push:
-    branches: [main, 'p4/**']
+    branches: [main, feature/p4-integration, 'p4/**']
     paths:
       - '.github/workflows/p4-images.yml'
       - 'Makefile'
-      - 'mk/**'
       - 'configs/build-versions.mk'
-      - 'ports/esp32p4-reconstructed/**'
       - 'buildroot-external/**'
       - 'buildroot'
-      - 'linux-esp32-s31'
       - '.gitmodules'
   workflow_dispatch:
 
@@ -28,25 +25,8 @@ jobs:
         with:
           persist-credentials: false
 
-      - name: Fetch and verify the latest P4 boot release
-        env:
-          GH_TOKEN: ${{ github.token }}
-        run: |
-          repo=GrieferPig/esp32-s31-linux-firmware
-          package=p4-firmware-inputs.tar
-          release=$(gh api "repos/$repo/releases/latest")
-          tag=$(jq -er '.tag_name' <<< "$release")
-          digest=$(jq -er --arg name "$package" '
-            .assets[] | select(.name == $name) | .digest |
-            select(test("^sha256:[0-9a-f]{64}$"))' <<< "$release")
-          gh release download "$tag" --repo "$repo" --pattern "$package" --dir "$RUNNER_TEMP"
-          python3 ports/esp32p4-reconstructed/unpack-boot.py \
-            "$RUNNER_TEMP/$package" "${digest#sha256:}" "$RUNNER_TEMP/p4-boot"
-          printf 'Firmware release: %s\n%s  %s\n' "$tag" "${digest#sha256:}" "$package" |
-            tee "$RUNNER_TEMP/p4-firmware-source.txt"
-
-      - name: Check out Linux and Buildroot
-        run: git submodule update --init --depth 1 linux-esp32-s31 buildroot
+      - name: Check out Buildroot
+        run: git submodule update --init --depth 1 buildroot
 
       - name: Install build dependencies
         run: |
@@ -71,14 +51,12 @@ jobs:
           tar -xf "$archive" -C "$RUNNER_TEMP"
           echo "$RUNNER_TEMP/riscv32-esp-elf/bin" >> "$GITHUB_PATH"
 
-      - name: Build Linux and assemble the P4 image
-        run: |
-          make TARGET=esp32p4 P4_BOOT_DIR="$RUNNER_TEMP/p4-boot" image
-          cp "$RUNNER_TEMP/p4-firmware-source.txt" out-p4/images/fit-200/
+      - name: Build the P4 NOR image with Buildroot
+        run: make TARGET=esp32p4 JOBS=4 image
 
       - name: Upload the P4 image
         uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
         with:
           name: p4-images-${{ github.sha }}
-          path: out-p4/images/fit-200/
+          path: out-buildroot-esp32p4/images/fit-200/
           if-no-files-found: error

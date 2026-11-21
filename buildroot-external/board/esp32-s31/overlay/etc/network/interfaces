@@ -1,3 +1,4 @@
-# Loopback; the native S-mode radio driver manages wlan0 through cfg80211.
 auto lo
 iface lo inet loopback
+
+source-directory /etc/network/interfaces.d

@@ -1,24 +1,50 @@
-# GNU Make is the public interface; component-native build systems own compilation.
-.DEFAULT_GOAL := help
+# Buildroot owns the kernel, root filesystem and final board image.
+.DEFAULT_GOAL := image
 ROOT := $(abspath $(dir $(lastword $(MAKEFILE_LIST))))
-include $(ROOT)/mk/config.mk
-ifneq ($(filter download fetch fetch-rootfs,$(MAKECMDGOALS)),)
-ifneq ($(words $(MAKECMDGOALS)),1)
-$(error Run make download separately before build targets; fetch and fetch-rootfs are also standalone preparation)
-endif
-endif
-# Serialize the single output tree across independent invocations. Native builds share JOBS.
-# Preparation and read-only help/check commands never acquire a device or build.
-PREPARE_GOALS := download fetch fetch-rootfs toolchain-fetch toolchain-source btstack-source
-LOCK_GOALS := resolved-config check check-fast check-docs check-dt check-artifacts $(PREPARE_GOALS) flash-image radio-fs initramfs bootloader radio-module buildroot-menuconfig btstack-notices flash-existing-all flash-all flash-existing-radio flash-existing-rootfs flash-radio flash-rootfs flash-linux flash-dtb flash-bootloader flash-opensbi flash-persist erase fetch fetch-rootfs all fullclean build-flash build image linux linux-incremental opensbi uboot p4-fit p4-linux p4-rootfs p4-rootfs-config rootfs radio-image radio-linux-payload radio-linux-payload-incremental radio-idf-deps lp-firmware persist radio-package build-manifest clean buildroot-clean buildroot-reconfigure
-ifneq ($(filter $(LOCK_GOALS),$(MAKECMDGOALS)),)
-ifeq ($(S31_BUILD_LOCKED),)
-.PHONY: $(MAKECMDGOALS)
-$(MAKECMDGOALS):
-	+@case "$(filter-out --%,$(firstword $(MAKEFLAGS)))" in *n*) $(MAKE) --no-print-directory S31_BUILD_LOCKED=1 $@ ;; *) mkdir -p "$(OUT_ROOT)/.locks"; flock $(if $(filter $(PREPARE_GOALS),$(MAKECMDGOALS)),-x,-s) "$(OUT_ROOT)/.locks/sources.lock" flock "$(OUT_ROOT)/.locks/build.lock" $(MAKE) --no-print-directory S31_BUILD_LOCKED=1 $@ ;; esac
+TARGET ?= esp32s31
+OUT_ROOT ?= $(ROOT)/out-buildroot-$(TARGET)
+OUTPUT := $(abspath $(OUT_ROOT))
+BR2_DL_DIR ?= $(ROOT)/cache/downloads/buildroot
+JOBS ?= $(shell nproc)
+export P4_CROSS_COMPILE ?= riscv32-esp-elf-
+
+ifeq ($(TARGET),esp32s31)
+DEFCONFIG := esp32s31_defconfig
+BUILDROOT_SOURCE := $(ROOT)/buildroot
+else ifeq ($(TARGET),esp32p4)
+DEFCONFIG := esp32p4_rootfs_defconfig
+P4_BUILDROOT_PATCH := $(ROOT)/buildroot-external/board/esp32-p4/buildroot-wpa-nommu.patch
+BUILDROOT_REV := $(shell git -C "$(ROOT)" rev-parse :buildroot)
+P4_PATCH_HASH := $(shell sha256sum "$(P4_BUILDROOT_PATCH)" | cut -d' ' -f1)
+BUILDROOT_SOURCE := $(OUTPUT)/.source/buildroot-$(BUILDROOT_REV)-$(P4_PATCH_HASH)
+BUILDROOT_PREPARED := $(BUILDROOT_SOURCE)/.prepared
+
+$(BUILDROOT_PREPARED):
+	mkdir -p "$(BUILDROOT_SOURCE)"
+	git -C "$(ROOT)/buildroot" archive "$(BUILDROOT_REV)" | tar -x -C "$(BUILDROOT_SOURCE)"
+	patch -d "$(BUILDROOT_SOURCE)" -p1 < "$(P4_BUILDROOT_PATCH)"
+	touch "$@"
 else
-include $(ROOT)/mk/rules.mk
+$(error Unknown TARGET "$(TARGET)"; use esp32s31 or esp32p4)
 endif
-else
-include $(ROOT)/mk/rules.mk
-endif
+
+BUILDROOT = $(MAKE) -C "$(BUILDROOT_SOURCE)" O="$(OUTPUT)" \
+	BR2_EXTERNAL="$(ROOT)/buildroot-external" BR2_DL_DIR="$(BR2_DL_DIR)" BR2_JLEVEL="$(JOBS)"
+
+.PHONY: config image build linux rootfs help
+config: $(BUILDROOT_PREPARED)
+	$(BUILDROOT) $(DEFCONFIG)
+
+$(OUTPUT)/.config: $(ROOT)/buildroot-external/configs/$(DEFCONFIG) $(BUILDROOT_PREPARED)
+	$(BUILDROOT) $(DEFCONFIG)
+
+image build rootfs: $(OUTPUT)/.config
+	$(BUILDROOT)
+
+linux: $(OUTPUT)/.config
+	$(BUILDROOT) linux
+
+help:
+	@printf '%s\n' 'make image TARGET=esp32s31 or TARGET=esp32p4' \
+		'make linux TARGET=... builds the kernel without assembling the image' \
+		'Use OUT_ROOT=... to select an independent Buildroot output directory'

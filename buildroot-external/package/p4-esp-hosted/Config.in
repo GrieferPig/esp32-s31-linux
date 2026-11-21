@@ -1,0 +1,5 @@
+config BR2_PACKAGE_P4_ESP_HOSTED
+	bool "ESP32-P4 ESP-Hosted SDIO module"
+	depends on BR2_LINUX_KERNEL
+	help
+	  Build the ESP-Hosted SDIO driver against this image's Linux kernel.

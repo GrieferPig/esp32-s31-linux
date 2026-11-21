@@ -2,11 +2,9 @@
 
 case "$1" in
 	start)
-		module=/lib/modules/esp32_sdio.ko
-		[ -r "$module" ] || exit 0
 		# The MMC power sequence owns CHIP_PU. The driver registers on the
 		# SDIO bus, which binds it when the C6 function is available.
-		exec insmod "$module"
+		exec modprobe esp32_sdio
 		;;
 	stop)
 		[ -d /sys/module/esp32_sdio ] || exit 0

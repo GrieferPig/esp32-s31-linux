@@ -3,7 +3,7 @@
 set -eu
 
 port=${1:-/dev/ttyUSB0}
-output=${2:-out/reports/backup-flash.bin}
+output=${2:-out-buildroot-esp32s31/reports/backup-flash.bin}
 chunk_dir="${output}.chunks"
 
 mkdir -p "$chunk_dir"
@@ -16,7 +16,7 @@ while [ "$i" -lt 16 ]; do
 	while [ "$try" -le 3 ]; do
 		printf 'backup chunk %d/15 offset 0x%06x attempt %d\n' \
 			"$i" "$offset" "$try"
-		if esptool -p "$port" -b 460800 read-flash \
+		if esptool -p "$port" -b 2000000 read-flash \
 			"$offset" 0x100000 "$chunk" &&
 		   [ "$(stat -c%s "$chunk")" -eq 1048576 ]; then
 			ok=1

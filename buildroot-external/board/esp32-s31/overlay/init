@@ -45,11 +45,21 @@ prepare_volatile_dirs()
 	return "$_volatile_failed"
 }
 
+# Zram has no on-disk signature across boots. Format the built-in device before
+# the unmodified BusyBox inittab activates fstab swap entries.
+prepare_zram()
+{
+	[ -b /dev/zram0 ] || return 0
+	[ "$(cat /sys/block/zram0/disksize)" = 0 ] || return 0
+	echo 8M > /sys/block/zram0/disksize && mkswap /dev/zram0 >/dev/null
+}
+
 enter_recovery()
 {
 	echo 'S31 recovery: using read-only root; persistent settings unavailable' >&2
 	prepare_volatile_dirs ||
 		echo 'S31 recovery: some volatile directories are unavailable' >&2
+	prepare_zram || echo 'S31 recovery: zram preparation failed' >&2
 	exec /sbin/init
 }
 
@@ -92,56 +102,6 @@ fi
 
 mkdir -p /mnt/store/upper /mnt/store/work
 
-# Migrate the previous direct-JFFS2 configuration into the path it has in the
-# OverlayFS upperdir. Do this before mounting the merged root so the raw backend
-# never needs a runtime mountpoint. Remove an old file only after an identical
-# destination exists.
-config_upper=/mnt/store/upper/etc/esp32-conf
-legacy_direct=/mnt/store/esp32-conf
-mkdir -p "$config_upper"
-chmod 0700 "$config_upper"
-if [ -d "$legacy_direct" ]; then
-	for config_name in system.conf wifi.conf bluetooth.conf overlays.conf wpa_supplicant.conf; do
-		old_config="$legacy_direct/$config_name"
-		new_config="$config_upper/$config_name"
-		[ -f "$old_config" ] || continue
-		if [ ! -e "$new_config" ]; then
-			cp -p "$old_config" "$new_config" || continue
-		fi
-		cmp -s "$old_config" "$new_config" && rm -f "$old_config"
-	done
-	rmdir "$legacy_direct" 2>/dev/null || true
-fi
-
-# Older images created an otherwise-empty /persist mountpoint in the upperdir.
-# Remove only an empty directory; never recursively delete data.
-rmdir /mnt/store/upper/persist 2>/dev/null || true
-
-# Package-owned radio userspace files were copied into the writable layer by
-# older development images.  Such copies shadow the current SquashFS forever,
-# which can silently keep an old A2DP-only BTstack binary after an update.
-# Drop only the known package paths before assembling the overlay.  Persistent
-# pairing keys and all files below /etc/esp32-conf remain untouched.
-for package_path in \
-        usr/sbin/s31-btstack-a2dp \
-        etc/init.d/S40btstack \
-        etc/init.d/S40bluetoothd \
-        etc/init.d/S42s31-a2dp \
-        usr/sbin/bluetoothd \
-        usr/bin/bluealsa \
-        usr/sbin/s31-bt-agent \
-        etc/bluetooth/main.conf; do
-        rm -f "/mnt/store/upper/$package_path"
-done
-
-# Device-tree overlays are firmware supplied by the immutable image.  Remove
-# stale copies of those same packaged names from the writable upperdir so a
-# rootfs update cannot keep loading an older or interrupted console upload.
-for package_overlay in /usr/lib/s31-overlays/*.dtbo; do
-        [ -e "$package_overlay" ] || continue
-        rm -f "/mnt/store/upper/${package_overlay#/}"
-done
-
 if ! mount -t overlay overlay \
 	-o lowerdir=/,upperdir=/mnt/store/upper,workdir=/mnt/store/work,\
 index=off,redirect_dir=off /mnt/newroot; then
@@ -166,61 +126,14 @@ mount -t devpts devpts /dev/pts 2>/dev/null || true
 prepare_volatile_dirs ||
 	echo 'S31 init: some volatile directories are unavailable' >&2
 
-# Configuration belongs in the standard /etc hierarchy and is retained by the
-# root OverlayFS writable layer.
-config_dir=/etc/esp32-conf
-mkdir -p "$config_dir"
-chmod 0700 "$config_dir"
-
-# Migrate the older /etc/s31-conf naming scheme without replacing files from
-# the direct-JFFS2 migration above.
-if [ -d /etc/s31-conf ]; then
-	for old_config in /etc/s31-conf/*.conf; do
-		[ -f "$old_config" ] || continue
-		old_name="${old_config##*/}"
-		new_name="$old_name"
-		[ "$old_name" = s31-overlay.conf ] && new_name=overlays.conf
-		[ -e "$config_dir/$new_name" ] ||
-			cp -p "$old_config" "$config_dir/$new_name"
-	done
-fi
-if [ ! -e "$config_dir/wpa_supplicant.conf" ] &&
-	grep -q '^[[:space:]]*network={[[:space:]]*$' /etc/wpa_supplicant.conf 2>/dev/null; then
-	cp -p /etc/wpa_supplicant.conf "$config_dir/wpa_supplicant.conf"
-fi
-chmod 0600 "$config_dir"/*.conf 2>/dev/null || true
-
-# Retire exact init-script names shipped by older images.  They can survive in
-# an incremental Buildroot target tree or in the writable OverlayFS upperdir
-# and would otherwise apply the radio/configuration policy a second time.
-rm -f /etc/init.d/S03s31-overlay /etc/init.d/S04s31-radio \
-	/etc/init.d/S35esp32-config
-
-# Managed USB mode replaces the older raw usb-device overlay selection. Keep
-# one persistent owner so an old selection cannot re-enable gadget mode before
-# swap and storage start. Preserve every unrelated overlay entry.
-if [ -f "$config_dir/usb.conf" ] && [ -f "$config_dir/overlays.conf" ]; then
-	usb_migration="$(mktemp "$config_dir/overlays.conf.XXXXXX")"
-	if [ -n "$usb_migration" ] &&
-	   sed '/^overlay\.usb-device=/d' "$config_dir/overlays.conf" >"$usb_migration" &&
-	   chmod 0600 "$usb_migration" &&
-	   mv "$usb_migration" "$config_dir/overlays.conf"; then
-		:
-	else
-		rm -f "$usb_migration"
-		echo 'Could not migrate the saved USB mode' >&2
-	fi
-fi
-
 # Restore the persisted DT overlay before loading the composite module.  The
 # selection is recorded in /run for diagnostics and all later policy calls.
 /usr/sbin/s31-overlay restore ||
 	echo 'S31 early overlay restore failed; continuing with the base DT' >&2
 
 # Load the selected integrated-radio overlay/module before BusyBox init starts
-# rcS and getty concurrently.  The module's relocation window is the system's
-# RAM high-water mark; keeping PID 1 as the only shell during that window
-# avoids the low-memory OOM race without changing the persisted overlay choice.
+# rcS. The relocation window is the system's RAM high-water mark; loading here
+# keeps other services out of that window and preserves the overlay selection.
 if ! grep -qw 's31.radio_autoload=0' /proc/cmdline 2>/dev/null; then
 	/etc/init.d/S00s31-radio start ||
 		echo 'S31 early radio load failed; continuing in recovery mode' >&2
@@ -234,4 +147,5 @@ fi
 sync
 echo 3 >/proc/sys/vm/drop_caches 2>/dev/null || true
 
+prepare_zram || echo 'S31 init: zram preparation failed' >&2
 exec /sbin/init

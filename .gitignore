@@ -34,3 +34,5 @@ __pycache__/
 !/tools/build/
 
 !/mk/*.mk
+
+/out-buildroot-*/

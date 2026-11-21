@@ -1,0 +1,25 @@
+config BR2_PACKAGE_S31_FIRMWARE
+	bool "S31 producer firmware inputs"
+	depends on BR2_riscv && BR2_RISCV_32
+	select BR2_PACKAGE_HOST_PYTHON3
+	help
+	  Boot/LP firmware and relocatable radio payload. The current
+	  Linux kernel, module, DTBs and root filesystem are built from source.
+	  This is an engineering-only package; review upstream blob licenses
+	  before redistribution. Never supply a prelinked radio.bin or old .ko.
+
+if BR2_PACKAGE_S31_FIRMWARE
+
+config BR2_PACKAGE_S31_FIRMWARE_ARCHIVE
+	string "Firmware input archive URL (file:// is supported)"
+	help
+	  Deterministic .tar published by esp32-s31-linux-firmware.
+	  Empty until a maintainer produces the matching input package.
+
+config BR2_PACKAGE_S31_FIRMWARE_SHA256
+	string "Trusted SHA256 of firmware input archive"
+	help
+	  Obtain independently from the producer. Buildroot verifies this
+	  digest at download before standard archive extraction.
+
+endif

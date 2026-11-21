@@ -1,4 +1,4 @@
-# Linux 6.18 for ESP32-S31
+# Linux 6.18 for ESP32-S31 and ESP32-P4
 
 MMU RV32 Linux running natively on an ESP32-S31 microcontroller.
 
@@ -21,39 +21,29 @@ Flash the precompiled image in [Releases](https://github.com/GrieferPig/esp32-s3
 
 [Over here](https://grieferpig.github.io/esp32-s31-linux-docs/en/get-started/)
 
-### Building only U-Boot
+## Building images
 
-With the normal host build tools, the RISC-V toolchain and the U-Boot/OpenSBI
-submodules prepared, `make uboot` does not require an ESP-IDF installation or
-an activated ESP-IDF environment. Install standalone
-[esptool](https://docs.espressif.com/projects/esptool/en/latest/esp32s31/installation.html)
-with ESP32-S31 support on `PATH`, or use
-`make uboot ESPTOOL=/absolute/path/to/esptool`.
-This does not remove ESP-IDF requirements from full S31 image builds, which
-also build the radio and LP firmware.
-
-The ESP32-P4 rev1.3 bootloader target uses the same standalone wrapper:
+Initialize the Buildroot submodule and run the target build:
 
 ```sh
-make uboot TARGET=esp32p4 P4_CROSS_COMPILE=/path/to/bin/riscv32-esp-elf-
+git submodule update --init buildroot
+make image TARGET=esp32s31
+make image TARGET=esp32p4 P4_CROSS_COMPILE=/path/to/bin/riscv32-esp-elf-
 ```
 
-It writes the ROM-loadable `spl-p4-80.bin` and `uboot-p4.bin` to
-`out-p4/images/`. To package an existing P4 Linux Image (including its
-initramfs) and matching DTB, use
-`make p4-fit TARGET=esp32p4 P4_LINUX_IMAGE=... P4_LINUX_DTB=...`.
-The FIT accepts a Linux Image of up to 7 MiB in flash and an in-memory
-extent of up to 14 MiB including BSS. Use `make p4-linux TARGET=esp32p4`
-to build the P4 kernel, Waveshare DTB and XZ-compressed Buildroot
-initramfs. The build targets generate files in `out-p4/images/`.
-The native P4 SPL selects 512 KiB of shared L2 with 128-byte lines. The SPL
-and U-Boot proper fit in low SRAM; the runtime heap, stack and working DTB
-use trained PSRAM. On ESP32-P4 rev1.3 the 80 MHz PSRAM configuration boots
-the verified FIT automatically after a two-second countdown. Press a key
-during the countdown for the U-Boot prompt.
-`P4_PSRAM_MHZ=200` selects the experimental high-speed PSRAM build.
-The ROM flash mode and clock default to DIO/40 MHz and are independent of the
-PSRAM profile (`P4_FLASH_MODE` and `P4_FLASH_FREQ`).
+Buildroot fetches Linux at the revision in each defconfig, builds its kernel,
+DTBs and modules, and assembles the SquashFS root filesystem. Both targets
+consume checked boot firmware from
+[firmware release fw-v0.3.0](https://github.com/GrieferPig/esp32-s31-linux-firmware/releases/tag/fw-v0.3.0).
+
+- S31 includes the ILI9341 framebuffer, resistive touchscreen and PrBoom.
+  Images are written to `out-buildroot-esp32s31/images/`.
+- P4 builds the Waveshare DTB and assembles the FIT with the release's
+  200 MHz PSRAM SPL. Its flash image is
+  `out-buildroot-esp32p4/images/fit-200/flash.bin`.
+
+Use the `linux` target to build just the kernel and DTBs. Use `OUT_ROOT`
+to select a separate output directory.
 
 ## Porting progress
 

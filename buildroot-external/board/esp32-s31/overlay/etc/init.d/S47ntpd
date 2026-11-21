@@ -1,0 +1,25 @@
+#!/bin/sh
+# BusyBox init owns startup; /etc/default/ntpd supplies the boot setting.
+ENABLED=0
+[ ! -r /etc/default/ntpd ] || . /etc/default/ntpd
+pidfile=/run/ntpd.pid
+
+start()
+{
+	[ "$ENABLED" = 1 ] || return 0
+	start-stop-daemon -S -q -o -b -m -p "$pidfile" -x /usr/sbin/ntpd -- -n
+}
+
+stop()
+{
+	start-stop-daemon -K -q -o -p "$pidfile" || return 1
+	rm -f "$pidfile"
+}
+
+case "${1:-}" in
+	start) start ;;
+	stop) stop ;;
+	restart|reload) stop && start ;;
+	status) start-stop-daemon -K -q -t -p "$pidfile" ;;
+	*) echo "Usage: $0 {start|stop|restart|status}" >&2; exit 2 ;;
+esac

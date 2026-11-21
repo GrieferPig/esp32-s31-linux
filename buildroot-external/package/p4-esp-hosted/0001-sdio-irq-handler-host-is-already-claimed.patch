@@ -1,0 +1,28 @@
+From: s31linux ESP32-P4 port
+Subject: [PATCH] sdio: do not claim the host recursively from IRQ handler
+
+Linux invokes an SDIO function IRQ handler with the MMC host already claimed.
+Using ACQUIRE_LOCK in esp_handle_isr() therefore deadlocks in sdio_claim_host()
+on current kernels.  Use the driver's existing LOCK_ALREADY_ACQUIRED mode for
+the interrupt-status read and clear operations.
+
+--- a/esp_hosted_ng/host/sdio/esp_sdio.c
++++ b/esp_hosted_ng/host/sdio/esp_sdio.c
+@@ -148,7 +148,7 @@ static void esp_handle_isr(struct sdio_func *func)
+ 		return;
+ 
+ 	ret = esp_read_reg(context, ESP_SLAVE_INT_ST_REG,
+-			(u8 *) regs, 3 * sizeof(u32), ACQUIRE_LOCK);
++			(u8 *) regs, 3 * sizeof(u32), LOCK_ALREADY_ACQUIRED);
+ 	CHECK_SDIO_RW_ERROR(ret);
+ 
+ 	/* Stash PACKET_LEN alongside INT_ST so the first read_packet skips its
+@@ -164,7 +164,7 @@ static void esp_handle_isr(struct sdio_func *func)
+ 
+ 	/* Clear interrupt status */
+ 	ret = esp_write_reg(context, ESP_SLAVE_INT_CLR_REG,
+-			(u8 *) regs, sizeof(u32), ACQUIRE_LOCK);
++			(u8 *) regs, sizeof(u32), LOCK_ALREADY_ACQUIRED);
+ 	CHECK_SDIO_RW_ERROR(ret);
+ }
+

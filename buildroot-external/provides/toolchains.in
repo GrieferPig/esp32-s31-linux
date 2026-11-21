@@ -1,0 +1,14 @@
+config BR2_TOOLCHAIN_EXTERNAL_S31
+	bool "ESP32-S31 Linux musl GCC 15.2.0"
+	depends on BR2_riscv && BR2_RISCV_32
+	depends on BR2_HOSTARCH = "x86_64"
+	depends on !BR2_ARCH_NEEDS_GCC_AT_LEAST_16
+	select BR2_TOOLCHAIN_EXTERNAL_MUSL
+	select BR2_INSTALL_LIBSTDCPP
+	select BR2_TOOLCHAIN_HAS_SSP
+	select BR2_TOOLCHAIN_HAS_SSP_STRONG
+	select BR2_TOOLCHAIN_HEADERS_AT_LEAST_6_12
+	select BR2_TOOLCHAIN_GCC_AT_LEAST_15
+	help
+	  Download the pinned ESP32-S31 Linux/musl toolchain. Buildroot
+	  verifies its archive hash and installs it in the host directory.

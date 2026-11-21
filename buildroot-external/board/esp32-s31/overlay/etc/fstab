@@ -3,3 +3,6 @@ devtmpfs /dev     devtmpfs defaults 0 0
 proc     /proc    proc     defaults 0 0
 sysfs    /sys     sysfs    defaults 0 0
 devpts   /dev/pts devpts   defaults 0 0
+
+# Compressed RAM swap; /init formats it before BusyBox init runs swapon -a.
+/dev/zram0 none swap defaults,pri=100 0 0
