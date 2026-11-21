@@ -11,12 +11,24 @@ $(error P4_PSRAM_MHZ must be 80 or 200)
 endif
 
 P4_UBOOT_OUT := $(UBOOT_OUT)/p4-$(P4_PSRAM_MHZ)
+P4_BOOT_DIR ?=
+ifeq ($(strip $(P4_BOOT_DIR)),)
+P4_PACK_BOOT_DIR := $(IMAGES_DIR)
+P4_BOOT_PREREQUISITE := uboot
+P4_MKIMAGE ?= $(P4_UBOOT_OUT)/tools/mkimage
+else
+P4_PACK_BOOT_DIR := $(abspath $(P4_BOOT_DIR))
+P4_BOOT_PREREQUISITE := p4-release-boot-inputs
+P4_MKIMAGE ?= mkimage
+endif
+P4_PACK_SPL := $(P4_PACK_BOOT_DIR)/spl-p4-$(P4_PSRAM_MHZ).bin
+P4_PACK_UBOOT := $(P4_PACK_BOOT_DIR)/uboot-p4.bin
 
-.PHONY: help uboot bootloader p4-fit p4-fit-inputs p4-uboot-compiler-check
+.PHONY: help uboot bootloader p4-fit p4-fit-inputs p4-uboot-compiler-check p4-release-boot-inputs
 help:
 	@printf '%s\n' 'ESP32-P4 rev1.3: make uboot TARGET=esp32p4 [P4_CROSS_COMPILE=...] [ESPTOOL=...]' \
 		'Package with an existing P4 kernel: make p4-fit TARGET=esp32p4 P4_LINUX_IMAGE=... P4_LINUX_DTB=... P4_ROOTFS_IMAGE=...' \
-		'Build the complete P4 NOR image: make image TARGET=esp32p4' \
+		'Build the complete P4 NOR image: make image TARGET=esp32p4 [P4_BOOT_DIR=/path/to/verified/boot-inputs]' \
 		'Build the P4 SquashFS rootfs: make p4-rootfs TARGET=esp32p4'
 bootloader: uboot
 p4-uboot-compiler-check:
@@ -45,18 +57,23 @@ uboot: uboot-esptool-check p4-uboot-compiler-check
 p4-fit-inputs:
 	@test -f "$(P4_LINUX_IMAGE)" && test -f "$(P4_LINUX_DTB)" && test -f "$(P4_ROOTFS_IMAGE)" || { echo 'ERROR: provide P4 xipImage, DTB and SquashFS artifacts.' >&2; exit 1; }
 
+p4-release-boot-inputs:
+	@test -s "$(P4_PACK_SPL)" && test -s "$(P4_PACK_UBOOT)" || { \
+		echo "ERROR: missing $(P4_PACK_SPL) or $(P4_PACK_UBOOT)" >&2; exit 1; }
+	@command -v "$(P4_MKIMAGE)" >/dev/null || { echo "ERROR: missing $(P4_MKIMAGE)" >&2; exit 1; }
+
 define p4_pack_fit
-	python3 "$(ROOT)/ports/esp32p4-reconstructed/pack-fit.py" --mkimage "$(P4_UBOOT_OUT)/tools/mkimage" \
+	python3 "$(ROOT)/ports/esp32p4-reconstructed/pack-fit.py" --mkimage "$(P4_MKIMAGE)" \
 		--rootfs "$(P4_ROOTFS_IMAGE)" \
-		"$(IMAGES_DIR)/spl-p4-$(P4_PSRAM_MHZ).bin" "$(IMAGES_DIR)/uboot-p4.bin" \
+		"$(P4_PACK_SPL)" "$(P4_PACK_UBOOT)" \
 		"$(P4_LINUX_IMAGE)" "$(P4_LINUX_DTB)" "$(IMAGES_DIR)/fit-$(P4_PSRAM_MHZ)"
 endef
 
-p4-fit: p4-fit-inputs uboot
+p4-fit: p4-fit-inputs $(P4_BOOT_PREREQUISITE)
 	$(p4_pack_fit)
 
 .PHONY: image
-image: p4-rootfs uboot
+image: p4-rootfs $(P4_BOOT_PREREQUISITE)
 	$(p4_pack_fit)
 
 # Board-specific Buildroot output. Keep the S31 rootfs rules independent.

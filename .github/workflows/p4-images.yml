@@ -1,0 +1,84 @@
+name: Build P4 Image
+
+on:
+  push:
+    branches: [main, 'p4/**']
+    paths:
+      - '.github/workflows/p4-images.yml'
+      - 'Makefile'
+      - 'mk/**'
+      - 'configs/build-versions.mk'
+      - 'ports/esp32p4-reconstructed/**'
+      - 'buildroot-external/**'
+      - 'buildroot'
+      - 'linux-esp32-s31'
+      - '.gitmodules'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  build:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 120
+    steps:
+      - name: Check out source
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+        with:
+          persist-credentials: false
+
+      - name: Fetch and verify the latest P4 boot release
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          repo=GrieferPig/esp32-s31-linux-firmware
+          package=p4-firmware-inputs.tar
+          release=$(gh api "repos/$repo/releases/latest")
+          tag=$(jq -er '.tag_name' <<< "$release")
+          digest=$(jq -er --arg name "$package" '
+            .assets[] | select(.name == $name) | .digest |
+            select(test("^sha256:[0-9a-f]{64}$"))' <<< "$release")
+          gh release download "$tag" --repo "$repo" --pattern "$package" --dir "$RUNNER_TEMP"
+          python3 ports/esp32p4-reconstructed/unpack-boot.py \
+            "$RUNNER_TEMP/$package" "${digest#sha256:}" "$RUNNER_TEMP/p4-boot"
+          printf 'Firmware release: %s\n%s  %s\n' "$tag" "${digest#sha256:}" "$package" |
+            tee "$RUNNER_TEMP/p4-firmware-source.txt"
+
+      - name: Check out Linux and Buildroot
+        run: git submodule update --init --depth 1 linux-esp32-s31 buildroot
+
+      - name: Install build dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y \
+            bc bison build-essential cpio curl device-tree-compiler file flex gperf \
+            jq libelf-dev libssl-dev patch perl pkg-config python3 rsync swig \
+            u-boot-tools unzip wget xz-utils
+
+      - name: Install the pinned ESP RISC-V toolchain
+        run: |
+          versions=configs/build-versions.mk
+          idf_ref=$(awk '$1 == "ESP_IDF_REF" {print $3}' "$versions")
+          version=$(awk '$1 == "ESP_ELF_RELEASE" {print $3}' "$versions")
+          metadata=$(curl -fsSL "https://raw.githubusercontent.com/espressif/esp-idf/$idf_ref/tools/tools.json")
+          compiler=$(jq -er --arg version "$version" '
+            .tools[] | select(.name == "riscv32-esp-elf") |
+            .versions[] | select(.name == $version) | .["linux-amd64"]' <<< "$metadata")
+          archive="$RUNNER_TEMP/riscv32-esp-elf.tar.xz"
+          curl -fsSL "$(jq -er '.url' <<< "$compiler")" -o "$archive"
+          printf '%s  %s\n' "$(jq -er '.sha256' <<< "$compiler")" "$archive" | sha256sum --check -
+          tar -xf "$archive" -C "$RUNNER_TEMP"
+          echo "$RUNNER_TEMP/riscv32-esp-elf/bin" >> "$GITHUB_PATH"
+
+      - name: Build Linux and assemble the P4 image
+        run: |
+          make TARGET=esp32p4 P4_BOOT_DIR="$RUNNER_TEMP/p4-boot" image
+          cp "$RUNNER_TEMP/p4-firmware-source.txt" out-p4/images/fit-200/
+
+      - name: Upload the P4 image
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
+        with:
+          name: p4-images-${{ github.sha }}
+          path: out-p4/images/fit-200/
+          if-no-files-found: error
