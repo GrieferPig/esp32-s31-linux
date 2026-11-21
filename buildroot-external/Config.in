@@ -1,5 +1,7 @@
 source "$BR2_EXTERNAL_ESP32_S31_PATH/toolchain/toolchain-external-s31/Config.in.options"
 
+source "$BR2_EXTERNAL_ESP32_S31_PATH/package/esp32-dt/Config.in"
+
 menu "ESP32-S31 packages"
 
 source "$BR2_EXTERNAL_ESP32_S31_PATH/package/s31-firmware/Config.in"
@@ -8,4 +10,8 @@ source "$BR2_EXTERNAL_ESP32_S31_PATH/package/esp-simd/Config.in"
 source "$BR2_EXTERNAL_ESP32_S31_PATH/package/s31-tools/Config.in"
 source "$BR2_EXTERNAL_ESP32_S31_PATH/package/btstack-s31/Config.in"
 
+endmenu
+
+menu "ESP32-P4 packages"
+source "$BR2_EXTERNAL_ESP32_S31_PATH/package/p4-firmware/Config.in"
 endmenu

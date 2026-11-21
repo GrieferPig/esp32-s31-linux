@@ -1,11 +1,18 @@
 #!/bin/sh
 # Edit native configuration files; run services only through explicit actions.
-set -u
 libdir="${ESP32_CONFIG_LIB_DIR:-/usr/lib/esp32-config}"
 . "$libdir/common.sh"
-. "$libdir/interfaces.sh"
-. "$libdir/usb.sh"
+. "$libdir/device-tree.sh"
 CONFIG_ROOT="${ESP32_CONFIG_ROOT:-}"
+soc=s31
+compatible="$CONFIG_ROOT/sys/firmware/devicetree/base/compatible"
+if [ -r "$compatible" ] && tr '\000' '\n' <"$compatible" | grep -qx 'espressif,esp32p4'; then
+	soc=p4
+else
+	set -u
+	. "$libdir/interfaces.sh"
+	. "$libdir/usb.sh"
+fi
 
 setting()
 {
@@ -97,7 +104,8 @@ show_status()
 	ip address
 	printf '\nSWAP\n'; cat /proc/swaps
 	printf '\nMOUNTS\n'; cat /proc/mounts
-	printf '\nINTERFACES\n'; s31-overlay status
+	printf '\nINTERFACES\n'
+	if [ "$soc" = s31 ]; then s31-overlay status; else esp32-dt active; fi
 }
 
 actions_menu()
@@ -130,16 +138,62 @@ main_menu()
 			fstab 'Additional filesystem mounts: fstab.extra' timezone 'Timezone: /etc/localtime' ntp 'NTP servers: ntp.conf' \
 			ntp-service 'NTP startup: /etc/default/ntpd' startup 'Startup program: shell script' \
 			startup-service 'Program startup: /etc/default/userapp' radio-options 'Radio module options: modprobe.d' \
-			interfaces 'Live peripheral routes and USB' usb-network 'USB address: interfaces.d/usb' \
+			interfaces 'Live peripheral routes and USB' device-tree 'Edit device tree properties' usb-network 'USB address: interfaces.d/usb' \
 			usb-settings 'USB startup role: /etc/default/s31-usb' actions 'Apply, stop and diagnostic actions')" || return 0
 		UI_NOTICE=''
 		case "$choice" in
 			timezone) choose_timezone ;;
 			interfaces) interfaces_menu ;;
+			device-tree) device_tree_menu ;;
 			actions) actions_menu ;;
 			*) edit_setting "$choice" ;;
 		esac
 	done
+}
+
+device_tree_menu()
+{
+	local choice path property type value
+	while :; do
+		printf '\nESP32 device tree\n'
+		printf '%s\n' '1  System status' '2  List device tree nodes' \
+			'3  List node properties' '4  Read a property in hex' \
+			'5  Save a property to the staged device tree' 'q  Exit'
+		printf 'Selection: '
+		IFS= read -r choice || return 0
+		case "$choice" in
+			1) show_status ;;
+			2) dt_cli nodes ;;
+			3|4|5)
+				printf 'Node path: '; IFS= read -r path || return 0
+				if [ "$choice" = 3 ]; then dt_cli properties "$path"; continue; fi
+				printf 'Property: '; IFS= read -r property || return 0
+				if [ "$choice" = 4 ]; then dt_cli get "$path" "$property"; continue; fi
+				printf 'Type (string, u32, hex, empty): '
+				IFS= read -r type || return 0
+				if [ "$type" = empty ]; then
+					dt_cli save "$path" "$property" "$type"
+				else
+					printf 'Value: '; IFS= read -r value || return 0
+					dt_cli save "$path" "$property" "$type" "$value"
+				fi
+				;;
+			q) return 0 ;;
+		esac
+	done
+}
+
+overlay_cli()
+{
+	if [ "$soc" = s31 ]; then
+		s31-overlay "$@"
+		return
+	fi
+	case "$1" in
+		active|apply|remove) esp32-dt "$@" ;;
+		status|list) esp32-dt active ;;
+		*) warn 'Usage on P4: esp32-config overlay status|apply FILE|remove NAME'; return 2 ;;
+	esac
 }
 
 usage()
@@ -155,6 +209,7 @@ Usage:
   esp32-config password
   esp32-config interfaces              live peripheral configuration menu
   esp32-config overlay COMMAND [ARG ...]
+  esp32-config dt nodes|properties|get|save|export|discard
   esp32-config usb status|configure MODE|apply|stop|menu
   esp32-config radio start|stop|restart
 
@@ -173,6 +228,13 @@ command="${1:-menu}"
 case "$command" in -h|--help|help) usage; exit 0 ;; esac
 require_root
 prepare_runtime || die 'Cannot create the runtime directory.'
+if [ "$soc" = p4 ]; then
+	case "$command" in
+		menu) [ "$#" -eq 0 ] && [ -t 0 ] && [ -t 1 ] || exit 2; device_tree_menu; exit $? ;;
+		interfaces) [ "$#" -eq 0 ] || exit 2; dt_cli nodes; exit $? ;;
+		usb|radio) die 'This action is available on S31.' ;;
+	esac
+fi
 case "$command" in
 	menu|edit|interfaces)
 		have dialog && [ -t 0 ] && [ -t 1 ] && [ -t 2 ] || die 'A terminal and dialog are required.'
@@ -193,7 +255,8 @@ case "$command" in
 	password) [ "$#" -eq 0 ] || exit 2; passwd ;;
 	status) [ "$#" -eq 0 ] || exit 2; show_status ;;
 	interfaces) [ "$#" -eq 0 ] || exit 2; interfaces_menu ;;
-	overlay) [ "$#" -gt 0 ] || exit 2; s31-overlay "$@" ;;
+	dt) [ "$#" -gt 0 ] || exit 2; dt_cli "$@" ;;
+	overlay) [ "$#" -gt 0 ] || exit 2; overlay_cli "$@" ;;
 	usb)
 		if [ "${1:-}" = menu ]; then ui_prepare_terminal; usb_menu; else usb_cli "$@"; fi ;;
 	radio) [ "$#" -eq 1 ] || exit 2; "$CONFIG_ROOT/etc/init.d/S00s31-radio" "$1" ;;

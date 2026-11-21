@@ -6,6 +6,7 @@ OUT_ROOT ?= $(ROOT)/out-buildroot-$(TARGET)
 OUTPUT := $(abspath $(OUT_ROOT))
 BR2_DL_DIR ?= $(ROOT)/cache/downloads/buildroot
 JOBS ?= $(shell nproc)
+export P4_CROSS_COMPILE ?= riscv32-esp-elf-
 BUILDROOT_SOURCE := $(ROOT)/buildroot
 
 ifeq ($(TARGET),esp32s31)
@@ -13,8 +14,10 @@ DEFCONFIG := esp32s31_defconfig
 else ifeq ($(TARGET),esp32s31-korvo)
 DEFCONFIG := esp32s31_defconfig
 KORVO_DEFCONFIG := $(OUTPUT)/.korvo_defconfig
+else ifeq ($(TARGET),esp32p4)
+DEFCONFIG := esp32p4_rootfs_defconfig
 else
-$(error Unknown TARGET "$(TARGET)"; use esp32s31 or esp32s31-korvo)
+$(error Unknown TARGET "$(TARGET)"; use esp32s31, esp32s31-korvo or esp32p4)
 endif
 
 BUILDROOT = $(MAKE) -C "$(BUILDROOT_SOURCE)" O="$(OUTPUT)" \
@@ -56,7 +59,7 @@ linux: $(OUTPUT)/.config
 	$(BUILDROOT) linux
 
 help:
-	@printf '%s\n' 'make image TARGET=esp32s31' \
+	@printf '%s\n' 'make image TARGET=esp32s31 or TARGET=esp32p4' \
 		'make image TARGET=esp32s31-korvo builds only the Korvo image' \
 		'make linux TARGET=... builds the kernel without assembling the image' \
 		'Use OUT_ROOT=... to select an independent Buildroot output directory'

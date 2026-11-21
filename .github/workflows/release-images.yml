@@ -1,8 +1,8 @@
-name: Build S31 Images
+name: Build S31 and P4 Images
 
 on:
   push:
-    branches: [main, feature/p4-integration]
+    branches: [main, feature/p4-integration, 'p4/**']
   workflow_dispatch:
 
 permissions:
@@ -35,8 +35,26 @@ jobs:
             git gperf jq libelf-dev libncurses-dev libssl-dev patch perl pkg-config python3 \
             rsync squashfs-tools swig u-boot-tools unzip wget xz-utils
 
+      - name: Install the pinned ESP RISC-V toolchain
+        run: |
+          versions=configs/build-versions.mk
+          idf_ref=$(awk '$1 == "ESP_IDF_REF" {print $3}' "$versions")
+          version=$(awk '$1 == "ESP_ELF_RELEASE" {print $3}' "$versions")
+          metadata=$(curl -fsSL "https://raw.githubusercontent.com/espressif/esp-idf/$idf_ref/tools/tools.json")
+          compiler=$(jq -er --arg version "$version" '
+            .tools[] | select(.name == "riscv32-esp-elf") |
+            .versions[] | select(.name == $version) | .["linux-amd64"]' <<< "$metadata")
+          archive="$RUNNER_TEMP/riscv32-esp-elf.tar.xz"
+          curl -fsSL "$(jq -er '.url' <<< "$compiler")" -o "$archive"
+          printf '%s  %s\n' "$(jq -er '.sha256' <<< "$compiler")" "$archive" | sha256sum --check -
+          tar -xf "$archive" -C "$RUNNER_TEMP"
+          echo "$RUNNER_TEMP/riscv32-esp-elf/bin" >> "$GITHUB_PATH"
+
       - name: Build S31 full-flash images
         run: make TARGET=esp32s31 JOBS="$BR2_JLEVEL" image
+
+      - name: Build P4 full-flash images
+        run: make TARGET=esp32p4 JOBS="$BR2_JLEVEL" image
 
       - name: Stage full-flash images
         run: |
@@ -44,6 +62,7 @@ jobs:
           install -m 0644 \
             out-buildroot-esp32s31/images/s31-{generic,coreboard}_full_flash.bin \
             out-buildroot-esp32s31-korvo/images/s31-korvo_full_flash.bin \
+            out-buildroot-esp32p4/images/p4-{generic,waveshare-wifi6-dev-kit}_full_flash.bin \
             "$RUNNER_TEMP/full-flash-images/"
 
       - name: Upload full-flash images

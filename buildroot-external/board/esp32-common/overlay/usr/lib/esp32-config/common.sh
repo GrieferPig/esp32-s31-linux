@@ -7,7 +7,7 @@ UI_NOTICE="${UI_NOTICE:-}"
 
 prepare_runtime()
 {
-	umask 077
+	umask 077 || return 1
 	mkdir -p "$RUN_DIR"
 }
 

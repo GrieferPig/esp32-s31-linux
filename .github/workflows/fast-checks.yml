@@ -13,7 +13,9 @@ jobs:
       - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
         with:
           persist-credentials: false
-      - name: Configure S31
+      - name: Configure S31 and P4
         run: |
           git submodule update --init --depth 1 buildroot
-          make TARGET=esp32s31 OUT_ROOT="$RUNNER_TEMP/esp32s31" config
+          for target in esp32s31 esp32p4; do
+            make TARGET="$target" OUT_ROOT="$RUNNER_TEMP/$target" config
+          done
