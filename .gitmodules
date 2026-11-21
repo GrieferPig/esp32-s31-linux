@@ -12,7 +12,7 @@
 [submodule "u-boot-esp32-s31"]
 	path = u-boot-esp32-s31
 	url = https://github.com/GrieferPig/u-boot-esp32-s31.git
-	branch = v2024.07-esp32s31
+	branch = v2024.07-esp32
 [submodule "docs"]
 	path = docs
 	url = ../esp32-s31-linux-docs
