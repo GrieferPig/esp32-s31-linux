@@ -120,8 +120,7 @@ def verify_native_images(output_root, artifacts):
     config = (output_root / "linux/.config").read_text().splitlines()
     if "CONFIG_FB_ESP32S31_I80=y" in config:
         name = "esp32s31_generic.dtb"
-        s31_dtb = "esp32s31-i80-15mhz.dtb" if "CONFIG_FB_ESP32S31_I80_15MHZ=y" in config else "esp32s31-i80-ili9341.dtb"
-        native_images[name] = str(Path(native_images[name]).with_name(s31_dtb))
+        native_images[name] = str(Path(native_images[name]).with_name("esp32s31-i80-ili9341.dtb"))
     for name, native in native_images.items():
         if artifacts.get(name) != checked_digest(output_root / native):
             raise ValueError(f"published {name} differs from current native kernel output")

@@ -7,7 +7,7 @@
   },
   "linux": {
     "repository": "GrieferPig/linux-esp32-s31",
-    "commit": "b6d6a4ee44f050324484094d03a79b0df5ad8ab1",
+    "commit": "a54d364934b5ebbca1c725930a90b5914b5f35ff",
     "defconfig": "esp32p4_reconstructed_defconfig",
     "default_dtb": "espressif/esp32p4-waveshare-wifi6-dev-kit.dtb",
     "handoff_dtb": "espressif/esp32p4-generic.dtb",
@@ -38,7 +38,7 @@
   "buildroot": {
     "repository": "buildroot/buildroot",
     "baseline": "cb857ba4c87a93e5265a9e4a3f32071abf39e14a",
-    "commit": "d7971f8c46d17aa9d45ed20544966cb80cbc541e",
+    "commit": "737decf03e7aab0b7c4398603df05ae89c4e44ca",
     "external_defconfig": "esp32p4_rootfs_defconfig",
     "make_target": "p4-rootfs"
   }

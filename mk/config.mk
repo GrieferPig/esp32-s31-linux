@@ -74,16 +74,11 @@ LINUX_CMDLINE ?= earlycon=esp32s31uart,mmio,0x2038a000,115200 console=ttyS0,1152
 
 # The shield claims GPIOs also used by optional S31 peripherals.
 S31_I80_LCD ?= 0
-S31_I80_15MHZ ?= 0
 ifeq ($(TARGET):$(S31_I80_LCD),esp32s31:1)
 KERNEL_FRAGMENTS += $(ROOT)/configs/kernel/s31-i80-ili9341.config
 ROOTFS_FRAGMENTS += $(ROOT)/configs/rootfs/s31-i80-doom.config
 LINUX_CMDLINE := console=tty0 $(LINUX_CMDLINE)
 S31_NATIVE_DTB := esp32s31-i80-ili9341.dtb
-ifeq ($(S31_I80_15MHZ),1)
-KERNEL_FRAGMENTS += $(ROOT)/configs/kernel/s31-i80-15mhz.config
-S31_NATIVE_DTB := esp32s31-i80-15mhz.dtb
-endif
 endif
 
 HOST_PYTHON ?= $(shell command -v python3)

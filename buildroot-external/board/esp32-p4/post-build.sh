@@ -5,7 +5,12 @@ set -eu
 target_dir="$1"
 
 chmod 0755 "${target_dir}/etc/init.d/S35esp-hosted"
-chmod 0755 "${target_dir}/usr/sbin/p4-soak"
+
+# Buildroot retains files from disabled packages and removed overlays in incremental builds.
+rm -f \
+	"${target_dir}/usr/bin/coremark" \
+	"${target_dir}/usr/sbin/esp-periph-test" \
+	"${target_dir}/usr/sbin/p4-soak"
 
 # Keep association and address assignment manual during bring-up.  The
 # ESP-Hosted module is loaded by S35esp-hosted before an operator uses iw.

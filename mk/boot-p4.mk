@@ -60,7 +60,6 @@ image: p4-rootfs uboot
 	$(p4_pack_fit)
 
 # Board-specific Buildroot output. Keep the S31 rootfs rules independent.
-P4_COREMARK_CC ?= $(P4_CROSS_COMPILE)gcc
 P4_BUILDROOT_MAKE = $(MAKE) -C "$(BUILDROOT_DIR)" O="$(BUILDROOT_OUT)" \
 	BR2_EXTERNAL="$(BUILDROOT_EXTERNAL)" BR2_DL_DIR="$(BUILDROOT_DL_DIR)" BR2_JLEVEL="$(JOBS)"
 
@@ -71,7 +70,7 @@ p4-rootfs-config:
 	$(P4_BUILDROOT_MAKE) esp32p4_rootfs_defconfig
 
 p4-rootfs: p4-rootfs-config p4-linux
-	$(P4_BUILDROOT_MAKE) COREMARK_COMPUTE_CC="$(P4_COREMARK_CC)" \
+	$(P4_BUILDROOT_MAKE) \
 		BR2_ROOTFS_OVERLAY="$(BUILDROOT_EXTERNAL)/board/esp32-p4/overlay $(P4_HOSTED_OVERLAY)"
 	@mkdir -p "$(IMAGES_DIR)"
 	cp "$(BUILDROOT_OUT)/images/rootfs.squashfs" "$(P4_ROOTFS_IMAGE)"
