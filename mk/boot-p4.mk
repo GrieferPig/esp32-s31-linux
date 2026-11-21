@@ -91,7 +91,8 @@ P4_HOSTED_PATCH := $(BUILDROOT_EXTERNAL)/board/esp32-p4/esp-hosted/0001-sdio-irq
 P4_HOSTED_OVERLAY := $(STAGING_DIR)/esp-hosted
 P4_ROOTFS_IMAGE ?= $(IMAGES_DIR)/rootfs-p4.squashfs
 P4_PULSE_MODULES := rc-core.ko ir-esp32p4-rmt.ko
-P4_BOARD_DTB := esp32p4-waveshare-touch-display-2.dtb
+P4_BOARD_DTB := esp32p4-waveshare-wifi6-dev-kit.dtb
+P4_GENERIC_DTB := esp32p4-generic.dtb
 P4_LINUX_IMAGE ?= $(IMAGES_DIR)/xipImage-p4
 P4_LINUX_DTB ?= $(IMAGES_DIR)/$(P4_BOARD_DTB)
 P4_LINUX_MAKE = $(MAKE) -C "$(LINUX_DIR)" O="$(LINUX_OUT)" ARCH=riscv CROSS_COMPILE="$(P4_CROSS_COMPILE)" -j$(JOBS)
@@ -114,10 +115,7 @@ $(P4_HOSTED_SOURCE)/.prepared: $(P4_HOSTED_ARCHIVE) $(P4_HOSTED_PATCH)
 linux: p4-linux
 p4-linux: p4-uboot-compiler-check $(P4_HOSTED_SOURCE)/.prepared | $(LINUX_OUT) $(IMAGES_DIR)
 	$(P4_LINUX_MAKE) esp32p4_reconstructed_defconfig
-	"$(LINUX_DIR)/scripts/kconfig/merge_config.sh" -m -r -O "$(LINUX_OUT)" "$(LINUX_OUT)/.config" \
-		"$(LINUX_DIR)/arch/riscv/configs/esp32p4_native_peripherals.config"
-	$(P4_LINUX_MAKE) olddefconfig
-	$(P4_LINUX_MAKE) xipImage modules espressif/$(P4_BOARD_DTB)
+	$(P4_LINUX_MAKE) xipImage modules espressif/$(P4_BOARD_DTB) espressif/$(P4_GENERIC_DTB)
 	$(P4_LINUX_MAKE) M="$(P4_HOSTED_SOURCE)" target=sdio modules
 	mkdir -p "$(P4_HOSTED_OVERLAY)/lib/modules"
 	"$(P4_CROSS_COMPILE)strip" --strip-debug -o "$(P4_HOSTED_OVERLAY)/lib/modules/esp32_sdio.ko" "$(P4_HOSTED_SOURCE)/esp32_sdio.ko"
@@ -127,3 +125,4 @@ p4-linux: p4-uboot-compiler-check $(P4_HOSTED_SOURCE)/.prepared | $(LINUX_OUT) $
 	done
 	cp "$(LINUX_OUT)/arch/riscv/boot/xipImage" "$(P4_LINUX_IMAGE)"
 	cp "$(LINUX_OUT)/arch/riscv/boot/dts/espressif/$(P4_BOARD_DTB)" "$(P4_LINUX_DTB)"
+	cp "$(LINUX_OUT)/arch/riscv/boot/dts/espressif/$(P4_GENERIC_DTB)" "$(IMAGES_DIR)/$(P4_GENERIC_DTB)"

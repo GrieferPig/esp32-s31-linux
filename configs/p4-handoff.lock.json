@@ -7,15 +7,10 @@
   },
   "linux": {
     "repository": "GrieferPig/linux-esp32-s31",
-    "commit": "5819ffe9701e996cae2d5856b9fccefa075a86e2",
-    "config_fragment": "esp32p4_native_peripherals.config",
-    "default_dtb": "espressif/esp32p4-hardware.dtb",
-    "opt_in_dtbs": [
-      "espressif/esp32p4-waveshare-native-peripherals.dtb",
-      "espressif/esp32p4-waveshare-native-peripherals-spi.dtb",
-      "espressif/esp32p4-waveshare-touch-display-2.dtb",
-      "espressif/esp32p4-waveshare-touch-display-2-uart4-uhci.dtb"
-    ],
+    "commit": "b6d6a4ee44f050324484094d03a79b0df5ad8ab1",
+    "defconfig": "esp32p4_reconstructed_defconfig",
+    "default_dtb": "espressif/esp32p4-waveshare-wifi6-dev-kit.dtb",
+    "handoff_dtb": "espressif/esp32p4-generic.dtb",
     "initramfs_sha256": "b6e380d8b3c1c8a8656b5065ba50a89ecea4a63a447c19b5507f06112f8833b9"
   },
   "uboot": {
