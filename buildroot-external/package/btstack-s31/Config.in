@@ -2,11 +2,11 @@ config BR2_PACKAGE_BTSTACK_S31
 	bool "btstack-s31"
 	depends on BR2_USE_MMU
 	depends on BR2_TOOLCHAIN_HAS_THREADS
+	select BR2_PACKAGE_BLUEZ5_UTILS_HEADERS
 	help
-	  Minimal BTstack Classic A2DP sink and BLE GAP/GATT peripheral for the
-	  ESP32-S31 direct H4 controller endpoint. The transport is self-contained and does not
-	  build or install BlueZ, D-Bus, BlueALSA, or a pairing agent.
+	  Upstream BTstack Linux HCI examples: a2dp_sink_demo, gatt_counter
+	  and hfp_hf_demo. Run them manually against hci0, one at a time.
+	  Pairing keys use upstream's temporary storage under /tmp.
 
 	  BTstack is licensed for personal/non-commercial use. Commercial use
-	  requires a separate license from BlueKitchen GmbH. This package is
-	  therefore intended only for experimental non-commercial images.
+	  requires a separate license from BlueKitchen GmbH.

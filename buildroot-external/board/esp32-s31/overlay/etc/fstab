@@ -1,5 +1,9 @@
-# Static filesystems mounted by /init.
+# Static and writable filesystems mounted by BusyBox init.
 devtmpfs /dev     devtmpfs defaults 0 0
 proc     /proc    proc     defaults 0 0
 sysfs    /sys     sysfs    defaults 0 0
 devpts   /dev/pts devpts   defaults 0 0
+
+tmpfs /run tmpfs mode=0755,nosuid,nodev 0 0
+tmpfs /tmp tmpfs mode=1777,nosuid,nodev 0 0
+mtd:persist /persist jffs2 defaults 0 0

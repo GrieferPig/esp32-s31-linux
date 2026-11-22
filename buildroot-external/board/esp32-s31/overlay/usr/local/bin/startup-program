@@ -1,0 +1,3 @@
+#!/bin/sh
+# Replace this command; enable the service in /etc/default/userapp.
+exec /bin/true

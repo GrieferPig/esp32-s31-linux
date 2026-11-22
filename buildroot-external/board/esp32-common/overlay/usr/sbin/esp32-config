@@ -1,0 +1,264 @@
+#!/bin/sh
+# Edit native configuration files; run services only through explicit actions.
+libdir="${ESP32_CONFIG_LIB_DIR:-/usr/lib/esp32-config}"
+. "$libdir/common.sh"
+. "$libdir/device-tree.sh"
+CONFIG_ROOT="${ESP32_CONFIG_ROOT:-}"
+soc=s31
+compatible="$CONFIG_ROOT/sys/firmware/devicetree/base/compatible"
+if [ -r "$compatible" ] && tr '\000' '\n' <"$compatible" | grep -qx 'espressif,esp32p4'; then
+	soc=p4
+else
+	set -u
+	. "$libdir/interfaces.sh"
+	. "$libdir/usb.sh"
+fi
+
+setting()
+{
+	CONFIG_MODE=0644
+	case "$1" in
+		hostname) CONFIG_FILE=/persist/etc/hostname ;;
+		network) CONFIG_FILE=/etc/network/interfaces.d/wlan0 ;;
+		wifi) CONFIG_FILE=/persist/etc/wpa_supplicant.conf; CONFIG_MODE=0600 ;;
+		dns) CONFIG_FILE=/persist/etc/resolv.static ;;
+		fstab) CONFIG_FILE=/persist/etc/fstab.extra ;;
+		ntp) CONFIG_FILE=/etc/ntp.conf ;;
+		ntp-service) CONFIG_FILE=/etc/default/ntpd ;;
+		startup) CONFIG_FILE=/usr/local/bin/startup-program; CONFIG_MODE=0755 ;;
+		startup-service) CONFIG_FILE=/etc/default/userapp ;;
+		radio-options) CONFIG_FILE=/etc/modprobe.d/esp32s31-radio.conf ;;
+		usb-network) CONFIG_FILE=/etc/network/interfaces.d/usb ;;
+		usb-settings) CONFIG_FILE=/etc/default/s31-usb ;;
+		*) die 'Unknown setting. Use help for the file names.' ;;
+	esac
+	CONFIG_FILE="$CONFIG_ROOT$CONFIG_FILE"
+}
+
+edit_setting()
+{
+	local key="$1" draft
+	setting "$key"
+	draft="$(mktemp "$RUN_DIR/edit.XXXXXX")" || return 1
+	[ ! -r "$CONFIG_FILE" ] || cat "$CONFIG_FILE" >"$draft"
+	if ui_dialog --stdout --title "$CONFIG_FILE" --ok-label Save --cancel-label Back \
+		--editbox "$draft" 22 78 >"${draft}.saved"; then
+		if save_file "$CONFIG_FILE" "$CONFIG_MODE" "${draft}.saved"; then
+			UI_NOTICE='Saved. Use an explicit action or reboot to apply startup settings.'
+		else ui_error 'The file could not be saved.'; fi
+	fi
+	rm -f "$draft" "${draft}.saved"
+}
+
+set_timezone()
+{
+	local zone="$1" zones="${ESP32_CONFIG_ZONEINFO_DIR:-/usr/share/zoneinfo}"
+	case "$zone" in ''|/*|*..*|*[!A-Za-z0-9_+/-]*) die 'Invalid timezone name.' ;; esac
+	[ -f "$zones/$zone" ] || die 'That timezone is not installed.'
+	ln -sfn "$zones/$zone" "$CONFIG_ROOT/persist/etc/localtime" && \
+		write_lines "$CONFIG_ROOT/persist/etc/timezone" 0644 "$zone"
+}
+
+choose_timezone()
+{
+	local zone relative zones="${ESP32_CONFIG_ZONEINFO_DIR:-/usr/share/zoneinfo}"
+	set --
+	for zone in $(find "$zones" -type f | sort); do
+		relative="${zone#"$zones/"}"
+		set -- "$@" "$relative" "$relative"
+	done
+	[ "$#" -gt 0 ] || { ui_error 'No timezones are installed.'; return 1; }
+	zone="$(ui_dialog --stdout --title Timezone --cancel-label Back --menu \
+		'Choose the target of /etc/localtime.' 20 74 12 "$@")" || return 0
+	set_timezone "$zone" && UI_NOTICE='Timezone saved.'
+}
+
+apply_setting()
+{
+	case "$1" in
+		hostname) hostname -F "$CONFIG_ROOT/persist/etc/hostname" ;;
+		network) "$CONFIG_ROOT/etc/init.d/S40network" restart ;;
+		mounts) mount -a -T "$CONFIG_ROOT/persist/etc/fstab.extra" ;;
+		swap) swapon -a ;;
+		ntp) "$CONFIG_ROOT/etc/init.d/S47ntpd" restart ;;
+		startup) "$CONFIG_ROOT/etc/init.d/S95userapp" restart ;;
+		*) die 'Choose hostname, network, mounts, swap, ntp or startup.' ;;
+	esac
+}
+
+stop_setting()
+{
+	case "$1" in
+		network) "$CONFIG_ROOT/etc/init.d/S40network" stop ;;
+		swap) swapoff -a ;;
+		ntp) "$CONFIG_ROOT/etc/init.d/S47ntpd" stop ;;
+		startup) "$CONFIG_ROOT/etc/init.d/S95userapp" stop ;;
+		*) die 'Choose network, swap, ntp or startup.' ;;
+	esac
+}
+
+show_status()
+{
+	hostname
+	date
+	ip address
+	printf '\nSWAP\n'; cat /proc/swaps
+	printf '\nMOUNTS\n'; cat /proc/mounts
+	printf '\nINTERFACES\n'
+	if [ "$soc" = s31 ]; then s31-overlay status; else esp32-dt active; fi
+}
+
+actions_menu()
+{
+	local choice
+	while :; do
+		choice="$(ui_dialog --stdout --title 'Explicit actions' --cancel-label Back --menu \
+			"Stop networking before editing DHCP/static methods. These actions affect the running system.${UI_NOTICE:+\n$UI_NOTICE}" 22 78 12 \
+			stop-network 'Stop networking' network 'Restart networking' hostname 'Apply hostname' \
+			mounts 'Mount fstab entries' swap 'Enable fstab swap entries' stop-swap 'Stop all swap' \
+			ntp 'Restart NTP service' stop-ntp 'Stop NTP service' startup 'Restart startup program' \
+			stop-startup 'Stop startup program' password 'Run passwd' status 'System status')" || return 0
+		case "$choice" in
+			password) ui_dialog --clear; passwd; printf '\nPress Enter to return.'; read -r _ ;;
+			status) ui_show_command 'System status' show_status ;;
+			stop-*) ui_run_action 'Action' 'Running upstream service command...' '' stop_setting "${choice#stop-}" ;;
+			*) ui_run_action 'Action' 'Running upstream service command...' '' apply_setting "$choice" ;;
+		esac
+	done
+}
+
+main_menu()
+{
+	local choice
+	while :; do
+		choice="$(ui_dialog --stdout --title 'ESP32-S31 configuration' --cancel-label Finish --menu \
+			"Edit standard configuration files. Saving does not restart services.${UI_NOTICE:+\n$UI_NOTICE}" 22 78 12 \
+			hostname '/etc/hostname' network 'Wi-Fi address and startup: interfaces.d/wlan0' \
+			wifi 'Wi-Fi credentials: wpa_supplicant.conf' dns 'Static DNS for boot; DHCP may replace it at runtime' \
+			fstab 'Additional filesystem mounts: fstab.extra' timezone 'Timezone: /etc/localtime' ntp 'NTP servers: ntp.conf' \
+			ntp-service 'NTP startup: /etc/default/ntpd' startup 'Startup program: shell script' \
+			startup-service 'Program startup: /etc/default/userapp' radio-options 'Radio module options: modprobe.d' \
+			interfaces 'Live peripheral routes and USB' device-tree 'Edit device tree properties' usb-network 'USB address: interfaces.d/usb' \
+			usb-settings 'USB startup role: /etc/default/s31-usb' actions 'Apply, stop and diagnostic actions')" || return 0
+		UI_NOTICE=''
+		case "$choice" in
+			timezone) choose_timezone ;;
+			interfaces) interfaces_menu ;;
+			device-tree) device_tree_menu ;;
+			actions) actions_menu ;;
+			*) edit_setting "$choice" ;;
+		esac
+	done
+}
+
+device_tree_menu()
+{
+	local choice path property type value
+	while :; do
+		printf '\nESP32 device tree\n'
+		printf '%s\n' '1  System status' '2  List device tree nodes' \
+			'3  List node properties' '4  Read a property in hex' \
+			'5  Save a property to the staged device tree' 'q  Exit'
+		printf 'Selection: '
+		IFS= read -r choice || return 0
+		case "$choice" in
+			1) show_status ;;
+			2) dt_cli nodes ;;
+			3|4|5)
+				printf 'Node path: '; IFS= read -r path || return 0
+				if [ "$choice" = 3 ]; then dt_cli properties "$path"; continue; fi
+				printf 'Property: '; IFS= read -r property || return 0
+				if [ "$choice" = 4 ]; then dt_cli get "$path" "$property"; continue; fi
+				printf 'Type (string, u32, hex, empty): '
+				IFS= read -r type || return 0
+				if [ "$type" = empty ]; then
+					dt_cli save "$path" "$property" "$type"
+				else
+					printf 'Value: '; IFS= read -r value || return 0
+					dt_cli save "$path" "$property" "$type" "$value"
+				fi
+				;;
+			q) return 0 ;;
+		esac
+	done
+}
+
+overlay_cli()
+{
+	if [ "$soc" = s31 ]; then
+		s31-overlay "$@"
+		return
+	fi
+	case "$1" in
+		active|apply|remove) esp32-dt "$@" ;;
+		status|list) esp32-dt active ;;
+		*) warn 'Usage on P4: esp32-config overlay status|apply FILE|remove NAME'; return 2 ;;
+	esac
+}
+
+usage()
+{
+	cat <<'HELP'
+Usage:
+  esp32-config [menu|status]
+  esp32-config edit SETTING             edit a native configuration file
+  esp32-config write SETTING            save file contents from stdin
+  esp32-config timezone ZONE
+  esp32-config apply hostname|network|mounts|swap|ntp|startup
+  esp32-config stop network|swap|ntp|startup
+  esp32-config password
+  esp32-config interfaces              live peripheral configuration menu
+  esp32-config overlay COMMAND [ARG ...]
+  esp32-config dt nodes|properties|get|save|export|discard
+  esp32-config usb status|configure MODE|apply|stop|menu
+  esp32-config radio start|stop|restart
+
+SETTING: hostname, network, wifi, dns, fstab, ntp, ntp-service,
+         startup, startup-service, radio-options, usb-network, usb-settings.
+
+Saves edit the native files only. Apply and stop are explicit actions.
+Stop networking before changing its DHCP/static method. Upstream DHCP
+manages resolv.conf; use manual resolver settings with static connections.
+Live peripheral and USB changes are board-specific hardware actions.
+HELP
+}
+
+command="${1:-menu}"
+[ "$#" -eq 0 ] || shift
+case "$command" in -h|--help|help) usage; exit 0 ;; esac
+require_root
+prepare_runtime || die 'Cannot create the runtime directory.'
+if [ "$soc" = p4 ]; then
+	case "$command" in
+		menu) [ "$#" -eq 0 ] && [ -t 0 ] && [ -t 1 ] || exit 2; device_tree_menu; exit $? ;;
+		interfaces) [ "$#" -eq 0 ] || exit 2; dt_cli nodes; exit $? ;;
+		usb|radio) die 'This action is available on S31.' ;;
+	esac
+fi
+case "$command" in
+	menu|edit|interfaces)
+		have dialog && [ -t 0 ] && [ -t 1 ] && [ -t 2 ] || die 'A terminal and dialog are required.'
+		ui_prepare_terminal ;;
+esac
+case "$command" in
+	menu) [ "$#" -eq 0 ] || exit 2; main_menu ;;
+	edit) [ "$#" -eq 1 ] || exit 2; edit_setting "$1" ;;
+	write)
+		[ "$#" -eq 1 ] || exit 2
+		setting "$1"
+		draft="$(mktemp "$RUN_DIR/input.XXXXXX")" || exit 1
+		cat >"$draft" && save_file "$CONFIG_FILE" "$CONFIG_MODE" "$draft"
+		result=$?; rm -f "$draft"; exit "$result" ;;
+	timezone) [ "$#" -eq 1 ] || exit 2; set_timezone "$1" ;;
+	apply) [ "$#" -eq 1 ] || exit 2; apply_setting "$1" ;;
+	stop) [ "$#" -eq 1 ] || exit 2; stop_setting "$1" ;;
+	password) [ "$#" -eq 0 ] || exit 2; passwd ;;
+	status) [ "$#" -eq 0 ] || exit 2; show_status ;;
+	interfaces) [ "$#" -eq 0 ] || exit 2; interfaces_menu ;;
+	dt) [ "$#" -gt 0 ] || exit 2; dt_cli "$@" ;;
+	overlay) [ "$#" -gt 0 ] || exit 2; overlay_cli "$@" ;;
+	usb)
+		if [ "${1:-}" = menu ]; then ui_prepare_terminal; usb_menu; else usb_cli "$@"; fi ;;
+	radio) [ "$#" -eq 1 ] || exit 2; "$CONFIG_ROOT/etc/init.d/S00s31-radio" "$1" ;;
+	*) usage; exit 2 ;;
+esac

@@ -1,0 +1,5 @@
+config BR2_PACKAGE_ESP32_DT
+	bool "Espressif device tree editor"
+	depends on BR2_LINUX_KERNEL
+	help
+	  Lists device tree nodes and properties and encodes property edits.

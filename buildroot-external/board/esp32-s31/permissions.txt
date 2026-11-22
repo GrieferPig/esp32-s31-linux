@@ -1,0 +1,4 @@
+# /tmp permissions come from system/device_table.txt; the SysV skeleton
+# supplies /var/log and /var/tmp as symlinks to /tmp.
+# name type mode uid gid major minor start increment count
+/run d 0755 0 0 - - - - -

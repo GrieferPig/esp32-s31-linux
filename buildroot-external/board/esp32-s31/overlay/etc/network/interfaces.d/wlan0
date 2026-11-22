@@ -1,0 +1,4 @@
+auto wlan0
+iface wlan0 inet dhcp
+  hostname $(hostname)
+  wpa-conf /persist/etc/wpa_supplicant.conf

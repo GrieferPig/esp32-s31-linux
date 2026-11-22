@@ -1,6 +1,6 @@
 config BR2_PACKAGE_S31_TOOLS
 	bool "ESP32-S31 runtime tools"
+	depends on BR2_LINUX_KERNEL
 	default y
 	help
-	  Installs the device-tree overlay manager, radio module loader,
-	  GPIO utility and persistent configuration archive helper.
+	  Installs the live device-tree overlay and pin-routing manager.

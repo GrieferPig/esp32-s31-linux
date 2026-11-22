@@ -1,0 +1,2 @@
+# Enable the script in /usr/local/bin/startup-program at boot.
+ENABLED=0

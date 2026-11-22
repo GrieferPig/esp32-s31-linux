@@ -1,140 +1,25 @@
 #!/bin/sh
-
-radio_status=/proc/device-tree/soc/radio/status
-wifi_status=/proc/device-tree/soc/radio/wifi/status
-bluetooth_status=/proc/device-tree/soc/radio/bluetooth/status
-module_name=esp32s31_radio
-overlay_option=
-config_dir="${ESP32_CONFIG_DIR:-/etc/esp32-conf}"
-
-case "${S31_RADIO_VOLATILE_MODE:-}" in
-wifi|bt|combo) overlay_option=--volatile ;;
-'') ;;
-*) echo 'S31_RADIO_VOLATILE_MODE must be wifi, bt, or combo' >&2; exit 2 ;;
-esac
-
-setting_enabled()
-{
-	[ "$(sed -n 's/^enabled=//p' "$1" 2>/dev/null | tail -n 1)" = 1 ]
-}
-
-node_enabled()
-{
-	grep -qx okay "$1" 2>/dev/null
-}
-
-module_loaded()
-{
-	grep -q "^${module_name} " /proc/modules 2>/dev/null
-}
-
-radio_ready()
-{
-    bound=0
-    # Registered frontends are published only after the native core is ready.
-    # Check the driver binding directly; no diagnostic sysfs ABI is needed.
-    for device in /sys/bus/platform/drivers/esp32s31-radio/*; do
-        [ -L "$device/driver" ] || continue
-        bound=1
-        break
-    done
-    [ "$bound" = 1 ] || return 1
-    case "$1" in wifi|combo) [ -d /sys/class/net/wlan0 ] || return 1 ;; esac
-    case "$1" in bt|combo) [ -c /dev/s31-hci ] || return 1 ;; esac
-    return 0
-}
-
-remove_radio_profiles()
-{
-	for old_profile in radio-combo radio-wifi radio-bluetooth; do
-		/usr/sbin/s31-overlay remove "$old_profile" $overlay_option \
-			>/dev/null 2>&1 || true
-	done
-}
-
-stop_radio()
-{
-	if module_loaded; then
-		/usr/sbin/s31-modload --remove "$module_name" || return 1
-	fi
-	return 0
-}
-
-start_radio()
+# Early board setup; module parameters and blacklists use native modprobe files.
+start()
 {
 	grep -qw 's31.radio_autoload=0' /proc/cmdline && return 0
-	# This script runs before the rcS services. Create first-boot defaults now
-	# so the radio module is loaded before the Bluetooth service starts.
-	. /usr/lib/esp32-config/common.sh || return 1
-	ensure_config || {
-		echo 'ESP32-S31 radio configuration initialization failed' >&2
-		return 1
-	}
-	wifi=0
-	bluetooth=0
-	have_wifi=0
-	have_bluetooth=0
-	case "${S31_RADIO_VOLATILE_MODE:-}" in
-	wifi) wifi=1 ;;
-	bt) bluetooth=1 ;;
-	combo) wifi=1; bluetooth=1 ;;
-	*)
-		setting_enabled "$config_dir/wifi.conf" && wifi=1
-		setting_enabled "$config_dir/bluetooth.conf" && bluetooth=1
-		;;
-	esac
-	node_enabled "$wifi_status" && have_wifi=1
-	node_enabled "$bluetooth_status" && have_bluetooth=1
-	case "${wifi}:${bluetooth}" in
-	1:1) profile=radio-combo; mode=combo ;;
-	1:0) profile=radio-wifi; mode=wifi ;;
-	0:1) profile=radio-bluetooth; mode=bt ;;
-	*) stop_radio; remove_radio_profiles; return 0 ;;
-	esac
-
-	if module_loaded; then
-		current_mode=$(cat /sys/module/esp32s31_radio/parameters/mode 2>/dev/null)
-		if [ "$current_mode" = "$mode" ]; then
-            radio_ready "$mode" && return 0
-            echo 'ESP32-S31 radio module is loaded but its device is not ready' >&2
-            stop_radio || echo 'ESP32-S31 failed radio module could not be removed' >&2
-            return 1
-        fi
-		stop_radio || {
-			echo 'ESP32-S31 radio is busy; stop Wi-Fi/BT users before changing mode' >&2
-			return 1
-		}
+	[ ! -d /sys/module/esp32s31_radio ] || return 0
+	if ! grep -qx okay /proc/device-tree/soc/radio/status 2>/dev/null; then
+		s31-overlay apply radio-combo --volatile || return 1
 	fi
-
-	if [ "${wifi}:${bluetooth}" != "${have_wifi}:${have_bluetooth}" ]; then
-		remove_radio_profiles
-		/usr/sbin/s31-overlay apply "$profile" $overlay_option || return 1
-	fi
-	grep -qx okay "$radio_status" 2>/dev/null || return 0
-	module_file=/usr/lib/s31-radio/esp32s31-radio.ko.xz
-	[ -f "$module_file" ] || {
-		echo 'ESP32-S31 XIP radio module is missing' >&2
-		return 1
-	}
 	sync
 	[ ! -w /proc/sys/vm/drop_caches ] || echo 3 > /proc/sys/vm/drop_caches
-	/usr/sbin/s31-modload "$module_file" "mode=$mode" || return 1
-    # Probe may fail even when module registration succeeded. Inspect binding
-    # and local frontends; RF association/controller opening is a later stage.
-    attempt=0
-    while [ "$attempt" -lt 5 ]; do
-        radio_ready "$mode" && return 0
-        attempt=$((attempt + 1))
-        sleep 1
-    done
-    echo 'ESP32-S31 radio probe/frontend readiness failed' >&2
-    stop_radio || echo 'ESP32-S31 failed radio module could not be removed' >&2
-    return 1
+	modprobe -b esp32s31_radio
 }
 
-case "$1" in
-start) start_radio ;;
-stop) stop_radio ;;
-restart) stop_radio && start_radio ;;
-*) echo "usage: $0 {start|stop|restart}" >&2; exit 2 ;;
+stop()
+{
+	[ ! -d /sys/module/esp32s31_radio ] || rmmod esp32s31_radio
+}
+
+case "${1:-}" in
+	start) start ;;
+	stop) stop ;;
+	restart) stop && start ;;
+	*) echo "Usage: $0 {start|stop|restart}" >&2; exit 2 ;;
 esac

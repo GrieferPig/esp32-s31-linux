@@ -1,0 +1,101 @@
+BR2_REPRODUCIBLE=y
+BR2_riscv=y
+BR2_riscv_custom=y
+BR2_RISCV_ISA_RVM=y
+BR2_RISCV_ISA_RVA=y
+BR2_RISCV_ISA_RVF=y
+BR2_RISCV_ISA_RVC=y
+BR2_RISCV_ISA_EXTRA="zaamo_zalrsc_zba_zbb_zbc_zbs"
+BR2_RISCV_32=y
+BR2_RISCV_USE_MMU=y
+BR2_RISCV_ABI_ILP32=y
+BR2_TOOLCHAIN_EXTERNAL=y
+BR2_TOOLCHAIN_EXTERNAL_S31=y
+BR2_TOOLCHAIN_EXTERNAL_DOWNLOAD=y
+BR2_OPTIMIZE_S=y
+BR2_TARGET_OPTIMIZATION="-march=rv32imafbc_zicsr_zifencei_zaamo_zalrsc_zba_zbb_zbc_zbs -mabi=ilp32 -mtune=esp-base"
+BR2_TARGET_GENERIC_HOSTNAME="esp32-s31"
+BR2_TARGET_GENERIC_ISSUE="ESP32-S31 Linux (Buildroot)"
+BR2_TARGET_TZ_INFO=y
+BR2_TARGET_TZ_ZONELIST="northamerica europe asia australasia etcetera"
+BR2_TARGET_LOCALTIME="Etc/UTC"
+BR2_SYSTEM_DHCP=""
+# BR2_TARGET_GENERIC_REMOUNT_ROOTFS_RW is not set
+BR2_INIT_BUSYBOX=y
+BR2_TARGET_GENERIC_GETTY=y
+BR2_TARGET_GENERIC_GETTY_PORT="ttyS0"
+BR2_TARGET_GENERIC_GETTY_BAUDRATE_115200=y
+BR2_PACKAGE_BUSYBOX_CONFIG_FRAGMENT_FILES="$(BR2_EXTERNAL_ESP32_S31_PATH)/board/esp32-s31/busybox.fragment"
+BR2_ROOTFS_DEVICE_CREATION_DYNAMIC_DEVTMPFS=y
+BR2_ROOTFS_DEVICE_TABLE="system/device_table.txt $(BR2_EXTERNAL_ESP32_S31_PATH)/board/esp32-s31/permissions.txt"
+BR2_ROOTFS_OVERLAY="$(BR2_EXTERNAL_ESP32_S31_PATH)/board/esp32-common/overlay $(BR2_EXTERNAL_ESP32_S31_PATH)/board/esp32-s31/overlay"
+BR2_ROOTFS_POST_BUILD_SCRIPT="$(BR2_EXTERNAL_ESP32_S31_PATH)/board/esp32-s31/post-build.sh"
+BR2_ROOTFS_POST_FAKEROOT_SCRIPT="$(BR2_EXTERNAL_ESP32_S31_PATH)/board/esp32-s31/post-fakeroot.sh"
+BR2_PACKAGE_BUSYBOX_SHOW_OTHERS=y
+# esp32-config intentionally requires the ncurses dialog frontend.
+BR2_PACKAGE_DIALOG=y
+# Use the standard Linux userspace control planes for the native cfg80211,
+# Bluetooth HCI and GPIO character-device drivers.
+BR2_PACKAGE_IFUPDOWN_SCRIPTS=y
+BR2_PACKAGE_WPA_SUPPLICANT=y
+BR2_PACKAGE_WPA_SUPPLICANT_NL80211=y
+# BR2_PACKAGE_WPA_SUPPLICANT_WEXT is not set
+BR2_PACKAGE_WPA_SUPPLICANT_CLI=y
+BR2_PACKAGE_WPA_SUPPLICANT_PASSPHRASE=y
+BR2_PACKAGE_WPA_SUPPLICANT_CTRL_IFACE=y
+BR2_PACKAGE_HOSTAPD=y
+BR2_PACKAGE_HOSTAPD_DRIVER_NL80211=y
+BR2_PACKAGE_LIBGPIOD2=y
+BR2_PACKAGE_LIBGPIOD2_TOOLS=y
+BR2_PACKAGE_LINUXPTP=y
+BR2_PACKAGE_I2C_TOOLS=y
+BR2_PACKAGE_ALSA_UTILS=y
+# BR2_PACKAGE_ALSA_UTILS_ALSACTL is not set
+# BR2_PACKAGE_ALSA_UTILS_ALSAMIXER is not set
+BR2_PACKAGE_ALSA_UTILS_APLAY=y
+BR2_PACKAGE_ALSA_LIB_PCM_PLUGINS="null extplug ioplug"
+BR2_PACKAGE_ALSA_LIB_CTL_PLUGINS="ext"
+# BR2_PACKAGE_ALSA_LIB_ALOAD is not set
+# BR2_PACKAGE_ALSA_LIB_MIXER is not set
+# BR2_PACKAGE_ALSA_LIB_RAWMIDI is not set
+# BR2_PACKAGE_ALSA_LIB_HWDEP is not set
+# BR2_PACKAGE_ALSA_LIB_SEQ is not set
+# BR2_PACKAGE_ALSA_LIB_UCM is not set
+# BR2_PACKAGE_ALSA_LIB_OLD_SYMBOLS is not set
+# BR2_PACKAGE_ALSA_LIB_TOPOLOGY is not set
+BR2_PACKAGE_CAN_UTILS=y
+# BR2_PACKAGE_DROPBEAR is not set
+# BR2_PACKAGE_IPROUTE2 is not set
+BR2_PACKAGE_IW=y
+# BR2_PACKAGE_MEMTESTER is not set
+# BR2_PACKAGE_TCPDUMP is not set
+BR2_PACKAGE_DTC=y
+BR2_PACKAGE_ESP_SIMD=y
+BR2_PACKAGE_ESP32_DT=y
+BR2_PACKAGE_S31_TOOLS=y
+BR2_PACKAGE_BTSTACK_S31=y
+BR2_TARGET_ROOTFS_SQUASHFS=y
+BR2_TARGET_ROOTFS_SQUASHFS_BS_512K=y
+BR2_TARGET_ROOTFS_SQUASHFS4_XZ=y
+BR2_TARGET_ROOTFS_SQUASHFS_EXTREME_COMP=y
+# BR2_TARGET_ROOTFS_TAR is not set
+
+BR2_LINUX_KERNEL=y
+BR2_LINUX_KERNEL_CUSTOM_GIT=y
+BR2_LINUX_KERNEL_CUSTOM_REPO_URL="https://github.com/GrieferPig/linux-esp32-s31.git"
+BR2_LINUX_KERNEL_CUSTOM_REPO_VERSION="c57745752022e03d2248d397429345a1157dc7e4"
+BR2_LINUX_KERNEL_USE_DEFCONFIG=y
+BR2_LINUX_KERNEL_DEFCONFIG="esp32s31"
+BR2_LINUX_KERNEL_CONFIG_FRAGMENT_FILES="$(BR2_EXTERNAL_ESP32_S31_PATH)/board/esp32-s31/linux-common.config $(BR2_EXTERNAL_ESP32_S31_PATH)/board/esp32-s31/linux-board.config $(BR2_EXTERNAL_ESP32_S31_PATH)/board/esp32-s31/linux-image.config"
+BR2_LINUX_KERNEL_IMAGE_TARGET_CUSTOM=y
+BR2_LINUX_KERNEL_IMAGE_TARGET_NAME="xipImage"
+BR2_LINUX_KERNEL_DTS_SUPPORT=y
+BR2_LINUX_KERNEL_INTREE_DTS_NAME="espressif/esp32s31-generic espressif/esp32s31-coreboard espressif/esp32s31-korvo"
+BR2_LINUX_KERNEL_EXT_S31_FIRMWARE=y
+BR2_PACKAGE_HOST_KMOD=y
+BR2_PACKAGE_HOST_KMOD_XZ=y
+BR2_PACKAGE_S31_FIRMWARE=y
+BR2_PACKAGE_S31_FIRMWARE_ARCHIVE="https://github.com/GrieferPig/esp32-s31-linux-firmware/releases/download/fw-v0.3.1/s31-firmware-inputs.tar"
+BR2_PACKAGE_S31_FIRMWARE_SHA256="3376cba066c4540786a653c099178a60ea2d286d14249f52b30acecc10ed5504"
+BR2_ROOTFS_POST_IMAGE_SCRIPT="$(BR2_EXTERNAL_ESP32_S31_PATH)/board/esp32-s31/post-image.sh"
+BR2_LINUX_KERNEL_INTREE_DTSO_NAMES="espressif/esp32s31-overlay-analog espressif/esp32s31-overlay-gdma espressif/esp32s31-overlay-gmac espressif/esp32s31-overlay-gpspi2 espressif/esp32s31-overlay-gpspi2-target espressif/esp32s31-overlay-gpspi3 espressif/esp32s31-overlay-gpspi3-target espressif/esp32s31-overlay-i2c0 espressif/esp32s31-overlay-i2c1 espressif/esp32s31-overlay-i2s0 espressif/esp32s31-overlay-i2s1 espressif/esp32s31-overlay-lp espressif/esp32s31-overlay-pwm-counter espressif/esp32s31-overlay-radio-bluetooth espressif/esp32s31-overlay-radio-combo espressif/esp32s31-overlay-radio-wifi espressif/esp32s31-overlay-sdmmc-dual espressif/esp32s31-overlay-sdmmc-uhs espressif/esp32s31-overlay-sdmmc0 espressif/esp32s31-overlay-sdmmc1 espressif/esp32s31-overlay-timers espressif/esp32s31-overlay-twai0 espressif/esp32s31-overlay-twai1 espressif/esp32s31-overlay-uart1 espressif/esp32s31-overlay-uart2 espressif/esp32s31-overlay-uart3 espressif/esp32s31-overlay-uart3-dma espressif/esp32s31-overlay-usb-device espressif/esp32s31-overlay-watchdogs"
