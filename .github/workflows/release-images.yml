@@ -36,12 +36,12 @@ jobs:
             rsync squashfs-tools swig u-boot-tools unzip wget xz-utils
 
       - name: Install the pinned ESP RISC-V toolchain
+        env:
+          ESP_IDF_REF: "08e0d30a74ad0bfd5a34933142b80f45619ee410"
+          ESP_ELF_RELEASE: "esp-16.1.0_20260609"
         run: |
-          versions=configs/build-versions.mk
-          idf_ref=$(awk '$1 == "ESP_IDF_REF" {print $3}' "$versions")
-          version=$(awk '$1 == "ESP_ELF_RELEASE" {print $3}' "$versions")
-          metadata=$(curl -fsSL "https://raw.githubusercontent.com/espressif/esp-idf/$idf_ref/tools/tools.json")
-          compiler=$(jq -er --arg version "$version" '
+          metadata=$(curl -fsSL "https://raw.githubusercontent.com/espressif/esp-idf/$ESP_IDF_REF/tools/tools.json")
+          compiler=$(jq -er --arg version "$ESP_ELF_RELEASE" '
             .tools[] | select(.name == "riscv32-esp-elf") |
             .versions[] | select(.name == $version) | .["linux-amd64"]' <<< "$metadata")
           archive="$RUNNER_TEMP/riscv32-esp-elf.tar.xz"
