@@ -1,5 +1,5 @@
 # SPDX-License-Identifier: BSD-2-Clause
-P4_FIRMWARE_VERSION = fw-v0.3.1
+P4_FIRMWARE_VERSION = fw-v0.3.2
 P4_FIRMWARE_SITE = https://github.com/GrieferPig/esp32-s31-linux-firmware/releases/download/$(P4_FIRMWARE_VERSION)
 P4_FIRMWARE_SOURCE = p4-firmware-inputs.tar
 P4_FIRMWARE_STRIP_COMPONENTS = 0
