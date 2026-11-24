@@ -43,6 +43,11 @@ def finalize(output, board):
         sram_symbols=payload / "source/firmware/radio/wifi_sram_symbols.txt",
         output=images / "radio.bin")
     radio_image.build(args)
+    if board == "wavesynth":
+        fdtoverlay = Path(os.environ["HOST_DIR"]) / "bin/fdtoverlay"
+        subprocess.run([fdtoverlay, "-i", images / "esp32s31-wavesynth-coreboard.dtb",
+                        "-o", images / "esp32s31-wavesynth.dtb",
+                        images / "esp32s31-overlay-i80-ili9341.dtbo"], check=True)
     board_artifacts = assemble_flash((board,) if board else BOARDS)
     with (images / "SHA256SUMS").open("w") as checksums:
         subprocess.run(["sha256sum", *ARTIFACTS, *board_artifacts], cwd=images,
@@ -52,6 +57,6 @@ def finalize(output, board):
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--output", type=Path, required=True)
-    parser.add_argument("--board", choices=("korvo",))
+    parser.add_argument("--board", choices=("korvo", "wavesynth"))
     args = parser.parse_args()
     finalize(args.output.resolve(), args.board)

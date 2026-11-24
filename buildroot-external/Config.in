@@ -8,6 +8,7 @@ source "$BR2_EXTERNAL_ESP32_S31_PATH/package/s31-firmware/Config.in"
 
 source "$BR2_EXTERNAL_ESP32_S31_PATH/package/esp-simd/Config.in"
 source "$BR2_EXTERNAL_ESP32_S31_PATH/package/s31-tools/Config.in"
+source "$BR2_EXTERNAL_ESP32_S31_PATH/package/s31-wavesynth/Config.in"
 source "$BR2_EXTERNAL_ESP32_S31_PATH/package/btstack-s31/Config.in"
 
 endmenu

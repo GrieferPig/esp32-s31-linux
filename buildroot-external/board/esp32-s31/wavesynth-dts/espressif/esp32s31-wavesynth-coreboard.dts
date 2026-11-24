@@ -1,0 +1,20 @@
+// SPDX-License-Identifier: GPL-2.0+
+#include "esp32s31-coreboard.dts"
+
+/* S31 TRM ch.3 GDMA Controller — AHB_DMA_OUT_PERI_SEL_CH3_REG.
+ * The CoreBoard's i2s0 TX and RX request AHB GDMA channels from esp32s31.dtsi.
+ */
+&ahb_gdma {
+	status = "okay";
+};
+
+&i2s0 {
+	espressif,external-card;
+};
+
+/* S31 TRM ch.27 I2S Controller — I2S_TX_SLAVE_MOD.
+ * The CPU DAI also drives the ES8311's MCLK on the CoreBoard.
+ */
+&coreboard_cpu_dai {
+	system-clock-direction-out;
+};

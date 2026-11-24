@@ -14,10 +14,13 @@ DEFCONFIG := esp32s31_defconfig
 else ifeq ($(TARGET),esp32s31-korvo)
 DEFCONFIG := esp32s31_defconfig
 KORVO_DEFCONFIG := $(OUTPUT)/.korvo_defconfig
+else ifeq ($(TARGET),esp32s31-wavesynth)
+DEFCONFIG := esp32s31_defconfig
+WAVESYNTH_DEFCONFIG := $(OUTPUT)/.wavesynth_defconfig
 else ifeq ($(TARGET),esp32p4)
 DEFCONFIG := esp32p4_rootfs_defconfig
 else
-$(error Unknown TARGET "$(TARGET)"; use esp32s31, esp32s31-korvo or esp32p4)
+$(error Unknown TARGET "$(TARGET)"; use esp32s31, esp32s31-korvo, esp32s31-wavesynth or esp32p4)
 endif
 
 BUILDROOT = $(MAKE) -C "$(BUILDROOT_SOURCE)" O="$(OUTPUT)" \
@@ -37,6 +40,22 @@ $(KORVO_DEFCONFIG): $(CONFIG_INPUT) $(ROOT)/Makefile
 
 CONFIG_INPUT := $(KORVO_DEFCONFIG)
 CONFIG_TARGET := defconfig BR2_DEFCONFIG="$(KORVO_DEFCONFIG)"
+endif
+
+ifneq ($(WAVESYNTH_DEFCONFIG),)
+$(WAVESYNTH_DEFCONFIG): $(CONFIG_INPUT) $(ROOT)/Makefile
+	mkdir -p "$(OUTPUT)"
+	sed -e '/^BR2_LINUX_KERNEL_CONFIG_FRAGMENT_FILES=/s|"$$| $$(BR2_EXTERNAL_ESP32_S31_PATH)/board/esp32-s31/linux-wavesynth.config"|' \
+		-e '/^BR2_LINUX_KERNEL_INTREE_DTS_NAME=/cBR2_LINUX_KERNEL_INTREE_DTS_NAME=""' \
+		-e '/^BR2_LINUX_KERNEL_INTREE_DTSO_NAMES=/s|"$$| espressif/esp32s31-overlay-i80-ili9341"|' \
+		"$<" > "$@"
+	printf '%s\n' 'BR2_PACKAGE_S31_WAVESYNTH=y' 'BR2_PACKAGE_HOST_DTC=y' \
+		'BR2_LINUX_KERNEL_DTB_OVERLAY_SUPPORT=y' \
+		'BR2_LINUX_KERNEL_CUSTOM_DTS_DIR="$$(BR2_EXTERNAL_ESP32_S31_PATH)/board/esp32-s31/wavesynth-dts"' \
+		'BR2_ROOTFS_POST_IMAGE_SCRIPT_ARGS="--board wavesynth"' >> "$@"
+
+CONFIG_INPUT := $(WAVESYNTH_DEFCONFIG)
+CONFIG_TARGET := defconfig BR2_DEFCONFIG="$(WAVESYNTH_DEFCONFIG)"
 endif
 
 config: $(CONFIG_INPUT)
@@ -61,5 +80,6 @@ linux: $(OUTPUT)/.config
 help:
 	@printf '%s\n' 'make image TARGET=esp32s31 or TARGET=esp32p4' \
 		'make image TARGET=esp32s31-korvo builds only the Korvo image' \
+		'make image TARGET=esp32s31-wavesynth builds the CoreBoard i80 synth image' \
 		'make linux TARGET=... builds the kernel without assembling the image' \
 		'Use OUT_ROOT=... to select an independent Buildroot output directory'
