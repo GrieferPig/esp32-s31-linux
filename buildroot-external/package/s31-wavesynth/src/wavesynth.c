@@ -141,6 +141,31 @@ static int play(const char *device, const struct patch *patch,
 	return ret < 0 ? ret : close_ret;
 }
 
+static int init_audio(void)
+{
+	snd_ctl_elem_value_t *volume;
+	snd_ctl_t *card;
+	int ret;
+
+	ret = snd_ctl_open(&card, "hw:CARD=ES8311", 0);
+	if (ret < 0)
+		return ret;
+
+	snd_ctl_elem_value_alloca(&volume);
+	snd_ctl_elem_value_set_interface(volume, SND_CTL_ELEM_IFACE_MIXER);
+	snd_ctl_elem_value_set_name(volume, "DAC Playback Volume");
+	ret = snd_ctl_elem_read(card, volume);
+	if (ret >= 0 && snd_ctl_elem_value_get_integer(volume, 0) == 0) {
+		/* ES8311 DAC_REG32 starts at -95.5 dB. Use 0 dB (0xbf)
+		 * as in Espressif's ES8311 reference driver.
+		 */
+		snd_ctl_elem_value_set_integer(volume, 0, 0xbf);
+		ret = snd_ctl_elem_write(card, volume);
+	}
+	snd_ctl_close(card);
+	return ret;
+}
+
 static bool number(const char *arg, unsigned min, unsigned max, unsigned *value)
 {
 	char *end;
@@ -229,10 +254,19 @@ int main(int argc, char *argv[])
 	int status = EXIT_SUCCESS;
 	FILE *screen;
 
+	if (argc == 2 && !strcmp(argv[1], "--init-audio")) {
+		int ret = init_audio();
+
+		if (ret < 0) {
+			fprintf(stderr, "Initializing ES8311 DAC volume: %s\n", snd_strerror(ret));
+			return EXIT_FAILURE;
+		}
+		return EXIT_SUCCESS;
+	}
 	if (argc == 3 && !strcmp(argv[1], "--pcm")) {
 		device = argv[2];
 	} else if (argc != 1 && !banner) {
-		fprintf(stderr, "Usage: %s [--pcm DEVICE | --banner]\n", argv[0]);
+		fprintf(stderr, "Usage: %s [--pcm DEVICE | --banner | --init-audio]\n", argv[0]);
 		return EXIT_FAILURE;
 	}
 	if (access("/dev/fb0", F_OK) < 0) {

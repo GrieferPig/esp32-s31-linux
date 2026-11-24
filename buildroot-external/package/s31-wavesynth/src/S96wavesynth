@@ -3,7 +3,9 @@
 
 case "${1:-}" in
 	start)
-		modprobe esp32s31-i80 && /usr/bin/s31-wavesynth --banner
+		modprobe esp32s31-i80 &&
+			/usr/bin/s31-wavesynth --banner &&
+			/usr/bin/s31-wavesynth --init-audio
 		;;
 	stop)
 		;;
