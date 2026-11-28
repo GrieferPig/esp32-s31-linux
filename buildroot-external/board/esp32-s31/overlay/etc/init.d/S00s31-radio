@@ -3,17 +3,21 @@
 start()
 {
 	grep -qw 's31.radio_autoload=0' /proc/cmdline && return 0
-	[ ! -d /sys/module/esp32s31_radio ] || return 0
-	if ! grep -qx okay /proc/device-tree/soc/radio/status 2>/dev/null; then
-		s31-overlay apply radio-combo --volatile || return 1
+	if [ ! -d /sys/module/esp32s31_radio ]; then
+		if ! grep -qx okay /proc/device-tree/soc/radio/status 2>/dev/null; then
+			s31-overlay apply radio-combo --volatile || return 1
+		fi
+		sync
+		[ ! -w /proc/sys/vm/drop_caches ] || echo 3 > /proc/sys/vm/drop_caches
+		modprobe -b esp32s31_radio || return 1
 	fi
-	sync
-	[ ! -w /proc/sys/vm/drop_caches ] || echo 3 > /proc/sys/vm/drop_caches
-	modprobe -b esp32s31_radio
+	# devtmpfs does not service the modalias when the WPAN overlay is applied.
+	[ ! -d /sys/module/esp32s31_radio ] || modprobe -b esp32s31_wpan
 }
 
 stop()
 {
+	[ ! -d /sys/module/esp32s31_wpan ] || rmmod esp32s31_wpan || return 1
 	[ ! -d /sys/module/esp32s31_radio ] || rmmod esp32s31_radio
 }
 

@@ -73,17 +73,18 @@ BR2_PACKAGE_DTC=y
 BR2_PACKAGE_ESP_SIMD=y
 BR2_PACKAGE_ESP32_DT=y
 BR2_PACKAGE_S31_TOOLS=y
+BR2_PACKAGE_WPAN_TOOLS=y
 BR2_PACKAGE_BTSTACK_S31=y
 BR2_TARGET_ROOTFS_SQUASHFS=y
 BR2_TARGET_ROOTFS_SQUASHFS_BS_512K=y
-BR2_TARGET_ROOTFS_SQUASHFS4_XZ=y
+BR2_TARGET_ROOTFS_SQUASHFS4_GZIP=y
 BR2_TARGET_ROOTFS_SQUASHFS_EXTREME_COMP=y
 # BR2_TARGET_ROOTFS_TAR is not set
 
 BR2_LINUX_KERNEL=y
 BR2_LINUX_KERNEL_CUSTOM_GIT=y
 BR2_LINUX_KERNEL_CUSTOM_REPO_URL="https://github.com/GrieferPig/linux-esp32-s31.git"
-BR2_LINUX_KERNEL_CUSTOM_REPO_VERSION="c57745752022e03d2248d397429345a1157dc7e4"
+BR2_LINUX_KERNEL_CUSTOM_REPO_VERSION="edf2ec595527a12143deb584299318d9ae786d6a"
 BR2_LINUX_KERNEL_USE_DEFCONFIG=y
 BR2_LINUX_KERNEL_DEFCONFIG="esp32s31"
 BR2_LINUX_KERNEL_CONFIG_FRAGMENT_FILES="$(BR2_EXTERNAL_ESP32_S31_PATH)/board/esp32-s31/linux-common.config $(BR2_EXTERNAL_ESP32_S31_PATH)/board/esp32-s31/linux-board.config $(BR2_EXTERNAL_ESP32_S31_PATH)/board/esp32-s31/linux-image.config"
@@ -98,4 +99,4 @@ BR2_PACKAGE_S31_FIRMWARE=y
 BR2_PACKAGE_S31_FIRMWARE_ARCHIVE="https://github.com/GrieferPig/esp32-s31-linux-firmware/releases/download/fw-v0.3.1/s31-firmware-inputs.tar"
 BR2_PACKAGE_S31_FIRMWARE_SHA256="3376cba066c4540786a653c099178a60ea2d286d14249f52b30acecc10ed5504"
 BR2_ROOTFS_POST_IMAGE_SCRIPT="$(BR2_EXTERNAL_ESP32_S31_PATH)/board/esp32-s31/post-image.sh"
-BR2_LINUX_KERNEL_INTREE_DTSO_NAMES="espressif/esp32s31-overlay-analog espressif/esp32s31-overlay-gdma espressif/esp32s31-overlay-gmac espressif/esp32s31-overlay-gpspi2 espressif/esp32s31-overlay-gpspi2-target espressif/esp32s31-overlay-gpspi3 espressif/esp32s31-overlay-gpspi3-target espressif/esp32s31-overlay-i2c0 espressif/esp32s31-overlay-i2c1 espressif/esp32s31-overlay-i2s0 espressif/esp32s31-overlay-i2s1 espressif/esp32s31-overlay-lp espressif/esp32s31-overlay-pwm-counter espressif/esp32s31-overlay-radio-bluetooth espressif/esp32s31-overlay-radio-combo espressif/esp32s31-overlay-radio-wifi espressif/esp32s31-overlay-sdmmc-dual espressif/esp32s31-overlay-sdmmc-uhs espressif/esp32s31-overlay-sdmmc0 espressif/esp32s31-overlay-sdmmc1 espressif/esp32s31-overlay-timers espressif/esp32s31-overlay-twai0 espressif/esp32s31-overlay-twai1 espressif/esp32s31-overlay-uart1 espressif/esp32s31-overlay-uart2 espressif/esp32s31-overlay-uart3 espressif/esp32s31-overlay-uart3-dma espressif/esp32s31-overlay-usb-device espressif/esp32s31-overlay-watchdogs"
+BR2_LINUX_KERNEL_INTREE_DTSO_NAMES="espressif/esp32s31-overlay-analog espressif/esp32s31-overlay-bitscrambler espressif/esp32s31-overlay-ds espressif/esp32s31-overlay-ecdsa espressif/esp32s31-overlay-etm espressif/esp32s31-overlay-gdma espressif/esp32s31-overlay-gmac espressif/esp32s31-overlay-gpspi2 espressif/esp32s31-overlay-gpspi2-target espressif/esp32s31-overlay-gpspi3 espressif/esp32s31-overlay-gpspi3-target espressif/esp32s31-overlay-i2c0 espressif/esp32s31-overlay-i2c1 espressif/esp32s31-overlay-i2s0 espressif/esp32s31-overlay-i2s1 espressif/esp32s31-overlay-lp espressif/esp32s31-overlay-parlio espressif/esp32s31-overlay-pwm-counter espressif/esp32s31-overlay-radio-bluetooth espressif/esp32s31-overlay-radio-combo espressif/esp32s31-overlay-radio-wifi espressif/esp32s31-overlay-sdmmc-dual espressif/esp32s31-overlay-sdmmc-uhs espressif/esp32s31-overlay-sdmmc0 espressif/esp32s31-overlay-sdmmc1 espressif/esp32s31-overlay-timers espressif/esp32s31-overlay-twai0 espressif/esp32s31-overlay-twai1 espressif/esp32s31-overlay-uart1 espressif/esp32s31-overlay-uart1-dma espressif/esp32s31-overlay-uart2 espressif/esp32s31-overlay-uart3 espressif/esp32s31-overlay-uart3-dma espressif/esp32s31-overlay-usb-device espressif/esp32s31-overlay-watchdogs espressif/esp32s31-overlay-wpan"
